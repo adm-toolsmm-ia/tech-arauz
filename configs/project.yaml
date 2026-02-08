@@ -1,0 +1,171 @@
+# ==============================================================================
+# Tech Arauz - Project Configuration
+# ==============================================================================
+# Este arquivo centraliza todas as configurações do projeto.
+# Última atualização: 2026-02-07
+# ==============================================================================
+
+project:
+  name: "Tech Arauz"
+  version: "0.1.0"
+  description: "SaaS de gestão de TI - Projetos Espaider + Agentes AI"
+  owner: "Gabriel Cristofolini"
+  tenant: "arauz"
+  multi_tenant_ready: true
+
+# ------------------------------------------------------------------------------
+# Stack Técnica (ADR-001)
+# ------------------------------------------------------------------------------
+stack:
+  frontend:
+    framework: "next.js"
+    version: "14.x"
+    router: "app"
+    language: "typescript"
+    ui:
+      css: "tailwind"
+      components: "shadcn/ui"
+    api_layer: "trpc"
+    
+  backend:
+    platform: "supabase"
+    database: "postgresql"
+    auth: "supabase-auth"
+    storage: "supabase-storage"
+    
+  ai_service:
+    runtime: "python"
+    framework: "fastapi"
+    orchestration: "langgraph"
+    agents: "langchain"
+    observability: "langsmith"
+    
+  hosting:
+    web: "vercel"
+    database: "supabase"
+    
+  observability:
+    analytics: "vercel-analytics"
+    errors: "sentry"
+    ai_tracing: "langsmith"
+
+# ------------------------------------------------------------------------------
+# SLOs (Service Level Objectives)
+# ------------------------------------------------------------------------------
+slos:
+  latency_p95_ms: 4000
+  error_rate_max: 0.02
+  eval_pass_rate_min: 0.80
+  uptime_min: 0.995
+
+# ------------------------------------------------------------------------------
+# Budget de Infraestrutura
+# ------------------------------------------------------------------------------
+budget:
+  monthly_usd: 300
+  breakdown:
+    vercel_pro: 20
+    supabase_pro: 25
+    sentry_team: 26
+    langsmith: 39
+    buffer: 190
+
+# ------------------------------------------------------------------------------
+# Integração Espaider (ADR-002)
+# ------------------------------------------------------------------------------
+integrations:
+  espaider:
+    base_url_env: "ESPAIDER_BASE_URL"
+    token_env: "ESPAIDER_TOKEN"
+    key_env: "ESPAIDER_KEY"
+    timeout_seconds: 10
+    retry:
+      max_attempts: 3
+      base_delay_seconds: 1
+      max_delay_seconds: 8
+      strategy: "exponential_backoff"
+    circuit_breaker:
+      failure_threshold: 5
+      window_seconds: 60
+      reset_timeout_seconds: 30
+    rate_limit:
+      requests_per_second: 5
+    datasets:
+      - "Projetos"
+      - "Entregas"
+      - "Cronogramas"
+      - "Requisitos"
+      
+  langsmith:
+    api_key_env: "LANGSMITH_API_KEY"
+    project: "tech-arauz"
+    tracing_enabled: true
+    evaluators_enabled: true
+
+# ------------------------------------------------------------------------------
+# LGPD / Compliance
+# ------------------------------------------------------------------------------
+lgpd:
+  data_classification:
+    public: false
+    internal: true
+    confidential: true
+    restricted: true
+  retention_days: 730
+  consent_required: true
+  purpose_documented: true
+  dpia_level: "light"
+  pii_in_logs: false
+  secrets_storage: "env_vars"
+  audit_access: true
+
+# ------------------------------------------------------------------------------
+# Sizing Inicial
+# ------------------------------------------------------------------------------
+sizing:
+  projects_per_year: 300
+  concurrent_users: 10
+  main_records: 50000
+  attachments: "moderate"
+  database:
+    vcpu: 1
+    ram_gb: 2
+    storage_gb: 10
+
+# ------------------------------------------------------------------------------
+# Timeline MVP
+# ------------------------------------------------------------------------------
+timeline:
+  total_weeks: 6
+  phases:
+    - name: "Build"
+      weeks: 4
+      sprints: 2
+    - name: "Hardening"
+      weeks: 1
+    - name: "UAT"
+      weeks: 1
+
+# ------------------------------------------------------------------------------
+# Team
+# ------------------------------------------------------------------------------
+team:
+  - role: "fullstack_principal"
+    name: "Gabriel Cristofolini"
+    hours_per_week: 35
+    focus: ["frontend", "backend", "integrations"]
+  - role: "ai_observability"
+    name: "Gabriel Cristofolini"
+    hours_per_week: 10
+    focus: ["langsmith", "langgraph", "evaluators"]
+
+# ------------------------------------------------------------------------------
+# Tokens de Orçamento AI
+# ------------------------------------------------------------------------------
+ai_budget:
+  monthly_tokens: 50
+  model_preference: "gpt-4o"
+  mode: "balanced"
+  detail_level: "medium"
+  env: "dev"
+  prefer_fallbacks: true

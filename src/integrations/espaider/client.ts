@@ -1,0 +1,375 @@
+/**
+ * Client HTTP para API Espaider
+ * Implementa retry com backoff exponencial, circuit breaker e logging seguro
+ * @see ADR-002: Auth Espaider
+ */
+
+import type {
+    ExportarDadosParams,
+    ExportarDadosResponse,
+    EspaiderConfig,
+    EspaiderError,
+    EspaiderErrorType,
+    SyncMetrics,
+    EspaiderDataset,
+} from './types';
+import { loadConfig, maskToken, generateRequestId } from './config';
+
+// =============================================================================
+// Circuit Breaker State
+// =============================================================================
+
+interface CircuitBreakerState {
+    failures: number;
+    lastFailure: number;
+    isOpen: boolean;
+}
+
+const circuitState: CircuitBreakerState = {
+    failures: 0,
+    lastFailure: 0,
+    isOpen: false,
+};
+
+// =============================================================================
+// Logger (sem PII)
+// =============================================================================
+
+interface LogContext {
+    requestId: string;
+    dataset?: EspaiderDataset;
+    duration?: number;
+    attempt?: number;
+    statusCode?: number;
+    error?: string;
+}
+
+function log(level: 'INFO' | 'WARN' | 'ERROR', message: string, context: LogContext): void {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+        timestamp,
+        level,
+        message,
+        ...context,
+    };
+
+    // Em produção, enviar para sistema de logs (Sentry, etc)
+    // Aqui usamos console para desenvolvimento
+    if (level === 'ERROR') {
+        console.error(JSON.stringify(logEntry));
+    } else if (level === 'WARN') {
+        console.warn(JSON.stringify(logEntry));
+    } else {
+        console.log(JSON.stringify(logEntry));
+    }
+}
+
+// =============================================================================
+// Circuit Breaker
+// =============================================================================
+
+function checkCircuitBreaker(config: EspaiderConfig, requestId: string): void {
+    const now = Date.now();
+    const { failureThreshold, windowMs, resetTimeoutMs } = config.circuitBreaker;
+
+    // Se o circuito está aberto, verifica se pode resetar
+    if (circuitState.isOpen) {
+        if (now - circuitState.lastFailure > resetTimeoutMs) {
+            circuitState.isOpen = false;
+            circuitState.failures = 0;
+            log('INFO', 'Circuit breaker reset', { requestId });
+        } else {
+            throw createError('CIRCUIT_OPEN', 'Circuit breaker is open', requestId);
+        }
+    }
+
+    // Limpa falhas antigas fora da janela
+    if (now - circuitState.lastFailure > windowMs) {
+        circuitState.failures = 0;
+    }
+}
+
+function recordFailure(config: EspaiderConfig, requestId: string): void {
+    circuitState.failures++;
+    circuitState.lastFailure = Date.now();
+
+    if (circuitState.failures >= config.circuitBreaker.failureThreshold) {
+        circuitState.isOpen = true;
+        log('WARN', 'Circuit breaker opened', { requestId });
+    }
+}
+
+function recordSuccess(): void {
+    circuitState.failures = 0;
+}
+
+// =============================================================================
+// Error Handling
+// =============================================================================
+
+function createError(
+    type: EspaiderErrorType,
+    message: string,
+    requestId: string,
+    statusCode?: number
+): EspaiderError {
+    const retryable = ['TIMEOUT', 'NETWORK_ERROR', 'RATE_LIMIT'].includes(type);
+
+    return {
+        type,
+        message,
+        statusCode,
+        retryable,
+        requestId,
+    };
+}
+
+function classifyError(error: unknown, requestId: string): EspaiderError {
+    if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.message.includes('timeout')) {
+            return createError('TIMEOUT', 'Request timed out', requestId);
+        }
+        if (error.message.includes('fetch')) {
+            return createError('NETWORK_ERROR', 'Network error', requestId);
+        }
+    }
+
+    return createError('UNKNOWN', 'Unknown error occurred', requestId);
+}
+
+// =============================================================================
+// Retry Logic
+// =============================================================================
+
+async function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function calculateDelay(attempt: number, config: EspaiderConfig): number {
+    const { baseDelay, maxDelay } = config.retry;
+    const delay = baseDelay * Math.pow(2, attempt - 1);
+    return Math.min(delay, maxDelay);
+}
+
+// =============================================================================
+// HTTP Client
+// =============================================================================
+
+async function fetchWithTimeout(
+    url: string,
+    config: EspaiderConfig,
+    requestId: string
+): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            signal: controller.signal,
+        });
+
+        return response;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+function buildUrl(config: EspaiderConfig, params: ExportarDadosParams): string {
+    const url = new URL(`${config.baseUrl}/ExportaDados`);
+    url.searchParams.set('Token', config.token);
+    url.searchParams.set('Key', config.key);
+    url.searchParams.set('Identificador', params.identificador);
+
+    // Adiciona filtros se existirem
+    if (params.filtros) {
+        for (const [key, value] of Object.entries(params.filtros)) {
+            url.searchParams.set(key, value);
+        }
+    }
+
+    return url.toString();
+}
+
+// =============================================================================
+// Main Export Function
+// =============================================================================
+
+/**
+ * Exporta dados do Espaider com retry automático e circuit breaker
+ * 
+ * @param params - Parâmetros da exportação
+ * @param configOverride - Configuração opcional (usa env vars por padrão)
+ * @returns Resposta da API com ListaRegistros
+ * @throws {EspaiderError} Em caso de falha após retries
+ * 
+ * @example
+ * ```ts
+ * const response = await exportarDados({ identificador: 'Projetos' });
+ * console.log(response.ListaRegistros.length);
+ * ```
+ */
+export async function exportarDados(
+    params: ExportarDadosParams,
+    configOverride?: Partial<EspaiderConfig>
+): Promise<ExportarDadosResponse> {
+    const config = { ...loadConfig(), ...configOverride };
+    const requestId = generateRequestId();
+    const startTime = Date.now();
+    let attempt = 0;
+    let lastError: EspaiderError | null = null;
+
+    // Log início (sem tokens)
+    log('INFO', 'Starting Espaider export', {
+        requestId,
+        dataset: params.identificador,
+    });
+
+    // Verifica circuit breaker
+    checkCircuitBreaker(config, requestId);
+
+    const url = buildUrl(config, params);
+    // Log URL mascarada
+    const maskedUrl = url
+        .replace(config.token, maskToken(config.token))
+        .replace(config.key, maskToken(config.key));
+    log('INFO', `Request URL: ${maskedUrl}`, { requestId });
+
+    while (attempt < config.retry.maxAttempts) {
+        attempt++;
+
+        try {
+            const response = await fetchWithTimeout(url, config, requestId);
+
+            if (!response.ok) {
+                const statusCode = response.status;
+
+                // 4xx não retenta (exceto 429)
+                if (statusCode >= 400 && statusCode < 500 && statusCode !== 429) {
+                    const errorType = statusCode === 401 || statusCode === 403 ? 'AUTH_ERROR' : 'UNKNOWN';
+                    throw createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
+                }
+
+                // 429 ou 5xx retenta
+                const errorType = statusCode === 429 ? 'RATE_LIMIT' : 'NETWORK_ERROR';
+                lastError = createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
+
+                log('WARN', `Request failed, retrying`, {
+                    requestId,
+                    attempt,
+                    statusCode,
+                });
+
+                if (attempt < config.retry.maxAttempts) {
+                    await sleep(calculateDelay(attempt, config));
+                    continue;
+                }
+
+                throw lastError;
+            }
+
+            // Parse response
+            const data = await response.json();
+
+            // Valida estrutura
+            if (!data || typeof data !== 'object') {
+                throw createError('INVALID_RESPONSE', 'Invalid JSON response', requestId);
+            }
+
+            // Garante ListaRegistros existe
+            if (!Array.isArray(data.ListaRegistros)) {
+                data.ListaRegistros = [];
+            }
+
+            // Sucesso
+            recordSuccess();
+
+            const duration = Date.now() - startTime;
+            log('INFO', 'Export completed successfully', {
+                requestId,
+                dataset: params.identificador,
+                duration,
+            });
+
+            return data as ExportarDadosResponse;
+
+        } catch (error) {
+            // Se já é EspaiderError, propaga
+            if ((error as EspaiderError).type) {
+                lastError = error as EspaiderError;
+            } else {
+                lastError = classifyError(error, requestId);
+            }
+
+            // Se não é retentável, sai imediatamente
+            if (!lastError.retryable) {
+                recordFailure(config, requestId);
+                log('ERROR', lastError.message, {
+                    requestId,
+                    error: lastError.type,
+                });
+                throw lastError;
+            }
+
+            // Se ainda tem tentativas, retenta
+            if (attempt < config.retry.maxAttempts) {
+                log('WARN', `Request failed, retrying`, {
+                    requestId,
+                    attempt,
+                    error: lastError.type,
+                });
+                await sleep(calculateDelay(attempt, config));
+                continue;
+            }
+        }
+    }
+
+    // Esgotou tentativas
+    recordFailure(config, requestId);
+
+    const duration = Date.now() - startTime;
+    log('ERROR', 'All retry attempts exhausted', {
+        requestId,
+        duration,
+        error: lastError?.type,
+    });
+
+    throw lastError || createError('UNKNOWN', 'Unknown error', requestId);
+}
+
+/**
+ * Cria métricas de sincronização
+ */
+export function createSyncMetrics(
+    requestId: string,
+    dataset: EspaiderDataset,
+    startedAt: Date,
+    results: { new: number; updated: number; errors: number; retries: number }
+): SyncMetrics {
+    const completedAt = new Date();
+
+    return {
+        requestId,
+        dataset,
+        startedAt,
+        completedAt,
+        durationMs: completedAt.getTime() - startedAt.getTime(),
+        totalRecords: results.new + results.updated,
+        newRecords: results.new,
+        updatedRecords: results.updated,
+        errors: results.errors,
+        retries: results.retries,
+    };
+}
+
+/**
+ * Reseta o circuit breaker (para testes)
+ */
+export function resetCircuitBreaker(): void {
+    circuitState.failures = 0;
+    circuitState.lastFailure = 0;
+    circuitState.isOpen = false;
+}

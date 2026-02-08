@@ -1,7 +1,8 @@
 # Registro de Implementações - Tech Arauz
 
-> **Última Atualização**: 2026-02-07 20:36  
-> **Próximo Executor**: Cursor com MCP Supabase
+> **Última Atualização**: 2026-02-08 05:15  
+> **Próximo Executor**: Cursor com MCP Supabase  
+> **Repositório**: https://github.com/adm-toolsmm-ia/tech-arauz.git
 
 Este arquivo documenta todas as implementações realizadas no projeto para facilitar a gestão e evitar consumo desnecessário de contexto.
 

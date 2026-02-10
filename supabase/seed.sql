@@ -8,7 +8,7 @@ INSERT INTO public.tenants (id, slug, name, settings)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
     'arauz',
-    'Arauz Indústria Mecânica',
+    'Araúz & Advogados',
     '{"theme": "default", "language": "pt-BR"}'
 ) ON CONFLICT (slug) DO NOTHING;
 

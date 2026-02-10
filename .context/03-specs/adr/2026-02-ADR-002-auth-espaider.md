@@ -19,9 +19,16 @@ POST https://espaider.com.br/Arauz/WCF/WCFExportaDados.svc/ExportaDados
 ```
 
 **Parâmetros de Autenticação** (via querystring):
-- `Token`: Token de acesso (string)
-- `Key`: Chave de API (string)
-- `Identificador`: Dataset de exportação (ex: "Projetos", "Entregas", "Cronogramas")
+- `Token`: Token de acesso (string) -- **obrigatório**
+- `Key`: Chave de API (string) -- **opcional** (API real nao usa)
+- `Identificador`: Identificador real da API (ex: "BI_SOLICITACOES_SUPORTEESPAIDER")
+
+> **ATUALIZADO 2026-02-10**: A API real usa apenas Token + Identificador.
+> Key foi mantida como opcional para compatibilidade futura.
+> Os identificadores reais sao: `BI_SOLICITACOES_SUPORTEESPAIDER` (projetos),
+> `_ENTREGAS`, `_CRONOGRAMAS`, `_REQUISITOS`.
+> A API retorna `Situacao` ("S"/"E"), `URLPaginacao` para paginacao via GET,
+> e `Valor` pode ser `null` nos campos.
 
 **Resposta Típica**:
 ```json
@@ -48,7 +55,7 @@ POST https://espaider.com.br/Arauz/WCF/WCFExportaDados.svc/ExportaDados
 
 | Aspecto | Decisão |
 |---------|---------|
-| **Tipo** | Token + Key via querystring |
+| **Tipo** | Token via querystring (Key opcional) |
 | **Armazenamento** | Secrets (Vercel env vars / Supabase vault) |
 | **Rotação** | A cada 90 dias |
 | **Validação** | IP allowlist (se suportado pelo Espaider) |
@@ -56,10 +63,12 @@ POST https://espaider.com.br/Arauz/WCF/WCFExportaDados.svc/ExportaDados
 ### Variáveis de Ambiente
 
 ```env
-ESPAIDER_BASE_URL=https://espaider.com.br/Arauz/WCF/WCFExportaDados.svc
+ESPAIDER_BASE_URL=https://espaider.com.br/Arauz/WCF/WCFExportaDados/WCFExportaDados.svc
 ESPAIDER_TOKEN=<secret>
-ESPAIDER_KEY=<secret>
+# ESPAIDER_KEY=<opcional>
 ```
+
+> APIs tambem podem ser configuradas via tabela `espaider_apis` e modulo `/integracoes`.
 
 ### Política de Chamadas
 

@@ -37,7 +37,7 @@ const circuitState: CircuitBreakerState = {
 
 interface LogContext {
     requestId: string;
-    dataset?: EspaiderDataset;
+    dataset?: string;
     duration?: number;
     attempt?: number;
     statusCode?: number;
@@ -152,39 +152,22 @@ function calculateDelay(attempt: number, config: EspaiderConfig): number {
 }
 
 // =============================================================================
-// HTTP Client
+// URL Builder
 // =============================================================================
 
-async function fetchWithTimeout(
-    url: string,
-    config: EspaiderConfig,
-    requestId: string
-): Promise<Response> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), config.timeout);
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            signal: controller.signal,
-        });
-
-        return response;
-    } finally {
-        clearTimeout(timeoutId);
-    }
-}
-
 function buildUrl(config: EspaiderConfig, params: ExportarDadosParams): string {
+    // URL correta: baseUrl já inclui o caminho até WCFExportaDados.svc
     const url = new URL(`${config.baseUrl}/ExportaDados`);
     url.searchParams.set('Token', config.token);
-    url.searchParams.set('Key', config.key);
+
+    // Key é opcional — só envia se fornecido e não vazio
+    if (config.key) {
+        url.searchParams.set('Key', config.key);
+    }
+
     url.searchParams.set('Identificador', params.identificador);
 
-    // Adiciona filtros se existirem
+    // Adiciona filtros (BlocoFiltros) se existirem
     if (params.filtros) {
         for (const [key, value] of Object.entries(params.filtros)) {
             url.searchParams.set(key, value);
@@ -199,16 +182,119 @@ function buildUrl(config: EspaiderConfig, params: ExportarDadosParams): string {
 // =============================================================================
 
 /**
- * Exporta dados do Espaider com retry automático e circuit breaker
- * 
- * @param params - Parâmetros da exportação
+ * Executa uma requisição individual com retry
+ */
+async function executeWithRetry(
+    url: string,
+    method: 'POST' | 'GET',
+    config: EspaiderConfig,
+    requestId: string
+): Promise<ExportarDadosResponse> {
+    let attempt = 0;
+    let lastError: EspaiderError | null = null;
+
+    while (attempt < config.retry.maxAttempts) {
+        attempt++;
+
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: controller.signal,
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    const statusCode = response.status;
+
+                    if (statusCode >= 400 && statusCode < 500 && statusCode !== 429) {
+                        const errorType = statusCode === 401 || statusCode === 403 ? 'AUTH_ERROR' : 'UNKNOWN';
+                        throw createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
+                    }
+
+                    const errorType = statusCode === 429 ? 'RATE_LIMIT' : 'NETWORK_ERROR';
+                    lastError = createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
+
+                    log('WARN', `Request failed, retrying`, { requestId, attempt, statusCode });
+
+                    if (attempt < config.retry.maxAttempts) {
+                        await sleep(calculateDelay(attempt, config));
+                        continue;
+                    }
+                    throw lastError;
+                }
+
+                const data = await response.json();
+
+                if (!data || typeof data !== 'object') {
+                    throw createError('INVALID_RESPONSE', 'Invalid JSON response', requestId);
+                }
+
+                // Verifica Situacao do Espaider
+                if (data.Situacao === 'E') {
+                    throw createError(
+                        'INVALID_RESPONSE',
+                        `Espaider error: ${data.MensagemRetorno || 'Erro desconhecido'}`,
+                        requestId
+                    );
+                }
+
+                if (!Array.isArray(data.ListaRegistros)) {
+                    data.ListaRegistros = [];
+                }
+
+                recordSuccess();
+                return data as ExportarDadosResponse;
+
+            } finally {
+                clearTimeout(timeoutId);
+            }
+
+        } catch (error) {
+            if ((error as EspaiderError).type) {
+                lastError = error as EspaiderError;
+            } else {
+                lastError = classifyError(error, requestId);
+            }
+
+            if (!lastError.retryable) {
+                recordFailure(config, requestId);
+                log('ERROR', lastError.message, { requestId, error: lastError.type });
+                throw lastError;
+            }
+
+            if (attempt < config.retry.maxAttempts) {
+                log('WARN', `Retrying`, { requestId, attempt, error: lastError.type });
+                await sleep(calculateDelay(attempt, config));
+                continue;
+            }
+        }
+    }
+
+    recordFailure(config, requestId);
+    throw lastError || createError('UNKNOWN', 'Unknown error', requestId);
+}
+
+/**
+ * Exporta dados do Espaider com retry, circuit breaker e paginação automática.
+ *
+ * - Primeira chamada: POST para ExportaDados
+ * - Páginas seguintes: GET via URLPaginacao retornada pela API
+ *
+ * @param params - Parâmetros da exportação (identificador obrigatório)
  * @param configOverride - Configuração opcional (usa env vars por padrão)
- * @returns Resposta da API com ListaRegistros
- * @throws {EspaiderError} Em caso de falha após retries
- * 
+ * @returns Resposta unificada com todos os registros de todas as páginas
+ *
  * @example
  * ```ts
- * const response = await exportarDados({ identificador: 'Projetos' });
+ * const response = await exportarDados({
+ *   identificador: 'BI_SOLICITACOES_SUPORTEESPAIDER'
+ * });
  * console.log(response.ListaRegistros.length);
  * ```
  */
@@ -216,128 +302,118 @@ export async function exportarDados(
     params: ExportarDadosParams,
     configOverride?: Partial<EspaiderConfig>
 ): Promise<ExportarDadosResponse> {
-    const config = { ...loadConfig(), ...configOverride };
+    // Skip env validation when DB-based overrides are provided
+    const hasOverrides = !!(params.baseUrl && params.token);
+    const config = {
+        ...loadConfig(hasOverrides),
+        ...configOverride,
+        ...(params.baseUrl ? { baseUrl: params.baseUrl } : {}),
+        ...(params.token ? { token: params.token } : {}),
+    };
     const requestId = generateRequestId();
     const startTime = Date.now();
-    let attempt = 0;
-    let lastError: EspaiderError | null = null;
 
-    // Log início (sem tokens)
     log('INFO', 'Starting Espaider export', {
         requestId,
-        dataset: params.identificador,
+        dataset: params.identificador as EspaiderDataset,
     });
 
-    // Verifica circuit breaker
     checkCircuitBreaker(config, requestId);
 
+    // 1) POST inicial
     const url = buildUrl(config, params);
-    // Log URL mascarada
-    const maskedUrl = url
-        .replace(config.token, maskToken(config.token))
-        .replace(config.key, maskToken(config.key));
-    log('INFO', `Request URL: ${maskedUrl}`, { requestId });
+    const maskedToken = maskToken(config.token);
+    const maskedUrl = url.replace(config.token, maskedToken);
+    log('INFO', `POST ${maskedUrl}`, { requestId });
 
-    while (attempt < config.retry.maxAttempts) {
-        attempt++;
+    const allRegistros: ExportarDadosResponse['ListaRegistros'] = [];
+    const firstPage = await executeWithRetry(url, 'POST', config, requestId);
+    allRegistros.push(...firstPage.ListaRegistros);
 
-        try {
-            const response = await fetchWithTimeout(url, config, requestId);
+    // 2) Paginação via GET (URLPaginacao)
+    let nextUrl = firstPage.URLPaginacao;
+    let pageCount = 1;
+    const MAX_PAGES = 50; // safety limit
 
-            if (!response.ok) {
-                const statusCode = response.status;
+    while (nextUrl && nextUrl.trim() !== '' && pageCount < MAX_PAGES) {
+        pageCount++;
+        log('INFO', `GET page ${pageCount}`, { requestId });
 
-                // 4xx não retenta (exceto 429)
-                if (statusCode >= 400 && statusCode < 500 && statusCode !== 429) {
-                    const errorType = statusCode === 401 || statusCode === 403 ? 'AUTH_ERROR' : 'UNKNOWN';
-                    throw createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
-                }
-
-                // 429 ou 5xx retenta
-                const errorType = statusCode === 429 ? 'RATE_LIMIT' : 'NETWORK_ERROR';
-                lastError = createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
-
-                log('WARN', `Request failed, retrying`, {
-                    requestId,
-                    attempt,
-                    statusCode,
-                });
-
-                if (attempt < config.retry.maxAttempts) {
-                    await sleep(calculateDelay(attempt, config));
-                    continue;
-                }
-
-                throw lastError;
-            }
-
-            // Parse response
-            const data = await response.json();
-
-            // Valida estrutura
-            if (!data || typeof data !== 'object') {
-                throw createError('INVALID_RESPONSE', 'Invalid JSON response', requestId);
-            }
-
-            // Garante ListaRegistros existe
-            if (!Array.isArray(data.ListaRegistros)) {
-                data.ListaRegistros = [];
-            }
-
-            // Sucesso
-            recordSuccess();
-
-            const duration = Date.now() - startTime;
-            log('INFO', 'Export completed successfully', {
-                requestId,
-                dataset: params.identificador,
-                duration,
-            });
-
-            return data as ExportarDadosResponse;
-
-        } catch (error) {
-            // Se já é EspaiderError, propaga
-            if ((error as EspaiderError).type) {
-                lastError = error as EspaiderError;
-            } else {
-                lastError = classifyError(error, requestId);
-            }
-
-            // Se não é retentável, sai imediatamente
-            if (!lastError.retryable) {
-                recordFailure(config, requestId);
-                log('ERROR', lastError.message, {
-                    requestId,
-                    error: lastError.type,
-                });
-                throw lastError;
-            }
-
-            // Se ainda tem tentativas, retenta
-            if (attempt < config.retry.maxAttempts) {
-                log('WARN', `Request failed, retrying`, {
-                    requestId,
-                    attempt,
-                    error: lastError.type,
-                });
-                await sleep(calculateDelay(attempt, config));
-                continue;
-            }
-        }
+        const page = await executeWithRetry(nextUrl, 'GET', config, requestId);
+        allRegistros.push(...page.ListaRegistros);
+        nextUrl = page.URLPaginacao;
     }
 
-    // Esgotou tentativas
-    recordFailure(config, requestId);
-
     const duration = Date.now() - startTime;
-    log('ERROR', 'All retry attempts exhausted', {
+    log('INFO', `Export completed: ${allRegistros.length} records in ${pageCount} pages`, {
         requestId,
+        dataset: params.identificador as EspaiderDataset,
         duration,
-        error: lastError?.type,
     });
 
-    throw lastError || createError('UNKNOWN', 'Unknown error', requestId);
+    return {
+        Situacao: 'S',
+        ListaRegistros: allRegistros,
+        ListaURLFilhos: firstPage.ListaURLFilhos,
+    };
+}
+
+/**
+ * Busca dados de uma interface filha via GET na URL fornecida.
+ * Usado para buscar cronogramas, entregas e requisitos após obter ListaURLFilhos.
+ *
+ * @param url - URL completa retornada em ListaURLFilhos
+ * @param configOverride - Configuração opcional
+ * @returns Resposta com registros da interface filha
+ *
+ * @example
+ * ```ts
+ * const projetos = await exportarDados({ identificador: 'BI_SOLICITACOES_SUPORTEESPAIDER' });
+ * for (const urlFilho of projetos.ListaURLFilhos || []) {
+ *   const filhos = await buscarFilhos(urlFilho.URL);
+ *   console.log(`${urlFilho.Descricao}: ${filhos.ListaRegistros.length} registros`);
+ * }
+ * ```
+ */
+export async function buscarFilhos(
+    url: string,
+    configOverride?: Partial<EspaiderConfig>
+): Promise<ExportarDadosResponse> {
+    const config = { ...loadConfig(true), ...configOverride };
+    const requestId = generateRequestId();
+    const startTime = Date.now();
+
+    log('INFO', 'Fetching child records', { requestId, dataset: url.split('/').pop() || 'filhos' });
+
+    checkCircuitBreaker(config, requestId);
+
+    const allRegistros: ExportarDadosResponse['ListaRegistros'] = [];
+
+    // GET na URL fornecida
+    const firstPage = await executeWithRetry(url, 'GET', config, requestId);
+    allRegistros.push(...firstPage.ListaRegistros);
+
+    // Paginação (se houver)
+    let nextUrl = firstPage.URLPaginacao;
+    let pageCount = 1;
+    const MAX_PAGES = 50;
+
+    while (nextUrl && nextUrl.trim() !== '' && pageCount < MAX_PAGES) {
+        pageCount++;
+        log('INFO', `GET child page ${pageCount}`, { requestId });
+
+        const page = await executeWithRetry(nextUrl, 'GET', config, requestId);
+        allRegistros.push(...page.ListaRegistros);
+        nextUrl = page.URLPaginacao;
+    }
+
+    const duration = Date.now() - startTime;
+    log('INFO', `Child fetch completed: ${allRegistros.length} records`, { requestId, duration });
+
+    return {
+        Situacao: 'S',
+        ListaRegistros: allRegistros,
+    };
 }
 
 /**

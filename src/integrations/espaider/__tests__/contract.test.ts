@@ -39,17 +39,19 @@ const mockProjetoResponse: ExportarDadosResponse = {
     ],
 };
 
+// Campos reais da API: IDREGISTROPAI, ENTREGA, DATAINICIO, DATACONCLUSAO
 const mockEntregaResponse: ExportarDadosResponse = {
     ListaRegistros: [
         {
             IDEspaider: 67890,
-            Identificador: 'Entregas',
+            Identificador: 'BI_SOLICITACOES_SUPORTEESPAIDER_ENTREGAS',
             ListaCampos: [
-                { Identificador: 'NOME', Valor: 'Entrega 1 - Análise' },
-                { Identificador: 'STATUS', Valor: 'Concluído' },
-                { Identificador: 'DATAPREVISTA', Valor: '15/02/2026' },
-                { Identificador: 'DATAREALIZADA', Valor: '14/02/2026' },
-                { Identificador: 'PROJETOID', Valor: '12345' },
+                { Identificador: 'IDREGISTROPAI', Valor: '12345' },
+                { Identificador: 'ENTREGA', Valor: 'Entrega 1 - Análise' },
+                { Identificador: 'PRIORIDADE', Valor: 'Concluído' },
+                { Identificador: 'DATAINICIO', Valor: '15/02/2026' },
+                { Identificador: 'DATACONCLUSAO', Valor: '14/02/2026' },
+                { Identificador: 'IDENTIFICADOR', Valor: '67890' },
             ],
         },
     ],
@@ -176,6 +178,8 @@ describe('Mapper - Entregas', () => {
         expect(entrega.data_prevista).toBeInstanceOf(Date);
         expect(entrega.data_prevista?.getDate()).toBe(15);
         expect(entrega.data_prevista?.getMonth()).toBe(1); // Fevereiro = 1
+        expect(entrega.data_realizada).toBeInstanceOf(Date);
+        expect(entrega.data_realizada?.getDate()).toBe(14);
     });
 });
 
@@ -187,14 +191,14 @@ describe('Mapper - Cronogramas', () => {
     it('deve mapear cronograma com todos os campos', () => {
         const registro: RegistroEspaider = {
             IDEspaider: 11111,
-            Identificador: 'Cronogramas',
+            Identificador: 'BI_SOLICITACOES_SUPORTEESPAIDER_CRONOGRAMAS',
             ListaCampos: [
+                { Identificador: 'IDREGISTROPAI', Valor: '12345' },
                 { Identificador: 'ATIVIDADE', Valor: 'Análise de requisitos' },
                 { Identificador: 'RESPONSAVEL', Valor: 'Maria Santos' },
                 { Identificador: 'DATAINICIO', Valor: '01/02/2026' },
-                { Identificador: 'DATAFIM', Valor: '15/02/2026' },
+                { Identificador: 'DATACONCLUSAO', Valor: '15/02/2026' },
                 { Identificador: 'STATUS', Valor: 'Em andamento' },
-                { Identificador: 'PROJETOID', Valor: '12345' },
             ],
         };
 
@@ -216,14 +220,14 @@ describe('Mapper - Requisitos', () => {
     it('deve mapear requisito com todos os campos', () => {
         const registro: RegistroEspaider = {
             IDEspaider: 22222,
-            Identificador: 'Requisitos',
+            Identificador: 'BI_SOLICITACOES_SUPORTEESPAIDER_REQUISITOS',
             ListaCampos: [
-                { Identificador: 'CODIGO', Valor: 'REQ-001' },
-                { Identificador: 'DESCRICAO', Valor: 'O sistema deve...' },
-                { Identificador: 'TIPO', Valor: 'Funcional' },
+                { Identificador: 'IDREGISTROPAI', Valor: '12345' },
+                { Identificador: 'IDENTIFICADOR', Valor: 'REQ-001' },
+                { Identificador: 'REQUISITO', Valor: 'O sistema deve...' },
+                { Identificador: 'ORIGEMREQUISITO', Valor: 'Funcional' },
                 { Identificador: 'PRIORIDADE', Valor: 'Alta' },
-                { Identificador: 'STATUS', Valor: 'Aprovado' },
-                { Identificador: 'PROJETOID', Valor: '12345' },
+                { Identificador: 'STATUSREQUISITO', Valor: 'Aprovado' },
             ],
         };
 

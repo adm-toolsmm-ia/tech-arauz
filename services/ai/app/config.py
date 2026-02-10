@@ -39,6 +39,15 @@ class Settings(BaseSettings):
     ai_service_host: str = Field(default="0.0.0.0", alias="AI_SERVICE_HOST")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
+    # Observability
+    obs_enabled: bool = Field(default=True, alias="OBS_ENABLED")
+    obs_backend: str = Field(default="langsmith", alias="OBS_BACKEND")
+    obs_pii_redact: bool = Field(default=True, alias="OBS_PII_REDACT")
+    obs_log_level: str = Field(default="INFO", alias="OBS_LOG_LEVEL")
+    obs_budget_session_usd: float = Field(default=0.50, alias="OBS_BUDGET_SESSION_USD")
+    obs_budget_user_usd: float = Field(default=5.00, alias="OBS_BUDGET_USER_USD")
+    obs_budget_agent_usd: float = Field(default=2.00, alias="OBS_BUDGET_AGENT_USD")
+
     @property
     def is_langsmith_enabled(self) -> bool:
         """Verifica se LangSmith está configurado."""

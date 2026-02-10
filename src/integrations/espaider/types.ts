@@ -20,9 +20,13 @@ export type EspaiderDataset =
  * Parâmetros para a função exportarDados
  */
 export interface ExportarDadosParams {
-    /** Dataset a ser exportado */
-    identificador: EspaiderDataset;
-    /** Filtros opcionais para a consulta */
+    /** Identificador real da API Espaider (ex: BI_SOLICITACOES_SUPORTEESPAIDER) */
+    identificador: string;
+    /** URL base da API (opcional — usa env se não fornecido) */
+    baseUrl?: string;
+    /** Token de autenticação (opcional — usa env se não fornecido) */
+    token?: string;
+    /** Filtros opcionais para a consulta (BlocoFiltros) */
     filtros?: Record<string, string>;
 }
 
@@ -36,8 +40,8 @@ export interface ExportarDadosParams {
 export interface CampoEspaider {
     /** Nome/identificador do campo */
     Identificador: string;
-    /** Valor do campo (sempre string na API) */
-    Valor: string;
+    /** Valor do campo (string ou null quando vazio na API) */
+    Valor: string | null;
 }
 
 /**
@@ -53,11 +57,29 @@ export interface RegistroEspaider {
 }
 
 /**
+ * URL de interface filha retornada pela API principal
+ */
+export interface URLFilho {
+    /** URL completa para GET dos registros filhos */
+    URL: string;
+    /** Descrição da interface (ex: "Entregas", "Cronogramas", "Requisitos") */
+    Descricao: string;
+}
+
+/**
  * Resposta completa da API ExportaDados
  */
 export interface ExportarDadosResponse {
+    /** "S" = sucesso, "E" = erro */
+    Situacao?: string;
+    /** Mensagem de erro (quando Situacao = "E") */
+    MensagemRetorno?: string;
     /** Lista de registros retornados */
     ListaRegistros: RegistroEspaider[];
+    /** URL para próxima página (GET). Vazio quando não há mais páginas */
+    URLPaginacao?: string;
+    /** URLs das interfaces filhas (cronogramas, entregas, requisitos) */
+    ListaURLFilhos?: URLFilho[];
 }
 
 // =============================================================================
@@ -160,7 +182,7 @@ export interface EspaiderError {
 export interface EspaiderConfig {
     baseUrl: string;
     token: string;
-    key: string;
+    key?: string;
     timeout: number;
     retry: {
         maxAttempts: number;
@@ -189,3 +211,18 @@ export interface SyncMetrics {
     errors: number;
     retries: number;
 }
+
+// =============================================================================
+// Sync Log Entry (structured logs for frontend visibility)
+// =============================================================================
+
+export type SyncLogLevel = 'info' | 'warn' | 'error' | 'success';
+
+export interface SyncLogEntry {
+    timestamp: string;
+    level: SyncLogLevel;
+    dataset: EspaiderDataset | 'Geral';
+    message: string;
+    details?: Record<string, unknown>;
+}
+

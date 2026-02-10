@@ -7,10 +7,11 @@
 import type { EspaiderConfig } from './types';
 
 /**
- * Valida que as variáveis de ambiente obrigatórias existem
+ * Valida que as variáveis de ambiente obrigatórias existem.
+ * ESPAIDER_KEY é opcional (API real usa apenas Token + Identificador).
  */
 function validateEnv(): void {
-    const required = ['ESPAIDER_BASE_URL', 'ESPAIDER_TOKEN', 'ESPAIDER_KEY'];
+    const required = ['ESPAIDER_BASE_URL', 'ESPAIDER_TOKEN'];
     const missing = required.filter((key) => !process.env[key]);
 
     if (missing.length > 0) {
@@ -24,13 +25,15 @@ function validateEnv(): void {
  * Carrega configuração do ambiente
  * @see configs/project.yaml para valores padrão
  */
-export function loadConfig(): EspaiderConfig {
-    validateEnv();
+export function loadConfig(skipValidation = false): EspaiderConfig {
+    if (!skipValidation) {
+        validateEnv();
+    }
 
     return {
-        baseUrl: process.env.ESPAIDER_BASE_URL!,
-        token: process.env.ESPAIDER_TOKEN!,
-        key: process.env.ESPAIDER_KEY!,
+        baseUrl: process.env.ESPAIDER_BASE_URL || '',
+        token: process.env.ESPAIDER_TOKEN || '',
+        key: process.env.ESPAIDER_KEY || '',
         timeout: parseInt(process.env.ESPAIDER_TIMEOUT || '10000', 10),
         retry: {
             maxAttempts: parseInt(process.env.ESPAIDER_RETRY_MAX || '3', 10),

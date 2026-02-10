@@ -1,7 +1,7 @@
-# 🧠 Tech Arauz - Context Master
+# Tech Arauz - Context Master
 
-> **Ponto de entrada único para definição do projeto**  
-> Última atualização: 2026-02-07
+> **Ponto de entrada único para definição do projeto**
+> Última atualização: 2026-02-08
 
 ---
 
@@ -12,16 +12,18 @@
 1. **Gestão 360° de Projetos** — Centraliza dados do ERP Espaider
 2. **Gestão de Agentes AI** — Documenta e visualiza workflows (LangSmith/LangChain/LangGraph)
 
-**Tenant**: `arauz` (single-tenant, preparado para multi-tenant)  
+**Tenant**: `arauz` (single-tenant, preparado para multi-tenant)
 **Owner**: Gabriel Cristofolini (CTO)
 
 ---
 
-## 📂 Estrutura de Contexto
+## Estrutura de Contexto
 
 ```
 .context/
 ├── 00-MASTER.md              ← Você está aqui
+├── IMPLEMENTATIONS.md        # O que já foi implementado
+├── DEVELOPMENT_ROADMAP.md    # Guia de desenvolvimento
 ├── 01-foundation/            # CAMADA 0: Visão e vocabulário
 │   ├── vision.md             # Visão do produto (2 módulos)
 │   └── glossary.md           # Termos do domínio + AI
@@ -29,7 +31,11 @@
 │   ├── business-rules.md     # Regras do sistema (BR-001 a BR-202)
 │   ├── requirements.md       # Requisitos funcionais (RF-001 a RF-202)
 │   └── routines.md           # Rotinas e processos (RT-001 a RT-202)
-├── 03-specs/                 # CAMADA 2: Especificações (futuro)
+├── 03-specs/                 # CAMADA 2: Especificações
+│   ├── adr/                  # ADRs (decisões de arquitetura)
+│   ├── tokens_brand.json     # Design tokens
+│   ├── component-patterns.md # Padrões de componentes
+│   └── backlog_mvp.json      # Backlog MVP
 └── _memory/                  # Histórico de planejamento
 ```
 
@@ -58,8 +64,10 @@
 |-----------|----------|
 | [ADR-001](./03-specs/adr/2026-02-ADR-001-stack-tecnica.md) | Stack técnica: Next.js + Supabase + Python/FastAPI |
 | [ADR-002](./03-specs/adr/2026-02-ADR-002-auth-espaider.md) | Auth Espaider: Token/Key, retry, circuit breaker |
+| [ADR-003](./03-specs/adr/2026-02-ADR-003-design-system.md) | Design System e UX/UI baseado no protótipo de referência |
 | [backlog_mvp.json](./03-specs/backlog_mvp.json) | 2 sprints, 10 stories, 52 story points |
-| [tokens_brand.json](./03-specs/tokens_brand.json) | Design tokens provisórios |
+| [tokens_brand.json](./03-specs/tokens_brand.json) | Design tokens HSL (cores, tipografia, sombras) |
+| [component-patterns.md](./03-specs/component-patterns.md) | Catálogo de componentes UX/UI |
 
 ### Configurações
 
@@ -78,13 +86,13 @@
 
 ---
 
-## 📊 Inventário de Documentos
+## Inventário de Documentos
 
 | Camada | Documentos | Status |
 |--------|------------|--------|
-| 0 - Fundação | 2 | ✅ Completo |
-| 1 - Regras | 3 | ✅ Completo |
-| 2 - Specs | 0 | ⏳ Aguardando arquitetura |
+| 0 - Fundação | 2 | Completo |
+| 1 - Regras | 3 | Completo |
+| 2 - Specs | 5 | Completo (3 ADRs + tokens + padrões) |
 
 **Total de artefatos de negócio documentados:**
 
@@ -105,9 +113,56 @@
 
 ---
 
-## 🎯 Priorização do MVP
+## Priorização do MVP
 
 | Fase | Módulo | Prioridade |
 |------|--------|------------|
-| 1 | Gestão de Projetos (Espaider) | 🔴 Alta |
-| 2 | Gestão de Agentes AI (LangSmith) | 🟡 Média |
+| 1 | Gestão de Projetos (Espaider) | Alta |
+| 2 | Gestão de Agentes AI (LangSmith) | Média |
+
+---
+
+## Documentos Operacionais
+
+| Documento | Propósito | Quando Usar |
+|-----------|-----------|-------------|
+| [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) | Status do que foi implementado | Para entender o estado atual |
+| [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) | Guia de desenvolvimento | Para implementar novas features |
+| [docs/observability.md](../docs/observability.md) | Tracing, custos, budgets, logs AI | Para configurar/operar observabilidade do servico AI |
+
+---
+
+## Design System
+
+O Design System do Tech Arauz é baseado no protótipo de referência em `docs/prototipo-referencia/`, documentado no [ADR-003](./03-specs/adr/2026-02-ADR-003-design-system.md).
+
+### Componentes Principais
+
+| Componente | Propósito | Localização |
+|------------|-----------|-------------|
+| AppSidebar | Navegação lateral colapsável | `src/components/layout/` |
+| DashboardHeader | Header de página + dark mode | `src/components/layout/` |
+| KPICard | Cards de métricas | `src/components/dashboard/` |
+| SplitView | Visão 360° lateral | `src/components/views/` |
+| KanbanBoard | Board drag-and-drop | `src/components/views/` |
+| ViewToggle | Toggle Kanban/Lista | `src/components/views/` |
+
+### Tokens de Design
+
+- **Arquivo**: `tokens_brand.json`
+- **Padrão**: CSS Variables HSL
+- **Temas**: Light + Dark
+- **Fontes**: Inter (corpo), DM Sans (display)
+
+### Dependências de UI
+
+```json
+{
+  "@dnd-kit/core": "^6.x",
+  "@dnd-kit/sortable": "^8.x",
+  "recharts": "^2.x",
+  "sonner": "^1.x"
+}
+```
+
+Para detalhes completos, veja [component-patterns.md](./03-specs/component-patterns.md).

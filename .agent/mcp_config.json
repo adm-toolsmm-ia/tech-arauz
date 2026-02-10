@@ -1,5 +1,8 @@
 {
     "mcpServers": {
+        "supabase": {
+            "url": "https://mcp.supabase.com/mcp?project_ref=pybmawlwpmxshtccpqui"
+        },
         "context7": {
             "command": "npx",
             "args": [
@@ -16,9 +19,13 @@
                 "mcp"
             ]
         }
-        //other mcp servers
     }
 }
 
-// setup mcp server in  ~/.gemini\antigravity\mcp_config.json
+// MCP Servers disponíveis:
+// - supabase: Gestão de banco de dados, migrations, RLS (OAuth 2.1)
+// - context7: Contexto de documentação (requer API key)
+// - shadcn: Componentes UI
+//
+// Setup para outros IDEs: ~/.gemini/antigravity/mcp_config.json
 

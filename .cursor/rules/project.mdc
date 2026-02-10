@@ -1,0 +1,102 @@
+---
+description: Regras globais do projeto Tech Arauz - SaaS de gestão de projetos e agentes AI
+globs: 
+alwaysApply: true
+---
+
+# Tech Arauz - Project Rules
+
+## Contexto do Projeto
+- **Nome**: Tech Arauz
+- **Tipo**: SaaS para gestão de projetos TI e agentes AI
+- **Tenant**: Araúz & Advogados (single-tenant, multi-tenant ready)
+- **Stack**: Next.js 14 + TypeScript + Supabase + Python/FastAPI + LangGraph
+
+## Arquivos de Referência Prioritários
+
+**Leitura obrigatória antes de qualquer implementação:**
+
+1. `.context/00-MASTER.md` - Ponto de entrada, visão geral
+2. `.context/IMPLEMENTATIONS.md` - O que já foi feito
+3. `.context/DEVELOPMENT_ROADMAP.md` - Guia de desenvolvimento
+4. `.context/03-specs/adr/` - Decisões de arquitetura (3 ADRs)
+5. `.context/03-specs/tokens_brand.json` - Design tokens
+6. `.context/03-specs/component-patterns.md` - Padrões de componentes
+
+## MCPs Disponíveis
+- **supabase**: Gestão de banco, migrations, RLS
+- **context7**: Contexto de documentação
+- **shadcn**: Componentes UI
+
+## Design System (ADR-003)
+
+### Componentes de Layout
+- `AppSidebar` - Navegação lateral (usar sempre em layouts)
+- `DashboardHeader` - Header de página (título + dark mode)
+
+### Componentes de Dashboard
+- `KPICard` - Cards de métricas
+
+### Componentes de Views
+- `KanbanBoard` + `projectStatusColumns` - Board de projetos
+- `ViewToggle` - Alternar Kanban/Lista
+- `SplitView` - Visão 360° lateral
+
+### Cores de Status
+Sempre usar classes do `tokens_brand.json`:
+- projeto_futuro: blue
+- em_aprovacao: amber
+- em_desenvolvimento: purple
+- em_homologacao: cyan
+- concluido: green
+- cancelado: red
+- suspenso: gray
+
+## Padrões de Código
+
+### TypeScript/Next.js
+- Use App Router (não Pages Router)
+- Componentes UI em `src/components/ui/`
+- Componentes layout em `src/components/layout/`
+- Componentes dashboard em `src/components/dashboard/`
+- Componentes views em `src/components/views/`
+- Páginas: Server Component + Client Component (`page.tsx` + `*-content.tsx`)
+
+### Imports de Componentes
+```typescript
+// UI (shadcn/ui)
+import { Button, Card, Badge } from '@/components/ui/...';
+
+// Layout
+import { DashboardHeader } from '@/components/layout/DashboardHeader';
+import { AppSidebar } from '@/components/layout/AppSidebar';
+
+// Dashboard
+import { KPICard } from '@/components/dashboard/KPICard';
+
+// Views
+import { KanbanBoard, ViewToggle, SplitView } from '@/components/views/...';
+```
+
+### Python/FastAPI
+- Código em `services/ai/`
+- LangGraph para orquestração de agentes
+- LangChain para abstrações LLM
+- LangSmith para observabilidade
+
+### Supabase
+- RLS obrigatório em todas as tabelas
+- Tenant isolation via `tenant_id`
+- 3 roles: admin, user, viewer
+- Migrations em `supabase/migrations/`
+
+## Segurança
+- Nunca commitar secrets
+- Usar env vars para credenciais
+- Validar inputs sempre
+- Queries parametrizadas
+
+## Commits
+- Formato: `type(scope): description`
+- Tipos: feat, fix, docs, refactor, test, chore, ci
+- Idioma: inglês para código/commits, português para docs

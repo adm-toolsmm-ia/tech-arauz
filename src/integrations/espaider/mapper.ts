@@ -24,20 +24,25 @@ function getCampoValor(
     identificador: string
 ): string {
     const campo = campos.find((c) => c.Identificador === identificador);
-    return campo?.Valor ?? '';
+    const v = campo?.Valor;
+    return v != null ? String(v) : '';
 }
 
 /**
- * Converte string de data do Espaider para Date
- * Suporta formatos: DD/MM/YYYY, YYYY-MM-DD, ISO
+ * Converte string de data do Espaider para Date.
+ * Suporta formatos:
+ *   - DD/MM/YYYY (ex: 31/12/2026)
+ *   - DD/MM/YYYY - HH:MM:SS (ex: 12/06/2025 - 14:21:16)
+ *   - YYYY-MM-DD
+ *   - ISO 8601
  */
 function parseData(valor: string): Date | null {
     if (!valor || valor.trim() === '') {
         return null;
     }
 
-    // Tenta formato DD/MM/YYYY
-    const brMatch = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    // Tenta formato DD/MM/YYYY ou DD/MM/YYYY - HH:MM:SS
+    const brMatch = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
     if (brMatch) {
         const [, dia, mes, ano] = brMatch;
         return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
@@ -59,7 +64,7 @@ function getExtras(
 
     for (const campo of campos) {
         if (!camposMapeados.includes(campo.Identificador)) {
-            extras[campo.Identificador] = campo.Valor;
+            extras[campo.Identificador] = campo.Valor != null ? String(campo.Valor) : '';
         }
     }
 
@@ -107,14 +112,18 @@ export function mapearProjeto(registro: RegistroEspaider): ProjetoMapeado {
 }
 
 /**
- * Campos mapeados para Entregas
+ * Campos mapeados para Entregas (nomes reais da API Espaider)
+ * @see docs/espaider-apiprojetos/response - Entregas de Projetos.json
  */
 const CAMPOS_ENTREGA = [
-    'NOME',
-    'STATUS',
-    'DATAPREVISTA',
-    'DATAREALIZADA',
-    'PROJETOID',
+    'IDREGISTROPAI',
+    'ENTREGA',
+    'IDENTIFICADOR',
+    'DATAINICIO',
+    'DATACONCLUSAO',
+    'PRIORIDADE',
+    'ORDEM',
+    'DETALHAMENTO',
 ];
 
 /**
@@ -125,25 +134,30 @@ export function mapearEntrega(registro: RegistroEspaider): EntregaMapeada {
 
     return {
         id_espaider: registro.IDEspaider,
-        projeto_id_espaider: parseInt(getCampoValor(campos, 'PROJETOID') || '0', 10),
-        titulo: getCampoValor(campos, 'NOME'),
-        status: getCampoValor(campos, 'STATUS'),
-        data_prevista: parseData(getCampoValor(campos, 'DATAPREVISTA')),
-        data_realizada: parseData(getCampoValor(campos, 'DATAREALIZADA')),
+        projeto_id_espaider: parseInt(getCampoValor(campos, 'IDREGISTROPAI') || '0', 10),
+        titulo: getCampoValor(campos, 'ENTREGA'),
+        status: getCampoValor(campos, 'PRIORIDADE') || 'Pendente',
+        data_prevista: parseData(getCampoValor(campos, 'DATAINICIO')),
+        data_realizada: parseData(getCampoValor(campos, 'DATACONCLUSAO')),
         extras: getExtras(campos, CAMPOS_ENTREGA),
     };
 }
 
 /**
- * Campos mapeados para Cronogramas
+ * Campos mapeados para Cronogramas (nomes reais da API Espaider)
+ * @see docs/espaider-apiprojetos/response - Cronogramas de Projetos.json
  */
 const CAMPOS_CRONOGRAMA = [
+    'IDREGISTROPAI',
     'ATIVIDADE',
     'RESPONSAVEL',
     'DATAINICIO',
-    'DATAFIM',
+    'DATACONCLUSAO',
+    'DATAPRAZO',
     'STATUS',
-    'PROJETOID',
+    'FASEATIVIDADE',
+    'ITEM',
+    'IDENTIFICADOR',
 ];
 
 /**
@@ -154,26 +168,32 @@ export function mapearCronograma(registro: RegistroEspaider): CronogramaMapeado 
 
     return {
         id_espaider: registro.IDEspaider,
-        projeto_id_espaider: parseInt(getCampoValor(campos, 'PROJETOID') || '0', 10),
-        atividade: getCampoValor(campos, 'ATIVIDADE'),
+        projeto_id_espaider: parseInt(getCampoValor(campos, 'IDREGISTROPAI') || '0', 10),
+        atividade: getCampoValor(campos, 'ATIVIDADE') || getCampoValor(campos, 'FASEATIVIDADE'),
         responsavel: getCampoValor(campos, 'RESPONSAVEL'),
         data_inicio: parseData(getCampoValor(campos, 'DATAINICIO')),
-        data_fim: parseData(getCampoValor(campos, 'DATAFIM')),
-        status: getCampoValor(campos, 'STATUS'),
+        data_fim: parseData(getCampoValor(campos, 'DATACONCLUSAO') || getCampoValor(campos, 'DATAPRAZO')),
+        status: getCampoValor(campos, 'STATUS') || 'Pendente',
         extras: getExtras(campos, CAMPOS_CRONOGRAMA),
     };
 }
 
 /**
- * Campos mapeados para Requisitos
+ * Campos mapeados para Requisitos (nomes reais da API Espaider)
+ * @see docs/espaider-apiprojetos/response - Requisitos de Projetos.json
  */
 const CAMPOS_REQUISITO = [
-    'CODIGO',
-    'DESCRICAO',
-    'TIPO',
+    'IDREGISTROPAI',
+    'IDENTIFICADOR',
+    'REQUISITO',
+    'STATUSREQUISITO',
     'PRIORIDADE',
-    'STATUS',
-    'PROJETOID',
+    'ORIGEMREQUISITO',
+    'IMPACTO',
+    'IDENTIFICADOR_ENTREGA',
+    'ENTREGA',
+    'DETALHAMENTOREQUISITO',
+    'DATACONCLUSAO',
 ];
 
 /**
@@ -184,12 +204,12 @@ export function mapearRequisito(registro: RegistroEspaider): RequisitoMapeado {
 
     return {
         id_espaider: registro.IDEspaider,
-        projeto_id_espaider: parseInt(getCampoValor(campos, 'PROJETOID') || '0', 10),
-        codigo: getCampoValor(campos, 'CODIGO'),
-        descricao: getCampoValor(campos, 'DESCRICAO'),
-        tipo: getCampoValor(campos, 'TIPO'),
+        projeto_id_espaider: parseInt(getCampoValor(campos, 'IDREGISTROPAI') || '0', 10),
+        codigo: getCampoValor(campos, 'IDENTIFICADOR'),
+        descricao: getCampoValor(campos, 'REQUISITO'),
+        tipo: getCampoValor(campos, 'ORIGEMREQUISITO'),
         prioridade: getCampoValor(campos, 'PRIORIDADE'),
-        status: getCampoValor(campos, 'STATUS'),
+        status: getCampoValor(campos, 'STATUSREQUISITO') || 'Aberto',
         extras: getExtras(campos, CAMPOS_REQUISITO),
     };
 }

@@ -9,15 +9,17 @@
 -- - Tipos apropriados (não TEXT para tudo)
 -- =============================================================================
 
--- Habilitar extensões necessárias
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- =============================================================================
+-- NOTA: gen_random_uuid() é nativo do PostgreSQL 13+ (Supabase usa 15+)
+-- Não precisa de extensão uuid-ossp
+-- =============================================================================
 
 -- =============================================================================
 -- TABELA: tenants
 -- Single-tenant inicial, preparado para multi-tenant
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.tenants (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     slug TEXT NOT NULL UNIQUE,
     name TEXT NOT NULL,
     settings JSONB DEFAULT '{}',
@@ -60,7 +62,7 @@ COMMENT ON COLUMN public.profiles.role IS 'admin: full access, user: read/write,
 -- Projetos sincronizados do Espaider
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.projects (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
     
     -- Identificadores Espaider
@@ -102,7 +104,7 @@ COMMENT ON TABLE public.projects IS 'Projetos sincronizados do ERP Espaider';
 -- TABELA: project_schedules (Cronogramas)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.project_schedules (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
     project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
     
@@ -135,7 +137,7 @@ COMMENT ON TABLE public.project_schedules IS 'Cronogramas de projetos (filhos de
 -- TABELA: project_deliveries (Entregas)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.project_deliveries (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
     project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
     
@@ -167,7 +169,7 @@ COMMENT ON TABLE public.project_deliveries IS 'Entregas de projetos (filhos de p
 -- TABELA: project_requirements (Requisitos)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.project_requirements (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
     project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
     
@@ -201,7 +203,7 @@ COMMENT ON TABLE public.project_requirements IS 'Requisitos de projetos (filhos 
 -- Auditoria de sincronizações
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.sync_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
     
     -- Identificação

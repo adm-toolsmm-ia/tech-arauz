@@ -14,54 +14,20 @@ Commit e push das alterações para o repositório remoto.
 
 ## Execução
 
-### 1. Verificar status
+### Execução Automática (Recomendada)
 
-```bash
-git status
+O projeto conta com um script automatizado que realiza todo o processo (add, commit, pull rebase, push) de forma segura.
+
+**Para executar:**
+
+```powershell
+./scripts/sync.ps1
+# OU com mensagem personalizada
+./scripts/sync.ps1 "feat: minha nova feature"
 ```
 
-### 2. Adicionar arquivos
+### Execução Manual
 
-```bash
-# Adicionar todos os arquivos
-git add .
-
-# OU adicionar seletivamente
-git add <arquivo1> <arquivo2>
-```
-
-### 3. Commit
-
-```bash
-# Commit com mensagem descritiva
-git commit -m "feat: <descrição do que foi implementado>"
-```
-
-**Padrão de mensagens** (Conventional Commits):
-
-- `feat:` - Nova funcionalidade
-- `fix:` - Correção de bug
-- `docs:` - Mudanças na documentação
-- `refactor:` - Refatoração de código
-- `test:` - Adição/modificação de testes
-- `chore:` - Tarefas de manutenção (configs, deps)
-- `style:` - Formatação de código
-- `perf:` - Melhorias de performance
-
-### 4. Push
-
-// turbo
-```bash
-git push origin main
-```
-
-## Atalho Rápido
-
-Para commit + push de uma vez:
-
-```bash
-git add . && git commit -m "feat: sua mensagem aqui" && git push origin main
-```
 
 ## Troubleshooting
 

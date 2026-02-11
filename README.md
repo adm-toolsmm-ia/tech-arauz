@@ -64,14 +64,15 @@ Este projeto utiliza o **Antigravity Kit**. Mais detalhes em `.agent/`.
 ```
 tech-arauz/
 ├── .agent/              # Configurações dos Agentes AI
-├── .context/            # Regras de Negócio (Fonte da Verdade)
-├── src/
+├── .context/            # Regras de Negócio ([Leia aqui](.context/README.md))
+├── src/                 # Código Fonte ([Leia aqui](src/README.md))
 │   ├── app/             # Frontend (Next.js App Router)
 │   ├── components/      # UI Components (Shadcn/UI)
 │   ├── integrations/    # Integrações Externas (Espaider API)
 │   │   └── espaider/
 │   │       └── references/ # Mocks e Docs Técnicos da API
 │   └── lib/             # Utilitários e Core Logic
+├── supabase/            # Banco de Dados & Migrations ([Leia aqui](supabase/README.md))
 └── README.md            # Este arquivo
 ```
 

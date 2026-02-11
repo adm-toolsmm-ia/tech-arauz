@@ -553,8 +553,10 @@ export async function syncRequirements(
 
 /**
  * Map child dataset description to EspaiderDataset type
+ * Handles null/undefined descriptions gracefully
  */
-function descricaoToDataset(descricao: string): EspaiderDataset | null {
+function descricaoToDataset(descricao: string | null | undefined): EspaiderDataset | null {
+  if (!descricao) return null;
   const normalized = descricao.toLowerCase().trim();
   if (normalized.includes('entrega')) return 'Entregas';
   if (normalized.includes('cronograma')) return 'Cronogramas';
@@ -605,18 +607,26 @@ export async function executeSyncAll(
 
     const urlFilhos = response.ListaURLFilhos || [];
     logs.push(createLog('info', 'Geral', `${urlFilhos.length} interfaces filhas encontradas`, {
-      interfaces: urlFilhos.map(u => u.Descricao),
+      interfaces: urlFilhos.map(u => ({ descricao: u.Descricao, url: u.URL?.substring(0, 80) })),
     }));
 
     // Process each child interface
     for (const urlFilho of urlFilhos) {
-      const dataset = descricaoToDataset(urlFilho.Descricao);
+      // Try to infer dataset from Descricao first, then from URL if needed
+      let dataset = descricaoToDataset(urlFilho.Descricao);
+      if (!dataset && urlFilho.URL) {
+        // Fallback: try to infer from URL pattern
+        dataset = descricaoToDataset(urlFilho.URL);
+      }
       if (!dataset) {
-        logs.push(createLog('warn', 'Geral', `Interface filha desconhecida: ${urlFilho.Descricao}`));
+        logs.push(createLog('warn', 'Geral', `Interface filha não reconhecida`, {
+          descricao: urlFilho.Descricao,
+          url: urlFilho.URL?.substring(0, 100),
+        }));
         continue;
       }
 
-      logs.push(createLog('info', dataset, `Buscando dados via GET: ${urlFilho.Descricao}`));
+      logs.push(createLog('info', dataset, `Buscando dados via GET: ${urlFilho.Descricao || urlFilho.URL?.substring(0, 50)}`));
 
       try {
         const childResponse = await buscarFilhos(urlFilho.URL);
@@ -673,6 +683,10 @@ export async function executeSyncAll(
     : `Sincronização parcial: ${totalCreated} novos, ${totalUpdated} atualizados, ${totalErrors} erros em ${(durationMs / 1000).toFixed(1)}s`;
 
   logs.push(createLog(success ? 'success' : 'warn', 'Geral', message, { durationMs, totalCreated, totalUpdated, totalErrors }));
+
+  // Persist detailed logs for history (LogViewer)
+  const globalRequestId = generateRequestId();
+  await persistLogEntries(supabase, tenantId, globalRequestId, logs);
 
   return { success, datasets: results, totalCreated, totalUpdated, totalErrors, durationMs, message, logs };
 }
@@ -913,5 +927,46 @@ async function logSyncResult(
   } catch (err) {
     // Never let logging break the sync flow
     console.error('[sync] failed to write sync_log:', err);
+  }
+}
+
+/**
+ * Persist detailed log entries to integration_log_entries table.
+ * Called after sync completion to save full audit trail for the LogViewer.
+ */
+async function persistLogEntries(
+  supabase: SupabaseClient,
+  tenantId: string,
+  requestId: string,
+  logs: SyncLogEntry[],
+): Promise<void> {
+  if (logs.length === 0) return;
+
+  try {
+    const rows = logs.map((log) => ({
+      tenant_id: tenantId,
+      request_id: requestId,
+      level: log.level,
+      dataset: log.dataset,
+      message: log.message,
+      details: log.details || null,
+      logged_at: log.timestamp,
+    }));
+
+    // Batch insert in chunks of 100 to avoid large payloads
+    const BATCH_SIZE = 100;
+    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+      const batch = rows.slice(i, i + BATCH_SIZE);
+      const { error } = await supabase
+        .from('integration_log_entries')
+        .insert(batch);
+
+      if (error) {
+        console.error('[sync] failed to persist log entries batch:', error);
+      }
+    }
+  } catch (err) {
+    // Never let logging break the sync flow
+    console.error('[sync] failed to persist log entries:', err);
   }
 }

@@ -53,6 +53,7 @@ import {
 import { toast } from 'sonner';
 import type { EspaiderApiRow } from './page';
 import type { SyncLogEntry } from '@/integrations/espaider/types';
+import { LogViewer } from '@/components/integracoes';
 
 // =============================================================================
 // Types
@@ -503,6 +504,13 @@ export function IntegracoesContent({ apis: initialApis, userRole, tenantId }: In
                 </Card>
               );
             })}
+          </div>
+        )}
+
+        {/* Log History Section - Admin Only */}
+        {isAdmin && (
+          <div className="mt-6">
+            <LogViewer />
           </div>
         )}
       </div>

@@ -23,8 +23,21 @@ Antigravity Kit is a modular system consisting of:
 ├── skills/                  # 36 Skills
 ├── workflows/               # 11 Slash Commands
 ├── rules/                   # Global Rules
-└── scripts/                 # Master Validation Scripts
+├── scripts/                 # Master Validation Scripts
+└── memory/                  # 🧠 Agent Long-Term Memory (Audit Logs)
 ```
+
+---
+
+## 🧠 Agent Memory System
+
+A mandatory protocol for preserving context across sessions and agent interactions.
+
+- **Storage**: `.agent/memory/YYYY-MM-DD_{task-slug}.md`
+- **Protocol**: Defined in `.agent/workflows/memory-protocol.md`
+- **Purpose**: Prevent regression, document decision rationale, and provide "infinite context" for future agents.
+- **Trigger**: Major architecture changes, audits, refactors, or multi-agent task forces.
+
 
 ---
 
@@ -34,7 +47,7 @@ Specialist AI personas for different domains.
 
 | Agent                    | Focus                      | Skills Used                                              |
 | ------------------------ | -------------------------- | -------------------------------------------------------- |
-| `orchestrator`           | Multi-agent coordination   | parallel-agents, behavioral-modes                        |
+| `orchestrator`           | **CTO & Chief Architect**  | intelligent-routing, architecture, parallel-agents       |
 | `project-planner`        | Discovery, task planning   | brainstorming, plan-writing, architecture                |
 | `frontend-specialist`    | Web UI/UX                  | frontend-design, react-best-practices, tailwind-patterns |
 | `backend-specialist`     | API, business logic        | api-patterns, nodejs-best-practices, database-design     |

@@ -24,7 +24,11 @@ export function KPICard({
   className,
 }: KPICardProps) {
   return (
-    <Card className={cn('shadow-soft hover:shadow-medium transition-shadow', className)}>
+    <Card className={cn(
+      'shadow-soft hover:shadow-card-hover transition-all duration-300',
+      'hover:-translate-y-0.5 animate-scale-in',
+      className
+    )}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-2">

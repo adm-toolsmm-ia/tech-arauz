@@ -13,7 +13,8 @@ interface SplitViewProps {
   subtitle?: string;
   children: React.ReactNode;
   className?: string;
-  width?: 'sm' | 'md' | 'lg' | 'xl';
+  width?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  healthStatus?: 'verde' | 'amarelo' | 'vermelho';
 }
 
 const widthClasses = {
@@ -21,6 +22,13 @@ const widthClasses = {
   md: 'max-w-md',
   lg: 'max-w-lg',
   xl: 'max-w-xl',
+  '2xl': 'max-w-2xl',
+};
+
+const healthDotColors = {
+  verde: 'bg-green-500',
+  amarelo: 'bg-amber-500',
+  vermelho: 'bg-red-500',
 };
 
 export function SplitView({
@@ -31,6 +39,7 @@ export function SplitView({
   children,
   className,
   width = 'lg',
+  healthStatus,
 }: SplitViewProps) {
   // Handle escape key
   React.useEffect(() => {
@@ -76,13 +85,23 @@ export function SplitView({
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">
-          <div>
-            <h2 id="split-view-title" className="text-lg font-semibold">
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="text-sm text-muted-foreground">{subtitle}</p>
+          <div className="flex items-center gap-3">
+            {healthStatus && (
+              <div
+                className={cn(
+                  'size-3 rounded-full animate-pulse-soft',
+                  healthDotColors[healthStatus]
+                )}
+              />
             )}
+            <div>
+              <h2 id="split-view-title" className="text-lg font-semibold">
+                {title}
+              </h2>
+              {subtitle && (
+                <p className="text-sm text-muted-foreground">{subtitle}</p>
+              )}
+            </div>
           </div>
           <Button
             variant="ghost"

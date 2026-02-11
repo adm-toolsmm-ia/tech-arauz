@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { syncEspaiderAction } from '@/app/actions/sync';
 import { updateProjectStatusAction } from '@/app/actions/projects';
+import { ProjectCockpit } from '@/components/project';
 
 interface Project {
   id: string;
@@ -26,11 +27,13 @@ interface Project {
   start_date: string | null;
   end_date: string | null;
   priority: string | null;
+  category?: string | null;
   schedules?: Array<{
     id: string;
     schedule_code: string;
     description: string;
     scheduled_date: string;
+    status: string;
   }>;
   deliveries?: Array<{
     id: string;
@@ -279,15 +282,43 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
           <ProjectList projects={filteredProjects} onItemClick={(p) => setSelectedProject(p)} />
         )}
 
-        {/* Split View - 360° View */}
+        {/* Split View - 360° Cockpit */}
         <SplitView
           isOpen={!!selectedProject}
           onClose={() => setSelectedProject(null)}
-          title="Visão 360° do Projeto"
+          title={selectedProject?.project_name || 'Visao 360'}
           subtitle={selectedProject?.espaider_code}
-          width="xl"
+          width="2xl"
         >
-          {selectedProject && <ProjectDetail project={selectedProject} onSync={handleSync} isSyncing={isSyncing} />}
+          {selectedProject && (
+            <ProjectCockpit
+              project={{
+                id: selectedProject.id,
+                espaider_code: selectedProject.espaider_code,
+                project_name: selectedProject.project_name,
+                status: selectedProject.status,
+                end_date: selectedProject.end_date,
+                responsible: selectedProject.responsible,
+                priority: selectedProject.priority,
+                category: selectedProject.category || null,
+              }}
+              schedules={(selectedProject.schedules || []).map((s) => ({
+                id: s.id,
+                schedule_code: s.schedule_code,
+                description: s.description,
+                scheduled_date: s.scheduled_date,
+                status: s.status || 'pendente',
+              }))}
+              deliveries={(selectedProject.deliveries || []).map((d) => ({
+                id: d.id,
+                description: d.description,
+                deadline: d.deadline,
+                completed: d.completed,
+              }))}
+              onSync={handleSync}
+              isSyncing={isSyncing}
+            />
+          )}
         </SplitView>
       </div>
     </div>

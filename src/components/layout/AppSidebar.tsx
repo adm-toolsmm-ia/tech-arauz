@@ -2,16 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  FolderKanban,
-  Bot,
-  Settings,
-  LogOut,
-  HelpCircle,
-  ChevronDown,
-  Plug,
-} from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 import {
   Sidebar,
@@ -27,78 +18,38 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { menuConfig, bottomItems } from './sidebar-config';
+import { SidebarCollapsibleMenu } from './SidebarCollapsibleMenu';
+import type { NavItem } from './sidebar-types';
 
-interface NavItem {
-  title: string;
-  url: string;
-  icon: typeof LayoutDashboard;
-  badge?: string;
+function SidebarSimpleMenu({ item }: { item: NavItem }) {
+  const pathname = usePathname();
+  const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+        <Link href={item.url}>
+          <item.icon className="size-4" />
+          <span>{item.title}</span>
+          {item.badge && (
+            <span
+              className={cn(
+                'ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium',
+                item.badge === 'MVP'
+                  ? 'bg-primary/20 text-primary'
+                  : 'bg-muted text-muted-foreground'
+              )}
+            >
+              {item.badge}
+            </span>
+          )}
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
 }
-
-// Menu configuration following the business requirements
-const menuConfig: { group: string; items: NavItem[] }[] = [
-  {
-    group: 'Principal',
-    items: [
-      {
-        title: 'Dashboard',
-        url: '/dashboard',
-        icon: LayoutDashboard,
-      },
-    ],
-  },
-  {
-    group: 'Gestão de Projetos',
-    items: [
-      {
-        title: 'Projetos',
-        url: '/projetos',
-        icon: FolderKanban,
-        badge: 'MVP',
-      },
-    ],
-  },
-  {
-    group: 'Integrações',
-    items: [
-      {
-        title: 'APIs Espaider',
-        url: '/integracoes',
-        icon: Plug,
-      },
-    ],
-  },
-  {
-    group: 'Gestão de Agentes',
-    items: [
-      {
-        title: 'Agentes AI',
-        url: '/agentes',
-        icon: Bot,
-        badge: 'MVP',
-      },
-    ],
-  },
-];
-
-const bottomItems = [
-  {
-    title: 'Configurações',
-    url: '/configuracoes',
-    icon: Settings,
-  },
-  {
-    title: 'Ajuda',
-    url: '/ajuda',
-    icon: HelpCircle,
-  },
-];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -119,7 +70,7 @@ export function AppSidebar() {
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">Tech Arauz</span>
                 <span className="truncate text-xs text-sidebar-foreground/70">
-                  Portal de Gestão
+                  Portal de Gestao
                 </span>
               </div>
             </SidebarMenuButton>
@@ -134,35 +85,13 @@ export function AppSidebar() {
             <SidebarGroupLabel>{section.group}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {section.items.map((item) => {
-                  const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
-                  return (
-                    <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.title}
-                      >
-                        <Link href={item.url}>
-                          <item.icon className="size-4" />
-                          <span>{item.title}</span>
-                          {item.badge && (
-                            <span
-                              className={cn(
-                                'ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium',
-                                item.badge === 'MVP'
-                                  ? 'bg-primary/20 text-primary'
-                                  : 'bg-muted text-muted-foreground'
-                              )}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                {section.items.map((item) =>
+                  item.isCollapsible && item.subItems ? (
+                    <SidebarCollapsibleMenu key={item.url} item={item} />
+                  ) : (
+                    <SidebarSimpleMenu key={item.url} item={item} />
+                  )
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

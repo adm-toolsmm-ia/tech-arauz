@@ -78,6 +78,7 @@ export interface UIProject {
   start_date: string | null;
   end_date: string | null;
   priority: string | null;
+  category?: string | null;
   schedules?: UISchedule[];
   deliveries?: UIDelivery[];
 }
@@ -87,6 +88,7 @@ export interface UISchedule {
   schedule_code: string;
   description: string;
   scheduled_date: string;
+  status: string;
 }
 
 export interface UIDelivery {
@@ -118,6 +120,7 @@ export function dbScheduleToUI(row: DBSchedule): UISchedule {
     schedule_code: row.atividade,
     description: row.responsavel ? `${row.atividade} — ${row.responsavel}` : row.atividade,
     scheduled_date: row.data_fim || row.data_inicio || '',
+    status: row.status || 'pendente',
   };
 }
 
@@ -148,6 +151,7 @@ export function dbProjectToUI(row: DBProject): UIProject {
     start_date: row.created_at || null,      // Approximate with created_at
     end_date: row.prazo_final,
     priority: row.prioridade,
+    category: row.categoria,
     schedules: row.schedules?.map(dbScheduleToUI),
     deliveries: row.deliveries?.map(dbDeliveryToUI),
   };

@@ -128,13 +128,13 @@
 |-----------|-----------|-------------|
 | [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) | Status do que foi implementado | Para entender o estado atual |
 | [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) | Guia de desenvolvimento | Para implementar novas features |
-| [docs/observability.md](../docs/observability.md) | Tracing, custos, budgets, logs AI | Para configurar/operar observabilidade do servico AI |
+| [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) | Guia de desenvolvimento | Para implementar novas features |
 
 ---
 
 ## Design System
 
-O Design System do Tech Arauz é baseado no protótipo de referência em `docs/prototipo-referencia/`, documentado no [ADR-003](./03-specs/adr/2026-02-ADR-003-design-system.md).
+O Design System do Tech Arauz é documentado no [ADR-003](./03-specs/adr/2026-02-ADR-003-design-system.md) e implementado diretamente em `src/components/`.
 
 ### Componentes Principais
 

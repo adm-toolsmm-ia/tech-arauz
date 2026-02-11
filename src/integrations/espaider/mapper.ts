@@ -113,7 +113,7 @@ export function mapearProjeto(registro: RegistroEspaider): ProjetoMapeado {
 
 /**
  * Campos mapeados para Entregas (nomes reais da API Espaider)
- * @see docs/espaider-apiprojetos/response - Entregas de Projetos.json
+ * @see src/integrations/espaider/references/response - Entregas de Projetos.json
  */
 const CAMPOS_ENTREGA = [
     'IDREGISTROPAI',
@@ -145,7 +145,7 @@ export function mapearEntrega(registro: RegistroEspaider): EntregaMapeada {
 
 /**
  * Campos mapeados para Cronogramas (nomes reais da API Espaider)
- * @see docs/espaider-apiprojetos/response - Cronogramas de Projetos.json
+ * @see src/integrations/espaider/references/response - Cronogramas de Projetos.json
  */
 const CAMPOS_CRONOGRAMA = [
     'IDREGISTROPAI',
@@ -180,7 +180,7 @@ export function mapearCronograma(registro: RegistroEspaider): CronogramaMapeado 
 
 /**
  * Campos mapeados para Requisitos (nomes reais da API Espaider)
- * @see docs/espaider-apiprojetos/response - Requisitos de Projetos.json
+ * @see src/integrations/espaider/references/response - Requisitos de Projetos.json
  */
 const CAMPOS_REQUISITO = [
     'IDREGISTROPAI',

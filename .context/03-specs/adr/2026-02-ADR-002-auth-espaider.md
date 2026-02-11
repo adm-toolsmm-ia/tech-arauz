@@ -202,5 +202,5 @@ src/integrations/espaider/
 
 ## Referências
 
-- Exemplo de resposta: [`docs/espaider-apiprojetos/response - Projetos.json`](file:///c:/Users/Gabriel%20Cristofolini/Documents/SOLUCOESSISTEMAS/tech-arauz/docs/espaider-apiprojetos/response%20-%20Projetos.json)
+- Exemplo de resposta: [`src/integrations/espaider/references/response - Projetos.json`](../../src/integrations/espaider/references/response%20-%20Projetos.json)
 - Regra de mapeamento: [`BR-003`](./../02-rules/business-rules.md)

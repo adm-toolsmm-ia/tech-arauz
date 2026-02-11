@@ -16,7 +16,7 @@ import {
 } from '../index';
 
 // =============================================================================
-// Mocks de Resposta (baseados em docs/espaider-apiprojetos/)
+// Mocks de Resposta (baseados em src/integrations/espaider/references/)
 // =============================================================================
 
 const mockProjetoResponse: ExportarDadosResponse = {

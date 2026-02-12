@@ -45,64 +45,77 @@ interface KanbanBoardProps {
   className?: string;
 }
 
-// Priority styles
+// Priority styles (Softer, cleaner)
 const priorityStyles: Record<string, string> = {
-  urgente: 'bg-destructive/10 text-destructive border-destructive/20',
-  alta: 'bg-warning/10 text-warning border-warning/20',
-  normal: 'bg-primary/10 text-primary border-primary/20',
-  baixa: 'bg-muted text-muted-foreground border-muted',
+  urgente: 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30',
+  alta: 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-900/30',
+  normal: 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/30',
+  baixa: 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-800',
 };
 
-// Column header colors
+// Column header colors (Clean accents)
 const columnColors: Record<string, string> = {
-  blue: 'border-l-blue-500',
-  amber: 'border-l-amber-500',
-  purple: 'border-l-purple-500',
-  cyan: 'border-l-cyan-500',
-  green: 'border-l-green-500',
-  red: 'border-l-red-500',
-  gray: 'border-l-gray-500',
+  blue: 'border-t-blue-500', // Changed to Top border for cleaner look
+  amber: 'border-t-amber-500',
+  purple: 'border-t-purple-500',
+  cyan: 'border-t-cyan-500',
+  green: 'border-t-green-500',
+  red: 'border-t-red-500',
+  gray: 'border-t-gray-500',
 };
 
 // Drop indicator colors
 const dropIndicatorColors: Record<string, string> = {
-  blue: 'ring-blue-500/40',
-  amber: 'ring-amber-500/40',
-  purple: 'ring-purple-500/40',
-  cyan: 'ring-cyan-500/40',
-  green: 'ring-green-500/40',
-  red: 'ring-red-500/40',
-  gray: 'ring-gray-500/40',
+  blue: 'bg-blue-50/50 border-blue-200',
+  amber: 'bg-amber-50/50 border-amber-200',
+  purple: 'bg-purple-50/50 border-purple-200',
+  cyan: 'bg-cyan-50/50 border-cyan-200',
+  green: 'bg-green-50/50 border-green-200',
+  red: 'bg-red-50/50 border-red-200',
+  gray: 'bg-gray-50/50 border-gray-200',
 };
 
-// Default card content
+// Default card content (Compact Director's View)
 function DefaultCardContent({ item }: { item: KanbanItem }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div className="flex items-start justify-between gap-2">
-        <span className="font-medium line-clamp-2">{item.title}</span>
-        {item.priority && (
-          <Badge
-            variant="outline"
-            className={cn('shrink-0 text-[10px]', priorityStyles[item.priority])}
-          >
-            {item.priority}
-          </Badge>
-        )}
+        <span className="font-semibold text-sm leading-tight text-foreground/90 line-clamp-2">
+          {item.title}
+        </span>
       </div>
-      {item.subtitle && (
-        <p className="text-sm text-muted-foreground line-clamp-1">
-          {item.subtitle}
-        </p>
-      )}
-      {item.value && (
-        <div className="text-sm font-semibold text-primary">{item.value}</div>
-      )}
+
+      <div className="flex flex-col gap-1">
+        {item.subtitle && (
+          <p className="text-[11px] text-muted-foreground font-mono bg-muted/30 w-fit px-1 rounded">
+            {item.subtitle}
+          </p>
+        )}
+
+        <div className="flex items-center justify-between mt-1">
+          {item.value ? (
+            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              {item.value}
+            </div>
+          ) : <div />}
+
+          {item.priority && (
+            <span
+              className={cn(
+                'text-[10px] px-1.5 py-0.5 rounded-full border font-medium uppercase tracking-wider',
+                priorityStyles[item.priority]
+              )}
+            >
+              {item.priority}
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-// Draggable Card Component
+// Draggable Card Component (Cards 2.0)
 function DraggableCard({
   item,
   onItemClick,
@@ -118,21 +131,26 @@ function DraggableCard({
   });
 
   return (
-    <Card
+    <div
       ref={setNodeRef}
       className={cn(
-        'cursor-grab transition-all hover:shadow-md hover:border-primary/50',
-        'active:cursor-grabbing active:scale-[0.98]',
-        isDragging && 'opacity-30 scale-95 shadow-none'
+        'group relative bg-card rounded-lg border border-border/40 shadow-sm transition-all duration-200',
+        'hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5',
+        'cursor-grab active:cursor-grabbing',
+        isDragging && 'opacity-40 scale-95 shadow-none grayscale'
       )}
+      style={{ touchAction: 'none' }}
       onClick={() => onItemClick?.(item)}
       {...listeners}
       {...attributes}
     >
-      <CardContent className="p-3">
+      <div className="p-3">
         {renderItemContent ? renderItemContent(item) : <DefaultCardContent item={item} />}
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Hover decoration */}
+      <div className="absolute inset-x-0 bottom-0 h-0.5 bg-primary/0 transition-colors group-hover:bg-primary/10 rounded-b-lg" />
+    </div>
   );
 }
 
@@ -145,15 +163,13 @@ function DragOverlayCard({
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
 }) {
   return (
-    <Card className="shadow-xl border-primary/50 ring-2 ring-primary/20 rotate-2 cursor-grabbing w-[260px]">
-      <CardContent className="p-3">
-        {renderItemContent ? renderItemContent(item) : <DefaultCardContent item={item} />}
-      </CardContent>
-    </Card>
+    <div className="bg-card rounded-lg border border-primary/30 shadow-xl ring-2 ring-primary/10 rotate-2 cursor-grabbing w-[260px] p-3">
+      {renderItemContent ? renderItemContent(item) : <DefaultCardContent item={item} />}
+    </div>
   );
 }
 
-// Droppable Column Component
+// Droppable Column Component (Clean & Modern)
 function DroppableColumn({
   column,
   items,
@@ -172,37 +188,53 @@ function DroppableColumn({
     data: { column },
   });
 
-  const colorClass = columnColors[column.color] || columnColors.gray;
-  const dropColor = dropIndicatorColors[column.color] || dropIndicatorColors.gray;
+  const colorBorderClass = columnColors[column.color] || columnColors.gray;
+  const dropStateClass = dropIndicatorColors[column.color] || dropIndicatorColors.gray;
 
   return (
-    <Card
+    <div
       ref={setNodeRef}
       className={cn(
-        'flex h-full flex-col border-l-4 transition-all duration-200',
-        colorClass,
-        isOver && `ring-2 ${dropColor} bg-muted/30 scale-[1.01]`
+        'flex h-full flex-col rounded-xl bg-muted/20 border border-transparent transition-all duration-200',
+        isOver && cn('border-dashed scale-[1.01]', dropStateClass)
       )}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium">{column.title}</CardTitle>
-          <Badge variant="secondary" className="h-6 rounded-full px-2.5">
-            {items.length}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden p-2 pt-0">
-        <ScrollArea className="h-full">
-          <div className="space-y-2 p-1">
+      {/* Header */}
+      <div className={cn(
+        "flex items-center justify-between p-3 border-t-2 bg-background/50 rounded-t-xl backdrop-blur-sm",
+        colorBorderClass
+      )}>
+        <h3 className="text-sm font-semibold text-foreground/80 tracking-tight">
+          {column.title}
+        </h3>
+        <span className={cn(
+          "text-[10px] font-bold px-2 py-0.5 rounded-full",
+          items.length > 0
+            ? "bg-primary/10 text-primary"
+            : "bg-muted text-muted-foreground"
+        )}>
+          {items.length}
+        </span>
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden p-2">
+        <ScrollArea className="h-full pr-2">
+          <div className="flex flex-col gap-2 pb-2">
             {items.length === 0 ? (
               <div
                 className={cn(
-                  'py-8 text-center text-sm text-muted-foreground transition-colors',
-                  isOver && 'text-primary font-medium'
+                  'flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed rounded-lg transition-colors border-muted/40',
+                  isOver ? 'border-primary/30 bg-primary/5' : 'bg-transparent'
                 )}
               >
-                {isOver ? 'Soltar aqui' : 'Nenhum item'}
+                {isOver ? (
+                  <span className="text-primary font-medium text-sm animate-pulse">Solte para mover</span>
+                ) : (
+                  <div className="space-y-1 opacity-50">
+                    <div className="text-xs text-muted-foreground font-medium">Vazio</div>
+                  </div>
+                )}
               </div>
             ) : (
               items.map((item) => (
@@ -216,8 +248,8 @@ function DroppableColumn({
             )}
           </div>
         </ScrollArea>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -238,7 +270,7 @@ export function KanbanBoard({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // 8px of movement before drag activates
+        distance: 5, // Reduced for snappier feel
       },
     })
   );
@@ -299,7 +331,7 @@ export function KanbanBoard({
 
   if (columns.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
+      <div className="flex h-64 items-center justify-center text-muted-foreground p-8 bg-muted/10 rounded-xl border border-dashed border-muted">
         {emptyMessage}
       </div>
     );
@@ -315,7 +347,7 @@ export function KanbanBoard({
     >
       <div
         className={cn(
-          'grid gap-4',
+          'grid gap-4 items-start',
           columns.length === 1 && 'grid-cols-1',
           columns.length === 2 && 'grid-cols-1 md:grid-cols-2',
           columns.length === 3 && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
@@ -323,7 +355,7 @@ export function KanbanBoard({
           columns.length >= 5 && 'xl:grid-cols-5',
           className
         )}
-        style={{ minHeight: '500px' }}
+        style={{ minHeight: 'calc(100vh - 200px)' }}
       >
         {columns.map((column) => (
           <DroppableColumn
@@ -339,7 +371,7 @@ export function KanbanBoard({
 
       {/* Drag Overlay - floating card that follows cursor */}
       <DragOverlay dropAnimation={{
-        duration: 200,
+        duration: 250,
         easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
       }}>
         {activeItem ? (

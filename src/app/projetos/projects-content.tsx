@@ -137,7 +137,17 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
   // Calculate dynamic columns based on FASE (not status)
   const dynamicColumns = React.useMemo(() => {
     // Extrai fases únicas (usa fase_atual, fallback para status)
-    const phases = Array.from(new Set(projects.map((p) => normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos')));
+    const existingPhases = Array.from(new Set(projects.map((p) => normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos')));
+
+    // Fases Obrigatórias (Sempre visíveis no Board)
+    const mandatoryPhases = ['execucao_producao', 'validacao_producao'];
+
+    // Fases Proibidas (Nunca visíveis no Board)
+    const bannedPhases = ['fila_projetos', 'fila_de_projetos'];
+
+    // Combine phases, ensuring mandatory ones are present
+    const phases = Array.from(new Set([...existingPhases, ...mandatoryPhases]))
+      .filter(p => !bannedPhases.includes(p));
 
     // Ordem das fases no fluxo de projeto
     const phaseOrder = [
@@ -326,79 +336,82 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
         </div>
 
         {/* Filters Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-1 gap-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-card p-4 rounded-lg border shadow-sm">
+          <div className="flex flex-1 gap-2 items-center">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Buscar projetos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="pl-9 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-colors"
               />
             </div>
+            <div className="h-8 w-px bg-border mx-2" />
             <Button
-              variant={showFilters ? 'default' : 'outline'}
-              size="icon"
+              variant={showFilters ? 'secondary' : 'ghost'}
+              size="sm"
               onClick={() => setShowFilters(!showFilters)}
+              className={showFilters ? "text-primary" : "text-muted-foreground"}
             >
-              <Filter className="h-4 w-4" />
+              <Filter className="mr-2 h-4 w-4" />
+              Filtros
             </Button>
+            {statusFilter !== 'all' && (
+              <Badge variant="secondary" className="gap-1 animate-in fade-in zoom-in">
+                Status: {statusFilter}
+                <X
+                  className="h-3 w-3 cursor-pointer hover:text-destructive"
+                  onClick={() => setStatusFilter('all')}
+                />
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
+              size="sm"
               onClick={handleSync}
               disabled={isSyncing}
+              className="text-muted-foreground hover:text-foreground"
             >
               {isSyncing ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <RefreshCw className="mr-2 h-4 w-4" />
               )}
-              {isSyncing ? 'Sincronizando...' : 'Sincronizar Espaider'}
+              <span className="sr-only sm:not-sr-only">{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</span>
             </Button>
+            <div className="h-8 w-px bg-border mx-2" />
             <ViewToggle view={view} onViewChange={setView} />
           </div>
         </div>
 
-        {/* Status Filter Panel */}
+        {/* Status Filter Panel (Collapsible) */}
         {showFilters && (
-          <div className="flex items-center gap-2 flex-wrap animate-fade-in">
-            <span className="text-sm text-muted-foreground">Status:</span>
-            {[
-              { value: 'all', label: 'Todos' },
-              { value: 'projeto_futuro', label: 'Futuro' },
-              { value: 'em_aprovacao', label: 'Aprovação' },
-              { value: 'em_aprovacao', label: 'Aprovação' },
-              { value: 'em_execucao', label: 'Execução' },
-              { value: 'em_homologacao', label: 'Homologação' },
-              { value: 'em_homologacao', label: 'Homologação' },
-              { value: 'concluido', label: 'Concluído' },
-              { value: 'cancelado', label: 'Cancelado' },
-              { value: 'suspenso', label: 'Suspenso' },
-            ].map((opt) => (
-              <Button
-                key={opt.value}
-                variant={statusFilter === opt.value ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter(opt.value)}
-                className="h-7 text-xs"
-              >
-                {opt.label}
-              </Button>
-            ))}
-            {statusFilter !== 'all' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setStatusFilter('all')}
-                className="h-7 text-xs"
-              >
-                <X className="mr-1 h-3 w-3" />
-                Limpar
-              </Button>
-            )}
+          <div className="p-4 bg-muted/30 rounded-lg border border-dashed animate-in slide-in-from-top-2">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: 'all', label: 'Todos' },
+                { value: 'projeto_futuro', label: 'Futuro' },
+                { value: 'em_aprovacao', label: 'Aprovação' },
+                { value: 'em_execucao', label: 'Execução' },
+                { value: 'em_homologacao', label: 'Homologação' },
+                { value: 'concluido', label: 'Concluído' },
+                { value: 'cancelado', label: 'Cancelado' },
+                { value: 'suspenso', label: 'Suspenso' },
+              ].map((opt) => (
+                <Button
+                  key={opt.value}
+                  variant={statusFilter === opt.value ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter(opt.value)}
+                  className={`h-7 text-xs rounded-full ${statusFilter === opt.value ? 'shadow-md' : 'bg-transparent border-muted-foreground/30'}`}
+                >
+                  {opt.label}
+                </Button>
+              ))}
+            </div>
           </div>
         )}
 

@@ -37,6 +37,20 @@ interface Project {
   solucao_aplicada?: string | null;
   data_encerramento?: string | null;
   data_inicio_aprovacao?: string | null;
+  // === Visão 360 (Migration 014) ===
+  trm_espaider?: string | null;
+  tipo_chamado?: string | null;
+  tipo_assunto?: string | null;
+  solicitante?: string | null;
+  objetivo?: string | null;
+  motivo_importancia_especial?: string | null;
+  mensagem_movimentacao?: string | null;
+  justificativa?: string | null;
+  importancia_especial?: boolean | null;
+  impacto_operacional?: string | null;
+  impacto_estrategico?: string | null;
+  escopo?: string | null;
+  complexidade_tecnica?: string | null;
   total_value: number | null;
   responsible: string | null;
   start_date: string | null;
@@ -458,6 +472,20 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
                 solucao_aplicada: selectedProject.solucao_aplicada,
                 data_encerramento: selectedProject.data_encerramento,
                 data_inicio_aprovacao: selectedProject.data_inicio_aprovacao,
+                // === Visão 360 (Migration 014) ===
+                trm_espaider: selectedProject.trm_espaider,
+                tipo_chamado: selectedProject.tipo_chamado,
+                tipo_assunto: selectedProject.tipo_assunto,
+                solicitante: selectedProject.solicitante,
+                objetivo: selectedProject.objetivo,
+                motivo_importancia_especial: selectedProject.motivo_importancia_especial,
+                mensagem_movimentacao: selectedProject.mensagem_movimentacao,
+                justificativa: selectedProject.justificativa,
+                importancia_especial: selectedProject.importancia_especial,
+                impacto_operacional: selectedProject.impacto_operacional,
+                impacto_estrategico: selectedProject.impacto_estrategico,
+                escopo: selectedProject.escopo,
+                complexidade_tecnica: selectedProject.complexidade_tecnica,
                 end_date: selectedProject.end_date,
                 responsible: selectedProject.responsible,
                 priority: selectedProject.priority,

@@ -43,6 +43,20 @@ export interface DBProject {
   data_movimentacao?: string | null;
   data_encerramento?: string | null;
   data_inicio_aprovacao?: string | null;
+  // === Visão 360 (Migration 014) ===
+  trm_espaider?: string | null;
+  tipo_chamado?: string | null;
+  tipo_assunto?: string | null;
+  solicitante?: string | null;
+  objetivo?: string | null;
+  motivo_importancia_especial?: string | null;
+  mensagem_movimentacao?: string | null;
+  justificativa?: string | null;
+  importancia_especial?: boolean | null;
+  impacto_operacional?: string | null;
+  impacto_estrategico?: string | null;
+  escopo?: string | null;
+  complexidade_tecnica?: string | null;
   // Joined relations (optional)
   schedules?: DBSchedule[];
   deliveries?: DBDelivery[];
@@ -114,6 +128,20 @@ export interface UIProject {
   solucao_aplicada?: string | null;
   data_encerramento?: string | null;
   data_inicio_aprovacao?: string | null;
+  // === Visão 360 (Migration 014) ===
+  trm_espaider?: string | null;
+  tipo_chamado?: string | null;
+  tipo_assunto?: string | null;
+  solicitante?: string | null;
+  objetivo?: string | null;
+  motivo_importancia_especial?: string | null;
+  mensagem_movimentacao?: string | null;
+  justificativa?: string | null;
+  importancia_especial?: boolean | null;
+  impacto_operacional?: string | null;
+  impacto_estrategico?: string | null;
+  escopo?: string | null;
+  complexidade_tecnica?: string | null;
   // Legacy fields (mantidos para compatibilidade)
   aprovador_atual?: string | null;
   prazo_aprovador?: string | null;
@@ -207,6 +235,22 @@ export function dbProjectToUI(row: DBProject): UIProject {
     solucao_aplicada: row.solucao_aplicada || raw?.SOLUCAOAPLICADAEM || null,
     data_encerramento: row.data_encerramento || raw?.ENCERRADOEM || null,
     data_inicio_aprovacao: row.data_inicio_aprovacao || raw?.DATAINICIOAPROVACAO || null,
+
+    // === Visão 360 (Migration 014) ===
+    trm_espaider: row.trm_espaider || raw?.TRMESPAIDER || null,
+    tipo_chamado: row.tipo_chamado || raw?.TIPOCHAMADO || null,
+    tipo_assunto: row.tipo_assunto || raw?.TIPOASSUNTO || null,
+    solicitante: row.solicitante || raw?.SOLICITANTE || null,
+    objetivo: row.objetivo || raw?.OBJETIVO || null,
+    motivo_importancia_especial: row.motivo_importancia_especial || raw?.MOTIVO_IMPORTANCIAESPECIAL || null,
+    mensagem_movimentacao: row.mensagem_movimentacao || raw?.MENSAGEM_MOVIMENTACAO || null,
+    justificativa: row.justificativa || raw?.JUSTIFICATIVA || null,
+    importancia_especial: row.importancia_especial || raw?.IMPORTANCIAESPECIAL === 'Sim' || false,
+    impacto_operacional: row.impacto_operacional || raw?.IMPACTOOPERACIONAL || null,
+    impacto_estrategico: row.impacto_estrategico || raw?.IMPACTOESTRATEGICO || null,
+    escopo: row.escopo || raw?.ESCOPO || null,
+    complexidade_tecnica: row.complexidade_tecnica || raw?.COMPLEXIDADETECNICA || null,
+
     // Legacy: mantidos para compatibilidade com componentes existentes
     aprovador_atual: row.fase_atual || raw?.APROVADORATUAL || null,
     prazo_aprovador: row.prazo_fase || raw?.PRAZOAPROVADOR || null,

@@ -262,6 +262,22 @@ export async function syncProjects(
       data_movimentacao: p.data_movimentacao?.toISOString() || null,
       data_encerramento: p.data_encerramento?.toISOString() || null,
       data_inicio_aprovacao: p.data_inicio_aprovacao?.toISOString() || null,
+
+      // === Visão 360 (Migration 014) ===
+      trm_espaider: p.trm_espaider || null,
+      tipo_chamado: p.tipo_chamado || null,
+      tipo_assunto: p.tipo_assunto || null,
+      solicitante: p.solicitante || null,
+      objetivo: p.objetivo || null,
+      motivo_importancia_especial: p.motivo_importancia_especial || null,
+      mensagem_movimentacao: p.mensagem_movimentacao || null,
+      justificativa: p.justificativa || null,
+      importancia_especial: p.importancia_especial || false,
+      impacto_operacional: p.impacto_operacional || null,
+      impacto_estrategico: p.impacto_estrategico || null,
+      escopo: p.escopo || null,
+      complexidade_tecnica: p.complexidade_tecnica || null,
+
       espaider_raw: p.extras,
       sync_status: 'synced',
       last_sync_at: new Date().toISOString(),

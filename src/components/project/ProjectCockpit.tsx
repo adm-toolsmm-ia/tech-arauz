@@ -27,6 +27,20 @@ interface UIProject {
   solucao_aplicada?: string | null;
   data_encerramento?: string | null;
   data_inicio_aprovacao?: string | null;
+  // === Visão 360 (Migration 014) ===
+  trm_espaider?: string | null;
+  tipo_chamado?: string | null;
+  tipo_assunto?: string | null;
+  solicitante?: string | null;
+  objetivo?: string | null;
+  motivo_importancia_especial?: string | null;
+  mensagem_movimentacao?: string | null;
+  justificativa?: string | null;
+  importancia_especial?: boolean | null;
+  impacto_operacional?: string | null;
+  impacto_estrategico?: string | null;
+  escopo?: string | null;
+  complexidade_tecnica?: string | null;
   // Legacy (mantidos para compatibilidade)
   aprovador_atual?: string | null;
   prazo_aprovador?: string | null;
@@ -149,6 +163,13 @@ export function ProjectCockpit({
           >
             <FileText className="size-4 mr-2" />
             Detalhes
+          </TabsTrigger>
+          <TabsTrigger
+            value="visao360"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+          >
+            <RefreshCw className="size-4 mr-2" />
+            Visão 360º
           </TabsTrigger>
           <TabsTrigger
             value="entregas"
@@ -282,6 +303,84 @@ export function ProjectCockpit({
               <p>Origem: Espaider</p>
               <p>Código: {project.espaider_code}</p>
               <p>ID Interno: {project.id}</p>
+            </div>
+          </section>
+        </TabsContent>
+
+        {/* Tab: Visão 360 */}
+        <TabsContent value="visao360" className="mt-6 space-y-6">
+          {/* Identificação */}
+          <section>
+            <h3 className="text-sm font-semibold mb-4">Identificação & Solicitante</h3>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              <InfoField label="Solicitante" value={project.solicitante} />
+              <InfoField label="TRM Espaider" value={project.trm_espaider} />
+              <InfoField label="Tipo de Chamado" value={project.tipo_chamado} />
+              <InfoField label="Tipo de Assunto" value={project.tipo_assunto} />
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Estratégia */}
+          <section>
+            <h3 className="text-sm font-semibold mb-4">Estratégia & Negócio</h3>
+            <div className="space-y-4">
+              {project.importancia_especial && (
+                <div className="rounded-md bg-amber-50 dark:bg-amber-900/10 p-4 border border-amber-200 dark:border-amber-800">
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2">
+                    ⚠️ Importância Especial
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-400">
+                    {project.motivo_importancia_especial || 'Sem motivo especificado'}
+                  </p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                <InfoField label="Impacto Estratégico" value={project.impacto_estrategico} />
+                <InfoField label="Impacto Operacional" value={project.impacto_operacional} />
+              </div>
+              <div className="space-y-4 pt-2">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Objetivo</p>
+                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.objetivo || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Justificativa</p>
+                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.justificativa || '-'}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Operacional & Escopo */}
+          <section>
+            <h3 className="text-sm font-semibold mb-4">Técnico & Escopo</h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Escopo</p>
+                <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.escopo || '-'}</p>
+              </div>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Status & Movimentação */}
+          <section>
+            <h3 className="text-sm font-semibold mb-4">Status & Trâmite</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Última Movimentação</p>
+                <p className="text-sm whitespace-pre-wrap rounded-md bg-blue-50 dark:bg-blue-900/10 p-3 border border-blue-100 dark:border-blue-800">
+                  {project.mensagem_movimentacao || 'Sem mensagem de trâmite'}
+                </p>
+              </div>
             </div>
           </section>
         </TabsContent>

@@ -128,6 +128,35 @@ export interface ProjetoMapeado {
     data_encerramento: Date | null;
     /** Data inicio aprovacao - DATAINICIOAPROVACAO */
     data_inicio_aprovacao: Date | null;
+
+    // === Novos campos (Migration 014 - Visão 360) ===
+    /** Número do ticket externo - TRMESPAIDER */
+    trm_espaider: string;
+    /** Tipo de chamado - TIPOCHAMADO */
+    tipo_chamado: string;
+    /** Tipo de assunto - TIPOASSUNTO */
+    tipo_assunto: string;
+    /** Solicitante - SOLICITANTE */
+    solicitante: string;
+    /** Objetivo - OBJETIVO */
+    objetivo: string;
+    /** Motivo importância especial - MOTIVO_IMPORTANCIAESPECIAL */
+    motivo_importancia_especial: string;
+    /** Mensagem de movimentação - MENSAGEM_MOVIMENTACAO */
+    mensagem_movimentacao: string;
+    /** Justificativa - JUSTIFICATIVA */
+    justificativa: string;
+    /** Importância especial - IMPORTANCIAESPECIAL (Sim -> true) */
+    importancia_especial: boolean;
+    /** Impacto operacional - IMPACTOOPERACIONAL */
+    impacto_operacional: string;
+    /** Impacto estratégico - IMPACTOESTRATEGICO */
+    impacto_estrategico: string;
+    /** Escopo - ESCOPO */
+    escopo: string;
+    /** Complexidade técnica - COMPLEXIDADETECNICA */
+    complexidade_tecnica: string;
+
     /** Campos extras não mapeados */
     extras: Record<string, string>;
 }

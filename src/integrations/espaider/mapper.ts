@@ -146,6 +146,22 @@ export function mapearProjeto(registro: RegistroEspaider): ProjetoMapeado {
         data_inicio_aprovacao: parseData(getCampoValor(campos, 'DATAINICIOAPROVACAO')),
         situacao_atual: getCampoValor(campos, 'SITUACAOATUAL'),
         status_field: getCampoValor(campos, 'STATUS'),
+
+        // Novos campos 360
+        trm_espaider: getCampoValor(campos, 'TRMESPAIDER'),
+        tipo_chamado: getCampoValor(campos, 'TIPOCHAMADO'),
+        tipo_assunto: getCampoValor(campos, 'TIPOASSUNTO'),
+        solicitante: getCampoValor(campos, 'SOLICITANTE'),
+        objetivo: getCampoValor(campos, 'OBJETIVO'),
+        motivo_importancia_especial: getCampoValor(campos, 'MOTIVO_IMPORTANCIAESPECIAL'),
+        mensagem_movimentacao: getCampoValor(campos, 'MENSAGEM_MOVIMENTACAO'),
+        justificativa: getCampoValor(campos, 'JUSTIFICATIVA'),
+        importancia_especial: getCampoValor(campos, 'IMPORTANCIAESPECIAL') === 'Sim',
+        impacto_operacional: getCampoValor(campos, 'IMPACTOOPERACIONAL'),
+        impacto_estrategico: getCampoValor(campos, 'IMPACTOESTRATEGICO'),
+        escopo: getCampoValor(campos, 'ESCOPO'),
+        complexidade_tecnica: getCampoValor(campos, 'COMPLEXIDADETECNICA'),
+
         extras: getExtras(campos, CAMPOS_PROJETO),
     };
 }

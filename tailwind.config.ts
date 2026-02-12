@@ -81,6 +81,25 @@ const config: Config = {
 					'3': 'hsl(var(--chart-3))',
 					'4': 'hsl(var(--chart-4))',
 					'5': 'hsl(var(--chart-5))'
+				},
+				status: {
+					novo: 'hsl(var(--status-novo))',
+					'em-atendimento': 'hsl(var(--status-em-atendimento))',
+					aguardando: 'hsl(var(--status-aguardando))',
+					resolvido: 'hsl(var(--status-resolvido))',
+					cancelado: 'hsl(var(--status-cancelado))'
+				},
+				priority: {
+					alta: 'hsl(var(--priority-alta))',
+					normal: 'hsl(var(--priority-normal))',
+					baixa: 'hsl(var(--priority-baixa))'
+				},
+				type: {
+					erro: 'hsl(var(--type-erro))',
+					duvida: 'hsl(var(--type-duvida))',
+					suporte: 'hsl(var(--type-suporte))',
+					ajuste: 'hsl(var(--type-ajuste))',
+					melhoria: 'hsl(var(--type-melhoria))'
 				}
 			},
 			borderRadius: {

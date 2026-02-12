@@ -2,140 +2,158 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tech Arauz Design System - Based on ADR-003 */
-/* Reference: .context/03-specs/tokens_brand.json */
-
 @layer base {
   :root {
-    /* Background & Foreground */
-    --background: 0 0% 98%;
-    /* Slightly off-white for better contrast */
-    --foreground: 211 65% 15%;
-    /* Deep Blue Text */
+    /* Araúz Primary - Verde Petróleo */
+    --primary: 167 69% 18%;
+    --primary-light: 167 55% 25%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Card */
+    /* Araúz Accent - Laranja Vibrante */
+    --accent: 14 100% 60%;
+    --accent-hover: 20 100% 63%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Backgrounds - Neutros */
+    --background: 0 0% 98%;
+    --foreground: 220 13% 18%;
     --card: 0 0% 100%;
-    --card-foreground: 211 65% 15%;
+    --card-foreground: 220 13% 18%;
 
     /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 211 65% 15%;
+    --popover-foreground: 220 13% 18%;
 
-    /* Primary: Deep Blue Arauz #0E2841 */
-    --primary: 209 65% 15%;
-    --primary-foreground: 0 0% 100%;
+    /* Secondary - Neutro */
+    --secondary: 220 13% 95%;
+    --secondary-foreground: 220 13% 18%;
 
-    /* Secondary: Teal Blue #156082 */
-    --secondary: 200 72% 30%;
-    --secondary-foreground: 0 0% 100%;
+    /* Muted - Neutro suave */
+    --muted: 220 13% 95%;
+    --muted-foreground: 220 9% 46%;
 
-    /* Muted */
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    /* Borders - Neutros */
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 167 69% 18%;
 
-    /* Accent: Orange #E97132 */
-    --accent: 21 82% 55%;
-    --accent-foreground: 0 0% 100%;
+    /* Estados Funcionais - Cores com propósito semântico */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    /* Status Colors */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
+
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    /* Border & Input */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 209 65% 15%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
 
-    /* Sidebar: Deep Blue #0E2841 */
-    --sidebar-background: 209 65% 15%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 21 82% 55%;
-    /* Orange for active items */
+    --radius: 0.75rem;
+
+    /* Sidebar - Verde Escuro (marca) */
+    --sidebar-background: 167 69% 15%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 14 100% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 72% 30%;
-    /* Teal for hover */
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 211 60% 20%;
-    --sidebar-ring: 21 82% 55%;
+    --sidebar-accent: 167 55% 20%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 167 50% 20%;
+    --sidebar-ring: 14 100% 60%;
+    --sidebar-muted: 167 30% 60%;
 
-    /* Radius */
-    --radius: 0.3rem;
-    /* Slightly sharper radius for professional look */
+    /* Status - Cores funcionais apenas */
+    --status-novo: 220 9% 46%;
+    --status-em-atendimento: 38 92% 50%;
+    --status-aguardando: 25 95% 53%;
+    --status-resolvido: 142 71% 45%;
+    --status-cancelado: 220 9% 60%;
 
-    /* Chart colors */
-    --chart-1: 209 65% 15%;
-    /* Deep Blue */
-    --chart-2: 200 72% 30%;
-    /* Teal */
-    --chart-3: 21 82% 55%;
-    /* Orange */
-    --chart-4: 197 87% 45%;
-    /* Cyan */
-    --chart-5: 280 65% 60%;
+    /* Priority - Cores funcionais apenas */
+    --priority-alta: 0 84% 60%;
+    --priority-normal: 38 92% 50%;
+    --priority-baixa: 142 71% 45%;
+
+    /* Type - Cores mais sutis */
+    --type-erro: 0 84% 60%;
+    --type-duvida: 220 9% 46%;
+    --type-suporte: 167 69% 18%;
+    --type-ajuste: 220 9% 46%;
+    --type-melhoria: 167 55% 25%;
+
+    /* Shadows */
+    --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+    --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --shadow-strong: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+
+    /* Chart colors - Adapted to new palette */
+    --chart-1: 167 69% 18%;
+    /* Primary */
+    --chart-2: 14 100% 60%;
+    /* Accent */
+    --chart-3: 142 71% 45%;
+    /* Success */
+    --chart-4: 38 92% 50%;
+    /* Warning */
+    --chart-5: 199 89% 48%;
+    /* Info */
   }
 
   .dark {
-    /* Background & Foreground */
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 220 13% 10%;
+    --foreground: 0 0% 95%;
+    --card: 220 13% 12%;
+    --card-foreground: 0 0% 95%;
 
-    /* Card */
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --popover: 220 13% 12%;
+    --popover-foreground: 0 0% 95%;
 
-    /* Popover */
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --primary: 167 55% 25%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Primary */
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --secondary: 220 13% 18%;
+    --secondary-foreground: 0 0% 95%;
 
-    /* Secondary */
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
+    --accent: 14 100% 60%;
+    --accent-hover: 20 100% 63%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Muted */
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted: 220 13% 18%;
+    --muted-foreground: 220 9% 60%;
 
-    /* Accent */
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --border: 220 13% 20%;
+    --input: 220 13% 20%;
+    --ring: 167 69% 18%;
 
-    /* Status Colors */
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --success: 142 71% 40%;
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 35%;
     --success-foreground: 0 0% 100%;
+
     --warning: 38 92% 45%;
     --warning-foreground: 0 0% 100%;
 
-    /* Border & Input */
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
 
-    /* Sidebar Dark */
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 217 33% 15%;
-    --sidebar-accent-foreground: 210 40% 90%;
-    --sidebar-border: 217 33% 18%;
-    --sidebar-ring: 224 76% 48%;
+    --sidebar-background: 167 69% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 14 100% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 167 55% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 167 50% 15%;
+    --sidebar-ring: 14 100% 60%;
+    --sidebar-muted: 167 30% 50%;
 
-    /* Chart colors dark */
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Chart Colors Dark */
+    --chart-1: 167 55% 25%;
+    --chart-2: 14 100% 60%;
+    --chart-3: 142 71% 35%;
+    --chart-4: 38 92% 45%;
+    --chart-5: 199 89% 48%;
   }
 }
 
@@ -145,8 +163,23 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/30;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/40;
   }
 
   /* Focus outline styling */
@@ -155,7 +188,63 @@
   }
 }
 
+@layer components {
+
+  /* KPI Card - Design limpo e funcional */
+  .kpi-card {
+    @apply relative overflow-hidden rounded-xl border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md;
+  }
+
+  /* Kanban Column - Visual neutro */
+  .kanban-column {
+    @apply flex flex-col rounded-lg bg-muted/30 min-h-[500px] border border-border;
+  }
+
+  .kanban-column-header {
+    @apply sticky top-0 z-10 flex items-center justify-between rounded-t-lg px-4 py-3 font-medium bg-muted/50 border-b border-border;
+  }
+
+  /* Ticket Card - Hover sutil */
+  .ticket-card {
+    @apply rounded-lg border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/30 cursor-pointer;
+  }
+
+  /* Status Badge Base */
+  .badge-status {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  /* Priority Indicator */
+  .priority-indicator {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+
+  /* Sidebar Navigation */
+  .sidebar-nav-item {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 text-sidebar-foreground/80;
+  }
+
+  .sidebar-nav-item:hover {
+    @apply bg-sidebar-accent text-sidebar-foreground;
+  }
+
+  .sidebar-nav-item.active,
+  .sidebar-nav-item[data-active="true"] {
+    @apply bg-accent text-accent-foreground shadow-sm;
+  }
+
+  /* Sync Status Card */
+  .sync-status-card {
+    @apply relative overflow-hidden rounded-xl border bg-card p-6;
+  }
+}
+
 @layer utilities {
+
+  /* Animate spin slow */
+  .animate-spin-slow {
+    animation: spin 2s linear infinite;
+  }
 
   /* Hide scrollbar but keep functionality */
   .scrollbar-hidden {
@@ -177,7 +266,7 @@
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.2s ease-out;
+    animation: fadeIn 0.3s ease-in-out;
   }
 
   /* Animations - Premium */
@@ -202,12 +291,24 @@
     background-size: 200% 100%;
   }
 
+  /* Collapsible animations for sidebar submenus */
+  .animate-collapsible-down {
+    animation: collapsibleDown 0.2s ease-out;
+  }
+
+  .animate-collapsible-up {
+    animation: collapsibleUp 0.2s ease-out;
+  }
+
+  /* Keyframes */
   @keyframes slideInRight {
     from {
-      transform: translateX(100%);
+      opacity: 0;
+      transform: translateX(20px);
     }
 
     to {
+      opacity: 1;
       transform: translateX(0);
     }
   }
@@ -225,10 +326,12 @@
   @keyframes fadeIn {
     from {
       opacity: 0;
+      transform: translateY(10px);
     }
 
     to {
       opacity: 1;
+      transform: translateY(0);
     }
   }
 
@@ -276,15 +379,6 @@
     100% {
       background-position: 200% 0;
     }
-  }
-
-  /* Collapsible animations for sidebar submenus */
-  .animate-collapsible-down {
-    animation: collapsibleDown 0.2s ease-out;
-  }
-
-  .animate-collapsible-up {
-    animation: collapsibleUp 0.2s ease-out;
   }
 
   @keyframes collapsibleDown {

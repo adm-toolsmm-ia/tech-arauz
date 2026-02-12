@@ -27,14 +27,18 @@ else {
     if ($LASTEXITCODE -ne 0) { Write-Error "Falha no commit"; exit 1 }
 }
 
+# Detectar branch atual
+$branch = git branch --show-current
+Write-Host "Branch atual: $branch"
+
 # Pull rebase
-Write-Host "Atualizando (pull --rebase)..."
-git pull origin main --rebase
+Write-Host "Atualizando (pull origin $branch --rebase)..."
+git pull origin $branch --rebase
 if ($LASTEXITCODE -ne 0) { Write-Error "Falha no pull"; exit 1 }
 
 # Push
-Write-Host "Enviando (push)..."
-git push origin main
+Write-Host "Enviando (push origin $branch)..."
+git push origin $branch
 if ($LASTEXITCODE -ne 0) { Write-Error "Falha no push"; exit 1 }
 
 Write-Host "Sincronização concluída com sucesso!"

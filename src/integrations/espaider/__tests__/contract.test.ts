@@ -168,7 +168,7 @@ describe('Mapper - Entregas', () => {
         expect(entrega.id_espaider).toBe(67890);
         expect(entrega.projeto_id_espaider).toBe(12345);
         expect(entrega.titulo).toBe('Entrega 1 - Análise');
-        expect(entrega.status).toBe('Concluído');
+        expect(entrega.status).toBe('Concluido');
     });
 
     it('deve parsear datas brasileiras', () => {

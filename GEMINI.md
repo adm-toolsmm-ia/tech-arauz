@@ -70,7 +70,7 @@ Ao aplicar automaticamente um agente, informe o usuário:
 Quando o prompt do usuário NÃO estiver em Inglês:
 
 1. **Traduzir internamente** para melhor compreensão.
-2. **Responder no idioma do usuário** - corresponda à comunicação.
+2. **Responder e criar ARTEFATOS no idioma do usuário** - corresponda à comunicação (Português do Brasil).
 3. **Comentários/variáveis de código** permanecem em Inglês.
 
 ### 🧹 Clean Code (Obrigatório Global)

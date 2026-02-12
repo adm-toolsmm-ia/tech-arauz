@@ -1,176 +1,42 @@
 ---
-description: Deployment command for production releases. Pre-flight checks and deployment execution.
+description: Guia de deploy para Vercel via GitHub Actions
 ---
 
-# /deploy - Production Deployment
+# 🚀 Workflow de Deploy (Vercel)
 
-$ARGUMENTS
+Este projeto utiliza **Vercel** para hospedagem e **GitHub Actions** para Integração Contínua (CI).
 
----
+## 🔄 Fluxo de Trabalho (CI/CD)
 
-## Purpose
+O deploy é acionado automaticamente através do **Git**.
 
-This command handles production deployment with pre-flight checks, deployment execution, and verification.
+1.  **Desenvolvimento**: Crie uma branch para sua feature (`git checkout -b feat/nova-feature`).
+2.  **Pull Request**: Abra um PR para a branch `main`.
+    *   🤖 **GitHub Actions** rodará automaticamente:
+        *   `Lint`: Verifica estilo de código.
+        *   `Test`: Executa testes unitários.
+        *   `Build`: Verifica se o projeto compila.
+3.  **Merge & Deploy**: Ao fazer merge na `main`, o Vercel iniciará o deploy de produção automaticamente.
 
----
+## 🛠️ Configuração
 
-## Sub-commands
+As configurações de deploy estão definidas em:
+*   `vercel.json`: Configurações de infraestrutura (região, framework).
+*   `.github/workflows/ci.yml`: Pipeline de testes automatizados.
 
-```
-/deploy            - Interactive deployment wizard
-/deploy check      - Run pre-deployment checks only
-/deploy preview    - Deploy to preview/staging
-/deploy production - Deploy to production
-/deploy rollback   - Rollback to previous version
-```
+## ⚠️ Pré-requisitos de Produção
 
----
+Para que o deploy funcione, o projeto deve estar vinculado à Vercel:
 
-## Pre-Deployment Checklist
+```bash
+# Instalar Vercel CLI
+npm i -g vercel
 
-Before any deployment:
-
-```markdown
-## 🚀 Pre-Deploy Checklist
-
-### Code Quality
-- [ ] No TypeScript errors (`npx tsc --noEmit`)
-- [ ] ESLint passing (`npx eslint .`)
-- [ ] All tests passing (`npm test`)
-
-### Security
-- [ ] No hardcoded secrets
-- [ ] Environment variables documented
-- [ ] Dependencies audited (`npm audit`)
-
-### Performance
-- [ ] Bundle size acceptable
-- [ ] No console.log statements
-- [ ] Images optimized
-
-### Documentation
-- [ ] README updated
-- [ ] CHANGELOG updated
-- [ ] API docs current
-
-### Ready to deploy? (y/n)
+# Vincular projeto (rodar na raiz)
+vercel link
 ```
 
----
+## 🔍 Monitoramento
 
-## Deployment Flow
-
-```
-┌─────────────────┐
-│  /deploy        │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Pre-flight     │
-│  checks         │
-└────────┬────────┘
-         │
-    Pass? ──No──► Fix issues
-         │
-        Yes
-         │
-         ▼
-┌─────────────────┐
-│  Build          │
-│  application    │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Deploy to      │
-│  platform       │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Health check   │
-│  & verify       │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  ✅ Complete    │
-└─────────────────┘
-```
-
----
-
-## Output Format
-
-### Successful Deploy
-
-```markdown
-## 🚀 Deployment Complete
-
-### Summary
-- **Version:** v1.2.3
-- **Environment:** production
-- **Duration:** 47 seconds
-- **Platform:** Vercel
-
-### URLs
-- 🌐 Production: https://app.example.com
-- 📊 Dashboard: https://vercel.com/project
-
-### What Changed
-- Added user profile feature
-- Fixed login bug
-- Updated dependencies
-
-### Health Check
-✅ API responding (200 OK)
-✅ Database connected
-✅ All services healthy
-```
-
-### Failed Deploy
-
-```markdown
-## ❌ Deployment Failed
-
-### Error
-Build failed at step: TypeScript compilation
-
-### Details
-```
-error TS2345: Argument of type 'string' is not assignable...
-```
-
-### Resolution
-1. Fix TypeScript error in `src/services/user.ts:45`
-2. Run `npm run build` locally to verify
-3. Try `/deploy` again
-
-### Rollback Available
-Previous version (v1.2.2) is still active.
-Run `/deploy rollback` if needed.
-```
-
----
-
-## Platform Support
-
-| Platform | Command | Notes |
-|----------|---------|-------|
-| Vercel | `vercel --prod` | Auto-detected for Next.js |
-| Railway | `railway up` | Needs Railway CLI |
-| Fly.io | `fly deploy` | Needs flyctl |
-| Docker | `docker compose up -d` | For self-hosted |
-
----
-
-## Examples
-
-```
-/deploy
-/deploy check
-/deploy preview
-/deploy production --skip-tests
-/deploy rollback
-```
+*   **GitHub**: Aba "Actions" do repositório para ver status dos testes.
+*   **Vercel**: Dashboard para ver logs de build e status do deploy.

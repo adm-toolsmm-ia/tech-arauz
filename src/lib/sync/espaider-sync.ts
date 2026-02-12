@@ -20,6 +20,9 @@ import {
   mapearEntrega,
   mapearCronograma,
   mapearRequisito,
+  mapearHistorico,
+  mapearOrcamento,
+  mapearAprovador,
   mapearRegistros,
 } from '@/integrations/espaider/mapper';
 
@@ -211,7 +214,7 @@ export async function syncProjects(
   let errors = 0;
 
   try {
-    const identificador = apiConfig?.identificador || 'BI_SOLICITACOES_SUPORTEESPAIDER';
+    const identificador = apiConfig?.identificador || 'BI_SOLICITACOES_PROJETOSESPAIDER';
     logs.push(createLog('info', 'Projetos', `Buscando dados do Espaider (${identificador})...`));
 
     const response = await exportarDados({
@@ -242,7 +245,7 @@ export async function syncProjects(
       espaider_id: p.id_espaider,
       codigo: p.codigo,
       titulo: p.titulo,
-      status: normalizeStatus(p.extras['SITUACAOATUAL'] || p.status),
+      status: normalizeStatus(p.situacao_atual || p.status),
       status_original: p.status,
       responsavel: p.responsavel || null,
       prioridade: p.prioridade || 'Normal',
@@ -601,6 +604,9 @@ function descricaoToDataset(descricao: string | null | undefined): EspaiderDatas
   if (normalized.includes('entrega')) return 'Entregas';
   if (normalized.includes('cronograma')) return 'Cronogramas';
   if (normalized.includes('requisito')) return 'Requisitos';
+  if (normalized.includes('histórico') || normalized.includes('historico')) return 'Historicos';
+  if (normalized.includes('orçamento') || normalized.includes('orcamento')) return 'Orcamentos';
+  if (normalized.includes('aprovador')) return 'Aprovadores';
   return null;
 }
 
@@ -636,7 +642,7 @@ export async function executeSyncAll(
 
   // 2. Fetch ListaURLFilhos from API response and sync children
   try {
-    const identificador = apiConfig?.identificador || 'BI_SOLICITACOES_SUPORTEESPAIDER';
+    const identificador = apiConfig?.identificador || 'BI_SOLICITACOES_PROJETOSESPAIDER';
     logs.push(createLog('info', 'Geral', 'Buscando interfaces filhas via ListaURLFilhos...'));
 
     const response = await exportarDados({
@@ -680,8 +686,14 @@ export async function executeSyncAll(
           childResult = await syncDeliveriesFromRegistros(supabase, tenantId, logs, registros);
         } else if (dataset === 'Cronogramas') {
           childResult = await syncSchedulesFromRegistros(supabase, tenantId, logs, registros);
-        } else {
+        } else if (dataset === 'Requisitos') {
           childResult = await syncRequirementsFromRegistros(supabase, tenantId, logs, registros);
+        } else if (dataset === 'Historicos') {
+          childResult = await syncHistoriesFromRegistros(supabase, tenantId, logs, registros);
+        } else if (dataset === 'Orcamentos') {
+          childResult = await syncBudgetsFromRegistros(supabase, tenantId, logs, registros);
+        } else {
+          childResult = await syncApproversFromRegistros(supabase, tenantId, logs, registros);
         }
 
         results.push(childResult);
@@ -1029,4 +1041,184 @@ async function persistLogEntries(
     // Never let logging break the sync flow
     console.error('[sync] failed to persist log entries:', err);
   }
+}
+
+// =============================================================================
+// Sync new children (Historicos, Orcamentos, Aprovadores)
+// =============================================================================
+
+/**
+ * Sync histories from pre-fetched registros
+ */
+async function syncHistoriesFromRegistros(
+  supabase: SupabaseClient,
+  tenantId: string,
+  logs: SyncLogEntry[],
+  registros: import('@/integrations/espaider/types').RegistroEspaider[],
+): Promise<DatasetSyncResult> {
+  const start = Date.now();
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  try {
+    const mapped = mapearRegistros(registros, mapearHistorico);
+    const projectMap = await getProjectIdMap(supabase, tenantId);
+
+    const { data: existing } = await supabase
+      .from('project_histories')
+      .select('id')
+      .eq('id', mapped[0]?.id_espaider || 0); // Optimization/Check logic could be better but sticking to pattern
+    const existingIds = new Set((existing || []).map((r: { id: number }) => r.id));
+
+    const rows = mapped
+      .filter((r) => projectMap.has(r.projeto_id_espaider))
+      .map((r) => ({
+        id: r.id_espaider,
+        project_id: projectMap.get(r.projeto_id_espaider)!,
+        type: r.tipo || null,
+        responsible_to: r.responsavel_para || null,
+        responsible_from: r.responsavel_de || null,
+        step_to: r.passo_para || null,
+        step_from: r.passo_de || null,
+        procedure_number: r.numero_tramite || null,
+        message: r.mensagem || null,
+        date: r.data ? r.data.toISOString() : null,
+      }));
+
+    const orphans = mapped.length - rows.length;
+    if (orphans > 0) {
+      logs.push(createLog('warn', 'Historicos', `${orphans} registros ignorados (projeto pai não encontrado)`));
+    }
+
+    if (rows.length > 0) {
+      const { error } = await supabase
+        .from('project_histories')
+        .upsert(rows, { onConflict: 'id' }); // Note: histories PK is just 'id' (espaider_id), not composite
+
+      if (error) {
+        logs.push(createLog('error', 'Historicos', `Erro no upsert: ${error.message}`));
+        errors = rows.length;
+      } else {
+        created = rows.length; // Simplified for now as we don't track existing well for non-composite PKs in this pattern yet
+        logs.push(createLog('success', 'Historicos', `Upsert concluído: ${rows.length} registros processados`));
+      }
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    logs.push(createLog('error', 'Historicos', `Falha no processamento: ${msg}`));
+    errors++;
+  }
+
+  return { dataset: 'Historicos', total: created + updated + errors, created, updated, errors, durationMs: Date.now() - start };
+}
+
+/**
+ * Sync budgets from pre-fetched registros
+ */
+async function syncBudgetsFromRegistros(
+  supabase: SupabaseClient,
+  tenantId: string,
+  logs: SyncLogEntry[],
+  registros: import('@/integrations/espaider/types').RegistroEspaider[],
+): Promise<DatasetSyncResult> {
+  const start = Date.now();
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  try {
+    const mapped = mapearRegistros(registros, mapearOrcamento);
+    const projectMap = await getProjectIdMap(supabase, tenantId);
+
+    const rows = mapped
+      .filter((r) => projectMap.has(r.projeto_id_espaider))
+      .map((r) => ({
+        id: r.id_espaider,
+        project_id: projectMap.get(r.projeto_id_espaider)!,
+        value: r.valor,
+        provider: r.fornecedor || null,
+        quotation_date: r.data_cotacao ? r.data_cotacao.toISOString().split('T')[0] : null,
+      }));
+
+    const orphans = mapped.length - rows.length;
+    if (orphans > 0) {
+      logs.push(createLog('warn', 'Orcamentos', `${orphans} registros ignorados (projeto pai não encontrado)`));
+    }
+
+    if (rows.length > 0) {
+      const { error } = await supabase
+        .from('project_budgets')
+        .upsert(rows, { onConflict: 'id' });
+
+      if (error) {
+        logs.push(createLog('error', 'Orcamentos', `Erro no upsert: ${error.message}`));
+        errors = rows.length;
+      } else {
+        created = rows.length;
+        logs.push(createLog('success', 'Orcamentos', `Upsert concluído: ${rows.length} registros processados`));
+      }
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    logs.push(createLog('error', 'Orcamentos', `Falha no processamento: ${msg}`));
+    errors++;
+  }
+
+  return { dataset: 'Orcamentos', total: created + updated + errors, created, updated, errors, durationMs: Date.now() - start };
+}
+
+/**
+ * Sync approvers from pre-fetched registros
+ */
+async function syncApproversFromRegistros(
+  supabase: SupabaseClient,
+  tenantId: string,
+  logs: SyncLogEntry[],
+  registros: import('@/integrations/espaider/types').RegistroEspaider[],
+): Promise<DatasetSyncResult> {
+  const start = Date.now();
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  try {
+    const mapped = mapearRegistros(registros, mapearAprovador);
+    const projectMap = await getProjectIdMap(supabase, tenantId);
+
+    const rows = mapped
+      .filter((r) => projectMap.has(r.projeto_id_espaider))
+      .map((r) => ({
+        id: r.id_espaider,
+        project_id: projectMap.get(r.projeto_id_espaider)!,
+        type: r.tipo || null,
+        responsible: r.responsavel || null,
+        attention_points: r.pontos_atencao || null,
+      }));
+
+    const orphans = mapped.length - rows.length;
+    if (orphans > 0) {
+      logs.push(createLog('warn', 'Aprovadores', `${orphans} registros ignorados (projeto pai não encontrado)`));
+    }
+
+    if (rows.length > 0) {
+      const { error } = await supabase
+        .from('project_approvers')
+        .upsert(rows, { onConflict: 'id' });
+
+      if (error) {
+        logs.push(createLog('error', 'Aprovadores', `Erro no upsert: ${error.message}`));
+        errors = rows.length;
+      } else {
+        created = rows.length;
+        logs.push(createLog('success', 'Aprovadores', `Upsert concluído: ${rows.length} registros processados`));
+      }
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    logs.push(createLog('error', 'Aprovadores', `Falha no processamento: ${msg}`));
+    errors++;
+  }
+
+  return { dataset: 'Aprovadores', total: created + updated + errors, created, updated, errors, durationMs: Date.now() - start };
 }

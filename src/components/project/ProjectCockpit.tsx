@@ -65,6 +65,7 @@ const statusLabels: Record<string, string> = {
   em_desenvolvimento: 'Em Desenvolvimento',
   em_homologacao: 'Em Homologação',
   concluido: 'Concluído',
+  aprovado_e_concluido: 'Aprovado e Concluído',
   cancelado: 'Cancelado',
   suspenso: 'Suspenso',
 };
@@ -80,6 +81,7 @@ const statusStyles: Record<string, string> = {
   validacao_homologacao: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
   validacao_producao: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
   concluido: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  aprovado_e_concluido: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
   monitoramento_producao: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
   cancelado: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
   suspenso: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
@@ -101,6 +103,21 @@ function formatDate(dateStr: string | null | undefined): string {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
+    });
+  } catch {
+    return '-';
+  }
+}
+
+function formatDateTime(dateStr: string | null | undefined): string {
+  if (!dateStr) return '-';
+  try {
+    return new Date(dateStr).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   } catch {
     return '-';
@@ -178,7 +195,7 @@ export function ProjectCockpit({
               <InfoField label="Pasta Consultivo" value={project.pasta_consultivo} />
               <InfoField label="Solução Aplicada" value={project.solucao_aplicada} />
               <InfoField label="Prazo Final" value={formatDate(project.end_date)} />
-              <InfoField label="Última Movimentação" value={project.last_update} />
+              <InfoField label="Última Movimentação" value={formatDateTime(project.last_update)} />
               <InfoField label="Prioridade" value={project.priority} />
               <InfoField label="Status do Projeto" value={statusLabels[project.status] || project.status} />
               <InfoField label="Situação no Espaider" value={project.current_situation} />

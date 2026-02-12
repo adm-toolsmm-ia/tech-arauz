@@ -10,6 +10,9 @@ import type {
     EntregaMapeada,
     CronogramaMapeado,
     RequisitoMapeado,
+    HistoricoMapeado,
+    OrcamentoMapeado,
+    AprovadorMapeado,
 } from './types';
 
 // =============================================================================
@@ -48,9 +51,20 @@ function parseData(valor: string): Date | null {
         return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
     }
 
-    // Tenta formato ISO ou YYYY-MM-DD
     const date = new Date(valor);
     return isNaN(date.getTime()) ? null : date;
+}
+
+/**
+ * Converte string de moeda do Espaider para number.
+ * Ex: "4.033,94" -> 4033.94
+ */
+function parseCurrency(valor: string): number {
+    if (!valor) return 0;
+    // Remove pontos (separador de milhar) e troca vírgula por ponto (decimal)
+    const normalized = valor.replace(/\./g, '').replace(',', '.');
+    const number = parseFloat(normalized);
+    return isNaN(number) ? 0 : number;
 }
 
 /**
@@ -130,6 +144,8 @@ export function mapearProjeto(registro: RegistroEspaider): ProjetoMapeado {
         data_movimentacao: parseData(getCampoValor(campos, 'DATAMOVIMENTACAO')),
         data_encerramento: parseData(getCampoValor(campos, 'ENCERRADOEM')),
         data_inicio_aprovacao: parseData(getCampoValor(campos, 'DATAINICIOAPROVACAO')),
+        situacao_atual: getCampoValor(campos, 'SITUACAOATUAL'),
+        status_field: getCampoValor(campos, 'STATUS'),
         extras: getExtras(campos, CAMPOS_PROJETO),
     };
 }
@@ -276,6 +292,94 @@ export function mapearRequisito(registro: RegistroEspaider): RequisitoMapeado {
         entrega_nome: getCampoValor(campos, 'ENTREGA'),
         data_conclusao: parseData(getCampoValor(campos, 'DATACONCLUSAO')),
         extras: getExtras(campos, CAMPOS_REQUISITO),
+    };
+}
+
+/**
+ * Campos mapeados para Históricos
+ */
+const CAMPOS_HISTORICO = [
+    'IDREGISTROPAI',
+    'TIPOHISTORICO',
+    'RESPONSAVEL_PARA',
+    'RESPONSAVEL_DE',
+    'PASSO_PARA',
+    'PASSO_DE',
+    'NUMEROTRAMITE',
+    'MENSAGEM',
+    'DATA_DE',
+];
+
+/**
+ * Mapeia registro Espaider para HistoricoMapeado
+ */
+export function mapearHistorico(registro: RegistroEspaider): HistoricoMapeado {
+    const campos = registro.ListaCampos;
+
+    // Tenta parsear DATA_DE. Se falhar, tenta DATA
+    const data = parseData(getCampoValor(campos, 'DATA_DE') || getCampoValor(campos, 'DATA'));
+
+    return {
+        id_espaider: registro.IDEspaider,
+        projeto_id_espaider: parseInt(getCampoValor(campos, 'IDREGISTROPAI') || '0', 10),
+        tipo: getCampoValor(campos, 'TIPOHISTORICO'),
+        responsavel_para: getCampoValor(campos, 'RESPONSAVEL_PARA'),
+        responsavel_de: getCampoValor(campos, 'RESPONSAVEL_DE'),
+        passo_para: getCampoValor(campos, 'PASSO_PARA'),
+        passo_de: getCampoValor(campos, 'PASSO_DE'),
+        numero_tramite: parseInt(getCampoValor(campos, 'NUMEROTRAMITE') || '0', 10),
+        mensagem: getCampoValor(campos, 'MENSAGEM'),
+        data: data,
+    };
+}
+
+/**
+ * Campos mapeados para Orçamentos
+ */
+const CAMPOS_ORCAMENTO = [
+    'IDREGISTROPAI',
+    'VALOR',
+    'FORNECEDOR',
+    'DATACOTACAO',
+];
+
+/**
+ * Mapeia registro Espaider para OrcamentoMapeado
+ */
+export function mapearOrcamento(registro: RegistroEspaider): OrcamentoMapeado {
+    const campos = registro.ListaCampos;
+
+    return {
+        id_espaider: registro.IDEspaider,
+        projeto_id_espaider: parseInt(getCampoValor(campos, 'IDREGISTROPAI') || '0', 10),
+        valor: parseCurrency(getCampoValor(campos, 'VALOR')),
+        fornecedor: getCampoValor(campos, 'FORNECEDOR'),
+        data_cotacao: parseData(getCampoValor(campos, 'DATACOTACAO')),
+    };
+}
+
+/**
+ * Campos mapeados para Aprovadores
+ */
+const CAMPOS_APROVADOR = [
+    'IDREGISTROPAI',
+    'TIPO',
+    'RESPONSAVEL',
+    'PONTOSATENCAO',
+];
+
+/**
+ * Mapeia registro Espaider para AprovadorMapeado
+ */
+export function mapearAprovador(registro: RegistroEspaider): AprovadorMapeado {
+    const campos = registro.ListaCampos;
+
+    return {
+        id_espaider: registro.IDEspaider,
+        projeto_id_espaider: parseInt(getCampoValor(campos, 'IDREGISTROPAI') || '0', 10),
+        tipo: getCampoValor(campos, 'TIPO'),
+        responsavel: getCampoValor(campos, 'RESPONSAVEL'),
+        pontos_atencao: getCampoValor(campos, 'PONTOSATENCAO'),
     };
 }
 

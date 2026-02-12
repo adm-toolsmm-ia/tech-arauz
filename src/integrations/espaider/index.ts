@@ -13,6 +13,9 @@ export type {
     EntregaMapeada,
     CronogramaMapeado,
     RequisitoMapeado,
+    HistoricoMapeado,
+    OrcamentoMapeado,
+    AprovadorMapeado,
     EspaiderError,
     EspaiderErrorType,
     EspaiderConfig,
@@ -31,5 +34,8 @@ export {
     mapearEntrega,
     mapearCronograma,
     mapearRequisito,
+    mapearHistorico,
+    mapearOrcamento,
+    mapearAprovador,
     mapearRegistros,
 } from './mapper';

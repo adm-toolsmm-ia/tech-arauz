@@ -14,7 +14,10 @@ export type EspaiderDataset =
     | 'Projetos'
     | 'Entregas'
     | 'Cronogramas'
-    | 'Requisitos';
+    | 'Requisitos'
+    | 'Historicos'
+    | 'Orcamentos'
+    | 'Aprovadores';
 
 /**
  * Parâmetros para a função exportarDados
@@ -101,6 +104,10 @@ export interface ProjetoMapeado {
     updated_at: Date | null;
     categoria: string;
     // === Novos campos (Migration 009) ===
+    /** Situação atual do projeto - SITUACAOATUAL */
+    situacao_atual: string;
+    /** Status do projeto (campo STATUS) */
+    status_field: string;
     /** Fase atual do projeto - APROVADORATUAL - usado para agrupar Kanban */
     fase_atual: string;
     /** Prazo da fase atual - PRAZOAPROVADOR */
@@ -204,6 +211,44 @@ export interface RequisitoMapeado {
     data_conclusao: Date | null;
     /** Campos extras não mapeados */
     extras: Record<string, string>;
+}
+
+/**
+ * Histórico mapeado (Novo)
+ */
+export interface HistoricoMapeado {
+    id_espaider: number;
+    projeto_id_espaider: number; // IDREGISTROPAI
+    tipo: string; // TIPOHISTORICO
+    responsavel_para: string; // RESPONSAVEL_PARA
+    responsavel_de: string; // RESPONSAVEL_DE
+    passo_para: string; // PASSO_PARA
+    passo_de: string; // PASSO_DE
+    numero_tramite: number; // NUMEROTRAMITE
+    mensagem: string; // MENSAGEM
+    data: Date | null; // DATA_DE
+}
+
+/**
+ * Orçamento mapeado (Novo)
+ */
+export interface OrcamentoMapeado {
+    id_espaider: number;
+    projeto_id_espaider: number; // IDREGISTROPAI
+    valor: number; // VALOR
+    fornecedor: string; // FORNECEDOR
+    data_cotacao: Date | null; // DATACOTACAO
+}
+
+/**
+ * Aprovador mapeado (Novo)
+ */
+export interface AprovadorMapeado {
+    id_espaider: number;
+    projeto_id_espaider: number; // IDREGISTROPAI
+    tipo: string; // TIPO
+    responsavel: string; // RESPONSAVEL
+    pontos_atencao: string; // PONTOSATENCAO
 }
 
 // =============================================================================

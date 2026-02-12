@@ -8,32 +8,34 @@
 @layer base {
   :root {
     /* Background & Foreground */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --background: 0 0% 98%;
+    /* Slightly off-white for better contrast */
+    --foreground: 211 65% 15%;
+    /* Deep Blue Text */
 
     /* Card */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 211 65% 15%;
 
     /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 211 65% 15%;
 
-    /* Primary: Blue Arauz */
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary: Deep Blue Arauz #0E2841 */
+    --primary: 209 65% 15%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary */
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    /* Secondary: Teal Blue #156082 */
+    --secondary: 200 72% 30%;
+    --secondary-foreground: 0 0% 100%;
 
     /* Muted */
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    /* Accent: Light Blue */
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    /* Accent: Orange #E97132 */
+    --accent: 21 82% 55%;
+    --accent-foreground: 0 0% 100%;
 
     /* Status Colors */
     --destructive: 0 84.2% 60.2%;
@@ -44,29 +46,36 @@
     --warning-foreground: 0 0% 100%;
 
     /* Border & Input */
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 209 65% 15%;
 
-    /* Sidebar: Dark Blue */
-    --sidebar-background: 222 47% 11%;
+    /* Sidebar: Deep Blue #0E2841 */
+    --sidebar-background: 209 65% 15%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-primary: 21 82% 55%;
+    /* Orange for active items */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 72% 30%;
+    /* Teal for hover */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 211 60% 20%;
+    --sidebar-ring: 21 82% 55%;
 
     /* Radius */
-    --radius: 0.5rem;
+    --radius: 0.3rem;
+    /* Slightly sharper radius for professional look */
 
     /* Chart colors */
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 209 65% 15%;
+    /* Deep Blue */
+    --chart-2: 200 72% 30%;
+    /* Teal */
+    --chart-3: 21 82% 55%;
+    /* Orange */
+    --chart-4: 197 87% 45%;
+    /* Cyan */
+    --chart-5: 280 65% 60%;
   }
 
   .dark {
@@ -147,11 +156,13 @@
 }
 
 @layer utilities {
+
   /* Hide scrollbar but keep functionality */
   .scrollbar-hidden {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .scrollbar-hidden::-webkit-scrollbar {
     display: none;
   }
@@ -184,12 +195,10 @@
 
   .animate-shimmer {
     animation: shimmer 2s linear infinite;
-    background: linear-gradient(
-      90deg,
-      hsl(var(--muted)) 0%,
-      hsl(var(--muted-foreground) / 0.1) 50%,
-      hsl(var(--muted)) 100%
-    );
+    background: linear-gradient(90deg,
+        hsl(var(--muted)) 0%,
+        hsl(var(--muted-foreground) / 0.1) 50%,
+        hsl(var(--muted)) 100%);
     background-size: 200% 100%;
   }
 
@@ -197,6 +206,7 @@
     from {
       transform: translateX(100%);
     }
+
     to {
       transform: translateX(0);
     }
@@ -206,6 +216,7 @@
     from {
       transform: translateX(0);
     }
+
     to {
       transform: translateX(100%);
     }
@@ -215,6 +226,7 @@
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -225,6 +237,7 @@
       transform: scale(0.95);
       opacity: 0;
     }
+
     to {
       transform: scale(1);
       opacity: 1;
@@ -236,6 +249,7 @@
       transform: translateX(-10px);
       opacity: 0;
     }
+
     to {
       transform: translateX(0);
       opacity: 1;
@@ -243,9 +257,12 @@
   }
 
   @keyframes pulseSoft {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 1;
     }
+
     50% {
       opacity: 0.6;
     }
@@ -255,6 +272,7 @@
     0% {
       background-position: -200% 0;
     }
+
     100% {
       background-position: 200% 0;
     }
@@ -274,6 +292,7 @@
       opacity: 0;
       height: 0;
     }
+
     to {
       opacity: 1;
       height: var(--radix-collapsible-content-height);
@@ -285,6 +304,7 @@
       opacity: 1;
       height: var(--radix-collapsible-content-height);
     }
+
     to {
       opacity: 0;
       height: 0;

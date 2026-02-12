@@ -34,37 +34,38 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+    <main className="min-h-screen bg-brand-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        {/* Logo/Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-brand-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
+          <Link href="/" className="inline-flex items-center gap-3 justify-center group">
+            <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:bg-white/20 transition-all">
+              <span className="text-brand-500 font-bold text-2xl">A</span>
             </div>
-            <span className="font-semibold text-2xl text-gray-900">Tech Arauz</span>
+            <span className="text-2xl font-semibold text-white tracking-tight">Tech Arauz</span>
           </Link>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-xl shadow-lg border p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Bem-vindo de volta
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Entre com suas credenciais para acessar o portal.
-          </p>
+        <div className="bg-white rounded-xl shadow-2xl p-8 border border-white/10">
+          <div className="mb-6 text-center">
+            <h2 className="text-lg font-medium text-gray-900">Acesso Restrito</h2>
+            <p className="text-sm text-gray-500 mt-1">Informe suas credenciais para continuar.</p>
+          </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
               {error}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email Corporativo
               </label>
               <input
                 id="email"
@@ -72,13 +73,13 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"
-                placeholder="seu@email.com"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all placeholder:text-gray-400"
+                placeholder="nome@arauz.adv.br"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Senha
               </label>
               <input
@@ -87,7 +88,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all placeholder:text-gray-400"
                 placeholder="••••••••"
               />
             </div>
@@ -95,16 +96,16 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-brand-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-brand-700 focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 px-4 rounded-lg font-medium shadow-md shadow-brand-600/20 focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-2"
             >
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? 'Autenticando...' : 'Acessar Plataforma'}
             </button>
           </form>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-gray-500 text-sm mt-6">
-          &copy; 2026 Tech Arauz - Araúz &amp; Advogados
+        <p className="text-center text-brand-200/60 text-xs mt-8 font-light">
+          &copy; 2026 Tech Arauz - Araúz & Advogados Associados
         </p>
       </div>
     </main>

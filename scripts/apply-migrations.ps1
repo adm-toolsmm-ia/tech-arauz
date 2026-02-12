@@ -36,25 +36,14 @@ if ($DryRun) {
     Write-Host "  [DRY-RUN] Pulando verificação de link" -ForegroundColor Magenta
 } else {
     Write-Host "  Linkando projeto: $ProjectRef" -ForegroundColor Gray
-    Write-Host "  (Se solicitado, faça login no browser)" -ForegroundColor Gray
     # supabase link --project-ref $ProjectRef
 }
 
 # Listar migrations
 Write-Host "[3/5] Migrations a serem aplicadas:" -ForegroundColor Yellow
-$migrations = @(
-    "supabase/migrations/001_initial_schema.sql",
-    "supabase/migrations/002_rls_policies.sql",
-    "supabase/seed.sql"
-)
-
+$migrations = Get-ChildItem "supabase/migrations/*.sql" | Sort-Object Name
 foreach ($m in $migrations) {
-    if (Test-Path $m) {
-        Write-Host "  OK: $m" -ForegroundColor Green
-    } else {
-        Write-Host "  ERRO: $m não encontrado" -ForegroundColor Red
-        exit 1
-    }
+    Write-Host "  - $($m.Name)" -ForegroundColor Green
 }
 
 # Aplicar migrations
@@ -63,8 +52,11 @@ if ($DryRun) {
     Write-Host "  [DRY-RUN] Nenhuma migration aplicada" -ForegroundColor Magenta
 } else {
     Write-Host "  Executando: supabase db push" -ForegroundColor Gray
-    # supabase db push
-    Write-Host "  (Execute manualmente se necessário)" -ForegroundColor Yellow
+    supabase db push
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ERRO ao aplicar migrations" -ForegroundColor Red
+        exit 1
+    }
 }
 
 # Verificar resultado
@@ -75,35 +67,7 @@ Write-Host ""
 
 # Resumo
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  RESUMO" -ForegroundColor Cyan
+Write-Host "  CONCLUSÃO" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Tabelas criadas:" -ForegroundColor White
-Write-Host "  - tenants (multi-tenant)" -ForegroundColor Gray
-Write-Host "  - profiles (usuarios)" -ForegroundColor Gray
-Write-Host "  - projects (projetos)" -ForegroundColor Gray
-Write-Host "  - project_schedules (cronogramas)" -ForegroundColor Gray
-Write-Host "  - project_deliveries (entregas)" -ForegroundColor Gray
-Write-Host "  - project_requirements (requisitos)" -ForegroundColor Gray
-Write-Host "  - sync_logs (auditoria)" -ForegroundColor Gray
-Write-Host ""
-Write-Host "RLS habilitado em todas as tabelas" -ForegroundColor Green
-Write-Host "Tenant 'arauz' criado" -ForegroundColor Green
-Write-Host ""
-
-# Próximos passos
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  PRÓXIMOS PASSOS" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "1. Criar usuário admin no Supabase Auth Dashboard:" -ForegroundColor White
-Write-Host "   https://supabase.com/dashboard/project/$ProjectRef/auth/users" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "2. Inserir profile (após criar user):" -ForegroundColor White
-Write-Host "   INSERT INTO public.profiles (id, tenant_id, email, full_name, role)" -ForegroundColor Gray
-Write-Host "   VALUES ('<user_id>', '00000000-0000-0000-0000-000000000001'," -ForegroundColor Gray
-Write-Host "          'seu@email.com', 'Seu Nome', 'admin');" -ForegroundColor Gray
-Write-Host ""
-Write-Host "3. Setup Next.js:" -ForegroundColor White
-Write-Host "   npx create-next-app@latest . --typescript --tailwind --eslint --app" -ForegroundColor Cyan
-Write-Host ""
+Write-Host "Script finalizado com sucesso." -ForegroundColor Green

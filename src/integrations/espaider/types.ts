@@ -100,6 +100,27 @@ export interface ProjetoMapeado {
     prazo_final: Date | null;
     updated_at: Date | null;
     categoria: string;
+    // === Novos campos (Migration 009) ===
+    /** Fase atual do projeto - APROVADORATUAL - usado para agrupar Kanban */
+    fase_atual: string;
+    /** Prazo da fase atual - PRAZOAPROVADOR */
+    prazo_fase: Date | null;
+    /** Atividade atual do cronograma - CRONOGRAMAATUAL */
+    cronograma_atual: string;
+    /** Prazo do cronograma atual - PRAZOCRONOGRAMAATUAL */
+    prazo_cronograma: Date | null;
+    /** Area do projeto - ASSUNTOAREA */
+    area: string;
+    /** Pasta consultivo - PASTACONSULTIVO */
+    pasta_consultivo: string;
+    /** Ambiente da solucao aplicada - SOLUCAOAPLICADAEM */
+    solucao_aplicada: string;
+    /** Data da ultima movimentacao - DATAMOVIMENTACAO */
+    data_movimentacao: Date | null;
+    /** Data de encerramento - ENCERRADOEM */
+    data_encerramento: Date | null;
+    /** Data inicio aprovacao - DATAINICIOAPROVACAO */
+    data_inicio_aprovacao: Date | null;
     /** Campos extras não mapeados */
     extras: Record<string, string>;
 }
@@ -114,6 +135,14 @@ export interface EntregaMapeada {
     status: string;
     data_prevista: Date | null;
     data_realizada: Date | null;
+    // === Novos campos (Migration 011) ===
+    /** Ordem/sequencia da entrega - ORDEM */
+    ordem: string;
+    /** Detalhamento da entrega - DETALHAMENTO */
+    detalhamento: string;
+    /** Prioridade da entrega - PRIORIDADE (separado de status!) */
+    prioridade: string;
+    /** Campos extras não mapeados */
     extras: Record<string, string>;
 }
 
@@ -128,6 +157,26 @@ export interface CronogramaMapeado {
     data_inicio: Date | null;
     data_fim: Date | null;
     status: string;
+    // === Novos campos (Migration 010) ===
+    /** Fase da atividade - FASEATIVIDADE */
+    fase_atividade: string;
+    /** Indica se atividade esta atrasada - ATRASADO (Sim/Nao) */
+    atrasado: boolean;
+    /** Setor responsavel - SETORRESPONSAVEL */
+    setor_responsavel: string;
+    /** Numero do item - ITEM */
+    item: string;
+    /** Detalhamento da atividade - DETALHAMENTO */
+    detalhamento: string;
+    /** Data prazo original - DATAPRAZO */
+    data_prazo: Date | null;
+    /** Novo prazo renegociado - DATANOVOPRAZO */
+    data_novo_prazo: Date | null;
+    /** Data de alerta do prazo - DATAALERTAPRAZO */
+    data_alerta_prazo: Date | null;
+    /** Prazo confirmado - PRAZOCONFIRMADO */
+    prazo_confirmado: boolean;
+    /** Campos extras não mapeados */
     extras: Record<string, string>;
 }
 
@@ -142,6 +191,18 @@ export interface RequisitoMapeado {
     tipo: string;
     prioridade: string;
     status: string;
+    // === Novos campos (Migration 012) ===
+    /** Nivel de impacto - IMPACTO */
+    impacto: string;
+    /** Detalhamento do requisito - DETALHAMENTOREQUISITO */
+    detalhamento: string;
+    /** ID Espaider da entrega vinculada - IDENTIFICADOR_ENTREGA */
+    entrega_id_espaider: number;
+    /** Nome da entrega vinculada - ENTREGA */
+    entrega_nome: string;
+    /** Data de conclusao - DATACONCLUSAO */
+    data_conclusao: Date | null;
+    /** Campos extras não mapeados */
     extras: Record<string, string>;
 }
 

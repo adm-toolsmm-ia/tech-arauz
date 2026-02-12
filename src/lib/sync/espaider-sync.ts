@@ -112,32 +112,15 @@ async function updateApiSyncStatus(
 
 const STATUS_MAP: Record<string, string> = {
   // Espaider value (lowercase) -> Kanban slug
+  // Mapeamentos diretos apenas para normalização básica
+  // Se o valor não estiver aqui, será usado como slug (ex: "Aguardando Fornecedor" -> "aguardando_fornecedor")
   'novo': 'projeto_futuro',
   'futuro': 'projeto_futuro',
-  'planejado': 'projeto_futuro',
-  'em aprovação': 'em_aprovacao',
-  'em aprovacao': 'em_aprovacao',
-  'aprovação': 'em_aprovacao',
-  'em análise': 'em_aprovacao',
-  'em analise': 'em_aprovacao',
-  'em desenvolvimento': 'em_desenvolvimento',
-  'em andamento': 'em_desenvolvimento',
-  'em execução': 'em_desenvolvimento',
-  'em execucao': 'em_desenvolvimento',
-  'ativo': 'em_desenvolvimento',
-  'em homologação': 'em_homologacao',
-  'em homologacao': 'em_homologacao',
-  'homologação': 'em_homologacao',
-  'em teste': 'em_homologacao',
-  'em testes': 'em_homologacao',
+  'projetofuturo': 'projeto_futuro',
   'concluído': 'concluido',
   'concluido': 'concluido',
   'finalizado': 'concluido',
   'encerrado': 'concluido',
-  'cancelado': 'cancelado',
-  'suspenso': 'suspenso',
-  'parado': 'suspenso',
-  'pausado': 'suspenso',
 };
 
 /**
@@ -147,16 +130,41 @@ const STATUS_MAP: Record<string, string> = {
 export function normalizeStatus(raw: string): string {
   if (!raw) return 'projeto_futuro';
   const key = raw.trim().toLowerCase();
+
   // Direct match first
   if (STATUS_MAP[key]) return STATUS_MAP[key];
-  // Partial match (e.g. "Em Desenvolvimento - Fase 2" -> "em_desenvolvimento")
-  for (const [pattern, slug] of Object.entries(STATUS_MAP)) {
-    if (key.includes(pattern)) return slug;
-  }
-  // If the value is already a valid slug, return as-is
-  const validSlugs = ['projeto_futuro', 'em_aprovacao', 'em_desenvolvimento', 'em_homologacao', 'concluido', 'cancelado', 'suspenso'];
-  if (validSlugs.includes(key)) return key;
-  return 'projeto_futuro';
+
+  // If no map, just slugify the value
+  // "Aguardando Fornecedor" -> "aguardando_fornecedor"
+  let slug = key
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .replace(/[^a-z0-9]+/g, '_') // Replace non-alphanumeric with underscore
+    .replace(/^_+|_+$/g, ''); // Trim underscores
+
+  return slug || 'projeto_futuro';
+}
+
+/**
+ * Normalize phase values from APROVADORATUAL for Kanban grouping.
+ * Example values:
+ * - "Execução - Produção"
+ * - "Execução - Homologação"
+ * - "Fila de Projetos"
+ * - "Validação - Homologação"
+ * - "Levantamentos iniciais"
+ * Falls back to 'fila_projetos' if empty.
+ */
+export function normalizeFase(raw: string): string {
+  if (!raw) return 'fila_projetos';
+  const key = raw.trim().toLowerCase();
+
+  // Slugify the value
+  let slug = key
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .replace(/[^a-z0-9]+/g, '_') // Replace non-alphanumeric with underscore
+    .replace(/^_+|_+$/g, ''); // Trim underscores
+
+  return slug || 'fila_projetos';
 }
 
 // =============================================================================
@@ -234,11 +242,23 @@ export async function syncProjects(
       espaider_id: p.id_espaider,
       codigo: p.codigo,
       titulo: p.titulo,
-      status: normalizeStatus(p.status),
+      status: normalizeStatus(p.extras['SITUACAOATUAL'] || p.status),
+      status_original: p.status,
       responsavel: p.responsavel || null,
       prioridade: p.prioridade || 'Normal',
       categoria: p.categoria || null,
       prazo_final: p.prazo_final ? p.prazo_final.toISOString().split('T')[0] : null,
+      // === Novos campos (Migration 009) ===
+      fase_atual: p.fase_atual || null,
+      prazo_fase: p.prazo_fase ? p.prazo_fase.toISOString().split('T')[0] : null,
+      cronograma_atual: p.cronograma_atual || null,
+      prazo_cronograma: p.prazo_cronograma ? p.prazo_cronograma.toISOString().split('T')[0] : null,
+      area: p.area || null,
+      pasta_consultivo: p.pasta_consultivo || null,
+      solucao_aplicada: p.solucao_aplicada || null,
+      data_movimentacao: p.data_movimentacao?.toISOString() || null,
+      data_encerramento: p.data_encerramento?.toISOString() || null,
+      data_inicio_aprovacao: p.data_inicio_aprovacao?.toISOString() || null,
       espaider_raw: p.extras,
       sync_status: 'synced',
       last_sync_at: new Date().toISOString(),
@@ -344,6 +364,10 @@ export async function syncDeliveries(
         status: e.status || 'Pendente',
         data_prevista: e.data_prevista ? e.data_prevista.toISOString().split('T')[0] : null,
         data_realizada: e.data_realizada ? e.data_realizada.toISOString().split('T')[0] : null,
+        // === Novos campos (Migration 011) ===
+        ordem: e.ordem || null,
+        detalhamento: e.detalhamento || null,
+        prioridade: e.prioridade || 'Normal',
         espaider_raw: e.extras,
       }));
 
@@ -429,6 +453,16 @@ export async function syncSchedules(
         data_inicio: c.data_inicio ? c.data_inicio.toISOString().split('T')[0] : null,
         data_fim: c.data_fim ? c.data_fim.toISOString().split('T')[0] : null,
         status: c.status || 'Pendente',
+        // === Novos campos (Migration 010) ===
+        fase_atividade: c.fase_atividade || null,
+        atrasado: c.atrasado || false,
+        setor_responsavel: c.setor_responsavel || null,
+        item: c.item || null,
+        detalhamento: c.detalhamento || null,
+        data_prazo: c.data_prazo ? c.data_prazo.toISOString().split('T')[0] : null,
+        data_novo_prazo: c.data_novo_prazo ? c.data_novo_prazo.toISOString().split('T')[0] : null,
+        data_alerta_prazo: c.data_alerta_prazo ? c.data_alerta_prazo.toISOString().split('T')[0] : null,
+        prazo_confirmado: c.prazo_confirmado || null,
         espaider_raw: c.extras,
       }));
 
@@ -514,6 +548,12 @@ export async function syncRequirements(
         tipo: r.tipo || null,
         prioridade: r.prioridade || 'Normal',
         status: r.status || 'Aberto',
+        // === Novos campos (Migration 012) ===
+        impacto: r.impacto || null,
+        detalhamento: r.detalhamento || null,
+        entrega_id_espaider: r.entrega_id_espaider || null,
+        entrega_nome: r.entrega_nome || null,
+        data_conclusao: r.data_conclusao ? r.data_conclusao.toISOString().split('T')[0] : null,
         espaider_raw: r.extras,
       }));
 
@@ -729,6 +769,10 @@ async function syncDeliveriesFromRegistros(
         status: e.status || 'Pendente',
         data_prevista: e.data_prevista ? e.data_prevista.toISOString().split('T')[0] : null,
         data_realizada: e.data_realizada ? e.data_realizada.toISOString().split('T')[0] : null,
+        // === Novos campos (Migration 011) ===
+        ordem: e.ordem || null,
+        detalhamento: e.detalhamento || null,
+        prioridade: e.prioridade || 'Normal',
         espaider_raw: e.extras,
       }));
 
@@ -797,6 +841,16 @@ async function syncSchedulesFromRegistros(
         data_inicio: c.data_inicio ? c.data_inicio.toISOString().split('T')[0] : null,
         data_fim: c.data_fim ? c.data_fim.toISOString().split('T')[0] : null,
         status: c.status || 'Pendente',
+        // === Novos campos (Migration 010) ===
+        fase_atividade: c.fase_atividade || null,
+        atrasado: c.atrasado || false,
+        setor_responsavel: c.setor_responsavel || null,
+        item: c.item || null,
+        detalhamento: c.detalhamento || null,
+        data_prazo: c.data_prazo ? c.data_prazo.toISOString().split('T')[0] : null,
+        data_novo_prazo: c.data_novo_prazo ? c.data_novo_prazo.toISOString().split('T')[0] : null,
+        data_alerta_prazo: c.data_alerta_prazo ? c.data_alerta_prazo.toISOString().split('T')[0] : null,
+        prazo_confirmado: c.prazo_confirmado || null,
         espaider_raw: c.extras,
       }));
 
@@ -865,6 +919,12 @@ async function syncRequirementsFromRegistros(
         tipo: r.tipo || null,
         prioridade: r.prioridade || 'Normal',
         status: r.status || 'Aberto',
+        // === Novos campos (Migration 012) ===
+        impacto: r.impacto || null,
+        detalhamento: r.detalhamento || null,
+        entrega_id_espaider: r.entrega_id_espaider || null,
+        entrega_nome: r.entrega_nome || null,
+        data_conclusao: r.data_conclusao ? r.data_conclusao.toISOString().split('T')[0] : null,
         espaider_raw: r.extras,
       }));
 

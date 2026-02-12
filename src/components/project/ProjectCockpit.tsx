@@ -13,6 +13,23 @@ interface UIProject {
   espaider_code: string;
   project_name: string;
   status: string;
+  original_status?: string | null;
+  // === Novos campos (Migration 009) ===
+  /** Fase atual do projeto - usado para agrupar Kanban */
+  fase_atual?: string | null;
+  prazo_fase?: string | null;
+  area?: string | null;
+  current_situation?: string | null;
+  last_update?: string | null;
+  cronograma_atual?: string | null;
+  prazo_cronograma?: string | null;
+  pasta_consultivo?: string | null;
+  solucao_aplicada?: string | null;
+  data_encerramento?: string | null;
+  data_inicio_aprovacao?: string | null;
+  // Legacy (mantidos para compatibilidade)
+  aprovador_atual?: string | null;
+  prazo_aprovador?: string | null;
   end_date: string | null;
   responsible: string | null;
   priority: string | null;
@@ -44,25 +61,31 @@ interface ProjectCockpitProps {
 
 const statusLabels: Record<string, string> = {
   projeto_futuro: 'Projeto Futuro',
-  em_aprovacao: 'Em Aprovacao',
+  em_aprovacao: 'Em Aprovação',
   em_desenvolvimento: 'Em Desenvolvimento',
-  em_homologacao: 'Em Homologacao',
-  concluido: 'Concluido',
+  em_homologacao: 'Em Homologação',
+  concluido: 'Concluído',
   cancelado: 'Cancelado',
   suspenso: 'Suspenso',
 };
 
 const statusStyles: Record<string, string> = {
   projeto_futuro: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  fila_projetos: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
   em_aprovacao: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  em_desenvolvimento: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  em_execucao: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  execucao_homologacao: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  execucao_producao: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
   em_homologacao: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+  validacao_homologacao: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+  validacao_producao: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
   concluido: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  monitoramento_producao: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
   cancelado: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
   suspenso: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
 };
 
-function InfoField({ label, value }: { label: string; value: string | null }) {
+function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -71,7 +94,7 @@ function InfoField({ label, value }: { label: string; value: string | null }) {
   );
 }
 
-function formatDate(dateStr: string | null): string {
+function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '-';
   try {
     return new Date(dateStr).toLocaleDateString('pt-BR', {
@@ -95,27 +118,10 @@ export function ProjectCockpit({
 
   return (
     <div className="space-y-6">
-      {/* Status Badges */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span
-          className={cn(
-            'inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium',
-            statusStyles[project.status] || statusStyles.projeto_futuro
-          )}
-        >
-          {statusLabels[project.status] || project.status}
-        </span>
-        {project.priority && (
-          <Badge variant="outline" className="text-xs">
-            {project.priority}
-          </Badge>
-        )}
-        {project.category && (
-          <Badge variant="secondary" className="text-xs">
-            {project.category}
-          </Badge>
-        )}
-      </div>
+      {/* Header with Title and Code */}
+      {/* Header removed - handled by SplitView */}
+
+      {/* Header badges removed as per user request */}
 
       {/* Tabs */}
       <Tabs defaultValue="detalhes" className="w-full">
@@ -156,7 +162,7 @@ export function ProjectCockpit({
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
           >
             <ListChecks className="size-4 mr-2" />
-            Acoes
+            Ações
           </TabsTrigger>
         </TabsList>
 
@@ -164,22 +170,72 @@ export function ProjectCockpit({
         <TabsContent value="detalhes" className="mt-6 space-y-6">
           {/* Informacoes */}
           <section>
-            <h3 className="text-sm font-semibold mb-4">Informacoes</h3>
+            <h3 className="text-sm font-semibold mb-4">Informações</h3>
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <InfoField label="Responsavel" value={project.responsible} />
+              <InfoField label="Responsável" value={project.responsible} />
+              <InfoField label="Área" value={project.area} />
               <InfoField label="Categoria" value={project.category} />
+              <InfoField label="Pasta Consultivo" value={project.pasta_consultivo} />
+              <InfoField label="Solução Aplicada" value={project.solucao_aplicada} />
               <InfoField label="Prazo Final" value={formatDate(project.end_date)} />
+              <InfoField label="Última Movimentação" value={project.last_update} />
               <InfoField label="Prioridade" value={project.priority} />
+              <InfoField label="Status do Projeto" value={statusLabels[project.status] || project.status} />
+              <InfoField label="Situação no Espaider" value={project.current_situation} />
             </div>
           </section>
 
           <Separator />
 
-          {/* Situacao Atual */}
+          {/* Fases e Cronograma */}
           <section>
-            <h3 className="text-sm font-semibold mb-4">Situacao Atual</h3>
-            <div className="rounded-lg border bg-muted/30 px-4 py-3">
-              <p className="text-sm">{statusLabels[project.status] || project.status}</p>
+            <h3 className="text-sm font-semibold mb-4">Situação Atual</h3>
+            <div className="space-y-3">
+              {/* Fase Atual - usa fase_atual (Migration 009) com fallback para aprovador_atual */}
+              {(project.fase_atual || project.aprovador_atual || project.prazo_fase || project.prazo_aprovador) && (
+                <div className="rounded-lg border bg-blue-50/50 dark:bg-blue-900/10 px-4 py-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Fase Atual</p>
+                      <p className="text-sm font-medium">{project.fase_atual || project.aprovador_atual || '-'}</p>
+                    </div>
+                    {(project.prazo_fase || project.prazo_aprovador) && (
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground mb-1">Prazo da Fase</p>
+                        <p className="text-sm font-medium">{formatDate(project.prazo_fase) || project.prazo_aprovador}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {/* Cronograma Atual */}
+              {(project.cronograma_atual || project.prazo_cronograma) && (
+                <div className="rounded-lg border bg-purple-50/50 dark:bg-purple-900/10 px-4 py-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Cronograma Atual</p>
+                      <p className="text-sm font-medium">{project.cronograma_atual || '-'}</p>
+                    </div>
+                    {project.prazo_cronograma && (
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground mb-1">Prazo</p>
+                        <p className="text-sm font-medium">{formatDate(project.prazo_cronograma)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {/* Data de Encerramento - novo campo */}
+              {project.data_encerramento && (
+                <div className="rounded-lg border bg-green-50/50 dark:bg-green-900/10 px-4 py-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Encerrado em</p>
+                      <p className="text-sm font-medium">{formatDate(project.data_encerramento)}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
@@ -191,7 +247,7 @@ export function ProjectCockpit({
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
               <InfoField
                 label="Entregas"
-                value={deliveries.length > 0 ? `${completedDeliveries} de ${deliveries.length} concluidas` : 'Nenhuma'}
+                value={deliveries.length > 0 ? `${completedDeliveries} de ${deliveries.length} concluídas` : 'Nenhuma'}
               />
               <InfoField
                 label="Cronogramas"
@@ -207,7 +263,7 @@ export function ProjectCockpit({
             <h3 className="text-sm font-semibold mb-4">Metadados</h3>
             <div className="space-y-2 text-xs text-muted-foreground">
               <p>Origem: Espaider</p>
-              <p>Codigo: {project.espaider_code}</p>
+              <p>Código: {project.espaider_code}</p>
               <p>ID Interno: {project.id}</p>
             </div>
           </section>
@@ -253,7 +309,7 @@ export function ProjectCockpit({
                         delivery.completed && 'border-green-500 text-green-600'
                       )}
                     >
-                      {delivery.completed ? 'Concluida' : 'Pendente'}
+                      {delivery.completed ? 'Concluída' : 'Pendente'}
                     </Badge>
                   </div>
                 </div>
@@ -309,9 +365,9 @@ export function ProjectCockpit({
                 {isSyncing ? 'Sincronizando...' : 'Sincronizar com Espaider'}
               </Button>
             )}
-            <p className="text-xs text-muted-foreground text-center">
-              Os dados deste projeto sao gerenciados no Espaider.
-              Use a sincronizacao para atualizar as informacoes.
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              Os dados deste projeto são gerenciados no Espaider.
+              Use a sincronização para atualizar as informações.
             </p>
           </div>
         </TabsContent>

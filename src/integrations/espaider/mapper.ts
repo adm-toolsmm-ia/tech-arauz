@@ -78,6 +78,7 @@ function getExtras(
 /**
  * Campos mapeados para Projetos
  * @see BR-003
+ * Atualizado em 2026-02-11: Adicionados campos de fase, cronograma atual, area, etc.
  */
 const CAMPOS_PROJETO = [
     'CODIGO',
@@ -87,8 +88,19 @@ const CAMPOS_PROJETO = [
     'RESPONSAVELPROJETO',
     'PRIORIDADE',
     'PRAZOFINAL',
-    'DATAMOVIMENTACAO',
     'TIPOASSUNTO',
+    // Novos campos (Migration 009)
+    'APROVADORATUAL',
+    'PRAZOAPROVADOR',
+    'CRONOGRAMAATUAL',
+    'PRAZOCRONOGRAMAATUAL',
+    'ASSUNTOAREA',
+    'PASTACONSULTIVO',
+    'SOLUCAOAPLICADAEM',
+    'DATAMOVIMENTACAO',
+    'ENCERRADOEM',
+    'DATAINICIOAPROVACAO',
+    'SITUACAOATUAL',
 ];
 
 /**
@@ -107,6 +119,17 @@ export function mapearProjeto(registro: RegistroEspaider): ProjetoMapeado {
         prazo_final: parseData(getCampoValor(campos, 'PRAZOFINAL')),
         updated_at: parseData(getCampoValor(campos, 'DATAMOVIMENTACAO')),
         categoria: getCampoValor(campos, 'TIPOASSUNTO'),
+        // === Novos campos (Migration 009) ===
+        fase_atual: getCampoValor(campos, 'APROVADORATUAL'),
+        prazo_fase: parseData(getCampoValor(campos, 'PRAZOAPROVADOR')),
+        cronograma_atual: getCampoValor(campos, 'CRONOGRAMAATUAL'),
+        prazo_cronograma: parseData(getCampoValor(campos, 'PRAZOCRONOGRAMAATUAL')),
+        area: getCampoValor(campos, 'ASSUNTOAREA'),
+        pasta_consultivo: getCampoValor(campos, 'PASTACONSULTIVO'),
+        solucao_aplicada: getCampoValor(campos, 'SOLUCAOAPLICADAEM'),
+        data_movimentacao: parseData(getCampoValor(campos, 'DATAMOVIMENTACAO')),
+        data_encerramento: parseData(getCampoValor(campos, 'ENCERRADOEM')),
+        data_inicio_aprovacao: parseData(getCampoValor(campos, 'DATAINICIOAPROVACAO')),
         extras: getExtras(campos, CAMPOS_PROJETO),
     };
 }
@@ -128,17 +151,26 @@ const CAMPOS_ENTREGA = [
 
 /**
  * Mapeia registro Espaider para EntregaMapeada
+ * Atualizado em 2026-02-11: Separado prioridade de status, adicionados ordem e detalhamento
  */
 export function mapearEntrega(registro: RegistroEspaider): EntregaMapeada {
     const campos = registro.ListaCampos;
+
+    // Derivar status baseado nas datas (não mais da PRIORIDADE!)
+    const dataRealizada = parseData(getCampoValor(campos, 'DATACONCLUSAO'));
+    const derivedStatus = dataRealizada ? 'Concluido' : 'Pendente';
 
     return {
         id_espaider: registro.IDEspaider,
         projeto_id_espaider: parseInt(getCampoValor(campos, 'IDREGISTROPAI') || '0', 10),
         titulo: getCampoValor(campos, 'ENTREGA'),
-        status: getCampoValor(campos, 'PRIORIDADE') || 'Pendente',
+        status: derivedStatus,
         data_prevista: parseData(getCampoValor(campos, 'DATAINICIO')),
-        data_realizada: parseData(getCampoValor(campos, 'DATACONCLUSAO')),
+        data_realizada: dataRealizada,
+        // === Novos campos (Migration 011) ===
+        ordem: getCampoValor(campos, 'ORDEM'),
+        detalhamento: getCampoValor(campos, 'DETALHAMENTO'),
+        prioridade: getCampoValor(campos, 'PRIORIDADE') || 'Normal',
         extras: getExtras(campos, CAMPOS_ENTREGA),
     };
 }
@@ -146,6 +178,7 @@ export function mapearEntrega(registro: RegistroEspaider): EntregaMapeada {
 /**
  * Campos mapeados para Cronogramas (nomes reais da API Espaider)
  * @see src/integrations/espaider/references/response - Cronogramas de Projetos.json
+ * Atualizado em 2026-02-11: Adicionados campos de fase, atraso, setor, etc.
  */
 const CAMPOS_CRONOGRAMA = [
     'IDREGISTROPAI',
@@ -158,10 +191,25 @@ const CAMPOS_CRONOGRAMA = [
     'FASEATIVIDADE',
     'ITEM',
     'IDENTIFICADOR',
+    // Novos campos (Migration 010)
+    'ATRASADO',
+    'SETORRESPONSAVEL',
+    'DETALHAMENTO',
+    'DATANOVOPRAZO',
+    'DATAALERTAPRAZO',
+    'PRAZOCONFIRMADO',
 ];
 
 /**
+ * Converte valor "Sim"/"Nao" para boolean
+ */
+function parseSimNao(valor: string): boolean {
+    return valor.toLowerCase() === 'sim';
+}
+
+/**
  * Mapeia registro Espaider para CronogramaMapeado
+ * Atualizado em 2026-02-11: Adicionados campos de fase, atraso, setor, etc.
  */
 export function mapearCronograma(registro: RegistroEspaider): CronogramaMapeado {
     const campos = registro.ListaCampos;
@@ -174,6 +222,16 @@ export function mapearCronograma(registro: RegistroEspaider): CronogramaMapeado 
         data_inicio: parseData(getCampoValor(campos, 'DATAINICIO')),
         data_fim: parseData(getCampoValor(campos, 'DATACONCLUSAO') || getCampoValor(campos, 'DATAPRAZO')),
         status: getCampoValor(campos, 'STATUS') || 'Pendente',
+        // === Novos campos (Migration 010) ===
+        fase_atividade: getCampoValor(campos, 'FASEATIVIDADE'),
+        atrasado: parseSimNao(getCampoValor(campos, 'ATRASADO')),
+        setor_responsavel: getCampoValor(campos, 'SETORRESPONSAVEL'),
+        item: getCampoValor(campos, 'ITEM'),
+        detalhamento: getCampoValor(campos, 'DETALHAMENTO'),
+        data_prazo: parseData(getCampoValor(campos, 'DATAPRAZO')),
+        data_novo_prazo: parseData(getCampoValor(campos, 'DATANOVOPRAZO')),
+        data_alerta_prazo: parseData(getCampoValor(campos, 'DATAALERTAPRAZO')),
+        prazo_confirmado: parseSimNao(getCampoValor(campos, 'PRAZOCONFIRMADO')),
         extras: getExtras(campos, CAMPOS_CRONOGRAMA),
     };
 }
@@ -198,6 +256,7 @@ const CAMPOS_REQUISITO = [
 
 /**
  * Mapeia registro Espaider para RequisitoMapeado
+ * Atualizado em 2026-02-11: Adicionados campos de impacto, detalhamento, entrega vinculada
  */
 export function mapearRequisito(registro: RegistroEspaider): RequisitoMapeado {
     const campos = registro.ListaCampos;
@@ -210,6 +269,12 @@ export function mapearRequisito(registro: RegistroEspaider): RequisitoMapeado {
         tipo: getCampoValor(campos, 'ORIGEMREQUISITO'),
         prioridade: getCampoValor(campos, 'PRIORIDADE'),
         status: getCampoValor(campos, 'STATUSREQUISITO') || 'Aberto',
+        // === Novos campos (Migration 012) ===
+        impacto: getCampoValor(campos, 'IMPACTO'),
+        detalhamento: getCampoValor(campos, 'DETALHAMENTOREQUISITO'),
+        entrega_id_espaider: parseInt(getCampoValor(campos, 'IDENTIFICADOR_ENTREGA') || '0', 10),
+        entrega_nome: getCampoValor(campos, 'ENTREGA'),
+        data_conclusao: parseData(getCampoValor(campos, 'DATACONCLUSAO')),
         extras: getExtras(campos, CAMPOS_REQUISITO),
     };
 }

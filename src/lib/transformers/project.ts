@@ -14,6 +14,7 @@
 // DB row types (match Supabase schema exactly)
 // =============================================================================
 
+
 export interface DBProject {
   id: string;
   tenant_id: string;
@@ -21,6 +22,7 @@ export interface DBProject {
   codigo: string;
   titulo: string;
   status: string;
+  status_original?: string | null;
   responsavel: string | null;
   prioridade: string | null;
   categoria: string | null;
@@ -30,6 +32,17 @@ export interface DBProject {
   last_sync_at: string | null;
   created_at: string;
   updated_at: string;
+  // === Novos campos (Migration 009) ===
+  fase_atual?: string | null;
+  prazo_fase?: string | null;
+  cronograma_atual?: string | null;
+  prazo_cronograma?: string | null;
+  area?: string | null;
+  pasta_consultivo?: string | null;
+  solucao_aplicada?: string | null;
+  data_movimentacao?: string | null;
+  data_encerramento?: string | null;
+  data_inicio_aprovacao?: string | null;
   // Joined relations (optional)
   schedules?: DBSchedule[];
   deliveries?: DBDelivery[];
@@ -48,6 +61,16 @@ export interface DBSchedule {
   espaider_raw: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+  // === Novos campos (Migration 010) ===
+  fase_atividade?: string | null;
+  atrasado?: boolean | null;
+  setor_responsavel?: string | null;
+  item?: string | null;
+  detalhamento?: string | null;
+  data_prazo?: string | null;
+  data_novo_prazo?: string | null;
+  data_alerta_prazo?: string | null;
+  prazo_confirmado?: boolean | null;
 }
 
 export interface DBDelivery {
@@ -62,6 +85,10 @@ export interface DBDelivery {
   espaider_raw: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+  // === Novos campos (Migration 011) ===
+  ordem?: string | null;
+  detalhamento?: string | null;
+  prioridade?: string | null;
 }
 
 // =============================================================================
@@ -73,6 +100,23 @@ export interface UIProject {
   espaider_code: string;
   project_name: string;
   status: string;
+  original_status?: string | null;
+  // === Novos campos (Migration 009) - Agora diretos do BD ===
+  /** Fase atual do projeto - usado para agrupar Kanban */
+  fase_atual?: string | null;
+  prazo_fase?: string | null;
+  area?: string | null;
+  current_situation?: string | null;
+  last_update?: string | null;
+  cronograma_atual?: string | null;
+  prazo_cronograma?: string | null;
+  pasta_consultivo?: string | null;
+  solucao_aplicada?: string | null;
+  data_encerramento?: string | null;
+  data_inicio_aprovacao?: string | null;
+  // Legacy fields (mantidos para compatibilidade)
+  aprovador_atual?: string | null;
+  prazo_aprovador?: string | null;
   total_value: number | null;
   responsible: string | null;
   start_date: string | null;
@@ -139,13 +183,33 @@ export function dbDeliveryToUI(row: DBDelivery): UIDelivery {
 
 /**
  * Convert a full DB project row (with joins) to the UI project format.
+ * Atualizado em 2026-02-11: Usa colunas diretas do BD ao invés de espaider_raw
  */
 export function dbProjectToUI(row: DBProject): UIProject {
+  // Fallback to espaider_raw for legacy data (before migration 009)
+  const raw = row.espaider_raw as Record<string, any> | null;
+
   return {
     id: row.id,
     espaider_code: row.codigo,
     project_name: row.titulo,
     status: row.status,
+    original_status: row.status_original,
+    // === Novos campos diretos do BD (Migration 009) ===
+    fase_atual: row.fase_atual || raw?.APROVADORATUAL || null,
+    prazo_fase: row.prazo_fase || raw?.PRAZOAPROVADOR || null,
+    area: row.area || raw?.ASSUNTOAREA || null,
+    current_situation: row.status_original || raw?.SITUACAOATUAL || null,
+    last_update: row.data_movimentacao || raw?.DATAMOVIMENTACAO || null,
+    cronograma_atual: row.cronograma_atual || raw?.CRONOGRAMAATUAL || null,
+    prazo_cronograma: row.prazo_cronograma || raw?.PRAZOCRONOGRAMAATUAL || null,
+    pasta_consultivo: row.pasta_consultivo || raw?.PASTACONSULTIVO || null,
+    solucao_aplicada: row.solucao_aplicada || raw?.SOLUCAOAPLICADAEM || null,
+    data_encerramento: row.data_encerramento || raw?.ENCERRADOEM || null,
+    data_inicio_aprovacao: row.data_inicio_aprovacao || raw?.DATAINICIOAPROVACAO || null,
+    // Legacy: mantidos para compatibilidade com componentes existentes
+    aprovador_atual: row.fase_atual || raw?.APROVADORATUAL || null,
+    prazo_aprovador: row.prazo_fase || raw?.PRAZOAPROVADOR || null,
     total_value: null,                       // DB doesn't track value
     responsible: row.responsavel,
     start_date: row.created_at || null,      // Approximate with created_at

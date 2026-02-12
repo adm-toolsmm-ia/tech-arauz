@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { ViewToggle, type ViewMode } from '@/components/views/ViewToggle';
-import { KanbanBoard, projectStatusColumns, type KanbanItem } from '@/components/views/KanbanBoard';
+import { KanbanBoard, type KanbanItem } from '@/components/views/KanbanBoard';
 import { SplitView } from '@/components/views/SplitView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,21 @@ interface Project {
   espaider_code: string;
   project_name: string;
   status: string;
+  original_status?: string | null;
+  /** Fase atual do projeto - usado para agrupar Kanban (Migration 009) */
+  fase_atual?: string | null;
+  prazo_fase?: string | null;
+  area?: string | null;
+  current_situation?: string | null;
+  last_update?: string | null;
+  cronograma_atual?: string | null;
+  prazo_cronograma?: string | null;
+  pasta_consultivo?: string | null;
+  aprovador_atual?: string | null;
+  prazo_aprovador?: string | null;
+  solucao_aplicada?: string | null;
+  data_encerramento?: string | null;
+  data_inicio_aprovacao?: string | null;
   total_value: number | null;
   responsible: string | null;
   start_date: string | null;
@@ -108,46 +123,162 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
   const completedProjects = projects.filter((p) => p.status === 'concluido').length;
 
   // Transform to Kanban items
+  // IMPORTANTE: Usa fase_atual para agrupamento, não status!
   const kanbanItems: KanbanItem[] = filteredProjects.map((p) => ({
     id: p.id,
     title: p.project_name,
     subtitle: p.espaider_code,
     value: p.total_value ? `R$ ${p.total_value.toLocaleString('pt-BR')}` : undefined,
     priority: (p.priority as KanbanItem['priority']) || 'normal',
-    status: p.status,
+    // Usa fase_atual para agrupamento, fallback para status se fase_atual não existir
+    status: normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos',
   }));
 
-  // Handle drag-and-drop status change (optimistic update)
-  const handleStatusChange = async (itemId: string | number, newStatus: string) => {
+  // Calculate dynamic columns based on FASE (not status)
+  const dynamicColumns = React.useMemo(() => {
+    // Extrai fases únicas (usa fase_atual, fallback para status)
+    const phases = Array.from(new Set(projects.map((p) => normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos')));
+
+    // Ordem das fases no fluxo de projeto
+    const phaseOrder = [
+      'fila_projetos',
+      'fila_de_projetos',
+      'levantamentos_iniciais',
+      'analise_e_definicao_do_projeto',
+      'aprovacao_do_projeto',
+      'execucao_homologacao',
+      'validacao_homologacao',
+      'execucao_producao',
+      'validacao_producao',
+      'monitoramento_producao',
+      'concluido',
+      'cancelado',
+      'suspenso',
+    ];
+
+    const sortedPhases = phases.sort((a, b) => {
+      const indexA = phaseOrder.indexOf(a);
+      const indexB = phaseOrder.indexOf(b);
+
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+
+    // Labels amigáveis para as fases
+    const phaseLabels: Record<string, string> = {
+      fila_projetos: 'Fila de Projetos',
+      fila_de_projetos: 'Fila de Projetos',
+      levantamentos_iniciais: 'Levantamentos',
+      analise_e_definicao_do_projeto: 'Análise/Definição',
+      aprovacao_do_projeto: 'Aprovação',
+      execucao_homologacao: 'Exec - Homolog',
+      validacao_homologacao: 'Valid - Homolog',
+      execucao_producao: 'Exec - Produção',
+      validacao_producao: 'Valid - Produção',
+      monitoramento_producao: 'Monitoramento',
+      concluido: 'Concluído',
+      cancelado: 'Cancelado',
+      suspenso: 'Suspenso',
+      // Legados
+      projeto_futuro: 'Futuro',
+      em_execucao: 'Em Execução',
+      aguardando_fornecedor: 'Aguard. Fornecedor',
+      em_assinatura: 'Em Assinatura',
+    };
+
+    // Cores por fase
+    const phaseColors: Record<string, string> = {
+      fila_projetos: 'blue',
+      fila_de_projetos: 'blue',
+      levantamentos_iniciais: 'amber',
+      analise_e_definicao_do_projeto: 'amber',
+      aprovacao_do_projeto: 'amber',
+      execucao_homologacao: 'purple',
+      validacao_homologacao: 'cyan',
+      execucao_producao: 'purple',
+      validacao_producao: 'cyan',
+      monitoramento_producao: 'green',
+      concluido: 'green',
+      cancelado: 'red',
+      suspenso: 'gray',
+    };
+
+    return sortedPhases.map((phase) => {
+      // Tenta encontrar o título original da fase de um projeto
+      const project = projects.find(p => normalizeFaseSlug(p.fase_atual) === phase || p.status === phase);
+      const originalTitle = project?.fase_atual || project?.aprovador_atual;
+
+      // Formata o título: usa label conhecido, ou título original, ou formata o slug
+      let title = phaseLabels[phase];
+      if (!title && originalTitle) {
+        title = originalTitle;
+      }
+      if (!title) {
+        title = phase
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+
+      return {
+        id: phase,
+        title: title,
+        color: phaseColors[phase] || 'blue',
+      };
+    });
+  }, [projects]);
+
+  /**
+   * Normaliza fase_atual para slug de coluna Kanban
+   */
+  function normalizeFaseSlug(fase: string | null | undefined): string {
+    if (!fase) return '';
+    return fase
+      .trim()
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-z0-9]+/g, '_') // Substitui caracteres especiais por _
+      .replace(/^_+|_+$/g, ''); // Remove _ do início e fim
+  }
+
+  // Handle drag-and-drop phase change (optimistic update)
+  // NOTA: Agora atualiza fase_atual ao invés de status
+  const handleStatusChange = async (itemId: string | number, newPhase: string) => {
     const projectId = String(itemId);
     const oldProject = projects.find((p) => p.id === projectId);
     if (!oldProject) return;
 
+    const oldFase = oldProject.fase_atual;
     const oldStatus = oldProject.status;
 
     // Optimistic update: immediately move card in UI
+    // Atualiza fase_atual (para agrupamento visual) e mantém status original
     setProjects((prev) =>
-      prev.map((p) => (p.id === projectId ? { ...p, status: newStatus } : p))
+      prev.map((p) => (p.id === projectId ? { ...p, fase_atual: newPhase } : p))
     );
-    toast.info('Atualizando status...');
+    toast.info('Atualizando fase...');
 
     try {
-      const result = await updateProjectStatusAction(projectId, newStatus);
+      // TODO: Criar nova action updateProjectPhaseAction para atualizar fase_atual
+      // Por enquanto, usa a action de status existente
+      const result = await updateProjectStatusAction(projectId, newPhase);
       if (result.success) {
         toast.success(result.message);
       } else {
         // Revert on failure
         setProjects((prev) =>
-          prev.map((p) => (p.id === projectId ? { ...p, status: oldStatus } : p))
+          prev.map((p) => (p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p))
         );
         toast.error(result.message);
       }
     } catch {
       // Revert on error
       setProjects((prev) =>
-        prev.map((p) => (p.id === projectId ? { ...p, status: oldStatus } : p))
+        prev.map((p) => (p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p))
       );
-      toast.error('Erro inesperado ao atualizar status.');
+      toast.error('Erro inesperado ao atualizar fase.');
     }
   };
 
@@ -239,7 +370,9 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
               { value: 'all', label: 'Todos' },
               { value: 'projeto_futuro', label: 'Futuro' },
               { value: 'em_aprovacao', label: 'Aprovação' },
-              { value: 'em_desenvolvimento', label: 'Desenvolvimento' },
+              { value: 'em_aprovacao', label: 'Aprovação' },
+              { value: 'em_execucao', label: 'Execução' },
+              { value: 'em_homologacao', label: 'Homologação' },
               { value: 'em_homologacao', label: 'Homologação' },
               { value: 'concluido', label: 'Concluído' },
               { value: 'cancelado', label: 'Cancelado' },
@@ -272,7 +405,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
         {/* Content */}
         {view === 'kanban' ? (
           <KanbanBoard
-            columns={projectStatusColumns}
+            columns={dynamicColumns}
             items={kanbanItems}
             onItemClick={handleItemClick}
             onStatusChange={handleStatusChange}
@@ -287,7 +420,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
           isOpen={!!selectedProject}
           onClose={() => setSelectedProject(null)}
           title={selectedProject?.project_name || 'Visao 360'}
-          subtitle={selectedProject?.espaider_code}
+          subtitle={selectedProject ? `${selectedProject.espaider_code}${selectedProject.pasta_consultivo ? ` • ${selectedProject.pasta_consultivo}` : ''}` : undefined}
           width="2xl"
         >
           {selectedProject && (
@@ -297,6 +430,21 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
                 espaider_code: selectedProject.espaider_code,
                 project_name: selectedProject.project_name,
                 status: selectedProject.status,
+                original_status: selectedProject.original_status,
+                // Novos campos (Migration 009)
+                fase_atual: selectedProject.fase_atual,
+                prazo_fase: selectedProject.prazo_fase,
+                area: selectedProject.area,
+                current_situation: selectedProject.current_situation,
+                last_update: selectedProject.last_update,
+                cronograma_atual: selectedProject.cronograma_atual,
+                prazo_cronograma: selectedProject.prazo_cronograma,
+                pasta_consultivo: selectedProject.pasta_consultivo,
+                aprovador_atual: selectedProject.aprovador_atual,
+                prazo_aprovador: selectedProject.prazo_aprovador,
+                solucao_aplicada: selectedProject.solucao_aplicada,
+                data_encerramento: selectedProject.data_encerramento,
+                data_inicio_aprovacao: selectedProject.data_inicio_aprovacao,
                 end_date: selectedProject.end_date,
                 responsible: selectedProject.responsible,
                 priority: selectedProject.priority,
@@ -499,29 +647,40 @@ function EmptyState({ message }: { message: string }) {
 function StatusBadge({ status }: { status: string }) {
   const statusStyles: Record<string, string> = {
     projeto_futuro: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    fila_projetos: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
     em_aprovacao: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-    em_desenvolvimento: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    em_execucao: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    execucao_homologacao: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    execucao_producao: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
     em_homologacao: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+    validacao_homologacao: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+    validacao_producao: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
     concluido: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    monitoramento_producao: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
     cancelado: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
     suspenso: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300',
   };
 
   const statusLabels: Record<string, string> = {
     projeto_futuro: 'Futuro',
+    fila_projetos: 'Fila de Projetos',
     em_aprovacao: 'Em Aprovação',
-    em_desenvolvimento: 'Em Desenvolvimento',
+    em_execucao: 'Em Execução',
+    execucao_homologacao: 'Exec - Homolog',
+    execucao_producao: 'Exec - Produção',
     em_homologacao: 'Em Homologação',
+    validacao_homologacao: 'Valid - Homolog',
+    validacao_producao: 'Valid - Produção',
     concluido: 'Concluído',
+    monitoramento_producao: 'Monitoramento',
     cancelado: 'Cancelado',
     suspenso: 'Suspenso',
   };
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status] || statusStyles.projeto_futuro
-      }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
+        }`}
     >
       {statusLabels[status] || status}
     </span>

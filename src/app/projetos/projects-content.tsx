@@ -70,6 +70,28 @@ interface Project {
     deadline: string;
     completed: boolean;
   }>;
+  histories?: Array<{
+    id: string;
+    type: string;
+    from: string;
+    to: string;
+    step_from: string;
+    step_to: string;
+    message: string;
+    date: string;
+  }>;
+  approvers?: Array<{
+    id: string;
+    type: string;
+    responsible: string;
+  }>;
+  budgets?: Array<{
+    id: string;
+    value: number;
+    supplier: string;
+    date: string;
+    currency: string;
+  }>;
 }
 
 interface ProjectsContentProps {

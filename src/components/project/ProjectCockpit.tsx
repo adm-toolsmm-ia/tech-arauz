@@ -1,6 +1,6 @@
 'use client';
 
-import { RefreshCw, Calendar, Package, FileText, ListChecks } from 'lucide-react';
+import { RefreshCw, Calendar, Package, FileText, ListChecks, Clock, DollarSign } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -65,10 +65,38 @@ interface UIDelivery {
   completed: boolean;
 }
 
+export interface UIHistory {
+  id: string;
+  type: string;
+  from: string;
+  to: string;
+  step_from: string;
+  step_to: string;
+  message: string;
+  date: string;
+}
+
+export interface UIApprover {
+  id: string;
+  type: string;
+  responsible: string;
+}
+
+export interface UIBudget {
+  id: string;
+  value: number;
+  supplier: string;
+  date: string;
+  currency: string;
+}
+
 interface ProjectCockpitProps {
   project: UIProject;
   schedules: UISchedule[];
   deliveries: UIDelivery[];
+  histories?: UIHistory[];
+  approvers?: UIApprover[];
+  budgets?: UIBudget[];
   onSync?: () => void;
   isSyncing?: boolean;
 }
@@ -142,6 +170,9 @@ export function ProjectCockpit({
   project,
   schedules,
   deliveries,
+  histories = [],
+  approvers = [],
+  budgets = [],
   onSync,
   isSyncing = false,
 }: ProjectCockpitProps) {
@@ -180,6 +211,42 @@ export function ProjectCockpit({
             {deliveries.length > 0 && (
               <span className="ml-2 text-xs text-muted-foreground">
                 ({completedDeliveries}/{deliveries.length})
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="historicos"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+          >
+            <Clock className="size-4 mr-2" />
+            Históricos
+            {histories.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({histories.length})
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="aprovadores"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+          >
+            <ListChecks className="size-4 mr-2" />
+            Aprovadores
+            {approvers.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({approvers.length})
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="orcamentos"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+          >
+            <DollarSign className="size-4 mr-2" />
+            Orçamentos
+            {budgets.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({budgets.length})
               </span>
             )}
           </TabsTrigger>
@@ -305,9 +372,135 @@ export function ProjectCockpit({
               <p>ID Interno: {project.id}</p>
             </div>
           </section>
+
+          <Separator />
+
+          {/* New Sections Integrated from 360 View */}
+          <section>
+            <h3 className="text-sm font-semibold mb-4">Estratégia & Técnico</h3>
+
+            {project.importancia_especial && (
+              <div className="mb-4 rounded-md bg-amber-50 dark:bg-amber-900/10 p-4 border border-amber-200 dark:border-amber-800">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2">
+                  ⚠️ Importância Especial
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                  {project.motivo_importancia_especial || 'Sem motivo especificado'}
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-4">
+              <InfoField label="Solicitante" value={project.solicitante} />
+              <InfoField label="TRM Espaider" value={project.trm_espaider} />
+              <InfoField label="Impacto Estratégico" value={project.impacto_estrategico} />
+              <InfoField label="Impacto Operacional" value={project.impacto_operacional} />
+              <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
+            </div>
+
+            <div className="space-y-4">
+              {project.objetivo && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Objetivo</p>
+                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.objetivo}</p>
+                </div>
+              )}
+              {project.justificativa && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Justificativa</p>
+                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.justificativa}</p>
+                </div>
+              )}
+              {project.escopo && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Escopo</p>
+                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.escopo}</p>
+                </div>
+              )}
+            </div>
+          </section>
         </TabsContent>
 
-        {/* Tab: Visão 360 */}
+        {/* Tab: Históricos */}
+        <TabsContent value="historicos" className="mt-6">
+          {histories.length === 0 ? (
+            <div className="text-center py-12 text-sm text-muted-foreground">
+              Nenhum histórico encontrado
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {histories.map((hist) => (
+                <div key={hist.id} className="flex gap-4 p-4 rounded-lg border bg-card">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-sm">{hist.type}</p>
+                      <span className="text-xs text-muted-foreground">{formatDateTime(hist.date)}</span>
+                    </div>
+                    {hist.message && (
+                      <p className="text-sm text-muted-foreground bg-muted/50 p-2 rounded-md mt-2">
+                        {hist.message}
+                      </p>
+                    )}
+                    <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+                      <div>
+                        <span className="font-semibold">De:</span> {hist.from} ({hist.step_from})
+                      </div>
+                      <div>
+                        <span className="font-semibold">Para:</span> {hist.to} ({hist.step_to})
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Tab: Aprovadores */}
+        <TabsContent value="aprovadores" className="mt-6">
+          {approvers.length === 0 ? (
+            <div className="text-center py-12 text-sm text-muted-foreground">
+              Nenhum aprovador encontrado
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {approvers.map((appr) => (
+                <div key={appr.id} className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                  <div>
+                    <p className="font-medium text-sm">{appr.responsible}</p>
+                    <p className="text-xs text-muted-foreground">{appr.type}</p>
+                  </div>
+                  <Badge variant="outline">Definido</Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Tab: Orçamentos */}
+        <TabsContent value="orcamentos" className="mt-6">
+          {budgets.length === 0 ? (
+            <div className="text-center py-12 text-sm text-muted-foreground">
+              Nenhum orçamento encontrado
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {budgets.map((budget) => (
+                <div key={budget.id} className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                  <div>
+                    <p className="font-medium text-sm">{budget.supplier}</p>
+                    <p className="text-xs text-muted-foreground">Cotação: {formatDate(budget.date)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-sm">
+                      {budget.currency} {budget.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
         <TabsContent value="visao360" className="mt-6 space-y-6">
           {/* Identificação */}
           <section>

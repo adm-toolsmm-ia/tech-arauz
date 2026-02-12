@@ -60,6 +60,9 @@ export interface DBProject {
   // Joined relations (optional)
   schedules?: DBSchedule[];
   deliveries?: DBDelivery[];
+  histories?: DBHistory[];
+  approvers?: DBApprover[];
+  budgets?: DBBudget[];
 }
 
 export interface DBSchedule {
@@ -103,6 +106,47 @@ export interface DBDelivery {
   ordem?: string | null;
   detalhamento?: string | null;
   prioridade?: string | null;
+}
+
+export interface DBHistory {
+  id: string;
+  tenant_id: string;
+  project_id: string;
+  espaider_id: number;
+  tipo: string | null;
+  responsavel_para: string | null;
+  responsavel_de: string | null;
+  passo_para: string | null;
+  passo_de: string | null;
+  numero_tramite: number | null;
+  mensagem: string | null;
+  data: string | null;
+  espaider_raw: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface DBApprover {
+  id: string;
+  tenant_id: string;
+  project_id: string;
+  espaider_id: number;
+  tipo: string | null;
+  responsavel: string | null;
+  espaider_raw: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface DBBudget {
+  id: string;
+  tenant_id: string;
+  project_id: string;
+  espaider_id: number;
+  valor: number | null;
+  fornecedor: string | null;
+  data_cotacao: string | null;
+  moeda: string | null;
+  espaider_raw: Record<string, unknown> | null;
+  created_at: string;
 }
 
 // =============================================================================
@@ -153,6 +197,34 @@ export interface UIProject {
   category?: string | null;
   schedules?: UISchedule[];
   deliveries?: UIDelivery[];
+  histories?: UIHistory[];
+  approvers?: UIApprover[];
+  budgets?: UIBudget[];
+}
+
+export interface UIHistory {
+  id: string;
+  type: string;
+  from: string;
+  to: string;
+  step_from: string;
+  step_to: string;
+  message: string;
+  date: string;
+}
+
+export interface UIApprover {
+  id: string;
+  type: string;
+  responsible: string;
+}
+
+export interface UIBudget {
+  id: string;
+  value: number;
+  supplier: string;
+  date: string;
+  currency: string;
 }
 
 export interface UISchedule {
@@ -262,6 +334,40 @@ export function dbProjectToUI(row: DBProject): UIProject {
     category: row.categoria,
     schedules: row.schedules?.map(dbScheduleToUI),
     deliveries: row.deliveries?.map(dbDeliveryToUI),
+    histories: row.histories?.map(dbHistoryToUI),
+    approvers: row.approvers?.map(dbApproverToUI),
+    budgets: row.budgets?.map(dbBudgetToUI),
+  };
+}
+
+export function dbHistoryToUI(row: DBHistory): UIHistory {
+  return {
+    id: row.id,
+    type: row.tipo || '-',
+    from: row.responsavel_de || '-',
+    to: row.responsavel_para || '-',
+    step_from: row.passo_de || '-',
+    step_to: row.passo_para || '-',
+    message: row.mensagem || '-',
+    date: row.data || '',
+  };
+}
+
+export function dbApproverToUI(row: DBApprover): UIApprover {
+  return {
+    id: row.id,
+    type: row.tipo || '-',
+    responsible: row.responsavel || '-',
+  };
+}
+
+export function dbBudgetToUI(row: DBBudget): UIBudget {
+  return {
+    id: row.id,
+    value: row.valor || 0,
+    supplier: row.fornecedor || '-',
+    date: row.data_cotacao || '',
+    currency: row.moeda || 'BRL',
   };
 }
 

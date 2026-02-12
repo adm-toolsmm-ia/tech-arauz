@@ -39,7 +39,8 @@ Ingestion → Strategy → Execution → Validation → Documentation → Memory
 | Arquivo | Propósito |
 |---------|-----------|
 | `.agent/ARCHITECTURE.md` | Sistema de agentes, skills, workflows |
-| `.agent/workflows/orchestration-protocol.md` | Fluxo do CTO |
+| `.agent/workflows/orchestration-protocol.md` | Fluxo do CTO (6 fases) |
+| `.agent/workflows/agent-selection-guide.md` | Decision matrix e routing (qual agente usar?) |
 | `.context/00-MASTER.md` | Regras de negócio |
 
 ### Leitura Opcional (quando necessário contexto histórico)
@@ -51,17 +52,37 @@ Ingestion → Strategy → Execution → Validation → Documentation → Memory
 
 ---
 
-## AGENTES PRINCIPAIS
+## AGENTES PRINCIPAIS (18 Aplicáveis)
 
-| Agente | Quando usar |
-|--------|-------------|
-| `orchestrator` | Coordenação de tarefas complexas |
-| `backend-specialist` | APIs, lógica de negócio, sync |
-| `frontend-specialist` | UI/UX, React, Next.js |
-| `database-architect` | Schema, migrations, Supabase |
-| `security-auditor` | RLS, autenticação, validação |
-| `debugger` | Investigação de bugs |
-| `documentation-writer` | Atualização de docs |
+**Para matriz completa de decisão e detalhes, consulte:** `.agent/workflows/agent-selection-guide.md`
+
+### 🔴 TIER 1: Sempre Ativo
+| Agente | Função |
+|--------|--------|
+| `orchestrator` | Maestro central, coordena todas as 6 fases |
+| `explorer-agent` | Mapeamento inicial, descoberta arquitetural |
+
+### 🟡 TIER 2: Desenvolvimento Core
+| Agente | Função |
+|--------|--------|
+| `frontend-specialist` | React/Next.js, componentes, UI/UX |
+| `backend-specialist` | APIs, lógica negócio, server actions, Espaider |
+| `database-architect` | Supabase, schema, migrations, RLS |
+| `security-auditor` | RLS, autenticação, validação (obrigatório Phase 4) |
+| `debugger` | Root cause analysis, troubleshooting |
+
+### 🟢 TIER 3: Especializado
+| Agente | Função |
+|--------|--------|
+| `test-engineer` | Unit/integration tests, TDD, coverage |
+| `qa-automation-engineer` | E2E tests (Playwright), CI pipelines |
+| `performance-optimizer` | Web Vitals, profiling, bundle optimization |
+| `devops-engineer` | CI/CD, deployment, infrastructure |
+| `documentation-writer` | API docs, arquitetura, runbooks (obrigatório Phase 5) |
+| `project-planner` | Feature scoping, discovery, planning |
+| `product-manager` | User stories, requirements, prioritization |
+| `code-archaeologist` | Refactoring, legacy code, modernization |
+| `seo-specialist` | SEO, ranking, Core Web Vitals, meta tags |
 
 ---
 

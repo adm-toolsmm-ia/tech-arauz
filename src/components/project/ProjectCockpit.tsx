@@ -196,13 +196,6 @@ export function ProjectCockpit({
             Detalhes
           </TabsTrigger>
           <TabsTrigger
-            value="visao360"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
-          >
-            <RefreshCw className="size-4 mr-2" />
-            Visão 360º
-          </TabsTrigger>
-          <TabsTrigger
             value="entregas"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
           >
@@ -211,30 +204,6 @@ export function ProjectCockpit({
             {deliveries.length > 0 && (
               <span className="ml-2 text-xs text-muted-foreground">
                 ({completedDeliveries}/{deliveries.length})
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger
-            value="historicos"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
-          >
-            <Clock className="size-4 mr-2" />
-            Históricos
-            {histories.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                ({histories.length})
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger
-            value="aprovadores"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
-          >
-            <ListChecks className="size-4 mr-2" />
-            Aprovadores
-            {approvers.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                ({approvers.length})
               </span>
             )}
           </TabsTrigger>
@@ -272,153 +241,140 @@ export function ProjectCockpit({
         </TabsList>
 
         {/* Tab: Detalhes */}
-        <TabsContent value="detalhes" className="mt-6 space-y-6">
-          {/* Informacoes */}
+        <TabsContent value="detalhes" className="mt-6 space-y-8">
+
+          {/* 1. Header & Status */}
+          <section className="flex items-center justify-between bg-muted/30 p-4 rounded-lg border">
+            <div>
+              <h3 className="font-semibold text-lg">{project.project_name}</h3>
+              <p className="text-sm text-muted-foreground">{project.espaider_code}</p>
+            </div>
+            <div className="text-right">
+              <Badge variant={project.status === 'concluido' ? 'default' : 'secondary'} className="text-base px-3 py-1">
+                {project.current_situation || statusLabels[project.status] || project.status}
+              </Badge>
+            </div>
+          </section>
+
+          {/* 2. Informações Gerais */}
           <section>
-            <h3 className="text-sm font-semibold mb-4">Informações</h3>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <InfoField label="Responsável" value={project.responsible} />
+            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+              <FileText className="size-5 text-primary" />
+              <h3 className="font-semibold text-base">Informações Gerais</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <InfoField label="Área" value={project.area} />
               <InfoField label="Categoria" value={project.category} />
+              <InfoField label="Prioridade" value={project.priority} />
               <InfoField label="Pasta Consultivo" value={project.pasta_consultivo} />
               <InfoField label="Solução Aplicada" value={project.solucao_aplicada} />
-              <InfoField label="Prazo Final" value={formatDate(project.end_date)} />
-              <InfoField label="Última Movimentação" value={formatDateTime(project.last_update)} />
-              <InfoField label="Prioridade" value={project.priority} />
-              <InfoField label="Status do Projeto" value={statusLabels[project.status] || project.status} />
-              <InfoField label="Situação no Espaider" value={project.current_situation} />
+              <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
             </div>
           </section>
 
-          <Separator />
-
-          {/* Fases e Cronograma */}
+          {/* 3. Participantes */}
           <section>
-            <h3 className="text-sm font-semibold mb-4">Situação Atual</h3>
-            <div className="space-y-3">
-              {/* Fase Atual - usa fase_atual (Migration 009) com fallback para aprovador_atual */}
-              {(project.fase_atual || project.aprovador_atual || project.prazo_fase || project.prazo_aprovador) && (
-                <div className="rounded-lg border bg-blue-50/50 dark:bg-blue-900/10 px-4 py-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Fase Atual</p>
-                      <p className="text-sm font-medium">{project.fase_atual || project.aprovador_atual || '-'}</p>
-                    </div>
-                    {(project.prazo_fase || project.prazo_aprovador) && (
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground mb-1">Prazo da Fase</p>
-                        <p className="text-sm font-medium">{formatDate(project.prazo_fase) || project.prazo_aprovador}</p>
+            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+              <ListChecks className="size-5 text-primary" />
+              <h3 className="font-semibold text-base">Participantes</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <InfoField label="Responsável" value={project.responsible} />
+              <InfoField label="Solicitante" value={project.solicitante} />
+            </div>
+
+            {/* Aprovadores Integrados */}
+            {approvers.length > 0 && (
+              <div className="mt-4">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Equipe de Aprovação</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {approvers.map((appr) => (
+                    <div key={appr.id} className="flex items-center gap-3 p-2 rounded-md border bg-card text-sm">
+                      <div className="size-2 bg-primary/20 rounded-full" />
+                      <div>
+                        <p className="font-medium">{appr.responsible}</p>
+                        <p className="text-xs text-muted-foreground">{appr.type}</p>
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              {/* Cronograma Atual */}
-              {(project.cronograma_atual || project.prazo_cronograma) && (
-                <div className="rounded-lg border bg-purple-50/50 dark:bg-purple-900/10 px-4 py-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Cronograma Atual</p>
-                      <p className="text-sm font-medium">{project.cronograma_atual || '-'}</p>
                     </div>
-                    {project.prazo_cronograma && (
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground mb-1">Prazo</p>
-                        <p className="text-sm font-medium">{formatDate(project.prazo_cronograma)}</p>
-                      </div>
-                    )}
-                  </div>
+                  ))}
                 </div>
-              )}
-              {/* Data de Encerramento - novo campo */}
-              {project.data_encerramento && (
-                <div className="rounded-lg border bg-green-50/50 dark:bg-green-900/10 px-4 py-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Encerrado em</p>
-                      <p className="text-sm font-medium">{formatDate(project.data_encerramento)}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-
-          <Separator />
-
-          {/* Resumo */}
-          <section>
-            <h3 className="text-sm font-semibold mb-4">Resumo</h3>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <InfoField
-                label="Entregas"
-                value={deliveries.length > 0 ? `${completedDeliveries} de ${deliveries.length} concluídas` : 'Nenhuma'}
-              />
-              <InfoField
-                label="Cronogramas"
-                value={schedules.length > 0 ? `${schedules.length} atividade(s)` : 'Nenhum'}
-              />
-            </div>
-          </section>
-
-          <Separator />
-
-          {/* Metadados */}
-          <section>
-            <h3 className="text-sm font-semibold mb-4">Metadados</h3>
-            <div className="space-y-2 text-xs text-muted-foreground">
-              <p>Origem: Espaider</p>
-              <p>Código: {project.espaider_code}</p>
-              <p>ID Interno: {project.id}</p>
-            </div>
-          </section>
-
-          <Separator />
-
-          {/* New Sections Integrated from 360 View */}
-          <section>
-            <h3 className="text-sm font-semibold mb-4">Estratégia & Técnico</h3>
-
-            {project.importancia_especial && (
-              <div className="mb-4 rounded-md bg-amber-50 dark:bg-amber-900/10 p-4 border border-amber-200 dark:border-amber-800">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2">
-                  ⚠️ Importância Especial
-                </p>
-                <p className="text-sm text-amber-700 dark:text-amber-400">
-                  {project.motivo_importancia_especial || 'Sem motivo especificado'}
-                </p>
               </div>
             )}
+          </section>
 
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-4">
-              <InfoField label="Solicitante" value={project.solicitante} />
-              <InfoField label="TRM Espaider" value={project.trm_espaider} />
-              <InfoField label="Impacto Estratégico" value={project.impacto_estrategico} />
-              <InfoField label="Impacto Operacional" value={project.impacto_operacional} />
-              <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
+          {/* 4. Datas e Prazos */}
+          <section>
+            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+              <Calendar className="size-5 text-primary" />
+              <h3 className="font-semibold text-base">Datas e Prazos</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <InfoField label="Prazo Final" value={formatDate(project.end_date)} />
+              <InfoField label="Início Aprovação" value={formatDate(project.data_inicio_aprovacao)} />
+              <InfoField label="Encerramento" value={formatDate(project.data_encerramento)} />
+              <InfoField label="Última Movimentação" value={formatDateTime(project.last_update)} />
+            </div>
+          </section>
+
+          {/* 5. Estratégia e Escopo */}
+          <section>
+            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+              <RefreshCw className="size-5 text-primary" />
+              <h3 className="font-semibold text-base">Estratégia & Escopo</h3>
             </div>
 
             <div className="space-y-4">
-              {project.objetivo && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Objetivo</p>
-                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.objetivo}</p>
+              {project.importancia_especial && (
+                <div className="rounded-md bg-amber-50 dark:bg-amber-900/10 p-4 border border-amber-200 dark:border-amber-800">
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2">
+                    ⚠️ Importância Especial
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-400">
+                    {project.motivo_importancia_especial || 'Sem motivo especificado'}
+                  </p>
                 </div>
               )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InfoField label="Impacto Estratégico" value={project.impacto_estrategico} />
+                <InfoField label="Impacto Operacional" value={project.impacto_operacional} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {project.objetivo && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground font-medium">Objetivo</p>
+                    <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap">{project.objetivo}</p>
+                  </div>
+                )}
+                {project.escopo && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground font-medium">Escopo</p>
+                    <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap">{project.escopo}</p>
+                  </div>
+                )}
+              </div>
+
               {project.justificativa && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Justificativa</p>
-                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.justificativa}</p>
-                </div>
-              )}
-              {project.escopo && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Escopo</p>
-                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.escopo}</p>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium">Justificativa</p>
+                  <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap">{project.justificativa}</p>
                 </div>
               )}
             </div>
           </section>
+
+          {/* 6. Metadados */}
+          <section className="pt-4 border-t">
+            <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Metadados do Sistema</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-muted-foreground">
+              <p>Origem: <span className="font-mono text-foreground">Espaider</span></p>
+              <p>ID Interno: <span className="font-mono text-foreground">{project.id}</span></p>
+              <p>Código Espaider: <span className="font-mono text-foreground">{project.espaider_code}</span></p>
+              <p>TRM Espaider: <span className="font-mono text-foreground">{project.trm_espaider || '-'}</span></p>
+            </div>
+          </section>
+
         </TabsContent>
 
         {/* Tab: Históricos */}
@@ -501,82 +457,7 @@ export function ProjectCockpit({
             </div>
           )}
         </TabsContent>
-        <TabsContent value="visao360" className="mt-6 space-y-6">
-          {/* Identificação */}
-          <section>
-            <h3 className="text-sm font-semibold mb-4">Identificação & Solicitante</h3>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <InfoField label="Solicitante" value={project.solicitante} />
-              <InfoField label="TRM Espaider" value={project.trm_espaider} />
-              <InfoField label="Tipo de Chamado" value={project.tipo_chamado} />
-              <InfoField label="Tipo de Assunto" value={project.tipo_assunto} />
-            </div>
-          </section>
 
-          <Separator />
-
-          {/* Estratégia */}
-          <section>
-            <h3 className="text-sm font-semibold mb-4">Estratégia & Negócio</h3>
-            <div className="space-y-4">
-              {project.importancia_especial && (
-                <div className="rounded-md bg-amber-50 dark:bg-amber-900/10 p-4 border border-amber-200 dark:border-amber-800">
-                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2">
-                    ⚠️ Importância Especial
-                  </p>
-                  <p className="text-sm text-amber-700 dark:text-amber-400">
-                    {project.motivo_importancia_especial || 'Sem motivo especificado'}
-                  </p>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                <InfoField label="Impacto Estratégico" value={project.impacto_estrategico} />
-                <InfoField label="Impacto Operacional" value={project.impacto_operacional} />
-              </div>
-              <div className="space-y-4 pt-2">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Objetivo</p>
-                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.objetivo || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Justificativa</p>
-                  <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.justificativa || '-'}</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <Separator />
-
-          {/* Operacional & Escopo */}
-          <section>
-            <h3 className="text-sm font-semibold mb-4">Técnico & Escopo</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Escopo</p>
-                <p className="text-sm whitespace-pre-wrap rounded-md bg-muted/50 p-3">{project.escopo || '-'}</p>
-              </div>
-            </div>
-          </section>
-
-          <Separator />
-
-          {/* Status & Movimentação */}
-          <section>
-            <h3 className="text-sm font-semibold mb-4">Status & Trâmite</h3>
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Última Movimentação</p>
-                <p className="text-sm whitespace-pre-wrap rounded-md bg-blue-50 dark:bg-blue-900/10 p-3 border border-blue-100 dark:border-blue-800">
-                  {project.mensagem_movimentacao || 'Sem mensagem de trâmite'}
-                </p>
-              </div>
-            </div>
-          </section>
-        </TabsContent>
 
         {/* Tab: Entregas */}
         <TabsContent value="entregas" className="mt-6">

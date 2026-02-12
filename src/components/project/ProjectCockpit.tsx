@@ -243,20 +243,19 @@ export function ProjectCockpit({
         {/* Tab: Detalhes */}
         <TabsContent value="detalhes" className="mt-6 space-y-8">
 
-          {/* 1. Header & Status */}
-          <section className="flex items-center justify-between bg-muted/30 p-4 rounded-lg border">
-            <div>
-              <h3 className="font-semibold text-lg">{project.project_name}</h3>
-              <p className="text-sm text-muted-foreground">{project.espaider_code}</p>
+          {/* 0. Importância Especial (Top Priority) */}
+          {project.importancia_especial && (
+            <div className="rounded-md bg-amber-50 dark:bg-amber-900/10 p-4 border border-amber-200 dark:border-amber-800">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2">
+                ⚠️ Importância Especial
+              </p>
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                {project.motivo_importancia_especial || 'Sem motivo especificado'}
+              </p>
             </div>
-            <div className="text-right">
-              <Badge variant={project.status === 'concluido' ? 'default' : 'secondary'} className="text-base px-3 py-1">
-                {project.current_situation || statusLabels[project.status] || project.status}
-              </Badge>
-            </div>
-          </section>
+          )}
 
-          {/* 2. Informações Gerais */}
+          {/* 1. Informações Gerais */}
           <section>
             <div className="flex items-center gap-2 mb-4 border-b pb-2">
               <FileText className="size-5 text-primary" />
@@ -266,7 +265,8 @@ export function ProjectCockpit({
               <InfoField label="Área" value={project.area} />
               <InfoField label="Categoria" value={project.category} />
               <InfoField label="Prioridade" value={project.priority} />
-              <InfoField label="Pasta Consultivo" value={project.pasta_consultivo} />
+              {/* Status movido para cá, substituindo Pasta Consultivo */}
+              <InfoField label="Status" value={project.current_situation || statusLabels[project.status] || project.status} />
               <InfoField label="Solução Aplicada" value={project.solucao_aplicada} />
               <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
             </div>
@@ -317,48 +317,45 @@ export function ProjectCockpit({
           </section>
 
           {/* 5. Estratégia e Escopo */}
+          {/* 5. Estratégia */}
           <section>
             <div className="flex items-center gap-2 mb-4 border-b pb-2">
               <RefreshCw className="size-5 text-primary" />
-              <h3 className="font-semibold text-base">Estratégia & Escopo</h3>
+              <h3 className="font-semibold text-base">Estratégia</h3>
             </div>
 
             <div className="space-y-4">
-              {project.importancia_especial && (
-                <div className="rounded-md bg-amber-50 dark:bg-amber-900/10 p-4 border border-amber-200 dark:border-amber-800">
-                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2">
-                    ⚠️ Importância Especial
-                  </p>
-                  <p className="text-sm text-amber-700 dark:text-amber-400">
-                    {project.motivo_importancia_especial || 'Sem motivo especificado'}
-                  </p>
-                </div>
-              )}
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InfoField label="Impacto Estratégico" value={project.impacto_estrategico} />
                 <InfoField label="Impacto Operacional" value={project.impacto_operacional} />
               </div>
+            </div>
+          </section>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {project.objetivo && (
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground font-medium">Objetivo</p>
-                    <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap">{project.objetivo}</p>
-                  </div>
-                )}
-                {project.escopo && (
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground font-medium">Escopo</p>
-                    <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap">{project.escopo}</p>
-                  </div>
-                )}
-              </div>
+          {/* 6. Detalhamento do Projeto (Textos Longos) */}
+          <section>
+            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+              <FileText className="size-5 text-primary" />
+              <h3 className="font-semibold text-base">Detalhamento do Projeto</h3>
+            </div>
 
+            <div className="grid grid-cols-1 gap-6">
+              {project.objetivo && (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium">Objetivo</p>
+                  <p className="text-sm text-card-foreground bg-muted/40 p-4 rounded-md whitespace-pre-wrap leading-relaxed border">{project.objetivo}</p>
+                </div>
+              )}
+              {project.escopo && (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium">Escopo</p>
+                  <p className="text-sm text-card-foreground bg-muted/40 p-4 rounded-md whitespace-pre-wrap leading-relaxed border">{project.escopo}</p>
+                </div>
+              )}
               {project.justificativa && (
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground font-medium">Justificativa</p>
-                  <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap">{project.justificativa}</p>
+                  <p className="text-sm text-card-foreground bg-muted/40 p-4 rounded-md whitespace-pre-wrap leading-relaxed border">{project.justificativa}</p>
                 </div>
               )}
             </div>

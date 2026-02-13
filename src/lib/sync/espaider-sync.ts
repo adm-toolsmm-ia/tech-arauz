@@ -246,7 +246,7 @@ export async function syncProjects(
       codigo: p.codigo,
       titulo: p.titulo,
       situacao_original: p.situacao_atual || p.status,
-      status_original: p.status,
+      status_original: normalizeStatus(p.situacao_atual || p.status),
       responsavel: p.responsavel || null,
       prioridade: p.prioridade || 'Normal',
       categoria: p.categoria || null,

@@ -674,14 +674,15 @@ export async function executeSyncAll(
 
     // Process each child interface
     for (const urlFilho of urlFilhos) {
-      // Try to infer dataset from Descricao first, then from URL if needed
-      let dataset = descricaoToDataset(urlFilho.Descricao);
+      // Try to infer dataset from Identificador first (API retorna este campo), then Descricao, then URL
+      let dataset = descricaoToDataset(urlFilho.Identificador || urlFilho.Descricao);
       if (!dataset && urlFilho.URL) {
         // Fallback: try to infer from URL pattern
         dataset = descricaoToDataset(urlFilho.URL);
       }
       if (!dataset) {
         logs.push(createLog('warn', 'Geral', `Interface filha não reconhecida`, {
+          identificador: urlFilho.Identificador,
           descricao: urlFilho.Descricao,
           url: urlFilho.URL?.substring(0, 100),
         }));
@@ -1090,7 +1091,8 @@ async function syncHistoriesFromRegistros(
     const rows = mapped
       .filter((r) => projectMap.has(r.projeto_id_espaider))
       .map((r) => ({
-        id: r.id_espaider,
+        tenant_id: tenantId,
+        espaider_id: r.id_espaider,
         project_id: projectMap.get(r.projeto_id_espaider)!,
         type: r.tipo || null,
         responsible_to: r.responsavel_para || null,
@@ -1100,6 +1102,7 @@ async function syncHistoriesFromRegistros(
         procedure_number: r.numero_tramite || null,
         message: r.mensagem || null,
         date: r.data ? r.data.toISOString() : null,
+        espaider_raw: r.espaider_raw || null,
       }));
 
     const orphans = mapped.length - rows.length;
@@ -1110,7 +1113,7 @@ async function syncHistoriesFromRegistros(
     if (rows.length > 0) {
       const { error } = await supabase
         .from('project_histories')
-        .upsert(rows, { onConflict: 'id' }); // Note: histories PK is just 'id' (espaider_id), not composite
+        .upsert(rows, { onConflict: 'tenant_id,espaider_id' }); // Composite unique constraint
 
       if (error) {
         logs.push(createLog('error', 'Historicos', `Erro no upsert: ${error.message}`));
@@ -1150,11 +1153,14 @@ async function syncBudgetsFromRegistros(
     const rows = mapped
       .filter((r) => projectMap.has(r.projeto_id_espaider))
       .map((r) => ({
-        id: r.id_espaider,
+        tenant_id: tenantId,
+        espaider_id: r.id_espaider,
         project_id: projectMap.get(r.projeto_id_espaider)!,
         value: r.valor,
         provider: r.fornecedor || null,
         quotation_date: r.data_cotacao ? r.data_cotacao.toISOString().split('T')[0] : null,
+        moeda: r.moeda || 'BRL',
+        espaider_raw: r.espaider_raw || null,
       }));
 
     const orphans = mapped.length - rows.length;
@@ -1165,7 +1171,7 @@ async function syncBudgetsFromRegistros(
     if (rows.length > 0) {
       const { error } = await supabase
         .from('project_budgets')
-        .upsert(rows, { onConflict: 'id' });
+        .upsert(rows, { onConflict: 'tenant_id,espaider_id' }); // Composite unique constraint
 
       if (error) {
         logs.push(createLog('error', 'Orcamentos', `Erro no upsert: ${error.message}`));
@@ -1205,11 +1211,13 @@ async function syncApproversFromRegistros(
     const rows = mapped
       .filter((r) => projectMap.has(r.projeto_id_espaider))
       .map((r) => ({
-        id: r.id_espaider,
+        tenant_id: tenantId,
+        espaider_id: r.id_espaider,
         project_id: projectMap.get(r.projeto_id_espaider)!,
         type: r.tipo || null,
         responsible: r.responsavel || null,
         attention_points: r.pontos_atencao || null,
+        espaider_raw: r.espaider_raw || null,
       }));
 
     const orphans = mapped.length - rows.length;
@@ -1220,7 +1228,7 @@ async function syncApproversFromRegistros(
     if (rows.length > 0) {
       const { error } = await supabase
         .from('project_approvers')
-        .upsert(rows, { onConflict: 'id' });
+        .upsert(rows, { onConflict: 'tenant_id,espaider_id' }); // Composite unique constraint
 
       if (error) {
         logs.push(createLog('error', 'Aprovadores', `Erro no upsert: ${error.message}`));

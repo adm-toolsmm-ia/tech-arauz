@@ -93,7 +93,8 @@ const statusStyles: Record<string, string> = {
 };
 
 function isOverdue(project: UIProject): boolean {
-  if (!project.end_date || project.status === 'concluido' || project.status === 'cancelado') return false;
+  const status = (project.status || '').trim().toLowerCase();
+  if (!project.end_date || status === 'concluído' || status === 'cancelado') return false;
   try {
     return new Date(project.end_date) < new Date();
   } catch {
@@ -118,7 +119,8 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
   ).length;
 
   const overdueProjects = chartProjects.filter((p) => {
-    if (!p.prazo_final || p.status === 'concluido' || p.status === 'cancelado') return false;
+    const status = (p.status || '').trim().toLowerCase();
+    if (!p.prazo_final || status === 'concluído' || status === 'cancelado') return false;
     try { return new Date(p.prazo_final) < new Date(); } catch { return false; }
   }).length;
 
@@ -135,16 +137,17 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
   const lastMonthKey = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
 
   const completedThisMonth = chartProjects.filter(
-    (p) => p.status === 'concluido' && p.data_encerramento?.startsWith(thisMonth)
+    (p) => (p.status || '').trim().toLowerCase() === 'concluído' && p.data_encerramento?.startsWith(thisMonth)
   ).length;
   const completedLastMonth = chartProjects.filter(
-    (p) => p.status === 'concluido' && p.data_encerramento?.startsWith(lastMonthKey)
+    (p) => (p.status || '').trim().toLowerCase() === 'concluído' && p.data_encerramento?.startsWith(lastMonthKey)
   ).length;
 
   // Top areas
   const areaCounts: Record<string, number> = {};
   chartProjects.forEach((p) => {
-    if (p.area && !['concluido', 'cancelado'].includes(p.status)) {
+    const status = (p.status || '').trim().toLowerCase();
+    if (p.area && status !== 'concluído' && status !== 'cancelado') {
       areaCounts[p.area] = (areaCounts[p.area] || 0) + 1;
     }
   });
@@ -164,9 +167,13 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
       case 'all':
         return projects;
       case 'active':
-        return projects.filter((p) => !['concluido', 'cancelado', 'suspenso'].includes(p.status));
+        return projects.filter(
+          (p) => (p.status || '').trim().toLowerCase() === 'em execução'
+        );
       case 'completed':
-        return projects.filter((p) => p.status === 'concluido');
+        return projects.filter(
+          (p) => (p.status || '').trim().toLowerCase() === 'concluído'
+        );
       case 'overdue':
         return projects.filter(isOverdue);
       case 'high_priority':

@@ -346,6 +346,7 @@ export function mapearHistorico(registro: RegistroEspaider): HistoricoMapeado {
         numero_tramite: parseInt(getCampoValor(campos, 'NUMEROTRAMITE') || '0', 10),
         mensagem: getCampoValor(campos, 'MENSAGEM'),
         data: data,
+        espaider_raw: registro, // JSON bruto da API para rastreabilidade
     };
 }
 
@@ -371,6 +372,8 @@ export function mapearOrcamento(registro: RegistroEspaider): OrcamentoMapeado {
         valor: parseCurrency(getCampoValor(campos, 'VALOR')),
         fornecedor: getCampoValor(campos, 'FORNECEDOR'),
         data_cotacao: parseData(getCampoValor(campos, 'DATACOTACAO')),
+        moeda: getCampoValor(campos, 'MOEDA') || 'BRL', // Moeda padrão BRL
+        espaider_raw: registro, // JSON bruto da API para rastreabilidade
     };
 }
 
@@ -396,6 +399,7 @@ export function mapearAprovador(registro: RegistroEspaider): AprovadorMapeado {
         tipo: getCampoValor(campos, 'TIPO'),
         responsavel: getCampoValor(campos, 'RESPONSAVEL'),
         pontos_atencao: getCampoValor(campos, 'PONTOSATENCAO'),
+        espaider_raw: registro, // JSON bruto da API para rastreabilidade
     };
 }
 

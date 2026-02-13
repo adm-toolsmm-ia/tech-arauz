@@ -65,8 +65,10 @@ export interface RegistroEspaider {
 export interface URLFilho {
     /** URL completa para GET dos registros filhos */
     URL: string;
-    /** Descrição da interface (ex: "Entregas", "Cronogramas", "Requisitos") */
-    Descricao: string;
+    /** Descrição da interface (ex: "Entregas", "Cronogramas", "Requisitos") - OPCIONAL na API real */
+    Descricao?: string;
+    /** Identificador da interface (ex: "BI_SOLICITACOES_PROJETOSESPAIDER_HISTORICOS") - Campo real retornado pela API */
+    Identificador?: string;
 }
 
 /**
@@ -256,6 +258,7 @@ export interface HistoricoMapeado {
     numero_tramite: number; // NUMEROTRAMITE
     mensagem: string; // MENSAGEM
     data: Date | null; // DATA_DE
+    espaider_raw?: RegistroEspaider; // JSON bruto da API
 }
 
 /**
@@ -267,6 +270,8 @@ export interface OrcamentoMapeado {
     valor: number; // VALOR
     fornecedor: string; // FORNECEDOR
     data_cotacao: Date | null; // DATACOTACAO
+    moeda?: string; // MOEDA
+    espaider_raw?: RegistroEspaider; // JSON bruto da API
 }
 
 /**
@@ -278,6 +283,7 @@ export interface AprovadorMapeado {
     tipo: string; // TIPO
     responsavel: string; // RESPONSAVEL
     pontos_atencao: string; // PONTOSATENCAO
+    espaider_raw?: RegistroEspaider; // JSON bruto da API
 }
 
 // =============================================================================

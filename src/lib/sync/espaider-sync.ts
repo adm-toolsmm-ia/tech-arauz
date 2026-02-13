@@ -1084,9 +1084,9 @@ async function syncHistoriesFromRegistros(
 
     const { data: existing } = await supabase
       .from('project_histories')
-      .select('id')
-      .eq('id', mapped[0]?.id_espaider || 0); // Optimization/Check logic could be better but sticking to pattern
-    const existingIds = new Set((existing || []).map((r: { id: number }) => r.id));
+      .select('espaider_id')
+      .eq('tenant_id', tenantId);
+    const existingIds = new Set((existing || []).map((r: { espaider_id: number }) => r.espaider_id));
 
     const rows = mapped
       .filter((r) => projectMap.has(r.projeto_id_espaider))
@@ -1119,8 +1119,11 @@ async function syncHistoriesFromRegistros(
         logs.push(createLog('error', 'Historicos', `Erro no upsert: ${error.message}`));
         errors = rows.length;
       } else {
-        created = rows.length; // Simplified for now as we don't track existing well for non-composite PKs in this pattern yet
-        logs.push(createLog('success', 'Historicos', `Upsert concluído: ${rows.length} registros processados`));
+        for (const row of rows) {
+          if (existingIds.has(row.espaider_id)) updated++;
+          else created++;
+        }
+        logs.push(createLog('success', 'Historicos', `Upsert concluído: ${created} novos, ${updated} atualizados`));
       }
     }
   } catch (err) {
@@ -1150,6 +1153,12 @@ async function syncBudgetsFromRegistros(
     const mapped = mapearRegistros(registros, mapearOrcamento);
     const projectMap = await getProjectIdMap(supabase, tenantId);
 
+    const { data: existing } = await supabase
+      .from('project_budgets')
+      .select('espaider_id')
+      .eq('tenant_id', tenantId);
+    const existingIds = new Set((existing || []).map((r: { espaider_id: number }) => r.espaider_id));
+
     const rows = mapped
       .filter((r) => projectMap.has(r.projeto_id_espaider))
       .map((r) => ({
@@ -1177,8 +1186,11 @@ async function syncBudgetsFromRegistros(
         logs.push(createLog('error', 'Orcamentos', `Erro no upsert: ${error.message}`));
         errors = rows.length;
       } else {
-        created = rows.length;
-        logs.push(createLog('success', 'Orcamentos', `Upsert concluído: ${rows.length} registros processados`));
+        for (const row of rows) {
+          if (existingIds.has(row.espaider_id)) updated++;
+          else created++;
+        }
+        logs.push(createLog('success', 'Orcamentos', `Upsert concluído: ${created} novos, ${updated} atualizados`));
       }
     }
   } catch (err) {
@@ -1208,6 +1220,12 @@ async function syncApproversFromRegistros(
     const mapped = mapearRegistros(registros, mapearAprovador);
     const projectMap = await getProjectIdMap(supabase, tenantId);
 
+    const { data: existing } = await supabase
+      .from('project_approvers')
+      .select('espaider_id')
+      .eq('tenant_id', tenantId);
+    const existingIds = new Set((existing || []).map((r: { espaider_id: number }) => r.espaider_id));
+
     const rows = mapped
       .filter((r) => projectMap.has(r.projeto_id_espaider))
       .map((r) => ({
@@ -1234,8 +1252,11 @@ async function syncApproversFromRegistros(
         logs.push(createLog('error', 'Aprovadores', `Erro no upsert: ${error.message}`));
         errors = rows.length;
       } else {
-        created = rows.length;
-        logs.push(createLog('success', 'Aprovadores', `Upsert concluído: ${rows.length} registros processados`));
+        for (const row of rows) {
+          if (existingIds.has(row.espaider_id)) updated++;
+          else created++;
+        }
+        logs.push(createLog('success', 'Aprovadores', `Upsert concluído: ${created} novos, ${updated} atualizados`));
       }
     }
   } catch (err) {

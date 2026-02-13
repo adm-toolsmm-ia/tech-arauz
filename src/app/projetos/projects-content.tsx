@@ -169,7 +169,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
     value: p.total_value ? `R$ ${p.total_value.toLocaleString('pt-BR')}` : undefined,
     priority: (p.priority as KanbanItem['priority']) || 'normal',
     // Usa fase_atual para agrupamento, fallback para status se fase_atual não existir
-    status: normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos',
+    status: normalizeFaseSlug(p.fase_atual) || normalizeFaseSlug(p.status) || 'fila_projetos',
     metadata: {
       ...(p.mensagem_movimentacao ? { mensagem: p.mensagem_movimentacao } : {}),
       ...(p.last_update ? { data_movimentacao: p.last_update } : {}),
@@ -674,11 +674,10 @@ function ProjectList({
                   </td>
                   <td className="px-3 py-3">
                     {project.priority ? (
-                      <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium border uppercase tracking-wider ${
-                        project.priority === 'urgente' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300' :
-                        project.priority === 'alta' ? 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300' :
-                        'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300'
-                      }`}>
+                      <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium border uppercase tracking-wider ${project.priority === 'urgente' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300' :
+                          project.priority === 'alta' ? 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300' :
+                            'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300'
+                        }`}>
                         {project.priority}
                       </span>
                     ) : <span className="text-xs text-muted-foreground">-</span>}

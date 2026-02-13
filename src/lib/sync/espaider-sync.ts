@@ -245,7 +245,7 @@ export async function syncProjects(
       espaider_id: p.id_espaider,
       codigo: p.codigo,
       titulo: p.titulo,
-      status: normalizeStatus(p.situacao_atual || p.status),
+      situacao_original: p.situacao_atual || p.status,
       status_original: p.status,
       responsavel: p.responsavel || null,
       prioridade: p.prioridade || 'Normal',

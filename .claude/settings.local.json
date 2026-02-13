@@ -11,7 +11,10 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(ls:*)",
       "Bash(npx next build)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

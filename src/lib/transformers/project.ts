@@ -21,7 +21,7 @@ export interface DBProject {
   espaider_id: number;
   codigo: string;
   titulo: string;
-  status: string;
+  situacao_original: string; // Renamed from status (Migration 015)
   status_original?: string | null;
   responsavel: string | null;
   prioridade: string | null;
@@ -157,8 +157,8 @@ export interface UIProject {
   id: string;
   espaider_code: string;
   project_name: string;
-  status: string;
-  original_status?: string | null;
+  status: string; // Now maps to situacao_original (RAW)
+  original_status?: string | null; // Now maps to status_original (METRIC)
   // === Novos campos (Migration 009) - Agora diretos do BD ===
   /** Fase atual do projeto - usado para agrupar Kanban */
   fase_atual?: string | null;
@@ -284,6 +284,7 @@ export function dbDeliveryToUI(row: DBDelivery): UIDelivery {
 /**
  * Convert a full DB project row (with joins) to the UI project format.
  * Atualizado em 2026-02-11: Usa colunas diretas do BD ao invés de espaider_raw
+ * Atualizado em 2026-02-13: Renomeação situacao_original (Migration 015)
  */
 export function dbProjectToUI(row: DBProject): UIProject {
   // Fallback to espaider_raw for legacy data (before migration 009)
@@ -293,13 +294,13 @@ export function dbProjectToUI(row: DBProject): UIProject {
     id: row.id,
     espaider_code: row.codigo,
     project_name: row.titulo,
-    status: row.status,
-    original_status: row.status_original,
+    status: row.situacao_original, // Mapeia RAW value
+    original_status: row.status_original, // Mapeia METRIC value
     // === Novos campos diretos do BD (Migration 009) ===
     fase_atual: row.fase_atual || raw?.APROVADORATUAL || null,
     prazo_fase: row.prazo_fase || raw?.PRAZOAPROVADOR || null,
     area: row.area || raw?.ASSUNTOAREA || null,
-    current_situation: row.status_original || raw?.SITUACAOATUAL || null,
+    current_situation: row.situacao_original || raw?.SITUACAOATUAL || null,
     last_update: row.data_movimentacao || raw?.DATAMOVIMENTACAO || null,
     cronograma_atual: row.cronograma_atual || raw?.CRONOGRAMAATUAL || null,
     prazo_cronograma: row.prazo_cronograma || raw?.PRAZOCRONOGRAMAATUAL || null,
@@ -326,9 +327,9 @@ export function dbProjectToUI(row: DBProject): UIProject {
     // Legacy: mantidos para compatibilidade com componentes existentes
     aprovador_atual: row.fase_atual || raw?.APROVADORATUAL || null,
     prazo_aprovador: row.prazo_fase || raw?.PRAZOAPROVADOR || null,
-    total_value: null,                       // DB doesn't track value
+    total_value: null,
     responsible: row.responsavel,
-    start_date: row.created_at || null,      // Approximate with created_at
+    start_date: row.created_at || null,
     end_date: row.prazo_final,
     priority: row.prioridade,
     category: row.categoria,
@@ -379,7 +380,7 @@ export function dbProjectToDashboard(row: DBProject): UIDashboardProject {
     id: row.id,
     espaider_code: row.codigo,
     project_name: row.titulo,
-    status: row.status,
+    status: row.situacao_original,
     total_value: null,
   };
 }

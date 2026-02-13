@@ -41,7 +41,7 @@ export default async function DashboardPage() {
 
   // Chart data: pass raw status and created_at for chart helpers
   const chartProjects = allDbProjects.map((p) => ({
-    status: p.status || 'projeto_futuro',
+    status: p.status_original || 'projeto_futuro',
     created_at: p.created_at || '',
     fase_atual: p.fase_atual || '',
     area: p.area || '',

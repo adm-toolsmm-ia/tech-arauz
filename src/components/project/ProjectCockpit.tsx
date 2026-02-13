@@ -290,7 +290,8 @@ export function ProjectCockpit({
               <InfoField label="Categoria" value={project.category} />
               <InfoField label="Prioridade" value={project.priority} />
               {/* Status movido para cá, substituindo Pasta Consultivo */}
-              <InfoField label="Status" value={project.current_situation || statusLabels[project.status] || project.status} />
+              <InfoField label="Status" value={statusLabels[project.original_status || ''] || project.original_status || '-'} />
+              <InfoField label="Situação (API)" value={project.status} />
               <InfoField label="Solução Aplicada" value={project.solucao_aplicada} />
               <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
             </div>
@@ -393,47 +394,47 @@ export function ProjectCockpit({
               {histories
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .map((hist, index) => (
-                <div key={hist.id} className="relative flex gap-4 pb-6 last:pb-0">
-                  {/* Timeline line */}
-                  {index < histories.length - 1 && (
-                    <div className="absolute left-[15px] top-8 bottom-0 w-0.5 bg-border" />
-                  )}
-                  {/* Timeline dot */}
-                  <div className="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-background bg-primary/10">
-                    <History className="size-3.5 text-primary" />
-                  </div>
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 space-y-2 p-3 rounded-lg border bg-card">
-                    <div className="flex items-center justify-between gap-2">
-                      <Badge variant="outline" className="text-xs">{hist.type || 'Movimentação'}</Badge>
-                      <span className="text-xs text-muted-foreground shrink-0">{formatDateTime(hist.date)}</span>
+                  <div key={hist.id} className="relative flex gap-4 pb-6 last:pb-0">
+                    {/* Timeline line */}
+                    {index < histories.length - 1 && (
+                      <div className="absolute left-[15px] top-8 bottom-0 w-0.5 bg-border" />
+                    )}
+                    {/* Timeline dot */}
+                    <div className="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-background bg-primary/10">
+                      <History className="size-3.5 text-primary" />
                     </div>
-                    {hist.message && hist.message !== '-' && (
-                      <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap leading-relaxed">
-                        {hist.message}
-                      </p>
-                    )}
-                    {(hist.from !== '-' || hist.to !== '-') && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                        {hist.from !== '-' && (
-                          <span className="bg-muted/50 px-2 py-0.5 rounded">{hist.from}</span>
-                        )}
-                        {hist.from !== '-' && hist.to !== '-' && (
-                          <ArrowRight className="size-3 text-muted-foreground/50" />
-                        )}
-                        {hist.to !== '-' && (
-                          <span className="bg-muted/50 px-2 py-0.5 rounded">{hist.to}</span>
-                        )}
-                        {hist.step_from !== '-' && hist.step_to !== '-' && (
-                          <span className="text-muted-foreground/60 ml-2">
-                            ({hist.step_from} → {hist.step_to})
-                          </span>
-                        )}
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 space-y-2 p-3 rounded-lg border bg-card">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="outline" className="text-xs">{hist.type || 'Movimentação'}</Badge>
+                        <span className="text-xs text-muted-foreground shrink-0">{formatDateTime(hist.date)}</span>
                       </div>
-                    )}
+                      {hist.message && hist.message !== '-' && (
+                        <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap leading-relaxed">
+                          {hist.message}
+                        </p>
+                      )}
+                      {(hist.from !== '-' || hist.to !== '-') && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                          {hist.from !== '-' && (
+                            <span className="bg-muted/50 px-2 py-0.5 rounded">{hist.from}</span>
+                          )}
+                          {hist.from !== '-' && hist.to !== '-' && (
+                            <ArrowRight className="size-3 text-muted-foreground/50" />
+                          )}
+                          {hist.to !== '-' && (
+                            <span className="bg-muted/50 px-2 py-0.5 rounded">{hist.to}</span>
+                          )}
+                          {hist.step_from !== '-' && hist.step_to !== '-' && (
+                            <span className="text-muted-foreground/60 ml-2">
+                              ({hist.step_from} → {hist.step_to})
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </TabsContent>

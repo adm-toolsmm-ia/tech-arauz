@@ -1,6 +1,6 @@
 'use client';
 
-import { RefreshCw, Calendar, Package, FileText, ListChecks, Clock, DollarSign } from 'lucide-react';
+import { RefreshCw, Calendar, Package, FileText, ListChecks, Clock, DollarSign, History, UserCheck, ArrowRight } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ interface UIProject {
   end_date: string | null;
   responsible: string | null;
   priority: string | null;
-  category: string | null;
+  category?: string | null;
 }
 
 interface UISchedule {
@@ -232,6 +232,30 @@ export function ProjectCockpit({
             )}
           </TabsTrigger>
           <TabsTrigger
+            value="historicos"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+          >
+            <History className="size-4 mr-2" />
+            Histórico
+            {histories.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({histories.length})
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="aprovadores"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+          >
+            <UserCheck className="size-4 mr-2" />
+            Aprovadores
+            {approvers.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({approvers.length})
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger
             value="acoes"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
           >
@@ -278,28 +302,12 @@ export function ProjectCockpit({
               <ListChecks className="size-5 text-primary" />
               <h3 className="font-semibold text-base">Participantes</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InfoField label="Responsável" value={project.responsible} />
               <InfoField label="Solicitante" value={project.solicitante} />
+              <InfoField label="Aprovador Atual" value={project.aprovador_atual} />
+              <InfoField label="Prazo do Aprovador" value={formatDate(project.prazo_aprovador)} />
             </div>
-
-            {/* Aprovadores Integrados */}
-            {approvers.length > 0 && (
-              <div className="mt-4">
-                <p className="text-xs text-muted-foreground mb-2 font-medium">Equipe de Aprovação</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {approvers.map((appr) => (
-                    <div key={appr.id} className="flex items-center gap-3 p-2 rounded-md border bg-card text-sm">
-                      <div className="size-2 bg-primary/20 rounded-full" />
-                      <div>
-                        <p className="font-medium">{appr.responsible}</p>
-                        <p className="text-xs text-muted-foreground">{appr.type}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </section>
 
           {/* 4. Datas e Prazos */}
@@ -374,34 +382,55 @@ export function ProjectCockpit({
 
         </TabsContent>
 
-        {/* Tab: Históricos */}
+        {/* Tab: Históricos (Timeline) */}
         <TabsContent value="historicos" className="mt-6">
           {histories.length === 0 ? (
             <div className="text-center py-12 text-sm text-muted-foreground">
               Nenhum histórico encontrado
             </div>
           ) : (
-            <div className="space-y-4">
-              {histories.map((hist) => (
-                <div key={hist.id} className="flex gap-4 p-4 rounded-lg border bg-card">
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-sm">{hist.type}</p>
-                      <span className="text-xs text-muted-foreground">{formatDateTime(hist.date)}</span>
+            <div className="relative space-y-0">
+              {histories
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .map((hist, index) => (
+                <div key={hist.id} className="relative flex gap-4 pb-6 last:pb-0">
+                  {/* Timeline line */}
+                  {index < histories.length - 1 && (
+                    <div className="absolute left-[15px] top-8 bottom-0 w-0.5 bg-border" />
+                  )}
+                  {/* Timeline dot */}
+                  <div className="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-background bg-primary/10">
+                    <History className="size-3.5 text-primary" />
+                  </div>
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 space-y-2 p-3 rounded-lg border bg-card">
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge variant="outline" className="text-xs">{hist.type || 'Movimentação'}</Badge>
+                      <span className="text-xs text-muted-foreground shrink-0">{formatDateTime(hist.date)}</span>
                     </div>
-                    {hist.message && (
-                      <p className="text-sm text-muted-foreground bg-muted/50 p-2 rounded-md mt-2">
+                    {hist.message && hist.message !== '-' && (
+                      <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap leading-relaxed">
                         {hist.message}
                       </p>
                     )}
-                    <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                      <div>
-                        <span className="font-semibold">De:</span> {hist.from} ({hist.step_from})
+                    {(hist.from !== '-' || hist.to !== '-') && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                        {hist.from !== '-' && (
+                          <span className="bg-muted/50 px-2 py-0.5 rounded">{hist.from}</span>
+                        )}
+                        {hist.from !== '-' && hist.to !== '-' && (
+                          <ArrowRight className="size-3 text-muted-foreground/50" />
+                        )}
+                        {hist.to !== '-' && (
+                          <span className="bg-muted/50 px-2 py-0.5 rounded">{hist.to}</span>
+                        )}
+                        {hist.step_from !== '-' && hist.step_to !== '-' && (
+                          <span className="text-muted-foreground/60 ml-2">
+                            ({hist.step_from} → {hist.step_to})
+                          </span>
+                        )}
                       </div>
-                      <div>
-                        <span className="font-semibold">Para:</span> {hist.to} ({hist.step_to})
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               ))}

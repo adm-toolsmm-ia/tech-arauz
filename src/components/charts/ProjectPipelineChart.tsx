@@ -21,6 +21,8 @@ interface PipelineData {
 
 interface ProjectPipelineChartProps {
   data: PipelineData[];
+  onBarClick?: (status: string) => void;
+  activeStatus?: string | null;
 }
 
 const statusColors: Record<string, string> = {
@@ -46,7 +48,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
   );
 }
 
-export function ProjectPipelineChart({ data }: ProjectPipelineChartProps) {
+export function ProjectPipelineChart({ data, onBarClick, activeStatus }: ProjectPipelineChartProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -77,11 +79,14 @@ export function ProjectPipelineChart({ data }: ProjectPipelineChartProps) {
                 animationBegin={0}
                 animationDuration={800}
                 animationEasing="ease-out"
+                onClick={(data) => onBarClick?.(data.status)}
+                style={onBarClick ? { cursor: 'pointer' } : undefined}
               >
                 {data.map((entry) => (
                   <Cell
                     key={entry.status}
                     fill={statusColors[entry.status] || '#6b7280'}
+                    opacity={activeStatus && activeStatus !== entry.status ? 0.3 : 1}
                   />
                 ))}
               </Bar>

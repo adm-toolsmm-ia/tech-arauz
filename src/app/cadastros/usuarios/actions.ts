@@ -8,12 +8,16 @@ import { z } from 'zod';
 const createUserSchema = z.object({
     fullName: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
     email: z.string().email('Email inválido'),
+    role: z.enum(['admin', 'user', 'viewer'], {
+        errorMap: () => ({ message: 'Perfil de acesso inválido' }),
+    }),
 });
 
 export async function createUser(prevState: any, formData: FormData) {
     const validatedFields = createUserSchema.safeParse({
         fullName: formData.get('fullName'),
         email: formData.get('email'),
+        role: formData.get('role') || 'admin',
     });
 
     if (!validatedFields.success) {
@@ -24,7 +28,7 @@ export async function createUser(prevState: any, formData: FormData) {
         };
     }
 
-    const { fullName, email } = validatedFields.data;
+    const { fullName, email, role } = validatedFields.data;
     const supabase = createServiceClient();
 
     try {
@@ -102,7 +106,7 @@ export async function createUser(prevState: any, formData: FormData) {
                 tenant_id: adminProfile.tenant_id,
                 email: email,
                 full_name: fullName,
-                role: 'admin', // As requested: "nesse primeiro momento só vamos ter o perfim de admin"
+                role: role,
             });
 
         if (profileError) {

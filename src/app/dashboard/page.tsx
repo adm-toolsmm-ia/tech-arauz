@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { dbProjectToDashboard } from '@/lib/transformers/project';
+import { dbProjectToUI } from '@/lib/transformers/project';
 import type { DBProject } from '@/lib/transformers/project';
 import { DashboardContent } from './dashboard-content';
 
@@ -22,27 +22,40 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single();
 
-  // Buscar todos os projetos para charts + KPIs
+  // Buscar todos os projetos com relações para dashboard interativo
   const { data: allProjects } = await supabase
     .from('projects')
-    .select('*')
+    .select(`
+      *,
+      schedules:project_schedules(*),
+      deliveries:project_deliveries(*),
+      histories:project_histories(*),
+      approvers:project_approvers(*),
+      budgets:project_budgets(*)
+    `)
     .order('created_at', { ascending: false });
 
-  // Transform DB rows to UI format (recent 10 for list)
+  // Transform DB rows to full UI format
   const allDbProjects = (allProjects as DBProject[]) || [];
-  const recentProjects = allDbProjects.slice(0, 10).map(dbProjectToDashboard);
+  const projects = allDbProjects.map(dbProjectToUI);
 
   // Chart data: pass raw status and created_at for chart helpers
   const chartProjects = allDbProjects.map((p) => ({
     status: p.status || 'projeto_futuro',
     created_at: p.created_at || '',
+    fase_atual: p.fase_atual || '',
+    area: p.area || '',
+    prazo_final: p.prazo_final || '',
+    data_encerramento: p.data_encerramento || '',
+    prioridade: p.prioridade || '',
+    importancia_especial: p.importancia_especial || false,
   }));
 
   return (
-    <DashboardContent 
-      user={user} 
-      profile={profile} 
-      projects={recentProjects}
+    <DashboardContent
+      user={user}
+      profile={profile}
+      projects={projects}
       chartProjects={chartProjects}
     />
   );

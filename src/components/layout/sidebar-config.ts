@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   FolderKanban,
+  CalendarDays,
   FileText,
   AlertTriangle,
   Bot,
@@ -13,29 +14,24 @@ import type { NavGroup, NavItem } from './sidebar-types';
 
 export const menuConfig: NavGroup[] = [
   {
-    group: 'Inteligencia',
+    group: 'Inteligência',
     items: [
       { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-      { title: 'Relatorios', url: '/relatorios', icon: FileText, badge: 'Em Breve' },
+      { title: 'Relatórios', url: '/relatorios', icon: FileText, badge: 'Em Breve' },
     ],
   },
   {
-    group: 'Cadastros',
-    items: [
-      {
-        title: 'Novo Usuário',
-        url: '/cadastros/usuarios/novo',
-        icon: UserPlus,
-      },
-    ],
-  },
-  {
-    group: 'Operacao',
+    group: 'Operação',
     items: [
       {
         title: 'Projetos',
         url: '/projetos',
         icon: FolderKanban,
+      },
+      {
+        title: 'Cronogramas',
+        url: '/cronogramas',
+        icon: CalendarDays,
       },
     ],
   },
@@ -43,14 +39,15 @@ export const menuConfig: NavGroup[] = [
     group: 'Sistema',
     items: [
       { title: 'Agentes AI', url: '/agentes', icon: Bot, badge: 'MVP' },
-      { title: 'Integracoes', url: '/integracoes', icon: Plug },
+      { title: 'Integrações', url: '/integracoes', icon: Plug },
+      { title: 'Novo Usuário', url: '/cadastros/usuarios/novo', icon: UserPlus },
     ],
   },
 ];
 
 export const bottomItems: NavItem[] = [
   {
-    title: 'Configuracoes',
+    title: 'Configurações',
     url: '/configuracoes',
     icon: Settings,
   },

@@ -13,6 +13,8 @@ interface DistributionData {
 
 interface StatusDistributionChartProps {
   data: DistributionData[];
+  onSegmentClick?: (status: string) => void;
+  activeStatus?: string | null;
 }
 
 const statusColors: Record<string, string> = {
@@ -55,7 +57,7 @@ function CustomLegend({ payload }: { payload?: Array<{ value: string; color: str
   );
 }
 
-export function StatusDistributionChart({ data }: StatusDistributionChartProps) {
+export function StatusDistributionChart({ data, onSegmentClick, activeStatus }: StatusDistributionChartProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -77,6 +79,8 @@ export function StatusDistributionChart({ data }: StatusDistributionChartProps) 
                 animationBegin={0}
                 animationDuration={800}
                 animationEasing="ease-out"
+                onClick={(data) => onSegmentClick?.(data.status)}
+                style={onSegmentClick ? { cursor: 'pointer' } : undefined}
               >
                 {data.map((entry) => (
                   <Cell
@@ -84,6 +88,7 @@ export function StatusDistributionChart({ data }: StatusDistributionChartProps) 
                     fill={entry.color}
                     stroke="hsl(var(--background))"
                     strokeWidth={2}
+                    opacity={activeStatus && activeStatus !== entry.status ? 0.3 : 1}
                   />
                 ))}
               </Pie>

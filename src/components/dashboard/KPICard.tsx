@@ -13,6 +13,8 @@ interface KPICardProps {
   };
   subtitle?: string;
   className?: string;
+  onClick?: () => void;
+  active?: boolean;
 }
 
 export function KPICard({
@@ -22,13 +24,20 @@ export function KPICard({
   trend,
   subtitle,
   className,
+  onClick,
+  active,
 }: KPICardProps) {
   return (
-    <Card className={cn(
-      'shadow-soft hover:shadow-card-hover transition-all duration-300',
-      'hover:-translate-y-0.5 animate-scale-in',
-      className
-    )}>
+    <Card
+      className={cn(
+        'shadow-soft hover:shadow-card-hover transition-all duration-300',
+        'hover:-translate-y-0.5 animate-scale-in',
+        onClick && 'cursor-pointer',
+        active && 'ring-2 ring-primary ring-offset-2',
+        className
+      )}
+      onClick={onClick}
+    >
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
@@ -51,7 +60,10 @@ export function KPICard({
               <p className="text-xs text-muted-foreground">{subtitle}</p>
             )}
           </div>
-          <div className="rounded-lg bg-primary/10 p-3">
+          <div className={cn(
+            'rounded-lg p-3',
+            active ? 'bg-primary/20' : 'bg-primary/10'
+          )}>
             <Icon className="h-6 w-6 text-primary" />
           </div>
         </div>

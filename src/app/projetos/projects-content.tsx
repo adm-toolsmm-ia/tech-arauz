@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Search, Filter, FolderOpen, Clock, DollarSign, TrendingUp, RefreshCw, Loader2, X } from 'lucide-react';
+import { Search, FolderOpen, Clock, DollarSign, TrendingUp, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
@@ -16,6 +16,13 @@ import { Badge } from '@/components/ui/badge';
 import { syncEspaiderAction } from '@/app/actions/sync';
 import { updateProjectStatusAction } from '@/app/actions/projects';
 import { ProjectCockpit } from '@/components/project';
+import {
+  ProjectFilters,
+  type ProjectFilterState,
+  defaultFilters,
+  extractUniqueValues,
+  applyProjectFilters,
+} from '@/components/filters/ProjectFilters';
 
 interface Project {
   id: string;
@@ -101,9 +108,7 @@ interface ProjectsContentProps {
 export function ProjectsContent({ projects: initialProjects }: ProjectsContentProps) {
   const [projects, setProjects] = React.useState<Project[]>(initialProjects);
   const [view, setView] = React.useState<ViewMode>('kanban');
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [statusFilter, setStatusFilter] = React.useState<string>('all');
-  const [showFilters, setShowFilters] = React.useState(false);
+  const [filters, setFilters] = React.useState<ProjectFilterState>(defaultFilters);
   const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
   const [isSyncing, setIsSyncing] = React.useState(false);
 
@@ -129,27 +134,24 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
     }
   };
 
+  // Extract unique values for filter options
+  const availableValues = React.useMemo(() => ({
+    status: extractUniqueValues(projects, 'status'),
+    fase_atual: extractUniqueValues(projects, 'fase_atual'),
+    area: extractUniqueValues(projects, 'area'),
+    tipo_chamado: extractUniqueValues(projects, 'tipo_chamado'),
+    tipo_assunto: extractUniqueValues(projects, 'tipo_assunto'),
+    responsavel: extractUniqueValues(projects, 'responsible'),
+    solicitante: extractUniqueValues(projects, 'solicitante'),
+    prioridade: extractUniqueValues(projects, 'priority'),
+    complexidade_tecnica: extractUniqueValues(projects, 'complexidade_tecnica'),
+    impacto_operacional: extractUniqueValues(projects, 'impacto_operacional'),
+  }), [projects]);
+
   // Filter projects
   const filteredProjects = React.useMemo(() => {
-    let filtered = projects;
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter((p) => p.status === statusFilter);
-    }
-
-    // Search filter
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.project_name.toLowerCase().includes(term) ||
-          p.espaider_code.toLowerCase().includes(term)
-      );
-    }
-
-    return filtered;
-  }, [projects, searchTerm, statusFilter]);
+    return applyProjectFilters(projects, filters);
+  }, [projects, filters]);
 
   // Calculate KPIs
   const totalValue = projects.reduce((sum, p) => sum + (p.total_value || 0), 0);
@@ -168,6 +170,10 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
     priority: (p.priority as KanbanItem['priority']) || 'normal',
     // Usa fase_atual para agrupamento, fallback para status se fase_atual não existir
     status: normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos',
+    metadata: {
+      ...(p.mensagem_movimentacao ? { mensagem: p.mensagem_movimentacao } : {}),
+      ...(p.last_update ? { data_movimentacao: p.last_update } : {}),
+    },
   }));
 
   // Calculate dynamic columns based on FASE (not status)
@@ -372,84 +378,46 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
         </div>
 
         {/* Filters Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-card p-4 rounded-lg border shadow-sm">
-          <div className="flex flex-1 gap-2 items-center">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar projetos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-colors"
-              />
-            </div>
-            <div className="h-8 w-px bg-border mx-2" />
-            <Button
-              variant={showFilters ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className={showFilters ? "text-primary" : "text-muted-foreground"}
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              Filtros
-            </Button>
-            {statusFilter !== 'all' && (
-              <Badge variant="secondary" className="gap-1 animate-in fade-in zoom-in">
-                Status: {statusFilter}
-                <X
-                  className="h-3 w-3 cursor-pointer hover:text-destructive"
-                  onClick={() => setStatusFilter('all')}
+        <div className="flex flex-col gap-4 bg-card p-4 rounded-lg border shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-1 gap-2 items-center">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar projetos..."
+                  value={filters.search}
+                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  className="pl-9 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-colors"
                 />
-              </Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSync}
-              disabled={isSyncing}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {isSyncing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
-              <span className="sr-only sm:not-sr-only">{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</span>
-            </Button>
-            <div className="h-8 w-px bg-border mx-2" />
-            <ViewToggle view={view} onViewChange={setView} />
-          </div>
-        </div>
-
-        {/* Status Filter Panel (Collapsible) */}
-        {showFilters && (
-          <div className="p-4 bg-muted/30 rounded-lg border border-dashed animate-in slide-in-from-top-2">
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: 'all', label: 'Todos' },
-                { value: 'projeto_futuro', label: 'Futuro' },
-                { value: 'em_aprovacao', label: 'Aprovação' },
-                { value: 'em_execucao', label: 'Execução' },
-                { value: 'em_homologacao', label: 'Homologação' },
-                { value: 'concluido', label: 'Concluído' },
-                { value: 'cancelado', label: 'Cancelado' },
-                { value: 'suspenso', label: 'Suspenso' },
-              ].map((opt) => (
-                <Button
-                  key={opt.value}
-                  variant={statusFilter === opt.value ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatusFilter(opt.value)}
-                  className={`h-7 text-xs rounded-full ${statusFilter === opt.value ? 'shadow-md' : 'bg-transparent border-muted-foreground/30'}`}
-                >
-                  {opt.label}
-                </Button>
-              ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSync}
+                disabled={isSyncing}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {isSyncing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                )}
+                <span className="sr-only sm:not-sr-only">{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</span>
+              </Button>
+              <div className="h-8 w-px bg-border mx-2" />
+              <ViewToggle view={view} onViewChange={setView} />
             </div>
           </div>
-        )}
+
+          {/* Quick & Advanced Filters */}
+          <ProjectFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableValues={availableValues}
+          />
+        </div>
 
         {/* Content */}
         {view === 'kanban' ? (
@@ -526,6 +494,28 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
                 deadline: d.deadline,
                 completed: d.completed,
               }))}
+              histories={(selectedProject.histories || []).map((h) => ({
+                id: h.id,
+                type: h.type,
+                from: h.from,
+                to: h.to,
+                step_from: h.step_from,
+                step_to: h.step_to,
+                message: h.message,
+                date: h.date,
+              }))}
+              approvers={(selectedProject.approvers || []).map((a) => ({
+                id: a.id,
+                type: a.type,
+                responsible: a.responsible,
+              }))}
+              budgets={(selectedProject.budgets || []).map((b) => ({
+                id: b.id,
+                value: b.value,
+                supplier: b.supplier,
+                date: b.date,
+                currency: b.currency,
+              }))}
               onSync={handleSync}
               isSyncing={isSyncing}
             />
@@ -536,7 +526,41 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
   );
 }
 
-// Project List Component
+// Format relative date helper
+function formatRelativeDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return 'Hoje';
+    if (diffDays === 1) return 'Ontem';
+    if (diffDays < 7) return `há ${diffDays} dias`;
+    if (diffDays < 30) return `há ${Math.floor(diffDays / 7)} sem.`;
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  } catch {
+    return '';
+  }
+}
+
+// Impact badge helper
+function ImpactBadge({ level }: { level: string | null | undefined }) {
+  if (!level) return <span className="text-xs text-muted-foreground">-</span>;
+  const colors: Record<string, string> = {
+    alto: 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300',
+    medio: 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300',
+    baixo: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300',
+    normal: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300',
+  };
+  const key = level.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return (
+    <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ${colors[key] || colors.normal}`}>
+      {level}
+    </span>
+  );
+}
+
+// Project List Component (Enhanced Grid)
 function ProjectList({
   projects,
   onItemClick,
@@ -544,6 +568,39 @@ function ProjectList({
   projects: Project[];
   onItemClick: (project: Project) => void;
 }) {
+  const [sortField, setSortField] = React.useState<string>('project_name');
+  const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
+  const sortedProjects = React.useMemo(() => {
+    return [...projects].sort((a, b) => {
+      const getValue = (p: Project) => {
+        switch (sortField) {
+          case 'project_name': return p.project_name || '';
+          case 'area': return p.area || '';
+          case 'responsible': return p.responsible || '';
+          case 'fase_atual': return p.fase_atual || '';
+          case 'priority': return p.priority || '';
+          case 'end_date': return p.end_date || '';
+          case 'status': return p.status || '';
+          default: return '';
+        }
+      };
+      const valA = getValue(a);
+      const valB = getValue(b);
+      const cmp = valA.localeCompare(valB, 'pt-BR');
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [projects, sortField, sortDir]);
+
   if (projects.length === 0) {
     return (
       <Card>
@@ -558,30 +615,106 @@ function ProjectList({
     );
   }
 
+  const SortHeader = ({ field, children, className = '' }: { field: string; children: React.ReactNode; className?: string }) => (
+    <th
+      className={`text-xs font-medium text-muted-foreground px-3 py-2.5 text-left cursor-pointer hover:text-foreground transition-colors select-none ${className}`}
+      onClick={() => handleSort(field)}
+    >
+      <span className="flex items-center gap-1">
+        {children}
+        {sortField === field && (
+          <span className="text-primary">{sortDir === 'asc' ? '↑' : '↓'}</span>
+        )}
+      </span>
+    </th>
+  );
+
+  const isOverdue = (dateStr: string | null | undefined) => {
+    if (!dateStr) return false;
+    try { return new Date(dateStr) < new Date(); } catch { return false; }
+  };
+
   return (
     <Card>
       <CardContent className="p-0">
-        <div className="divide-y">
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => onItemClick(project)}
-            >
-              <div className="space-y-1">
-                <p className="font-medium">{project.project_name}</p>
-                <p className="text-sm text-muted-foreground">{project.espaider_code}</p>
-              </div>
-              <div className="flex items-center gap-4">
-                {project.total_value && (
-                  <span className="text-sm font-medium text-primary">
-                    R$ {project.total_value.toLocaleString('pt-BR')}
-                  </span>
-                )}
-                <StatusBadge status={project.status} />
-              </div>
-            </div>
-          ))}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="border-b bg-muted/30">
+              <tr>
+                <SortHeader field="project_name" className="min-w-[200px]">Projeto</SortHeader>
+                <SortHeader field="area">Área</SortHeader>
+                <SortHeader field="responsible">Responsável</SortHeader>
+                <SortHeader field="fase_atual">Fase</SortHeader>
+                <SortHeader field="priority">Prioridade</SortHeader>
+                <SortHeader field="end_date">Prazo</SortHeader>
+                <th className="text-xs font-medium text-muted-foreground px-3 py-2.5 text-left">Impacto</th>
+                <th className="text-xs font-medium text-muted-foreground px-3 py-2.5 text-left min-w-[180px]">Última Mensagem</th>
+                <SortHeader field="status">Status</SortHeader>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {sortedProjects.map((project) => (
+                <tr
+                  key={project.id}
+                  className="hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => onItemClick(project)}
+                >
+                  <td className="px-3 py-3">
+                    <p className="font-medium text-sm line-clamp-1">{project.project_name}</p>
+                    <p className="text-[11px] text-muted-foreground font-mono">{project.espaider_code}</p>
+                  </td>
+                  <td className="px-3 py-3">
+                    <span className="text-xs text-muted-foreground">{project.area || '-'}</span>
+                  </td>
+                  <td className="px-3 py-3">
+                    <span className="text-xs">{project.responsible || '-'}</span>
+                  </td>
+                  <td className="px-3 py-3">
+                    <span className="text-xs">{project.fase_atual || '-'}</span>
+                  </td>
+                  <td className="px-3 py-3">
+                    {project.priority ? (
+                      <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium border uppercase tracking-wider ${
+                        project.priority === 'urgente' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300' :
+                        project.priority === 'alta' ? 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300' :
+                        'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300'
+                      }`}>
+                        {project.priority}
+                      </span>
+                    ) : <span className="text-xs text-muted-foreground">-</span>}
+                  </td>
+                  <td className="px-3 py-3">
+                    {project.end_date ? (
+                      <span className={`text-xs ${isOverdue(project.end_date) && project.status !== 'concluido' ? 'text-red-600 font-medium dark:text-red-400' : 'text-muted-foreground'}`}>
+                        {new Date(project.end_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                      </span>
+                    ) : <span className="text-xs text-muted-foreground">-</span>}
+                  </td>
+                  <td className="px-3 py-3">
+                    <div className="flex gap-1">
+                      <ImpactBadge level={project.impacto_operacional} />
+                      <ImpactBadge level={project.impacto_estrategico} />
+                    </div>
+                  </td>
+                  <td className="px-3 py-3">
+                    {project.mensagem_movimentacao ? (
+                      <div>
+                        <p className="text-[11px] text-muted-foreground line-clamp-1" title={project.mensagem_movimentacao}>
+                          {project.mensagem_movimentacao}
+                        </p>
+                        {project.last_update && (
+                          <p className="text-[10px] text-muted-foreground/60">{formatRelativeDate(project.last_update)}</p>
+                        )}
+                      </div>
+                    ) : <span className="text-xs text-muted-foreground">-</span>}
+                  </td>
+                  <td className="px-3 py-3">
+                    <StatusBadge status={project.status} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

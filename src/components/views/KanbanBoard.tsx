@@ -75,8 +75,28 @@ const dropIndicatorColors: Record<string, string> = {
   gray: 'bg-gray-50/50 border-gray-200',
 };
 
+// Format relative date helper
+function formatRelativeDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return 'Hoje';
+    if (diffDays === 1) return 'Ontem';
+    if (diffDays < 7) return `há ${diffDays} dias`;
+    if (diffDays < 30) return `há ${Math.floor(diffDays / 7)} sem.`;
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  } catch {
+    return '';
+  }
+}
+
 // Default card content (Compact Director's View)
 function DefaultCardContent({ item }: { item: KanbanItem }) {
+  const lastMessage = item.metadata?.mensagem as string | undefined;
+  const lastDate = item.metadata?.data_movimentacao as string | undefined;
+
   return (
     <div className="space-y-1.5">
       <div className="flex items-start justify-between gap-2">
@@ -110,6 +130,20 @@ function DefaultCardContent({ item }: { item: KanbanItem }) {
             </span>
           )}
         </div>
+
+        {/* Última mensagem de movimentação */}
+        {lastMessage && (
+          <div className="mt-1.5 pt-1.5 border-t border-border/30">
+            <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed" title={lastMessage}>
+              {lastMessage}
+            </p>
+            {lastDate && (
+              <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                {formatRelativeDate(lastDate)}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

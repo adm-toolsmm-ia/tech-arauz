@@ -1,37 +1,29 @@
 ---
-id: 2026-02-13-audit-kpis
+id: 2026-02-13-audit-kpis-v2
 date: 2026-02-13
-time: 20:45
-trigger: Correção solicitada pelo usuário (KPIs incorretos)
+time: 21:00
+trigger: Reincidência de bug nos KPIs de Projetos
 status: RESOLVED
 ---
 
-# 🧠 Agent Audit Log: Correção de KPIs (Em Andamento / Concluídos)
+# 🧠 Agent Audit Log: Refinamento de KPIs (Case Insensitive)
 
 ## 1. Problema Identificado
 **Feedback do Usuário:**
-- O KPI "Em Andamento" estava incorreto. Deve considerar apenas projetos com status "Em execução".
-- O KPI "Concluídos" estava incorreto. Deve considerar apenas projetos com status "Concluído".
-- A lógica anterior utilizava filtros baseados em exclusão (ex: tudo que não é concluído/cancelado) ou slugs antigos (`em_desenvolvimento`).
+- Os KPIs de "Em Andamento" e "Concluídos" continuavam zerados na listagem de projetos, mesmo após a correção anterior.
+- Suspeita técnica: Divergência de formatação (case, espaços) entre o valor esperado ("Em execução") e o valor real no banco (possivelmente "Em Execução" ou "Em execução ").
 
 ## 2. Solução Implementada
-**Alteração de Lógica:**
-Mudei a estratégia de filtro para ser **exata e positiva**, baseada no valor cru do campo `status` (que agora reflete o `situacao_original` da API).
+**Robustez na Comparação:**
+- Implementei normalização **no momento da leitura** (runtime) para garantir o match.
+- `(status || '').trim().toLowerCase() === 'em execução'`
+- Aplicado em: `src/app/projetos/projects-content.tsx` e `src/app/dashboard/dashboard-content.tsx`.
 
-**Arquivos Modificados:**
-1.  `src/app/dashboard/dashboard-content.tsx`
-2.  `src/app/projetos/projects-content.tsx`
-
-**Novas Regras:**
-- **Ativos (Em Andamento):** `p.status === 'Em execução'`
-- **Concluídos:** `p.status === 'Concluído'`
-
-## 3. Impacto
-- **Precisão:** Os números agora refletem exatamente a contagem do Espaider para essas situações específicas.
-- **Limitação Conhecida:** Projetos em outros status interativos (como "Em Aprovação" ou "Aguardando Fornecedor") *não* serão contados no KPI "Em Andamento" do topo da tela, pois a regra agora é estrita para "Em execução". Isso foi solicitado explicitamente pelo usuário.
+**Debug:**
+- Adicionei um log de console (`Project Statuses: [...]`) para que, em caso de nova falha, o usuário possa inspecionar no F12 exatamente quais strings estão chegando do banco.
 
 ---
 
-## 4. Próximos Passos
-1.  **Sync:** Rodar sincronização para efetivar a correção.
-2.  **Validar:** Conferir se os números batem com o relatório do Espaider.
+## 3. Próximos Passos
+1.  **Sync:** Rodar sincronização.
+2.  **Validação Final:** Verificar se os números aparecem corretamente.

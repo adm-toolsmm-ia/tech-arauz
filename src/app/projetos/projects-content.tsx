@@ -153,12 +153,17 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
     return applyProjectFilters(projects, filters);
   }, [projects, filters]);
 
+  // Debug: Check statuses
+  console.log('Project Statuses:', Array.from(new Set(projects.map(p => p.status))));
+
   // Calculate KPIs
   const totalValue = projects.reduce((sum, p) => sum + (p.total_value || 0), 0);
   const activeProjects = projects.filter(
-    (p) => p.status === 'Em execução'
+    (p) => (p.status || '').trim().toLowerCase() === 'em execução'
   ).length;
-  const completedProjects = projects.filter((p) => p.status === 'Concluído').length;
+  const completedProjects = projects.filter(
+    (p) => (p.status || '').trim().toLowerCase() === 'concluído'
+  ).length;
 
   // Transform to Kanban items
   // IMPORTANTE: Usa fase_atual para agrupamento, não status!

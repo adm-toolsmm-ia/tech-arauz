@@ -110,10 +110,12 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
   const totalProjects = chartProjects.length;
 
   const activeProjects = chartProjects.filter(
-    (p) => p.status === 'Em execução'
+    (p) => (p.status || '').trim().toLowerCase() === 'em execução'
   ).length;
 
-  const completedProjects = chartProjects.filter((p) => p.status === 'Concluído').length;
+  const completedProjects = chartProjects.filter(
+    (p) => (p.status || '').trim().toLowerCase() === 'concluído'
+  ).length;
 
   const overdueProjects = chartProjects.filter((p) => {
     if (!p.prazo_final || p.status === 'concluido' || p.status === 'cancelado') return false;

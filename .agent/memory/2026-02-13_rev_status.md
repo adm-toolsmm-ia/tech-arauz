@@ -58,7 +58,7 @@ status: SUCCESS
 - O plano de implementação foi validado pelos agentes virtuais e antecipou o problema do Kanban.
 
 **O que pode melhorar (Erro/Ineficiência)?**
-- A aplicação da migration via script falhou por falta do CLI `supabase`. O arquivo `.sql` foi criado, mas a aplicação depende de pipeline externo/manual.
+- A aplicação via script `./scripts/apply-migrations.ps1` falhou por falta do CLI `supabase` no PATH. Contudo, a migration foi aplicada com sucesso executando `npx supabase db push` manualmente.
 
 **Contexto para Futuro:**
 > Lembre-se que `situacao_original` agora é o campo principal de exibição de texto, enquanto `status_original` (ou `original_status` na UI) deve ser usado para lógica de negócios, cores e gráficos que dependem de valores conhecidos.

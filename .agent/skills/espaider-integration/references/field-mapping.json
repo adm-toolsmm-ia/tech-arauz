@@ -1,0 +1,103 @@
+{
+    "projetos": [
+        {
+            "espaider_field": "IDPROJETO",
+            "db_column": "id_espaider",
+            "data_type": "integer",
+            "nullable": false,
+            "used_in": [
+                "projects"
+            ],
+            "example": 12345,
+            "notes": "Primary key from Espaider"
+        },
+        {
+            "espaider_field": "NOMEPROJETO",
+            "db_column": "nome",
+            "data_type": "text",
+            "nullable": false,
+            "used_in": [
+                "projects"
+            ],
+            "example": "Implantação SAP",
+            "notes": "Project title"
+        },
+        {
+            "espaider_field": "APROVADORATUAL",
+            "db_column": "fase_atual",
+            "data_type": "text",
+            "nullable": true,
+            "used_in": [
+                "projects"
+            ],
+            "example": "Análise Técnica",
+            "notes": "Used for Kanban grouping; can be null if project not yet approved"
+        }
+    ],
+    "entregas": [
+        {
+            "espaider_field": "IDENTREGA",
+            "db_column": "id_espaider",
+            "data_type": "integer",
+            "nullable": false,
+            "used_in": [
+                "project_deliveries"
+            ],
+            "example": 67890
+        },
+        {
+            "espaider_field": "DESCRICAOENTREGA",
+            "db_column": "descricao",
+            "data_type": "text",
+            "nullable": true,
+            "used_in": [
+                "project_deliveries"
+            ],
+            "example": "Relatório Inicial"
+        }
+    ],
+    "cronogramas": [
+        {
+            "espaider_field": "IDCRONOGRAMA",
+            "db_column": "id_espaider",
+            "data_type": "integer",
+            "nullable": false,
+            "used_in": [
+                "project_schedules"
+            ],
+            "example": 112233
+        },
+        {
+            "espaider_field": "DATAINICIO",
+            "db_column": "data_inicio",
+            "data_type": "date",
+            "nullable": true,
+            "used_in": [
+                "project_schedules"
+            ],
+            "example": "2023-01-01"
+        }
+    ],
+    "requisitos": [
+        {
+            "espaider_field": "IDREQUISITO",
+            "db_column": "id_espaider",
+            "data_type": "integer",
+            "nullable": false,
+            "used_in": [
+                "project_requirements"
+            ],
+            "example": 998877
+        },
+        {
+            "espaider_field": "NOMEREQUISITO",
+            "db_column": "nome",
+            "data_type": "text",
+            "nullable": false,
+            "used_in": [
+                "project_requirements"
+            ],
+            "example": "Requisito funcional 1"
+        }
+    ]
+}

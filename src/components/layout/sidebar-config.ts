@@ -7,6 +7,7 @@ import {
   Plug,
   Settings,
   HelpCircle,
+  UserPlus,
 } from 'lucide-react';
 import type { NavGroup, NavItem } from './sidebar-types';
 
@@ -16,6 +17,16 @@ export const menuConfig: NavGroup[] = [
     items: [
       { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
       { title: 'Relatorios', url: '/relatorios', icon: FileText, badge: 'Em Breve' },
+    ],
+  },
+  {
+    group: 'Cadastros',
+    items: [
+      {
+        title: 'Novo Usuário',
+        url: '/cadastros/usuarios/novo',
+        icon: UserPlus,
+      },
     ],
   },
   {

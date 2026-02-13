@@ -7,7 +7,7 @@
 O **Portal Tech Arauz** centraliza a gestão de projetos, solicitações e métricas de TI, integrando-se com o ERP Espaider para sincronização automática de dados.
 
 **Status atual**: 🚀 **Fase de Evolução/Implementação**
-O sistema já conta com integração funcional com ERP, Dashboard de métricas e Gestão de Projetos (Kanban/Lista).
+O sistema já conta com integração funcional com ERP, Dashboard de métricas, Gestão de Projetos (Kanban/Lista) e Gestão de Usuários.
 
 ---
 

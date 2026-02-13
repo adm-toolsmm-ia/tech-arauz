@@ -95,10 +95,14 @@ Modular knowledge domains that agents can load on-demand. based on task context.
 
 ### Database
 
-| Skill             | Description                 |
-| ----------------- | --------------------------- |
-| `database-design` | Schema design, optimization |
-| `prisma-expert`   | Prisma ORM, migrations      |
+| Skill                          | Description                             |
+| ------------------------------ | --------------------------------------- |
+| `database-design`              | Schema design, optimization             |
+| `prisma-expert`                | Prisma ORM, migrations                  |
+| `espaider-integration`         | Espaider API field mapping & workflow   |
+| `supabase-rls-patterns`        | Row-Level Security patterns & templates |
+| `memory-management`            | Agent memory logging & indexing         |
+| `agent-orchestration-patterns` | Task force assembly & dependencies      |  |
 
 ### TypeScript/JavaScript
 
@@ -223,10 +227,10 @@ skill-name/
 
 ### Enhanced Skills (with scripts/references)
 
-| Skill               | Files | Coverage                            |
-| ------------------- | ----- | ----------------------------------- |
-| `ui-ux-pro-max`     | 27    | 50 styles, 21 palettes, 50 fonts    |
-| `app-builder`       | 20    | Full-stack scaffolding              |
+| Skill           | Files | Coverage                         |
+| --------------- | ----- | -------------------------------- |
+| `ui-ux-pro-max` | 27    | 50 styles, 21 palettes, 50 fonts |
+| `app-builder`   | 20    | Full-stack scaffolding           |
 
 ---
 
@@ -280,7 +284,7 @@ For details, see [scripts/README.md](scripts/README.md)
 | Metric              | Value                         |
 | ------------------- | ----------------------------- |
 | **Total Agents**    | 20                            |
-| **Total Skills**    | 36                            |
+| **Total Skills**    | 40 (Complete)                 |
 | **Total Workflows** | 11                            |
 | **Total Scripts**   | 2 (master) + 18 (skill-level) |
 | **Coverage**        | ~90% web/mobile development   |

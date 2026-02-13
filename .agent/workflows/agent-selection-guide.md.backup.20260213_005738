@@ -8,22 +8,22 @@
 
 Use this table to quickly determine which agent(s) to invoke for your task.
 
-| **Tarefa / Pedido**                          | **Agente(s) Acionado(s)**                                                                                           | **Tipo**    | **Tier** |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------- | -------- |
-| Criar API endpoint REST/server action        | orchestrator → backend-specialist                                                                                   | Simples     | 2        |
-| Implementar componente React                 | orchestrator → frontend-specialist                                                                                  | Simples     | 2        |
-| Criar tabela Supabase + RLS policy           | orchestrator → database-architect + security-auditor                                                                | Duplo       | 2        |
-| Debugar bug em produção / erro desconhecido  | orchestrator → debugger + backend-specialist (or frontend)                                                          | Duplo       | 2        |
-| Adicionar testes unitários / coverage        | orchestrator → test-engineer                                                                                        | Simples     | 3        |
-| Adicionar testes E2E (Playwright)            | orchestrator → qa-automation-engineer + test-engineer                                                               | Duplo       | 3        |
-| Deploy para produção / staging               | orchestrator → devops-engineer + qa-automation-engineer + security-auditor                                          | Complexo    | 3        |
-| Otimizar Web Vitals (LCP, INP, CLS)          | orchestrator → performance-optimizer + frontend-specialist                                                          | Duplo       | 3        |
-| Refatorar código legado / 500-line component | orchestrator → code-archaeologist + test-engineer + explorer-agent                                                  | Complexo    | 3        |
-| Feature CRUD completa (tabela + API + UI)    | orchestrator → database-architect + backend-specialist + frontend-specialist + test-engineer + documentation-writer | Orquestrado | Mix      |
-| Integração Espaider (novo campo/sync)        | orchestrator → explorer-agent + backend-specialist + database-architect + security-auditor + test-engineer          | Orquestrado | Mix      |
-| Planejar feature grande ou projeto novo      | orchestrator → project-planner (create PLAN.md) → [user approval] → especialistas                                   | Sequencial  | 2-3      |
-| Documentar API / arquitetura / runbook       | orchestrator → documentation-writer (+ explorer-agent se mapping)                                                   | Simples     | 3        |
-| Investigar/explorar codebase desconhecido    | orchestrator → explorer-agent (+ especialistas se findings)                                                         | Sequencial  | 1        |
+| **Tarefa / Pedido** | **Agente(s) Acionado(s)** | **Tipo** | **Tier** |
+|---|---|---|---|
+| Criar API endpoint REST/server action | orchestrator → backend-specialist | Simples | 2 |
+| Implementar componente React | orchestrator → frontend-specialist | Simples | 2 |
+| Criar tabela Supabase + RLS policy | orchestrator → database-architect + security-auditor | Duplo | 2 |
+| Debugar bug em produção / erro desconhecido | orchestrator → debugger + backend-specialist (or frontend) | Duplo | 2 |
+| Adicionar testes unitários / coverage | orchestrator → test-engineer | Simples | 3 |
+| Adicionar testes E2E (Playwright) | orchestrator → qa-automation-engineer + test-engineer | Duplo | 3 |
+| Deploy para produção / staging | orchestrator → devops-engineer + qa-automation-engineer + security-auditor | Complexo | 3 |
+| Otimizar Web Vitals (LCP, INP, CLS) | orchestrator → performance-optimizer + frontend-specialist | Duplo | 3 |
+| Refatorar código legado / 500-line component | orchestrator → code-archaeologist + test-engineer + explorer-agent | Complexo | 3 |
+| Feature CRUD completa (tabela + API + UI) | orchestrator → database-architect + backend-specialist + frontend-specialist + test-engineer + documentation-writer | Orquestrado | Mix |
+| Integração Espaider (novo campo/sync) | orchestrator → explorer-agent + backend-specialist + database-architect + security-auditor + test-engineer | Orquestrado | Mix |
+| Planejar feature grande ou projeto novo | orchestrator → project-planner (create PLAN.md) → [user approval] → especialistas | Sequencial | 2-3 |
+| Documentar API / arquitetura / runbook | orchestrator → documentation-writer (+ explorer-agent se mapping) | Simples | 3 |
+| Investigar/explorar codebase desconhecido | orchestrator → explorer-agent (+ especialistas se findings) | Sequencial | 1 |
 
 ---
 
@@ -35,9 +35,9 @@ Organize agentes por frequência de uso e criticidade.
 
 Estes agentes devem estar presentes em TODA tarefa, em alguma fase do lifecycle.
 
-| Agente           | Fase(s)              | Descrição                                                                  |
-| ---------------- | -------------------- | -------------------------------------------------------------------------- |
-| `orchestrator`   | Todas (1-6)          | Maestro central, coordena todas as fases, toma decisões arquiteturais      |
+| Agente | Fase(s) | Descrição |
+|--------|---------|-----------|
+| `orchestrator` | Todas (1-6) | Maestro central, coordena todas as fases, toma decisões arquiteturais |
 | `explorer-agent` | 1, 2 (se necessário) | Mapeia codebase, discovery, análise de padrões, "qual é a estrutura aqui?" |
 
 ---
@@ -46,13 +46,13 @@ Estes agentes devem estar presentes em TODA tarefa, em alguma fase do lifecycle.
 
 Estes agentes são acionados na maioria das features/tasks de desenvolvimento.
 
-| Agente                | Tipo de Trabalho | Descrição                                                        | Frequência                     |
-| --------------------- | ---------------- | ---------------------------------------------------------------- | ------------------------------ |
-| `frontend-specialist` | UI/UX            | React, Next.js, componentes, design, Tailwind, estilo            | ~80% das sessões               |
-| `backend-specialist`  | API/Lógica       | Server actions, endpoints, lógica de negócio, Espaider sync      | ~85% das sessões               |
-| `database-architect`  | Schema/Data      | Supabase, schema design, migrations, RLS policies                | ~75% das sessões               |
-| `security-auditor`    | Segurança        | RLS review, autenticação, validação, proteção de dados           | **100% (obrigatório Phase 4)** |
-| `debugger`            | Troubleshooting  | Root cause analysis, investigação de bugs, problema desconhecido | ~30% (conforme necessário)     |
+| Agente | Tipo de Trabalho | Descrição | Frequência |
+|--------|---|---|---|
+| `frontend-specialist` | UI/UX | React, Next.js, componentes, design, Tailwind, estilo | ~80% das sessões |
+| `backend-specialist` | API/Lógica | Server actions, endpoints, lógica de negócio, Espaider sync | ~85% das sessões |
+| `database-architect` | Schema/Data | Supabase, schema design, migrations, RLS policies | ~75% das sessões |
+| `security-auditor` | Segurança | RLS review, autenticação, validação, proteção de dados | **100% (obrigatório Phase 4)** |
+| `debugger` | Troubleshooting | Root cause analysis, investigação de bugs, problema desconhecido | ~30% (conforme necessário) |
 
 ---
 
@@ -60,26 +60,26 @@ Estes agentes são acionados na maioria das features/tasks de desenvolvimento.
 
 Estes agentes são acionados apenas quando necessário, conforme tipo de tarefa.
 
-| Agente                   | Tipo de Trabalho       | Quando Usar                                       | Frequência              |
-| ------------------------ | ---------------------- | ------------------------------------------------- | ----------------------- |
-| `test-engineer`          | Unit/Integration Tests | Testes unitários, TDD, aumentar coverage          | ~60% (antes de deploy)  |
-| `qa-automation-engineer` | E2E Testing            | E2E tests Playwright, CI pipeline, automação      | ~50% (antes de deploy)  |
-| `performance-optimizer`  | Performance            | Web Vitals ruins, bundle grande, slow render      | ~20% (on-demand)        |
-| `devops-engineer`        | CI/CD/Deploy           | Deployment, CI pipelines, infrastructure          | ~40% (deployments)      |
-| `documentation-writer`   | Docs                   | API docs, arquitetura, README, runbooks           | **100% Phase 5**        |
-| `project-planner`        | Planning               | Feature scoping, discovery, task breakdown        | ~30% (features grandes) |
-| `product-manager`        | Requirements           | User stories, acceptance criteria, prioritization | ~40% (features)         |
-| `code-archaeologist`     | Refactoring            | Legacy code, modernization, spaghetti code        | ~10% (refactor sprints) |
-| `seo-specialist`         | SEO/Growth             | Meta tags, ranking, Core Web Vitals (public site) | ~5% (launches)          |
+| Agente | Tipo de Trabalho | Quando Usar | Frequência |
+|--------|---|---|---|
+| `test-engineer` | Unit/Integration Tests | Testes unitários, TDD, aumentar coverage | ~60% (antes de deploy) |
+| `qa-automation-engineer` | E2E Testing | E2E tests Playwright, CI pipeline, automação | ~50% (antes de deploy) |
+| `performance-optimizer` | Performance | Web Vitals ruins, bundle grande, slow render | ~20% (on-demand) |
+| `devops-engineer` | CI/CD/Deploy | Deployment, CI pipelines, infrastructure | ~40% (deployments) |
+| `documentation-writer` | Docs | API docs, arquitetura, README, runbooks | **100% Phase 5** |
+| `project-planner` | Planning | Feature scoping, discovery, task breakdown | ~30% (features grandes) |
+| `product-manager` | Requirements | User stories, acceptance criteria, prioritization | ~40% (features) |
+| `code-archaeologist` | Refactoring | Legacy code, modernization, spaghetti code | ~10% (refactor sprints) |
+| `seo-specialist` | SEO/Growth | Meta tags, ranking, Core Web Vitals (public site) | ~5% (launches) |
 
 ---
 
 ### ❌ EXCLUDED (Not Applicable)
 
-| Agente               | Motivo                                                      |
-| -------------------- | ----------------------------------------------------------- |
-| `mobile-developer`   | Sem app mobile nativo (iOS/Android/React Native)            |
-| `game-developer`     | Sem game features                                           |
+| Agente | Motivo |
+|--------|--------|
+| `mobile-developer` | Sem app mobile nativo (iOS/Android/React Native) |
+| `game-developer` | Sem game features |
 | `penetration-tester` | Usar `security-auditor` ao invés (defensive, não offensive) |
 
 ---
@@ -90,12 +90,12 @@ Each agent's capabilities, triggers, and interaction patterns.
 
 ### ✨ TIER 1 AGENTS
 
-#### 🎼 Orchestrator (`orchestrator`)
+#### 🎭 orchestrator
 - **Scope:** Coordenação de todas as 6 fases, roteamento inteligente de agentes, decisões arquiteturais, validação final
-**Gatilhos:** "planejar", "coordenar", "revisar tudo", "gerenciar memória", "montar time"
-**Skills:** `parallel-agents`, `plan-writing`, `memory-management`, `agent-orchestration-patterns`
-**Output:** Planos de execução, coordenação de agentes, logs de memória, task forces.sões arquiteturais, validação final
+- **Skills:** intelligent-routing, architecture, parallel-agents, plan-writing, clean-code
+- **Triggers:** Qualquer pedido do usuário
 - **Preconditions:** Nenhuma
+- **Outputs:** Strategy document, Task Force definition, final validation, memory log
 - **Frequency:** **TODA SESSÃO (mandatory)**
 - **Conflicts:** Nenhum
 - **Must-run-with:** Nenhum (coordena todos)
@@ -154,7 +154,7 @@ Each agent's capabilities, triggers, and interaction patterns.
 
 #### 🔐 security-auditor
 - **Scope:** RLS policies, autenticação, validação, sanitização, proteção de dados sensíveis
-- **Skills:** vulnerability-scanner, red-team-tactics, authentication patterns, supabase-rls-patterns
+- **Skills:** vulnerability-scanner, red-team-tactics, authentication patterns
 - **Triggers:** "segurança", "RLS", "autenticação", "validação", "sensível", "secret", "token", "OWASP"
 - **Preconditions:** Nenhuma (mas deve ser SEMPRE incluído em Fase 4)
 - **Outputs:** Security review, RLS policies, validation rules, security recommendations

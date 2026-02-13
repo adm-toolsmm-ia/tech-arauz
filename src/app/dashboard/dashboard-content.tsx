@@ -110,10 +110,10 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
   const totalProjects = chartProjects.length;
 
   const activeProjects = chartProjects.filter(
-    (p) => !['concluido', 'cancelado', 'suspenso'].includes(p.status)
+    (p) => p.status === 'Em execução'
   ).length;
 
-  const completedProjects = chartProjects.filter((p) => p.status === 'concluido').length;
+  const completedProjects = chartProjects.filter((p) => p.status === 'Concluído').length;
 
   const overdueProjects = chartProjects.filter((p) => {
     if (!p.prazo_final || p.status === 'concluido' || p.status === 'cancelado') return false;
@@ -476,9 +476,8 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status] || statusStyles.projeto_futuro
-      }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
+        }`}
     >
       {statusLabels[status] || status}
     </span>
@@ -500,9 +499,8 @@ function PriorityBadge({ priority }: { priority: string }) {
   };
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-        styles[priority] || 'bg-gray-100 text-gray-700'
-      }`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[priority] || 'bg-gray-100 text-gray-700'
+        }`}
     >
       {labels[priority] || priority}
     </span>

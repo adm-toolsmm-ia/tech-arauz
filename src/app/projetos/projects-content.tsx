@@ -156,9 +156,9 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
   // Calculate KPIs
   const totalValue = projects.reduce((sum, p) => sum + (p.total_value || 0), 0);
   const activeProjects = projects.filter(
-    (p) => p.status === 'em_desenvolvimento' || p.status === 'em_homologacao'
+    (p) => p.status === 'Em execução'
   ).length;
-  const completedProjects = projects.filter((p) => p.status === 'concluido').length;
+  const completedProjects = projects.filter((p) => p.status === 'Concluído').length;
 
   // Transform to Kanban items
   // IMPORTANTE: Usa fase_atual para agrupamento, não status!
@@ -675,8 +675,8 @@ function ProjectList({
                   <td className="px-3 py-3">
                     {project.priority ? (
                       <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium border uppercase tracking-wider ${project.priority === 'urgente' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300' :
-                          project.priority === 'alta' ? 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300' :
-                            'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300'
+                        project.priority === 'alta' ? 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300' :
+                          'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300'
                         }`}>
                         {project.priority}
                       </span>

@@ -1,29 +1,31 @@
 ---
-id: 2026-02-13-audit-kpis-v2
+id: 2026-02-13-audit-kpis-v3
 date: 2026-02-13
-time: 21:00
-trigger: Reincidência de bug nos KPIs de Projetos
+time: 21:15
+trigger: Reincidência e inconsistência entre Dashboard (OK) e Projetos (NOK)
 status: RESOLVED
 ---
 
-# 🧠 Agent Audit Log: Refinamento de KPIs (Case Insensitive)
+# 🧠 Agent Audit Log: Alinhamento de Dados (Dashboard vs Projetos)
 
 ## 1. Problema Identificado
-**Feedback do Usuário:**
-- Os KPIs de "Em Andamento" e "Concluídos" continuavam zerados na listagem de projetos, mesmo após a correção anterior.
-- Suspeita técnica: Divergência de formatação (case, espaços) entre o valor esperado ("Em execução") e o valor real no banco (possivelmente "Em Execução" ou "Em execução ").
+**Sintoma:**
+- O módulo de **Dashboard** exibia os dados corretamente (usando `status_original`).
+- O módulo de **Projetos** (Card Vermelho) exibia zero (usando `situacao_original`).
+
+**Causa Raiz:**
+- Havia uma divergência na fonte de dados:
+    - `Dashboard` utiliza diretamente `p.status_original` (que mapeia para `STATUSPROJETO` da API).
+    - `Projetos` utilizava `p.situacao_original` (que mapeia para `SITUACAOATUAL` da API).
+- Aparentemente, a API do Espaider retorna valores diferentes nesses campos, ou `SITUACAOATUAL` não reflete o status "Em Execução" da mesma forma que `STATUSPROJETO`.
 
 ## 2. Solução Implementada
-**Robustez na Comparação:**
-- Implementei normalização **no momento da leitura** (runtime) para garantir o match.
-- `(status || '').trim().toLowerCase() === 'em execução'`
-- Aplicado em: `src/app/projetos/projects-content.tsx` e `src/app/dashboard/dashboard-content.tsx`.
-
-**Debug:**
-- Adicionei um log de console (`Project Statuses: [...]`) para que, em caso de nova falha, o usuário possa inspecionar no F12 exatamente quais strings estão chegando do banco.
-
----
+**Unificação da Fonte de Verdade:**
+- Alterei o transformador central (`src/lib/transformers/project.ts`), que alimenta o módulo de projetos.
+- **Antes:** `status: row.situacao_original`
+- **Agora:** `status: row.status_original || row.situacao_original`
+- **Efeito:** Força o módulo de projetos a usar o mesmo dado que o dashboard já usa com sucesso (`STATUSPROJETO`), mantendo `SITUACAOATUAL` apenas como fallback.
 
 ## 3. Próximos Passos
 1.  **Sync:** Rodar sincronização.
-2.  **Validação Final:** Verificar se os números aparecem corretamente.
+2.  **Validar:** Ambos os módulos devem agora apresentar números idênticos.

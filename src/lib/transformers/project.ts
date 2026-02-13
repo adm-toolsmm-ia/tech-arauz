@@ -294,7 +294,7 @@ export function dbProjectToUI(row: DBProject): UIProject {
     id: row.id,
     espaider_code: row.codigo,
     project_name: row.titulo,
-    status: row.situacao_original, // Mapeia RAW value
+    status: row.status_original || row.situacao_original, // Prioritize status_original (verified to work in Dashboard)
     original_status: row.status_original, // Mapeia METRIC value
     // === Novos campos diretos do BD (Migration 009) ===
     fase_atual: row.fase_atual || raw?.APROVADORATUAL || null,

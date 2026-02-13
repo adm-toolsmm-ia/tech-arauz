@@ -106,30 +106,36 @@ export function StatusDistributionChart({ data, onSegmentClick, activeStatus }: 
 export function buildDistributionData(
   projects: Array<{ status: string }>
 ): DistributionData[] {
-  const statusLabels: Record<string, string> = {
-    projeto_futuro: 'Futuro',
-    em_aprovacao: 'Em Aprovação',
-    em_desenvolvimento: 'Em Desenvolvimento',
-    em_homologacao: 'Em Homologação',
-    concluido: 'Concluído',
-    cancelado: 'Cancelado',
-    suspenso: 'Suspenso',
-  };
-
   const counts: Record<string, number> = {};
   projects.forEach((p) => {
-    counts[p.status] = (counts[p.status] || 0) + 1;
+    const status = p.status || 'Sem status';
+    counts[status] = (counts[status] || 0) + 1;
   });
 
   const total = projects.length || 1;
 
-  return Object.entries(statusLabels)
-    .map(([status, label]) => ({
+  // Helper to find color
+  const getColor = (status: string) => {
+    // Try exact match
+    if (statusColors[status]) return statusColors[status];
+    // Try slug match
+    const slug = status
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    if (statusColors[slug]) return statusColors[slug];
+    return '#6b7280'; // Fallback gray
+  };
+
+  return Object.entries(counts)
+    .map(([status, count]) => ({
       status,
-      label,
-      count: counts[status] || 0,
-      color: statusColors[status] || '#6b7280',
-      percentage: ((counts[status] || 0) / total) * 100,
+      label: status,
+      count,
+      color: getColor(status),
+      percentage: (count / total) * 100,
     }))
-    .filter((d) => d.count > 0);
+    .sort((a, b) => b.count - a.count);
 }

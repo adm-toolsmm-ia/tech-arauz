@@ -102,27 +102,31 @@ export function ProjectPipelineChart({ data, onBarClick, activeStatus }: Project
 export function buildPipelineData(
   projects: Array<{ status: string }>
 ): PipelineData[] {
-  const statusLabels: Record<string, string> = {
-    projeto_futuro: 'Futuro',
-    em_aprovacao: 'Em Aprovação',
-    em_desenvolvimento: 'Em Desenvolvimento',
-    em_homologacao: 'Em Homologação',
-    concluido: 'Concluído',
-    cancelado: 'Cancelado',
-    suspenso: 'Suspenso',
-  };
-
   const counts: Record<string, number> = {};
   projects.forEach((p) => {
-    counts[p.status] = (counts[p.status] || 0) + 1;
+    const status = p.status || 'Sem status';
+    counts[status] = (counts[status] || 0) + 1;
   });
 
-  return Object.entries(statusLabels)
-    .map(([status, label]) => ({
+  // Helper to find color
+  const getColor = (status: string) => {
+    if (statusColors[status]) return statusColors[status];
+    const slug = status
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    if (statusColors[slug]) return statusColors[slug];
+    return '#6b7280';
+  };
+
+  return Object.entries(counts)
+    .map(([status, count]) => ({
       status,
-      label,
-      count: counts[status] || 0,
-      color: statusColors[status] || '#6b7280',
+      label: status,
+      count,
+      color: getColor(status),
     }))
-    .filter((d) => d.count > 0);
+    .sort((a, b) => b.count - a.count);
 }

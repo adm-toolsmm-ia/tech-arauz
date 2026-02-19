@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
@@ -43,8 +44,14 @@ export default function LoginPage() {
         {/* Logo/Header */}
         <div className="text-center mb-10">
           <Link href="/" className="inline-flex flex-col items-center gap-4 group">
-            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-md shadow-2xl group-hover:scale-105 transition-all duration-300 group-hover:bg-white/15">
-              <span className="text-accent font-bold text-4xl leading-none">A</span>
+            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-md shadow-2xl group-hover:scale-105 transition-all duration-300 group-hover:bg-white/15 overflow-hidden">
+              <Image
+                src="/assets/logo-arauz-2026.png"
+                alt="Tech Arauz Logo"
+                width={64}
+                height={64}
+                className="object-contain p-2"
+              />
             </div>
             <div className="flex flex-col items-center">
               <span className="text-3xl font-bold text-white tracking-tight">Tech Arauz</span>

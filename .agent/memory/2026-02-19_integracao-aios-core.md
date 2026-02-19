@@ -65,3 +65,16 @@ O projeto Tech Arauz já operava com o sistema Antigravity Kit (`.agent/`) com 2
 3. **AIOS + Antigravity são complementares**: AIOS não conhece Espaider/RLS; Antigravity não tem stories formais
 4. **ADRs retroativos** são valiosos para documentar decisões já tomadas no formato que AIOS espera
 5. **Stories retroativas** dão rastreabilidade ao trabalho passado para o `@sm` gerenciar backlog
+
+## Deploy
+
+**Commit**: c7c9f74
+**Mensagem**: feat: integrar AIOS Core com Antigravity Kit [STORY-AIOS-INTEGRATION]
+**Pushed**: 2026-02-19 (GitHub main branch)
+**URL**: https://github.com/adm-toolsmm-ia/tech-arauz/commit/c7c9f74
+
+**1174 arquivos criados/alterados**, incluindo:
+- Estrutura completa AIOS (docs/framework, docs/architecture, .ai/, docs/stories/, docs/prd/)
+- Framework AIOS completo (.aios-core/, .claude/commands/, .claude/rules/)
+- Agentes integrados e configurações de IDE (.cursor/, .codex/, .gemini/)
+- Memory logs de implementações anteriores

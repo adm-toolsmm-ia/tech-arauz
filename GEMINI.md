@@ -27,14 +27,14 @@ Agente ativado → Verificar frontmatter "skills:" → Ler SKILL.md (INDEX) → 
 
 **Antes de QUALQUER ação, classifique a solicitação:**
 
-| Tipo de Solicitação | Palavras-chave de Gatilho | Tiers Ativos | Resultado |
-| :--- | :--- | :--- | :--- |
-| **PERGUNTA** | "o que é", "como funciona", "explique" | APENAS TIER 0 | Resposta em Texto |
-| **LEVANTAMENTO/INTEL** | "analisar", "listar arquivos", "visão geral" | TIER 0 + Explorer | Intel de Sessão (Sem Arquivo) |
-| **CÓDIGO SIMPLES** | "corrigir", "adicionar", "alterar" (arquivo único) | TIER 0 + TIER 1 (lite) | Edição Inline |
-| **CÓDIGO COMPLEXO** | "construir", "criar", "implementar", "refatorar" | TIER 0 + TIER 1 (full) + Agent | **{task-slug}.md Obrigatório** |
-| **DESIGN/UI** | "design", "UI", "página", "dashboard" | TIER 0 + TIER 1 + Agent | **{task-slug}.md Obrigatório** |
-| **COMANDO SLASH** | /create, /orchestrate, /debug | Fluxo específico do comando | Variável |
+| Tipo de Solicitação    | Palavras-chave de Gatilho                          | Tiers Ativos                   | Resultado                      |
+| :--------------------- | :------------------------------------------------- | :----------------------------- | :----------------------------- |
+| **PERGUNTA**           | "o que é", "como funciona", "explique"             | APENAS TIER 0                  | Resposta em Texto              |
+| **LEVANTAMENTO/INTEL** | "analisar", "listar arquivos", "visão geral"       | TIER 0 + Explorer              | Intel de Sessão (Sem Arquivo)  |
+| **CÓDIGO SIMPLES**     | "corrigir", "adicionar", "alterar" (arquivo único) | TIER 0 + TIER 1 (lite)         | Edição Inline                  |
+| **CÓDIGO COMPLEXO**    | "construir", "criar", "implementar", "refatorar"   | TIER 0 + TIER 1 (full) + Agent | **{task-slug}.md Obrigatório** |
+| **DESIGN/UI**          | "design", "UI", "página", "dashboard"              | TIER 0 + TIER 1 + Agent        | **{task-slug}.md Obrigatório** |
+| **COMANDO SLASH**      | /create, /orchestrate, /debug                      | Fluxo específico do comando    | Variável                       |
 
 ---
 
@@ -72,6 +72,7 @@ Quando o prompt do usuário NÃO estiver em Inglês:
 1. **Traduzir internamente** para melhor compreensão.
 2. **Responder e criar ARTEFATOS no idioma do usuário** - corresponda à comunicação (Português do Brasil).
 3. **Comentários/variáveis de código** permanecem em Inglês.
+4. **ARTEFATOS E PLANOS:** Todos os planos de implementação, tarefas e documentações DEVEM ser gerados em Português (Brasil).
 
 ### 🧹 Clean Code (Obrigatório Global)
 
@@ -100,11 +101,11 @@ Quando o prompt do usuário NÃO estiver em Inglês:
 
 **OBRIGATÓRIO: Toda solicitação de usuário deve passar pelo Portão Socrático antes de QUALQUER uso de ferramenta ou implementação.**
 
-| Tipo de Solicitação | Estratégia | Ação Necessária |
-| :--- | :--- | :--- |
-| **Novo recurso / Build** | Descoberta Profunda | PERGUNTAR no mínimo 3 perguntas estratégicas |
-| **Edição de Código / Bug Fix** | Verificação de Contexto | Confirmar entendimento + perguntar impacto |
-| **Vago / Simples** | Clarificação | Perguntar Propósito, Usuários e Escopo |
+| Tipo de Solicitação            | Estratégia              | Ação Necessária                              |
+| :----------------------------- | :---------------------- | :------------------------------------------- |
+| **Novo recurso / Build**       | Descoberta Profunda     | PERGUNTAR no mínimo 3 perguntas estratégicas |
+| **Edição de Código / Bug Fix** | Verificação de Contexto | Confirmar entendimento + perguntar impacto   |
+| **Vago / Simples**             | Clarificação            | Perguntar Propósito, Usuários e Escopo       |
 
 ### 🏁 Protocolo de Checklist Final
 

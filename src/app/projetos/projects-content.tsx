@@ -285,18 +285,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
     });
   }, [projects]);
 
-  /**
-   * Normaliza fase_atual para slug de coluna Kanban
-   */
-  function normalizeFaseSlug(fase: string | null | undefined): string {
-    if (!fase) return '';
-    return fase
-      .trim()
-      .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove acentos
-      .replace(/[^a-z0-9]+/g, '_') // Substitui caracteres especiais por _
-      .replace(/^_+|_+$/g, ''); // Remove _ do início e fim
-  }
+
 
   // Handle drag-and-drop phase change (optimistic update)
   // NOTA: Agora atualiza fase_atual ao invés de status
@@ -564,6 +553,19 @@ function ImpactBadge({ level }: { level: string | null | undefined }) {
   );
 }
 
+/**
+ * Normaliza fase_atual para slug de coluna Kanban
+ */
+function normalizeFaseSlug(fase: string | null | undefined): string {
+  if (!fase) return '';
+  return fase
+    .trim()
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .replace(/[^a-z0-9]+/g, '_') // Substitui caracteres especiais por _
+    .replace(/^_+|_+$/g, ''); // Remove _ do início e fim
+}
+
 // Project List Component (Enhanced Grid)
 function ProjectList({
   projects,
@@ -594,6 +596,8 @@ function ProjectList({
           case 'fase_atual': return p.fase_atual || '';
           case 'priority': return p.priority || '';
           case 'end_date': return p.end_date || '';
+          case 'impacto_operacional': return p.impacto_operacional || '';
+          case 'impacto_estrategico': return p.impacto_estrategico || '';
           case 'status': return p.status || '';
           default: return '';
         }
@@ -612,7 +616,8 @@ function ProjectList({
           <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <h3 className="mt-4 text-lg font-medium">Nenhum projeto encontrado</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Sincronize com o Espaider para importar projetos.
+            {/* Mensagem atualizada para explicar filtro de concluídos */}
+            Verifique se há filtros ativos ou sincronize com o Espaider.
           </p>
         </CardContent>
       </Card>
@@ -651,71 +656,100 @@ function ProjectList({
                 <SortHeader field="fase_atual">Fase</SortHeader>
                 <SortHeader field="priority">Prioridade</SortHeader>
                 <SortHeader field="end_date">Prazo</SortHeader>
-                <th className="text-xs font-medium text-muted-foreground px-3 py-2.5 text-left">Impacto</th>
+                <SortHeader field="impacto_operacional">Imp. Operacional</SortHeader>
+                <SortHeader field="impacto_estrategico">Imp. Estratégico</SortHeader>
                 <th className="text-xs font-medium text-muted-foreground px-3 py-2.5 text-left min-w-[180px]">Última Mensagem</th>
                 <SortHeader field="status">Status</SortHeader>
               </tr>
             </thead>
             <tbody className="divide-y">
-              {sortedProjects.map((project) => (
-                <tr
-                  key={project.id}
-                  className="hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => onItemClick(project)}
-                >
-                  <td className="px-3 py-3">
-                    <p className="font-medium text-sm line-clamp-1">{project.project_name}</p>
-                    <p className="text-[11px] text-muted-foreground font-mono">{project.espaider_code}</p>
-                  </td>
-                  <td className="px-3 py-3">
-                    <span className="text-xs text-muted-foreground">{project.area || '-'}</span>
-                  </td>
-                  <td className="px-3 py-3">
-                    <span className="text-xs">{project.responsible || '-'}</span>
-                  </td>
-                  <td className="px-3 py-3">
-                    <span className="text-xs">{project.fase_atual || '-'}</span>
-                  </td>
-                  <td className="px-3 py-3">
-                    {project.priority ? (
-                      <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium border uppercase tracking-wider ${project.priority === 'urgente' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300' :
-                        project.priority === 'alta' ? 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300' :
-                          'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300'
-                        }`}>
-                        {project.priority}
-                      </span>
-                    ) : <span className="text-xs text-muted-foreground">-</span>}
-                  </td>
-                  <td className="px-3 py-3">
-                    {project.end_date ? (
-                      <span className={`text-xs ${isOverdue(project.end_date) && project.status !== 'concluido' ? 'text-red-600 font-medium dark:text-red-400' : 'text-muted-foreground'}`}>
-                        {new Date(project.end_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                      </span>
-                    ) : <span className="text-xs text-muted-foreground">-</span>}
-                  </td>
-                  <td className="px-3 py-3">
-                    <div className="flex gap-1">
+              {sortedProjects.map((project) => {
+                const faseSlug = normalizeFaseSlug(project.fase_atual);
+                const statusSlug = normalizeFaseSlug(project.status); // Reuse same normalization for simplicity
+
+                // Recreate phase labels map for list view (or move to shared const)
+                const phaseLabels: Record<string, string> = {
+                  fila_projetos: 'Fila de Projetos',
+                  fila_de_projetos: 'Fila de Projetos',
+                  levantamentos_iniciais: 'Levantamentos',
+                  analise_e_definicao_do_projeto: 'Análise/Definição',
+                  aprovacao_do_projeto: 'Aprovação',
+                  execucao_homologacao: 'Exec - Homolog',
+                  validacao_homologacao: 'Valid - Homolog',
+                  execucao_producao: 'Exec - Produção',
+                  validacao_producao: 'Valid - Produção',
+                  monitoramento_producao: 'Monitoramento',
+                  concluido: 'Concluído',
+                  cancelado: 'Cancelado',
+                  suspenso: 'Suspenso',
+                  projeto_futuro: 'Futuro',
+                  em_execucao: 'Em Execução',
+                  aguardando_fornecedor: 'Aguard. Fornecedor',
+                  em_assinatura: 'Em Assinatura',
+                };
+
+                const faseLabel = phaseLabels[faseSlug] || project.fase_atual || '-';
+
+                return (
+                  <tr
+                    key={project.id}
+                    className="hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => onItemClick(project)}
+                  >
+                    <td className="px-3 py-3">
+                      <p className="font-medium text-sm line-clamp-1">{project.project_name}</p>
+                      <p className="text-[11px] text-muted-foreground font-mono">{project.espaider_code}</p>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="text-xs text-muted-foreground">{project.area || '-'}</span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="text-xs">{project.responsible || '-'}</span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="text-xs font-medium">{faseLabel}</span>
+                    </td>
+                    <td className="px-3 py-3">
+                      {project.priority ? (
+                        <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium border uppercase tracking-wider ${project.priority === 'urgente' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300' :
+                          project.priority === 'alta' ? 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300' :
+                            'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300'
+                          }`}>
+                          {project.priority}
+                        </span>
+                      ) : <span className="text-xs text-muted-foreground">-</span>}
+                    </td>
+                    <td className="px-3 py-3">
+                      {project.end_date ? (
+                        <span className={`text-xs ${isOverdue(project.end_date) && project.status !== 'concluido' ? 'text-red-600 font-medium dark:text-red-400' : 'text-muted-foreground'}`}>
+                          {new Date(project.end_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                        </span>
+                      ) : <span className="text-xs text-muted-foreground">-</span>}
+                    </td>
+                    <td className="px-3 py-3">
                       <ImpactBadge level={project.impacto_operacional} />
+                    </td>
+                    <td className="px-3 py-3">
                       <ImpactBadge level={project.impacto_estrategico} />
-                    </div>
-                  </td>
-                  <td className="px-3 py-3">
-                    {project.mensagem_movimentacao ? (
-                      <div>
-                        <p className="text-[11px] text-muted-foreground line-clamp-1" title={project.mensagem_movimentacao}>
-                          {project.mensagem_movimentacao}
-                        </p>
-                        {project.last_update && (
-                          <p className="text-[10px] text-muted-foreground/60">{formatRelativeDate(project.last_update)}</p>
-                        )}
-                      </div>
-                    ) : <span className="text-xs text-muted-foreground">-</span>}
-                  </td>
-                  <td className="px-3 py-3">
-                    <StatusBadge status={project.status} />
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-3 py-3">
+                      {project.mensagem_movimentacao ? (
+                        <div>
+                          <p className="text-[11px] text-muted-foreground line-clamp-1" title={project.mensagem_movimentacao}>
+                            {project.mensagem_movimentacao}
+                          </p>
+                          {project.last_update && (
+                            <p className="text-[10px] text-muted-foreground/60">{formatRelativeDate(project.last_update)}</p>
+                          )}
+                        </div>
+                      ) : <span className="text-xs text-muted-foreground">-</span>}
+                    </td>
+                    <td className="px-3 py-3">
+                      <StatusBadge status={statusSlug} />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

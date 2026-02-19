@@ -1,6 +1,7 @@
 'use client';
 
-import { RefreshCw, Calendar, Package, FileText, ListChecks, Clock, DollarSign, History, UserCheck, ArrowRight } from 'lucide-react';
+import { RefreshCw, Calendar, Package, FileText, ListChecks, Clock, DollarSign, History, UserCheck, ArrowRight, StickyNote } from 'lucide-react';
+import { ProjectNotesEditor } from './ProjectNotesEditor';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,7 @@ interface UIProject {
   impacto_estrategico?: string | null;
   escopo?: string | null;
   complexidade_tecnica?: string | null;
+  notes_html?: string | null;
   // Legacy (mantidos para compatibilidade)
   aprovador_atual?: string | null;
   prazo_aprovador?: string | null;
@@ -196,6 +198,13 @@ export function ProjectCockpit({
             Detalhes
           </TabsTrigger>
           <TabsTrigger
+            value="anotacoes"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+          >
+            <StickyNote className="size-4 mr-2" />
+            Anotações
+          </TabsTrigger>
+          <TabsTrigger
             value="entregas"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
           >
@@ -263,6 +272,14 @@ export function ProjectCockpit({
             Ações
           </TabsTrigger>
         </TabsList>
+
+        {/* Tab: Anotações */}
+        <TabsContent value="anotacoes" className="mt-6">
+          <ProjectNotesEditor
+            projectId={project.id}
+            initialContent={project.notes_html ?? null}
+          />
+        </TabsContent>
 
         {/* Tab: Detalhes */}
         <TabsContent value="detalhes" className="mt-6 space-y-8">

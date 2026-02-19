@@ -1,6 +1,6 @@
 # Registro de Implementações - Tech Arauz
 
-> **Última Atualização**: 2026-02-10  
+> **Última Atualização**: 2026-02-16  
 > **Último Sync**: MVP Completo (DnD + Charts + Agentes AI + Filtros)  
 > **Tenant**: Araúz & Advogados  
 > **Repositório**: https://github.com/adm-toolsmm-ia/tech-arauz.git
@@ -36,6 +36,7 @@ Este arquivo documenta todas as implementações realizadas no projeto para faci
 | Etapa 20: Sync E2E Pipeline | **Completo** (loadConfig skipValidation, UX simplificado, fallback token) | backend-specialist + frontend-specialist |
 | Etapa 21: Refatoração Sync Espaider | **Completo** (Logs estruturados, Fluxo Hierárquico, Hydration Fix, Limpeza SQL) | backend-specialist |
 | Etapa 22: API Única Hierárquica | **Completo** (1 API + ListaURLFilhos, Migration 005, Client buscarFilhos) | backend-specialist |
+| Etapa 23: Visão 360° + Anotações | **Completo** (SplitView wide/3xl/4xl, coluna notes_html Migration 022, updateProjectNotesAction, ProjectNotesEditor TipTap, aba Anotações no ProjectCockpit) | frontend-specialist |
 
 ---
 
@@ -74,6 +75,7 @@ tech-arauz/
 │   │   ├── dashboard/           # KPICard
 │   │   ├── charts/              # ProjectPipeline, Trend, Distribution
 │   │   ├── agents/              # AgentCard, TraceTimeline, BudgetGauge
+│   │   ├── project/             # ProjectCockpit, ProjectNotesEditor
 │   │   └── views/               # KanbanBoard (DnD), SplitView, ViewToggle
 │   ├── hooks/                   # Custom hooks
 │   ├── lib/                     # Utilitários

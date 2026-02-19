@@ -14,7 +14,23 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(node test-sync.mjs:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(cd:*)",
+      "Bash(test:*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \".claude/hooks/synapse-engine.js\""
+          }
+        ]
+      }
     ]
   }
 }

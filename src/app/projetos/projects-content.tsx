@@ -58,6 +58,7 @@ interface Project {
   impacto_estrategico?: string | null;
   escopo?: string | null;
   complexidade_tecnica?: string | null;
+  notes_html?: string | null;
   total_value: number | null;
   responsible: string | null;
   start_date: string | null;
@@ -443,7 +444,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
           onClose={() => setSelectedProject(null)}
           title={selectedProject?.project_name || 'Visao 360'}
           subtitle={selectedProject ? `${selectedProject.espaider_code}${selectedProject.pasta_consultivo ? ` • ${selectedProject.pasta_consultivo}` : ''}` : undefined}
-          width="2xl"
+          width="wide"
         >
           {selectedProject && (
             <ProjectCockpit
@@ -481,6 +482,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
                 impacto_estrategico: selectedProject.impacto_estrategico,
                 escopo: selectedProject.escopo,
                 complexidade_tecnica: selectedProject.complexidade_tecnica,
+                notes_html: selectedProject.notes_html ?? null,
                 end_date: selectedProject.end_date,
                 responsible: selectedProject.responsible,
                 priority: selectedProject.priority,

@@ -57,6 +57,8 @@ export interface DBProject {
   impacto_estrategico?: string | null;
   escopo?: string | null;
   complexidade_tecnica?: string | null;
+  // === Anotações (Migration 022) ===
+  notes_html?: string | null;
   // Joined relations (optional)
   schedules?: DBSchedule[];
   deliveries?: DBDelivery[];
@@ -186,6 +188,8 @@ export interface UIProject {
   impacto_estrategico?: string | null;
   escopo?: string | null;
   complexidade_tecnica?: string | null;
+  // === Anotações (Migration 022) ===
+  notes_html?: string | null;
   // Legacy fields (mantidos para compatibilidade)
   aprovador_atual?: string | null;
   prazo_aprovador?: string | null;
@@ -323,6 +327,7 @@ export function dbProjectToUI(row: DBProject): UIProject {
     impacto_estrategico: row.impacto_estrategico || raw?.IMPACTOESTRATEGICO || null,
     escopo: row.escopo || raw?.ESCOPO || null,
     complexidade_tecnica: row.complexidade_tecnica || raw?.COMPLEXIDADETECNICA || null,
+    notes_html: row.notes_html ?? null,
 
     // Legacy: mantidos para compatibilidade com componentes existentes
     aprovador_atual: row.fase_atual || raw?.APROVADORATUAL || null,

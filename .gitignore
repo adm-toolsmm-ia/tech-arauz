@@ -62,3 +62,21 @@ temp_pptx/
 # Credenciais sensíveis
 docs/credenciais/
 
+# Environment & Secrets (AIOS)
+.env.*.local
+*.key
+
+# Dependencies (AIOS)
+node_modules
+
+# Build & Logs (AIOS)
+logs/
+
+# IDE & OS (AIOS)
+Thumbs.db
+*.swp
+
+# AIOS Local (AIOS)
+.aios-core/local/
+.claude/settings.local.json
+.aios/install-log.txt

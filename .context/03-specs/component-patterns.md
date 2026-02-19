@@ -199,9 +199,13 @@ interface SplitViewProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
+  width?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'wide';
+  healthStatus?: 'verde' | 'amarelo' | 'vermelho';
 }
 ```
+- `wide`: largura responsiva `min(90vw, 1120px)` para visão 360° com mais espaço.
 
 **Características**:
 - Overlay com backdrop blur
@@ -228,6 +232,31 @@ interface SplitViewProps {
 ```
 
 **Referência**: `docs/prototipo-referencia/src/components/SplitView.tsx`
+
+---
+
+### 3.4 ProjectNotesEditor (Anotações do Projeto)
+
+**Propósito**: Editor de texto rico para anotações por projeto na Visão 360°, com persistência em `projects.notes_html`.
+
+**Interface**:
+```typescript
+interface ProjectNotesEditorProps {
+  projectId: string;
+  initialContent: string | null;
+  onSave?: () => void;
+}
+```
+
+**Características**:
+- TipTap (StarterKit + Placeholder + Link); toolbar: negrito, itálico, título, listas, link
+- Botão "Salvar anotações" chama Server Action `updateProjectNotesAction`
+- Empty state com placeholder e mensagem amigável
+- Toast (Sonner) para sucesso/erro
+
+**Uso**: Aba "Anotações" no `ProjectCockpit`; dados via `project.notes_html` e persistência via `src/app/actions/projects.ts` (`updateProjectNotesAction`).
+
+**Referência**: `src/components/project/ProjectNotesEditor.tsx`
 
 ---
 
@@ -386,6 +415,10 @@ src/
 │   │   ├── SplitView.tsx
 │   │   ├── KanbanBoard.tsx
 │   │   └── ViewToggle.tsx
+│   ├── project/
+│   │   ├── ProjectCockpit.tsx        # Visão 360° com abas (Detalhes, Anotações, etc.)
+│   │   ├── ProjectNotesEditor.tsx   # Editor TipTap para anotações do projeto
+│   │   └── index.ts
 │   ├── charts/
 │   │   ├── ProjectPipelineChart.tsx   # Barras horizontais - projetos por status
 │   │   ├── ProjectTrendChart.tsx      # Linhas - tendência mensal (criados/concluídos)

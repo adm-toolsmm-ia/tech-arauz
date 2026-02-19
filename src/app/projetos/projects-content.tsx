@@ -187,14 +187,11 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
     // Extrai fases únicas (usa fase_atual, fallback para status)
     const existingPhases = Array.from(new Set(projects.map((p) => normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos')));
 
-    // Fases Obrigatórias (Sempre visíveis no Board)
-    const mandatoryPhases = ['execucao_producao', 'validacao_producao'];
-
     // Fases Proibidas (Nunca visíveis no Board)
     const bannedPhases = ['fila_projetos', 'fila_de_projetos'];
 
-    // Combine phases, ensuring mandatory ones are present
-    const phases = Array.from(new Set([...existingPhases, ...mandatoryPhases]))
+    // Combine phases (only show phases that actually exist)
+    const phases = Array.from(new Set(existingPhases))
       .filter(p => !bannedPhases.includes(p));
 
     // Ordem das fases no fluxo de projeto

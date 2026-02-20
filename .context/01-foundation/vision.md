@@ -70,23 +70,23 @@ O **Portal Tech Arauz** é um SaaS de gestão de TI que combina:
 
 | Funcionalidade | Status |
 |----------------|--------|
-| Importação de Projetos via API Espaider | 🔜 A fazer |
-| Visualização de Projetos (dados de capa) | 🔜 A fazer |
-| Cadastros filhos: Cronogramas, Entregas, Requisitos | 🔜 A fazer |
-| Dashboards e KPIs | 🔜 A fazer |
-| Controle de Tabelas Auxiliares | 🔜 A fazer |
-| Controle de Usuários (RBAC) | 🔜 A fazer |
-| Logs e Monitoramento | 🔜 A fazer |
+| Importação de Projetos via API Espaider | ✅ Implementado (RF-002, Etapa 22) |
+| Visualização de Projetos (dados de capa) | ✅ Implementado (RF-004, Etapas 6+14) |
+| Cadastros filhos: Cronogramas, Entregas, Requisitos | ✅ Implementado (RF-003, Migrations 019-020) |
+| Dashboards e KPIs | ✅ Implementado (RF-009, STORY-001: 8 KPIs + 3 gráficos) |
+| Controle de Tabelas Auxiliares | ✅ Implementado (RF-006, Etapas 14-15) |
+| Controle de Usuários (RBAC) | ✅ Implementado (RF-007, Etapa 13) |
+| Logs e Monitoramento | ✅ Implementado (RF-008, Migration 006 + LogViewer) |
 
 ### Fase 2: Gestão de Agentes AI (Prioridade 2)
 
 | Funcionalidade | Status |
 |----------------|--------|
-| Integração com LangSmith (monitoring) | 🔜 A fazer |
-| Visualização de workflows LangChain | 🔜 A fazer |
-| Visualização de grafos LangGraph | 🔜 A fazer |
-| Criação/edição de workflows | 🔜 A fazer |
-| Documentação de agentes existentes | 🔜 A fazer |
+| Integração com LangSmith (monitoring) | 📋 Planejado - Fase 2 (RF-101) |
+| Visualização de workflows LangChain | 📋 Planejado - Fase 2 (RF-103) |
+| Visualização de grafos LangGraph | 📋 Planejado - Fase 2 (RF-105) |
+| Criação/edição de workflows | 📋 Planejado - Fase 2 (RF-107) |
+| Documentação de agentes existentes | 📋 Planejado - Fase 2 (RF-104) |
 
 ### ❌ Excluído do MVP
 

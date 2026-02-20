@@ -1,10 +1,10 @@
 # Tech Arauz - Roadmap de Desenvolvimento
 
-> **Versão**: 1.0  
-> **Atualizado**: 2026-02-08  
-> **Status**: Em desenvolvimento MVP
+> **Versão**: 2.0 (AIOS-integrated)
+> **Atualizado**: 2026-02-20
+> **Status**: Fase 1 (MVP) — 85% completo | Fase 2 — Planejado
 
-Este documento serve como guia para o desenvolvimento contínuo do SaaS Tech Arauz.
+Este documento serve como guia para o desenvolvimento contínuo do SaaS Tech Arauz. Para contexto arquiteturural, consulte `docs/architecture.md`.
 
 ---
 
@@ -20,13 +20,13 @@ Este documento serve como guia para o desenvolvimento contínuo do SaaS Tech Ara
 ## Stack Técnica
 
 | Camada | Tecnologia | Documentação |
-| ------ | ---------- | ------------ |
-| Frontend | Next.js 14 (App Router) | `.context/03-specs/adr/ADR-001` |
-| UI | shadcn/ui + Tailwind CSS | `.context/03-specs/component-patterns.md` |
-| Auth | Supabase Auth | `.context/03-specs/adr/ADR-001` |
-| Database | Supabase (PostgreSQL + RLS) | `supabase/README.md` |
-| Integração | Client Espaider (TypeScript) | `.context/03-specs/adr/ADR-002` |
-| AI Service | Python + FastAPI + LangChain | `services/ai/` |
+| --- | --- | --- |
+| Frontend | Next.js 14 (App Router) | [ADR-001](./../.context/03-specs/adr/2026-02-ADR-001-stack-tecnica.md) |
+| UI | shadcn/ui + Tailwind CSS | [ADR-003](./../.context/03-specs/adr/2026-02-ADR-003-design-system.md) |
+| Auth | Supabase Auth (JWT) | [ADR-001](./../.context/03-specs/adr/2026-02-ADR-001-stack-tecnica.md) |
+| Database | Supabase (PostgreSQL + RLS) | [.ai/ADR-001](./../.ai/decision-logs-index.md) |
+| Integração | Client Espaider (TypeScript) | [ADR-002](./../.context/03-specs/adr/2026-02-ADR-002-auth-espaider.md) |
+| Arquitetura | Next.js patterns + shadcn/ui | [docs/architecture.md](./../docs/architecture.md) |
 
 ---
 
@@ -76,9 +76,9 @@ LEITURA OBRIGATÓRIA (nesta ordem):
 | Dashboard AI | KPIs + Budget Gauge (UI) | Completo |
 | API Routes proxy | Next.js -> Python service | Completo |
 
-> **Nota**: O módulo de Agentes AI está funcional com dados mock.
-> Para dados reais, conectar o serviço Python ao LangSmith API e LLM real.
-> Ver [`docs/observability.md`](../docs/observability.md) para detalhes da instrumentação.
+> **Nota**: O módulo de Agentes AI (Fase 2) está planejado.
+> Para dados reais, será necessário conectar ao LangSmith API e integrar com agentes Python/LangChain.
+> Ver seção "Funcionalidades por Prioridade → PRIORIDADE 3" para próximos passos.
 
 ---
 

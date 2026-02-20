@@ -16,45 +16,53 @@ Este documento lista **os requisitos funcionais do MVP**, organizados por módul
 ## 🔴 Must Have (Obrigatório para MVP)
 
 ### RF-001: Autenticação de Usuários
+**Status**: ✅ Implementado (Etapa 19, 2026-02-13)
 - Sistema deve permitir login com email e senha
 - Sessão deve expirar após período de inatividade
 - Usuário deve poder fazer logout
 
 ### RF-002: Importação de Projetos via API Espaider
+**Status**: ✅ Implementado (Etapa 22, 2026-02-13)
 - Importar projetos do endpoint de Projetos
 - Mapear campos: IDEspaider, NOME, STATUSPROJETO, RESPONSAVELPROJETO, etc.
 - Registrar log de sincronização
 
 ### RF-003: Importação de Cadastros Filhos
+**Status**: ✅ Implementado (Etapa 22 + Migrations 019-020, 2026-02-13)
 - Importar Cronogramas de Projetos
 - Importar Entregas de Projetos
 - Importar Requisitos de Projetos
 - Vincular filhos ao projeto pai
 
 ### RF-004: Visualização de Projetos
+**Status**: ✅ Implementado (Etapas 6 + 14, 2026-02-13)
 - Listar projetos em formato lista/tabela
 - Visualizar dados de capa do projeto
 - Filtrar por status, prioridade, responsável
 - Buscar por código ou título
 
 ### RF-005: Detalhes de Projeto
+**Status**: ✅ Implementado (STORY-002, 6 tabs, 2026-02-13)
 - Visualizar informações completas do projeto
 - Ver cronogramas vinculados
 - Ver entregas vinculadas
 - Ver requisitos vinculados
 
 ### RF-006: Controle de Tabelas Auxiliares
+**Status**: ✅ Implementado (Etapas 14-15, 2026-02-13)
 - CRUD de status de projetos
 - CRUD de prioridades
 - CRUD de tipos de chamado
 - CRUD de áreas/assuntos
 
 ### RF-007: Controle de Usuários
+**Status**: ✅ Implementado (Etapa 13, 2026-02-13)
 - CRUD de usuários
 - Atribuição de perfis (admin, user, viewer)
 - Ativação/desativação de usuários
 
 ### RF-008: Logs e Monitoramento
+**Status**: ✅ Implementado (Migration 006 + LogViewer, 2026-02-13)
 - Registrar todas as sincronizações
 - Exibir métricas: processados, novos, atualizados, erros
 - Admin pode ver logs detalhados
@@ -64,15 +72,18 @@ Este documento lista **os requisitos funcionais do MVP**, organizados por módul
 ## 🟡 Should Have (Importante, não bloqueante)
 
 ### RF-009: Dashboards com KPIs
+**Status**: ✅ Implementado (STORY-001, 8 KPIs + 3 gráficos, 2026-02-13)
 - Dashboard com visão consolidada de projetos
 - Métricas: total, por status, por responsável
 - Gráficos de evolução
 
 ### RF-010: Sincronização Agendada
+**Status**: 📋 Pendente
 - Configurar frequência de sincronização (diária, 2x ao dia)
 - Executar sincronização em background
 
 ### RF-011: Filtro de Período
+**Status**: ✅ Implementado (ProjectFilters, 2026-02-13)
 - Opções: Hoje, 7 dias, 30 dias, Mês atual
 - Dashboards respondem ao filtro
 
@@ -81,10 +92,12 @@ Este documento lista **os requisitos funcionais do MVP**, organizados por módul
 ## 🟢 Could Have (Desejável)
 
 ### RF-012: Kanban de Projetos
+**Status**: ✅ Implementado (Etapa 11, DnD Kanban, 2026-02-13)
 - Visualização Kanban por etapa
 - Visualização em cards
 
 ### RF-013: Drill-down de KPIs
+**Status**: ✅ Implementado (STORY-001, 2026-02-13)
 - Clicar em card de KPI filtra lista relacionada
 
 ---
@@ -94,21 +107,25 @@ Este documento lista **os requisitos funcionais do MVP**, organizados por módul
 ## 🔴 Must Have (Obrigatório para Módulo 2)
 
 ### RF-101: Integração com LangSmith
+**Status**: 📋 Pendente - Fase 2
 - Conectar à API LangSmith
 - Listar runs/traces de agentes
 - Visualizar métricas de execução
 
 ### RF-102: Listagem de Agentes
+**Status**: 📋 Pendente - Fase 2
 - Listar agentes existentes no repositório
 - Exibir status (ativo, inativo)
 - Categorizar por tipo/função
 
 ### RF-103: Visualização de Workflows
+**Status**: 📋 Pendente - Fase 2
 - Exibir workflow de cada agente
 - Mostrar cadeia de execução (chain)
 - Exibir inputs/outputs de cada step
 
 ### RF-104: Documentação de Agentes
+**Status**: 📋 Pendente - Fase 2
 - CRUD de documentação por agente
 - Vincular documentação a runs
 - Histórico de versões
@@ -118,11 +135,13 @@ Este documento lista **os requisitos funcionais do MVP**, organizados por módul
 ## 🟡 Should Have
 
 ### RF-105: Visualização de Grafos (LangGraph)
+**Status**: 📋 Pendente - Fase 2
 - Renderizar grafos de agentes multi-ator
 - Mostrar nós e arestas
 - Exibir estado atual de execução
 
 ### RF-106: Métricas de Agentes
+**Status**: 📋 Pendente - Fase 2
 - Tempo médio de execução
 - Taxa de sucesso/erro
 - Custo estimado (tokens)
@@ -132,11 +151,13 @@ Este documento lista **os requisitos funcionais do MVP**, organizados por módul
 ## 🟢 Could Have
 
 ### RF-107: Editor Visual de Workflows
+**Status**: 📋 Pendente - Fase 2
 - Interface para criar/editar workflows
 - Drag-and-drop de componentes
 - Validação visual
 
 ### RF-108: Templates de Agentes
+**Status**: 📋 Pendente - Fase 2
 - Biblioteca de templates
 - Criar agente a partir de template
 

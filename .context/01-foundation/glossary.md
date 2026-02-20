@@ -27,7 +27,10 @@
 | **IDEspaider** | Identificador único de registro no Espaider |
 | **ListaCampos** | Array de campos retornado pela API do Espaider |
 | **ListaRegistros** | Array de registros retornado pela API do Espaider |
+| **ListaURLFilhos** | Array de URLs para registros filhos (entregas, cronogramas, requisitos) |
+| **IDREGISTROPAI** | Campo de vínculo entre registro filho e seu pai |
 | **TRM** | Código interno do escritório para rastreabilidade |
+| **espaider_raw** | Campo JSONB que armazena resposta completa da API para auditoria |
 
 ---
 
@@ -56,9 +59,25 @@
 | **RBAC** | Role-Based Access Control — controle de acesso por papel |
 | **Kanban** | Método visual de gestão com colunas por status |
 | **UPSERT** | Operação que insere ou atualiza registro existente |
+| **UPSERT idempotente** | UPSERT via `UNIQUE(tenant_id, espaider_id)` que permite sync repetido sem duplicação |
 | **Tenant** | Inquilino/organização em sistema multi-tenant |
 | **Single-tenant** | Sistema dedicado a uma única organização |
 | **Multi-tenant** | Sistema compartilhado por múltiplas organizações |
+| **UUID PK** | Primary Key usando UUID (gen_random_uuid()) em vez de BIGSERIAL |
+| **SplitView** | Painel lateral deslizante para visualizar detalhes sem sair da lista |
+| **Visão 360°** | Visualização completa de uma entidade com todas as relações em abas |
+| **notes_html** | Campo que armazena notas em formato HTML (usando TipTap editor) |
+
+---
+
+## Componentes da UI
+
+| Termo | Definição |
+| --- | --- |
+| **ProjectCockpit** | Componente principal que exibe visão 360° de um projeto com 6 abas |
+| **LogViewer** | Componente que exibe histórico de sincronizações Espaider com filtros |
+| **ProjectFilters** | Componente de filtros avançados para projetos (período, status, prioridade, etc) |
+| **ProjectTable** | Grid de projetos com 9 colunas ordenáveis e integração com SplitView |
 
 ---
 

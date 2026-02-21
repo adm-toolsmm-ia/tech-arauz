@@ -319,16 +319,28 @@ export async function syncProjects(
 async function getProjectIdMap(
   supabase: SupabaseClient,
   tenantId: string,
+  logs?: SyncLogEntry[],
 ): Promise<Map<number, string>> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('projects')
     .select('id, espaider_id')
     .eq('tenant_id', tenantId);
+
+  if (error) {
+    const msg = `Erro ao carregar mapa de projetos: ${error.message}`;
+    console.error('[sync]', msg);
+    logs?.push(createLog('error', 'Geral', msg, { code: error.code }));
+  }
 
   const map = new Map<number, string>();
   for (const row of data || []) {
     map.set(row.espaider_id, row.id);
   }
+
+  if (logs) {
+    logs.push(createLog('info', 'Geral', `ProjectMap carregado: ${map.size} projetos mapeados`));
+  }
+
   return map;
 }
 
@@ -617,12 +629,14 @@ export async function syncRequirements(
 function descricaoToDataset(descricao: string | null | undefined): EspaiderDataset | null {
   if (!descricao) return null;
   const normalized = descricao.toLowerCase().trim();
-  if (normalized.includes('entrega')) return 'Entregas';
-  if (normalized.includes('cronograma')) return 'Cronogramas';
-  if (normalized.includes('requisito')) return 'Requisitos';
-  if (normalized.includes('histórico') || normalized.includes('historico')) return 'Historicos';
-  if (normalized.includes('orçamento') || normalized.includes('orcamento')) return 'Orcamentos';
-  if (normalized.includes('aprovador')) return 'Aprovadores';
+  // Normaliza acentos para comparação mais robusta
+  const noAccents = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (noAccents.includes('entrega') || noAccents.includes('delivery')) return 'Entregas';
+  if (noAccents.includes('cronograma') || noAccents.includes('schedule') || noAccents.includes('atividade')) return 'Cronogramas';
+  if (noAccents.includes('requisito') || noAccents.includes('requirement')) return 'Requisitos';
+  if (noAccents.includes('historico') || noAccents.includes('tramite') || noAccents.includes('moviment')) return 'Historicos';
+  if (noAccents.includes('orcamento') || noAccents.includes('budget') || noAccents.includes('custo')) return 'Orcamentos';
+  if (noAccents.includes('aprovador') || noAccents.includes('aprovacao') || noAccents.includes('approver')) return 'Aprovadores';
   return null;
 }
 
@@ -669,7 +683,12 @@ export async function executeSyncAll(
 
     const urlFilhos = response.ListaURLFilhos || [];
     logs.push(createLog('info', 'Geral', `${urlFilhos.length} interfaces filhas encontradas`, {
-      interfaces: urlFilhos.map(u => ({ descricao: u.Descricao, url: u.URL?.substring(0, 80) })),
+      interfaces: urlFilhos.map(u => ({
+        identificador: u.Identificador,
+        descricao: u.Descricao,
+        datasetDetectado: descricaoToDataset(u.Identificador || u.Descricao) || descricaoToDataset(u.URL) || 'NAO_RECONHECIDO',
+        url: u.URL?.substring(0, 80),
+      })),
     }));
 
     // Process each child interface
@@ -1079,8 +1098,32 @@ async function syncHistoriesFromRegistros(
   let errors = 0;
 
   try {
+    logs.push(createLog('info', 'Historicos', `Processando ${registros.length} registros brutos da API`));
+
+    // Log sample do primeiro registro para debug de campos
+    if (registros.length > 0 && registros[0].ListaCampos) {
+      const camposDisponiveis = registros[0].ListaCampos.map(c => c.Identificador);
+      logs.push(createLog('info', 'Historicos', `Campos disponíveis no primeiro registro: ${camposDisponiveis.join(', ')}`, {
+        campos: camposDisponiveis,
+        idEspaider: registros[0].IDEspaider,
+      }));
+    }
+
     const mapped = mapearRegistros(registros, mapearHistorico);
-    const projectMap = await getProjectIdMap(supabase, tenantId);
+    logs.push(createLog('info', 'Historicos', `${mapped.length} registros mapeados`));
+
+    if (mapped.length === 0) {
+      logs.push(createLog('warn', 'Historicos', 'Nenhum histórico mapeado — verificar estrutura de campos da API'));
+      return { dataset: 'Historicos', total: 0, created: 0, updated: 0, errors: 0, durationMs: Date.now() - start };
+    }
+
+    // Log amostra do mapeamento para verificar se IDREGISTROPAI vem preenchido
+    const sampleMapped = mapped[0];
+    logs.push(createLog('info', 'Historicos', `Amostra mapeada: espaider_id=${sampleMapped.id_espaider}, projeto_pai=${sampleMapped.projeto_id_espaider}, tipo=${sampleMapped.tipo || '(vazio)'}`, {
+      sample: { id: sampleMapped.id_espaider, pai: sampleMapped.projeto_id_espaider, tipo: sampleMapped.tipo },
+    }));
+
+    const projectMap = await getProjectIdMap(supabase, tenantId, logs);
 
     const { data: existing } = await supabase
       .from('project_histories')
@@ -1107,16 +1150,28 @@ async function syncHistoriesFromRegistros(
 
     const orphans = mapped.length - rows.length;
     if (orphans > 0) {
-      logs.push(createLog('warn', 'Historicos', `${orphans} registros ignorados (projeto pai não encontrado)`));
+      // Log detalhado dos IDs órfãos para diagnóstico
+      const orphanIds = mapped
+        .filter((r) => !projectMap.has(r.projeto_id_espaider))
+        .map((r) => r.projeto_id_espaider)
+        .filter((v, i, a) => a.indexOf(v) === i) // unique
+        .slice(0, 10);
+      logs.push(createLog('warn', 'Historicos', `${orphans} registros ignorados (projeto pai não encontrado). IDs pai únicos (amostra): ${orphanIds.join(', ')}`, {
+        orphanParentIds: orphanIds,
+      }));
     }
+
+    logs.push(createLog('info', 'Historicos', `${rows.length} registros prontos para upsert (${existingIds.size} já existem no BD)`));
 
     if (rows.length > 0) {
       const { error } = await supabase
         .from('project_histories')
-        .upsert(rows, { onConflict: 'tenant_id,espaider_id' }); // Composite unique constraint
+        .upsert(rows, { onConflict: 'tenant_id,espaider_id' });
 
       if (error) {
-        logs.push(createLog('error', 'Historicos', `Erro no upsert: ${error.message}`));
+        logs.push(createLog('error', 'Historicos', `Erro no upsert: ${error.message}`, {
+          code: error.code, details: error.details, hint: error.hint,
+        }));
         errors = rows.length;
       } else {
         for (const row of rows) {
@@ -1125,10 +1180,14 @@ async function syncHistoriesFromRegistros(
         }
         logs.push(createLog('success', 'Historicos', `Upsert concluído: ${created} novos, ${updated} atualizados`));
       }
+    } else {
+      logs.push(createLog('warn', 'Historicos', 'Nenhum registro a inserir após filtros (todos órfãos ou sem dados)'));
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-    logs.push(createLog('error', 'Historicos', `Falha no processamento: ${msg}`));
+    logs.push(createLog('error', 'Historicos', `Falha no processamento: ${msg}`, {
+      stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
+    }));
     errors++;
   }
 
@@ -1150,8 +1209,22 @@ async function syncBudgetsFromRegistros(
   let errors = 0;
 
   try {
+    logs.push(createLog('info', 'Orcamentos', `Processando ${registros.length} registros brutos da API`));
+
+    if (registros.length > 0 && registros[0].ListaCampos) {
+      const camposDisponiveis = registros[0].ListaCampos.map(c => c.Identificador);
+      logs.push(createLog('info', 'Orcamentos', `Campos disponíveis: ${camposDisponiveis.join(', ')}`, { campos: camposDisponiveis }));
+    }
+
     const mapped = mapearRegistros(registros, mapearOrcamento);
-    const projectMap = await getProjectIdMap(supabase, tenantId);
+    logs.push(createLog('info', 'Orcamentos', `${mapped.length} registros mapeados`));
+
+    if (mapped.length === 0) {
+      logs.push(createLog('warn', 'Orcamentos', 'Nenhum orçamento mapeado'));
+      return { dataset: 'Orcamentos', total: 0, created: 0, updated: 0, errors: 0, durationMs: Date.now() - start };
+    }
+
+    const projectMap = await getProjectIdMap(supabase, tenantId, logs);
 
     const { data: existing } = await supabase
       .from('project_budgets')
@@ -1174,16 +1247,19 @@ async function syncBudgetsFromRegistros(
 
     const orphans = mapped.length - rows.length;
     if (orphans > 0) {
-      logs.push(createLog('warn', 'Orcamentos', `${orphans} registros ignorados (projeto pai não encontrado)`));
+      const orphanIds = mapped.filter((r) => !projectMap.has(r.projeto_id_espaider)).map((r) => r.projeto_id_espaider).filter((v, i, a) => a.indexOf(v) === i).slice(0, 10);
+      logs.push(createLog('warn', 'Orcamentos', `${orphans} registros ignorados (projeto pai não encontrado). IDs pai: ${orphanIds.join(', ')}`, { orphanParentIds: orphanIds }));
     }
+
+    logs.push(createLog('info', 'Orcamentos', `${rows.length} registros prontos para upsert`));
 
     if (rows.length > 0) {
       const { error } = await supabase
         .from('project_budgets')
-        .upsert(rows, { onConflict: 'tenant_id,espaider_id' }); // Composite unique constraint
+        .upsert(rows, { onConflict: 'tenant_id,espaider_id' });
 
       if (error) {
-        logs.push(createLog('error', 'Orcamentos', `Erro no upsert: ${error.message}`));
+        logs.push(createLog('error', 'Orcamentos', `Erro no upsert: ${error.message}`, { code: error.code, details: error.details, hint: error.hint }));
         errors = rows.length;
       } else {
         for (const row of rows) {
@@ -1192,10 +1268,12 @@ async function syncBudgetsFromRegistros(
         }
         logs.push(createLog('success', 'Orcamentos', `Upsert concluído: ${created} novos, ${updated} atualizados`));
       }
+    } else {
+      logs.push(createLog('warn', 'Orcamentos', 'Nenhum registro a inserir após filtros'));
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-    logs.push(createLog('error', 'Orcamentos', `Falha no processamento: ${msg}`));
+    logs.push(createLog('error', 'Orcamentos', `Falha no processamento: ${msg}`, { stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined }));
     errors++;
   }
 
@@ -1217,8 +1295,28 @@ async function syncApproversFromRegistros(
   let errors = 0;
 
   try {
+    logs.push(createLog('info', 'Aprovadores', `Processando ${registros.length} registros brutos da API`));
+
+    if (registros.length > 0 && registros[0].ListaCampos) {
+      const camposDisponiveis = registros[0].ListaCampos.map(c => c.Identificador);
+      logs.push(createLog('info', 'Aprovadores', `Campos disponíveis: ${camposDisponiveis.join(', ')}`, { campos: camposDisponiveis }));
+    }
+
     const mapped = mapearRegistros(registros, mapearAprovador);
-    const projectMap = await getProjectIdMap(supabase, tenantId);
+    logs.push(createLog('info', 'Aprovadores', `${mapped.length} registros mapeados`));
+
+    if (mapped.length === 0) {
+      logs.push(createLog('warn', 'Aprovadores', 'Nenhum aprovador mapeado'));
+      return { dataset: 'Aprovadores', total: 0, created: 0, updated: 0, errors: 0, durationMs: Date.now() - start };
+    }
+
+    // Log amostra do mapeamento
+    const sampleMapped = mapped[0];
+    logs.push(createLog('info', 'Aprovadores', `Amostra mapeada: espaider_id=${sampleMapped.id_espaider}, projeto_pai=${sampleMapped.projeto_id_espaider}, tipo=${sampleMapped.tipo || '(vazio)'}`, {
+      sample: { id: sampleMapped.id_espaider, pai: sampleMapped.projeto_id_espaider, tipo: sampleMapped.tipo },
+    }));
+
+    const projectMap = await getProjectIdMap(supabase, tenantId, logs);
 
     const { data: existing } = await supabase
       .from('project_approvers')
@@ -1240,16 +1338,19 @@ async function syncApproversFromRegistros(
 
     const orphans = mapped.length - rows.length;
     if (orphans > 0) {
-      logs.push(createLog('warn', 'Aprovadores', `${orphans} registros ignorados (projeto pai não encontrado)`));
+      const orphanIds = mapped.filter((r) => !projectMap.has(r.projeto_id_espaider)).map((r) => r.projeto_id_espaider).filter((v, i, a) => a.indexOf(v) === i).slice(0, 10);
+      logs.push(createLog('warn', 'Aprovadores', `${orphans} registros ignorados (projeto pai não encontrado). IDs pai: ${orphanIds.join(', ')}`, { orphanParentIds: orphanIds }));
     }
+
+    logs.push(createLog('info', 'Aprovadores', `${rows.length} registros prontos para upsert`));
 
     if (rows.length > 0) {
       const { error } = await supabase
         .from('project_approvers')
-        .upsert(rows, { onConflict: 'tenant_id,espaider_id' }); // Composite unique constraint
+        .upsert(rows, { onConflict: 'tenant_id,espaider_id' });
 
       if (error) {
-        logs.push(createLog('error', 'Aprovadores', `Erro no upsert: ${error.message}`));
+        logs.push(createLog('error', 'Aprovadores', `Erro no upsert: ${error.message}`, { code: error.code, details: error.details, hint: error.hint }));
         errors = rows.length;
       } else {
         for (const row of rows) {
@@ -1258,10 +1359,12 @@ async function syncApproversFromRegistros(
         }
         logs.push(createLog('success', 'Aprovadores', `Upsert concluído: ${created} novos, ${updated} atualizados`));
       }
+    } else {
+      logs.push(createLog('warn', 'Aprovadores', 'Nenhum registro a inserir após filtros'));
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-    logs.push(createLog('error', 'Aprovadores', `Falha no processamento: ${msg}`));
+    logs.push(createLog('error', 'Aprovadores', `Falha no processamento: ${msg}`, { stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined }));
     errors++;
   }
 

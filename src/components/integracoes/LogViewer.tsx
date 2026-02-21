@@ -84,7 +84,7 @@ const LEVEL_CONFIG = {
   info: { icon: Info, color: 'text-muted-foreground', bg: 'bg-muted' },
 };
 
-const DATASETS = ['Geral', 'Projetos', 'Entregas', 'Cronogramas', 'Requisitos'];
+const DATASETS = ['Geral', 'Projetos', 'Entregas', 'Cronogramas', 'Requisitos', 'Historicos', 'Aprovadores', 'Orcamentos'];
 const LEVELS = ['info', 'warn', 'error', 'success'];
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {

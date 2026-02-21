@@ -20,7 +20,6 @@ export default async function ProjectsPage() {
     .from('projects')
     .select(`
       *,
-      *,
       schedules:project_schedules(*),
       deliveries:project_deliveries(*),
       histories:project_histories(*),

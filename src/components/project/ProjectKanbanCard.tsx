@@ -5,9 +5,7 @@ import {
   AlertTriangle,
   Clock,
   Building2,
-  Tag,
   User,
-  UserPlus,
   Calendar,
   GitBranch,
 } from 'lucide-react';
@@ -34,18 +32,14 @@ interface ProjectCardData {
   project_name: string;
   status: string;
   area?: string | null;
-  tipo_chamado?: string | null;
   responsible: string | null;
   end_date: string | null;
-  solicitante?: string | null;
   fase_atual?: string | null;
   prazo_aprovador?: string | null;
   prazo_cronograma?: string | null;
   objetivo?: string | null;
   justificativa?: string | null;
   importancia_especial?: boolean | null;
-  impacto_operacional?: string | null;
-  impacto_estrategico?: string | null;
   complexidade_tecnica?: string | null;
 }
 
@@ -102,22 +96,22 @@ function TextWithTooltip({
   return <span className={className}>{displayText}</span>;
 }
 
-function ImpactBadge({ label, value }: { label: string; value: string }) {
+function ImpactBadge({ value }: { value: string }) {
   const lower = value.toLowerCase();
   return (
     <Badge
       variant="outline"
       className={cn(
-        'h-5 px-1.5 text-[10px]',
-        lower === 'alto' &&
+        'h-5 px-2 text-[10px]',
+        lower === 'alta' &&
           'border-red-300 text-red-700 dark:border-red-800 dark:text-red-300',
-        (lower === 'medio' || lower === 'médio') &&
+        (lower === 'media' || lower === 'médio') &&
           'border-amber-300 text-amber-700 dark:border-amber-800 dark:text-amber-300',
-        lower === 'baixo' &&
+        lower === 'baixa' &&
           'border-green-300 text-green-700 dark:border-green-800 dark:text-green-300',
       )}
     >
-      {label}: {value}
+      {value}
     </Badge>
   );
 }
@@ -130,7 +124,6 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
   const isDeadlineNear = isWithin7Days(project.end_date) && !isProjectOverdue;
 
   const nextDeadline = project.prazo_aprovador || project.prazo_cronograma;
-  const nextDeadlineLabel = project.prazo_aprovador ? 'Aprovador' : 'Cronograma';
   const detalhamento = project.objetivo || project.justificativa;
 
   const normalizedStatus = normalizeSlug(project.status);
@@ -140,10 +133,6 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
 
   const showAlerts =
     project.importancia_especial || isProjectOverdue || isDeadlineNear;
-  const showImpacts =
-    project.impacto_operacional ||
-    project.impacto_estrategico ||
-    project.complexidade_tecnica;
 
   return (
     <div className="relative">
@@ -155,85 +144,72 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
         )}
       />
 
-      <div className="space-y-2.5 pl-3">
-        {/* HEADER: Título + Código + Alertas */}
-        <div className="space-y-1">
-          <div className="flex items-start justify-between gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <h4 className="flex-1 text-sm font-semibold leading-snug text-foreground/90 line-clamp-2 cursor-help">
-                    {project.project_name}
-                  </h4>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-xs">
+      <div className="space-y-2 pl-3">
+        {/* HEADER: Título + Código */}
+        <div className="space-y-0.5">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <h4 className="flex-1 text-sm font-semibold leading-snug text-foreground/90 line-clamp-2 cursor-help">
                   {project.project_name}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+                </h4>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                {project.project_name}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <span className="font-mono text-[10px] text-muted-foreground">
             #{project.espaider_code}
           </span>
         </div>
 
-        {/* ALERTAS (Especial, Atrasado, Prazo) - em linha */}
+        {/* ALERTAS (Especial, Atrasado, Prazo) - em linha compacta */}
         {showAlerts && (
           <div className="flex items-center gap-1 flex-wrap">
             {project.importancia_especial && (
-              <Badge variant="warning" className="h-5 px-1.5 text-[10px]">
-                <Star className="mr-0.5 h-3 w-3 fill-current" />
+              <Badge variant="warning" className="h-4 px-1 text-[9px]">
+                <Star className="mr-0.5 h-2.5 w-2.5 fill-current" />
                 Especial
               </Badge>
             )}
             {isProjectOverdue && (
-              <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
-                <AlertTriangle className="mr-0.5 h-3 w-3" />
+              <Badge variant="destructive" className="h-4 px-1 text-[9px]">
+                <AlertTriangle className="mr-0.5 h-2.5 w-2.5" />
                 Atrasado
               </Badge>
             )}
             {isDeadlineNear && (
-              <Badge className="h-5 border-0 bg-amber-100 px-1.5 text-[10px] text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                <Clock className="mr-0.5 h-3 w-3" />
+              <Badge className="h-4 border-0 bg-amber-100 px-1 text-[9px] text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                <Clock className="mr-0.5 h-2.5 w-2.5" />
                 Prazo
               </Badge>
             )}
           </div>
         )}
 
-        {/* METADADOS ESSENCIAIS: Área + Tipo Chamado */}
-        {(project.area || project.tipo_chamado) && (
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground flex-wrap">
-            {project.area && (
-              <>
-                <Building2 className="h-3 w-3 shrink-0" />
-                <TextWithTooltip text={project.area} maxLength={20} />
-              </>
-            )}
-            {project.tipo_chamado && (
-              <>
-                <span className="text-border">·</span>
-                <Tag className="h-3 w-3 shrink-0" />
-                <TextWithTooltip text={project.tipo_chamado} maxLength={15} />
-              </>
-            )}
-          </div>
-        )}
+        {/* DADOS PRINCIPAIS: Área, Responsável, Prazo e Fase */}
+        <div className="space-y-1 border-t border-border/30 pt-1.5">
+          {/* Área (se disponível) */}
+          {project.area && (
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Building2 className="h-3 w-3 shrink-0" />
+              <TextWithTooltip text={project.area} maxLength={20} />
+            </div>
+          )}
 
-        {/* BLOCO ESSENCIAL: Responsável + Prazo Final (em linha, sem grid comprimido) */}
-        <div className="space-y-1 border-t border-border/30 pt-2">
-          {/* Row 1: Responsável */}
-          <div className="flex items-center gap-2 text-[11px]">
+          {/* Responsável */}
+          <div className="flex items-center gap-1.5 text-[10px]">
             <User className="h-3 w-3 shrink-0 text-muted-foreground" />
             <TextWithTooltip
               text={project.responsible}
-              maxLength={25}
+              maxLength={28}
               className="text-foreground/80"
             />
           </div>
 
-          {/* Row 2: Prazo Final */}
-          <div className="flex items-center gap-2 text-[11px]">
+          {/* Prazo Final */}
+          <div className="flex items-center gap-1.5 text-[10px]">
             <Calendar className="h-3 w-3 shrink-0 text-muted-foreground" />
             <span
               className={cn(
@@ -245,52 +221,38 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
             </span>
           </div>
 
-          {/* Row 3: Solicitante + Fase Atual */}
-          {(project.solicitante || project.fase_atual) && (
-            <>
-              {project.solicitante && (
-                <div className="flex items-center gap-2 text-[11px]">
-                  <UserPlus className="h-3 w-3 shrink-0 text-muted-foreground" />
-                  <TextWithTooltip
-                    text={project.solicitante}
-                    maxLength={20}
-                    className="text-foreground/80"
-                  />
-                </div>
-              )}
-              {project.fase_atual && (
-                <div className="flex items-center gap-2 text-[11px]">
-                  <GitBranch className="h-3 w-3 shrink-0 text-muted-foreground" />
-                  <span className="text-foreground/80">
-                    {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
-                  </span>
-                </div>
-              )}
-            </>
+          {/* Fase Atual */}
+          {project.fase_atual && (
+            <div className="flex items-center gap-1.5 text-[10px]">
+              <GitBranch className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <span className="text-foreground/80">
+                {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
+              </span>
+            </div>
           )}
         </div>
 
-        {/* PRÓXIMO PRAZO (condicional, secundário) */}
+        {/* PRÓXIMO PRAZO (condicional, compacto) */}
         {nextDeadline && (
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
             <Clock className="h-3 w-3 shrink-0" />
             <span>
-              Próximo ({nextDeadlineLabel}): {formatDateBR(nextDeadline)}
+              Próximo: {formatDateBR(nextDeadline)}
             </span>
           </div>
         )}
 
-        {/* DETALHAMENTO (Objetivo/Justificativa) - secundário com line-clamp */}
+        {/* DETALHAMENTO (Objetivo/Justificativa) - compacto */}
         {detalhamento && (
-          <div className="border-t border-border/30 pt-2">
+          <div className="border-t border-border/30 pt-1">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <p className="line-clamp-2 text-[10px] leading-relaxed text-muted-foreground cursor-help">
+                  <p className="line-clamp-1 text-[9px] leading-tight text-muted-foreground cursor-help">
                     {detalhamento}
                   </p>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-sm break-words">
+                <TooltipContent side="top" className="max-w-sm break-words text-[11px]">
                   {detalhamento}
                 </TooltipContent>
               </Tooltip>
@@ -298,25 +260,16 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
           </div>
         )}
 
-        {/* BADGES DE IMPACTO */}
-        {showImpacts && (
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {project.impacto_operacional && (
-              <ImpactBadge label="Op" value={project.impacto_operacional} />
-            )}
-            {project.impacto_estrategico && (
-              <ImpactBadge label="Est" value={project.impacto_estrategico} />
-            )}
-            {project.complexidade_tecnica && (
-              <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                {project.complexidade_tecnica}
-              </Badge>
-            )}
+        {/* COMPLEXIDADE TÉCNICA */}
+        {project.complexidade_tecnica && (
+          <div className="flex items-center gap-1.5 text-[9px]">
+            <span className="text-muted-foreground">Complexidade:</span>
+            <ImpactBadge value={project.complexidade_tecnica} />
           </div>
         )}
 
         {/* RODAPÉ: Status */}
-        <div className="flex items-center justify-between border-t border-border/30 pt-1.5">
+        <div className="flex items-center justify-start border-t border-border/30 pt-1">
           <Badge
             className={cn(
               'h-5 px-2 text-[10px]',

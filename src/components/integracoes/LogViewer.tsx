@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  AlertCircle,
   Info,
   Filter,
   RefreshCw,
@@ -102,6 +103,7 @@ export function LogViewer() {
   const [logs, setLogs] = React.useState<LogEntry[]>([]);
   const [summaries, setSummaries] = React.useState<SyncSummary[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const [expandedRows, setExpandedRows] = React.useState<Set<string>>(new Set());
   const [filters, setFilters] = React.useState<Filters>({
     level: '',
@@ -120,6 +122,7 @@ export function LogViewer() {
   // Fetch logs
   const fetchLogs = React.useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams();
       params.set('page', String(pagination.page));
@@ -130,6 +133,15 @@ export function LogViewer() {
       if (filters.endDate) params.set('endDate', filters.endDate);
 
       const res = await fetch(`/api/integracoes/logs?${params}`);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error(`API Error [${res.status}]:`, errorData.error);
+        setError(errorData.error || `Erro ${res.status}: Falha ao buscar logs`);
+        setLogs([]);
+        return;
+      }
+
       const result = await res.json();
 
       if (result.data) {
@@ -138,6 +150,8 @@ export function LogViewer() {
       }
     } catch (err) {
       console.error('Failed to fetch logs:', err);
+      setError('Erro ao buscar logs. Verifique o console para detalhes.');
+      setLogs([]);
     } finally {
       setIsLoading(false);
     }
@@ -408,6 +422,11 @@ export function LogViewer() {
                 <div className="flex items-center justify-center h-32 text-muted-foreground">
                   <RefreshCw className="h-4 w-4 animate-spin mr-2" />
                   Carregando...
+                </div>
+              ) : error ? (
+                <div className="flex items-center justify-center h-32 text-destructive">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  {error}
                 </div>
               ) : logs.length === 0 ? (
                 <div className="flex items-center justify-center h-32 text-muted-foreground">

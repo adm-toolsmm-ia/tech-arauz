@@ -14,6 +14,7 @@ export type UserRole = 'admin' | 'user' | 'viewer';
 export interface UserActionState {
   success: boolean;
   message: string;
+  temporaryPassword?: string;
   errors?: {
     fullName?: string[];
     email?: string[];
@@ -230,7 +231,7 @@ export async function createUser(
 
     console.log('[createUser] success:', { targetEmail: email, adminId: session.userId, tenantId: session.tenantId });
     revalidatePath('/cadastros/usuarios');
-    return { success: true, message: 'Usuário criado com sucesso!' };
+    return { success: true, message: 'Usuário criado com sucesso!', temporaryPassword: tempPassword };
   } catch (error) {
     console.error('[createUser] unexpected error:', error);
     return { success: false, message: 'Erro interno do servidor.' };

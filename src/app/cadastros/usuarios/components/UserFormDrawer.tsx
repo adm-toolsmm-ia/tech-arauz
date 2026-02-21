@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { UserPlus, User, Shield, Mail } from 'lucide-react';
+import { UserPlus, User, Shield, Mail, Copy, CheckCircle } from 'lucide-react';
 import { createUser, updateUser } from '../actions';
 import type { TenantUser, UserActionState } from '../actions';
 
@@ -50,9 +50,19 @@ export function UserFormDrawer({ open, onOpenChange, userToEdit }: UserFormProps
     const isEdit = !!userToEdit;
     const targetAction = isEdit ? updateUser : createUser;
     const [state, formAction] = useFormState(targetAction, initialState);
+    const [consumed, setConsumed] = useState(true);
+    const [copied, setCopied] = useState(false);
+
+    const showTemporaryPassword = state.success && !!state.temporaryPassword && !consumed;
 
     useEffect(() => {
-        if (state.message) {
+        if (state.temporaryPassword) {
+            setConsumed(false);
+        }
+    }, [state.temporaryPassword]);
+
+    useEffect(() => {
+        if (state.message && !showTemporaryPassword) {
             if (state.success) {
                 toast.success(state.message);
                 onOpenChange(false);
@@ -60,23 +70,86 @@ export function UserFormDrawer({ open, onOpenChange, userToEdit }: UserFormProps
                 toast.error(state.message);
             }
         }
-    }, [state, onOpenChange]);
+    }, [state, showTemporaryPassword, onOpenChange]);
+
+    const handleCopyPassword = async () => {
+        if (!state.temporaryPassword) return;
+        await navigator.clipboard.writeText(state.temporaryPassword);
+        setCopied(true);
+        toast.success('Senha copiada');
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleCloseSuccess = () => {
+        setConsumed(true);
+        onOpenChange(false);
+    };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-xl overflow-y-auto max-h-[90vh] sm:rounded-xl">
-                <DialogHeader>
-                    <DialogTitle className="text-2xl tracking-tight">
-                        {isEdit ? 'Editar Usuário' : 'Novo Usuário'}
-                    </DialogTitle>
-                    <DialogDescription>
-                        {isEdit
-                            ? 'Altere os dados de acesso e permissão abaixo.'
-                            : 'Preencha os dados para convidar um novo membro.'}
-                    </DialogDescription>
-                </DialogHeader>
+        <Dialog
+            open={open}
+            onOpenChange={showTemporaryPassword ? (o) => !o && handleCloseSuccess() : onOpenChange}
+        >
+            <DialogContent
+                className="max-w-xl overflow-y-auto max-h-[90vh] sm:rounded-xl"
+                onPointerDownOutside={showTemporaryPassword ? (e) => e.preventDefault() : undefined}
+                onEscapeKeyDown={showTemporaryPassword ? (e) => e.preventDefault() : undefined}
+            >
+                {showTemporaryPassword ? (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-2xl tracking-tight">
+                                <CheckCircle className="size-6 text-green-600" />
+                                Usuário criado com sucesso
+                            </DialogTitle>
+                            <DialogDescription>
+                                Envie a senha temporária ao novo usuário. Ela não será exibida novamente.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 mt-4">
+                            <div className="space-y-2">
+                                <Label>Senha temporária</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        readOnly
+                                        value={state.temporaryPassword}
+                                        className="font-mono"
+                                        aria-label="Senha temporária"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={handleCopyPassword}
+                                        aria-label="Copiar senha"
+                                    >
+                                        {copied ? (
+                                            <CheckCircle className="size-4 text-green-600" />
+                                        ) : (
+                                            <Copy className="size-4" />
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="flex justify-end pt-4 border-t">
+                                <Button onClick={handleCloseSuccess}>Fechar</Button>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl tracking-tight">
+                                {isEdit ? 'Editar Usuário' : 'Novo Usuário'}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {isEdit
+                                    ? 'Altere os dados de acesso e permissão abaixo.'
+                                    : 'Preencha os dados para convidar um novo membro.'}
+                            </DialogDescription>
+                        </DialogHeader>
 
-                <form action={formAction} className="space-y-6 mt-4">
+                        <form action={formAction} className="space-y-6 mt-4">
                     {isEdit && <input type="hidden" name="id" value={userToEdit.id} />}
 
                     <div className="space-y-4">
@@ -160,6 +233,8 @@ export function UserFormDrawer({ open, onOpenChange, userToEdit }: UserFormProps
                         <SubmitButton isEdit={isEdit} />
                     </div>
                 </form>
+                    </>
+                )}
             </DialogContent>
         </Dialog>
     );

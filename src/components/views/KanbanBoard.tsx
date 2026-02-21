@@ -176,15 +176,21 @@ function DraggableCard({
         'hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md',
         'cursor-grab active:cursor-grabbing',
         'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+        'touch-none',
         isDragging && 'scale-95 opacity-40 shadow-none grayscale',
         isSelected && 'ring-2 ring-primary ring-offset-1 border-primary/30',
       )}
-      style={{ touchAction: 'none' }}
       {...listeners}
       {...attributes}
       onClick={() => onItemClick?.(item)}
-      aria-roledescription="draggable item"
+      role="button"
+      tabIndex={0}
       aria-label={item.title}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          onItemClick?.(item);
+        }
+      }}
     >
       <div className="p-3">
         {renderItemContent ? renderItemContent(item) : <DefaultCardContent item={item} />}
@@ -205,7 +211,7 @@ function DragOverlayCard({
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
 }) {
   return (
-    <div className="w-[260px] rotate-2 cursor-grabbing rounded-lg border border-primary/30 bg-card p-3 shadow-xl ring-2 ring-primary/10">
+    <div className="rotate-2 cursor-grabbing rounded-lg border border-primary/30 bg-card p-3 shadow-xl ring-2 ring-primary/10 w-72">
       {renderItemContent ? renderItemContent(item) : <DefaultCardContent item={item} />}
     </div>
   );
@@ -412,7 +418,7 @@ export function KanbanBoard({
       </div>
       <div
         className={cn(
-          'grid items-start gap-4',
+          'grid items-start gap-4 auto-rows-max',
           columns.length === 1 && 'grid-cols-1',
           columns.length === 2 && 'grid-cols-1 md:grid-cols-2',
           columns.length === 3 && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
@@ -420,7 +426,6 @@ export function KanbanBoard({
           columns.length >= 5 && 'xl:grid-cols-5',
           className,
         )}
-        style={{ minHeight: 'calc(100vh - 200px)' }}
       >
         {columns.map((column) => (
           <DroppableColumn

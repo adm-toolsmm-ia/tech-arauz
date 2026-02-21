@@ -19,12 +19,29 @@ function SkeletonKPI({ className }: { className?: string }) {
 function SkeletonKanbanCard({ className }: { className?: string }) {
   return (
     <div className={cn('rounded-lg border border-border/40 bg-card p-3', className)}>
-      <div className="space-y-1.5">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-3 w-20" />
-        <div className="mt-1 flex items-center justify-between">
-          <Skeleton className="h-3 w-16" />
-          <Skeleton className="h-5 w-14 rounded-full" />
+      <div className="space-y-2">
+        {/* Título + Código */}
+        <div className="space-y-1">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-3 w-12" />
+        </div>
+
+        {/* Alertas */}
+        <div className="flex gap-1">
+          <Skeleton className="h-5 w-12 rounded-full" />
+          <Skeleton className="h-5 w-12 rounded-full" />
+        </div>
+
+        {/* Metadados essenciais */}
+        <div className="border-t border-border/30 pt-2 space-y-1">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-3 w-28" />
+        </div>
+
+        {/* Rodapé status */}
+        <div className="border-t border-border/30 pt-1.5">
+          <Skeleton className="h-5 w-16 rounded-full" />
         </div>
       </div>
     </div>

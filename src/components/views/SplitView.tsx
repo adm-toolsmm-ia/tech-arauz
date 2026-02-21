@@ -81,7 +81,7 @@ export function SplitView({
         aria-modal="true"
         aria-labelledby="split-view-title"
         className={cn(
-          'animate-slide-in-right fixed inset-y-0 right-0 z-50 w-full border-l bg-background shadow-lg',
+          'animate-slide-in-right fixed inset-y-0 right-0 z-50 w-full border-l bg-background shadow-lg flex flex-col',
           widthClasses[width],
           className,
         )}
@@ -111,7 +111,7 @@ export function SplitView({
         </div>
 
         {/* Content */}
-        <ScrollArea className="h-[calc(100vh-73px)]">
+        <ScrollArea className="flex-1 overflow-hidden">
           <div className="p-6">{children}</div>
         </ScrollArea>
       </div>

@@ -21,6 +21,12 @@ import {
   getProjectColorIndex,
 } from '@/lib/constants/project-colors';
 import { isOverdue, isWithin7Days, formatDateBR } from '@/lib/utils/date-helpers';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ProjectCardData {
   id: string;
@@ -56,6 +62,44 @@ function normalizeSlug(value: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
+}
+
+/**
+ * Componente auxiliar: trunca texto e oferece tooltip com conteúdo completo.
+ * Accessible text truncation with fallback tooltip.
+ */
+function TextWithTooltip({
+  text,
+  className,
+  maxLength = 30,
+}: {
+  text?: string | null;
+  className?: string;
+  maxLength?: number;
+}) {
+  if (!text) return <span className={className}>-</span>;
+
+  const isTruncated = text.length > maxLength;
+  const displayText = isTruncated ? `${text.substring(0, maxLength)}…` : text;
+
+  if (isTruncated) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className={cn('cursor-help', className)} title={text}>
+              {displayText}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs break-words">
+            {text}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return <span className={className}>{displayText}</span>;
 }
 
 function ImpactBadge({ label, value }: { label: string; value: string }) {
@@ -111,10 +155,31 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
         )}
       />
 
-      <div className="space-y-2 pl-3">
-        {/* Badges de alerta (topo direita) */}
+      <div className="space-y-2.5 pl-3">
+        {/* HEADER: Título + Código + Alertas */}
+        <div className="space-y-1">
+          <div className="flex items-start justify-between gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <h4 className="flex-1 text-sm font-semibold leading-snug text-foreground/90 line-clamp-2 cursor-help">
+                    {project.project_name}
+                  </h4>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs">
+                  {project.project_name}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <span className="font-mono text-[10px] text-muted-foreground">
+            #{project.espaider_code}
+          </span>
+        </div>
+
+        {/* ALERTAS (Especial, Atrasado, Prazo) - em linha */}
         {showAlerts && (
-          <div className="flex items-center justify-end gap-1.5">
+          <div className="flex items-center gap-1 flex-wrap">
             {project.importancia_especial && (
               <Badge variant="warning" className="h-5 px-1.5 text-[10px]">
                 <Star className="mr-0.5 h-3 w-3 fill-current" />
@@ -136,68 +201,78 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
           </div>
         )}
 
-        {/* Título */}
-        <h4 className="line-clamp-2 text-sm font-semibold leading-tight text-foreground/90">
-          {project.project_name}
-        </h4>
-
-        {/* Área + Tipo Chamado (inline) */}
+        {/* METADADOS ESSENCIAIS: Área + Tipo Chamado */}
         {(project.area || project.tipo_chamado) && (
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <Building2 className="h-3 w-3 shrink-0" />
-            <span className="truncate">{project.area || '-'}</span>
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground flex-wrap">
+            {project.area && (
+              <>
+                <Building2 className="h-3 w-3 shrink-0" />
+                <TextWithTooltip text={project.area} maxLength={20} />
+              </>
+            )}
             {project.tipo_chamado && (
               <>
                 <span className="text-border">·</span>
                 <Tag className="h-3 w-3 shrink-0" />
-                <span className="truncate">{project.tipo_chamado}</span>
+                <TextWithTooltip text={project.tipo_chamado} maxLength={15} />
               </>
             )}
           </div>
         )}
 
-        {/* Grid 2 colunas - Row 1: Responsável + Prazo Final */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-          <div className="flex items-center gap-1.5">
+        {/* BLOCO ESSENCIAL: Responsável + Prazo Final (em linha, sem grid comprimido) */}
+        <div className="space-y-1 border-t border-border/30 pt-2">
+          {/* Row 1: Responsável */}
+          <div className="flex items-center gap-2 text-[11px]">
             <User className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <span className="truncate text-[11px] text-foreground/80">
-              {project.responsible || '-'}
-            </span>
+            <TextWithTooltip
+              text={project.responsible}
+              maxLength={25}
+              className="text-foreground/80"
+            />
           </div>
-          <div className="flex items-center gap-1.5">
+
+          {/* Row 2: Prazo Final */}
+          <div className="flex items-center gap-2 text-[11px]">
             <Calendar className="h-3 w-3 shrink-0 text-muted-foreground" />
             <span
               className={cn(
-                'truncate text-[11px]',
-                isProjectOverdue
-                  ? 'font-medium text-red-600 dark:text-red-400'
-                  : 'text-foreground/80',
+                'text-foreground/80',
+                isProjectOverdue && 'font-medium text-red-600 dark:text-red-400',
               )}
             >
               {formatDateBR(project.end_date)}
             </span>
           </div>
+
+          {/* Row 3: Solicitante + Fase Atual */}
+          {(project.solicitante || project.fase_atual) && (
+            <>
+              {project.solicitante && (
+                <div className="flex items-center gap-2 text-[11px]">
+                  <UserPlus className="h-3 w-3 shrink-0 text-muted-foreground" />
+                  <TextWithTooltip
+                    text={project.solicitante}
+                    maxLength={20}
+                    className="text-foreground/80"
+                  />
+                </div>
+              )}
+              {project.fase_atual && (
+                <div className="flex items-center gap-2 text-[11px]">
+                  <GitBranch className="h-3 w-3 shrink-0 text-muted-foreground" />
+                  <span className="text-foreground/80">
+                    {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
-        {/* Grid 2 colunas - Row 2: Solicitante + Fase Atual */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-          <div className="flex items-center gap-1.5">
-            <UserPlus className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <span className="truncate text-[11px] text-foreground/80">
-              {project.solicitante || '-'}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <GitBranch className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <span className="truncate text-[11px] text-foreground/80">
-              {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
-            </span>
-          </div>
-        </div>
-
-        {/* Próximo Prazo (condicional) */}
+        {/* PRÓXIMO PRAZO (condicional, secundário) */}
         {nextDeadline && (
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
             <Clock className="h-3 w-3 shrink-0" />
             <span>
               Próximo ({nextDeadlineLabel}): {formatDateBR(nextDeadline)}
@@ -205,16 +280,25 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
           </div>
         )}
 
-        {/* Detalhamento (objetivo ou justificativa) */}
+        {/* DETALHAMENTO (Objetivo/Justificativa) - secundário com line-clamp */}
         {detalhamento && (
-          <div className="border-t border-border/30 pt-1.5">
-            <p className="line-clamp-2 text-[10px] leading-relaxed text-muted-foreground">
-              {detalhamento}
-            </p>
+          <div className="border-t border-border/30 pt-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="line-clamp-2 text-[10px] leading-relaxed text-muted-foreground cursor-help">
+                    {detalhamento}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-sm break-words">
+                  {detalhamento}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
 
-        {/* Badges de Impacto */}
+        {/* BADGES DE IMPACTO */}
         {showImpacts && (
           <div className="flex items-center gap-1.5 flex-wrap">
             {project.impacto_operacional && (
@@ -231,7 +315,7 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
           </div>
         )}
 
-        {/* Rodapé: Status + Código Espaider */}
+        {/* RODAPÉ: Status */}
         <div className="flex items-center justify-between border-t border-border/30 pt-1.5">
           <Badge
             className={cn(
@@ -241,9 +325,6 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
           >
             {statusLabels[normalizedStatus] || project.status}
           </Badge>
-          <span className="font-mono text-[10px] text-muted-foreground">
-            #{project.espaider_code}
-          </span>
         </div>
       </div>
     </div>

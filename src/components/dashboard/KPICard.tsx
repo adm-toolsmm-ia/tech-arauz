@@ -30,11 +30,11 @@ export function KPICard({
   return (
     <Card
       className={cn(
-        'shadow-soft hover:shadow-card-hover transition-all duration-300',
-        'hover:-translate-y-0.5 animate-scale-in',
+        'shadow-soft transition-all duration-300 hover:shadow-card-hover',
+        'animate-scale-in hover:-translate-y-0.5',
         onClick && 'cursor-pointer',
         active && 'ring-2 ring-primary ring-offset-2',
-        className
+        className,
       )}
       onClick={onClick}
     >
@@ -48,7 +48,7 @@ export function KPICard({
                 <span
                   className={cn(
                     'text-sm font-medium',
-                    trend.positive ? 'text-success' : 'text-destructive'
+                    trend.positive ? 'text-success' : 'text-destructive',
                   )}
                 >
                   {trend.positive ? '+' : ''}
@@ -56,14 +56,9 @@ export function KPICard({
                 </span>
               )}
             </div>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
-            )}
+            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
           </div>
-          <div className={cn(
-            'rounded-lg p-3',
-            active ? 'bg-primary/20' : 'bg-primary/10'
-          )}>
+          <div className={cn('rounded-lg p-3', active ? 'bg-primary/20' : 'bg-primary/10')}>
             <Icon className="h-6 w-6 text-primary" />
           </div>
         </div>

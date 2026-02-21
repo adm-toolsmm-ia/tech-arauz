@@ -16,23 +16,21 @@ export default async function DashboardPage() {
   }
 
   // Buscar profile do usuário
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
 
   // Buscar todos os projetos com relações para dashboard interativo
   const { data: allProjects } = await supabase
     .from('projects')
-    .select(`
+    .select(
+      `
       *,
       schedules:project_schedules(*),
       deliveries:project_deliveries(*),
       histories:project_histories(*),
       approvers:project_approvers(*),
       budgets:project_budgets(*)
-    `)
+    `,
+    )
     .order('created_at', { ascending: false });
 
   // Transform DB rows to full UI format

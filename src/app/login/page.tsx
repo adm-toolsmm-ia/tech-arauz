@@ -35,16 +35,16 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-primary flex items-center justify-center p-4 relative overflow-hidden">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-primary p-4">
       {/* Background Decoration */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20"></div>
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-20 [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
+      <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
 
-      <div className="w-full max-w-sm relative z-10">
+      <div className="relative z-10 w-full max-w-sm">
         {/* Logo/Header */}
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-flex flex-col items-center gap-4 group">
-            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-md shadow-2xl group-hover:scale-105 transition-all duration-300 group-hover:bg-white/15 overflow-hidden">
+        <div className="mb-10 text-center">
+          <Link href="/" className="group inline-flex flex-col items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-2xl backdrop-blur-md transition-all duration-300 group-hover:scale-105 group-hover:bg-white/15">
               <Image
                 src="/assets/logo-arauz-2026.png"
                 alt="Tech Arauz Logo"
@@ -54,23 +54,34 @@ export default function LoginPage() {
               />
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-bold text-white tracking-tight">Tech Arauz</span>
-              <span className="text-sm text-primary-foreground/60 font-medium tracking-widest uppercase mt-1">Portal Corporativo</span>
+              <span className="text-3xl font-bold tracking-tight text-white">Tech Arauz</span>
+              <span className="mt-1 text-sm font-medium uppercase tracking-widest text-primary-foreground/60">
+                Portal Corporativo
+              </span>
             </div>
           </Link>
         </div>
 
         {/* Card */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
+        <div className="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xl">
           <div className="mb-8 text-center">
             <h2 className="text-xl font-bold text-gray-900">Bem-vindo de volta</h2>
-            <p className="text-sm text-gray-500 mt-2">Informe suas credenciais para acessar.</p>
+            <p className="mt-2 text-sm text-gray-500">Informe suas credenciais para acessar.</p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm flex items-center gap-3 animate-slide-in-right">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            <div className="animate-slide-in-right mb-6 flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 flex-shrink-0"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
               </svg>
               {error}
             </div>
@@ -87,7 +98,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400 bg-gray-50/50 hover:bg-white"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20"
                 placeholder="nome@arauz.adv.br"
               />
             </div>
@@ -97,7 +108,12 @@ export default function LoginPage() {
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
                   Senha
                 </label>
-                <a href="#" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">Esqueceu a senha?</a>
+                <a
+                  href="#"
+                  className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                >
+                  Esqueceu a senha?
+                </a>
               </div>
               <input
                 id="password"
@@ -105,7 +121,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400 bg-gray-50/50 hover:bg-white"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20"
                 placeholder="••••••••"
               />
             </div>
@@ -113,23 +129,41 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-accent hover:bg-accent-hover text-white py-3.5 px-4 rounded-xl font-bold shadow-lg shadow-accent/20 hover:shadow-accent/40 focus:ring-4 focus:ring-accent/20 focus:ring-offset-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed transform active:scale-[0.98]"
+              className="hover:bg-accent-hover w-full transform rounded-xl bg-accent px-4 py-3.5 font-bold text-white shadow-lg shadow-accent/20 transition-all hover:shadow-accent/40 focus:ring-4 focus:ring-accent/20 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="h-5 w-5 animate-spin text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Autenticando...
                 </span>
-              ) : 'Acessar Plataforma'}
+              ) : (
+                'Acessar Plataforma'
+              )}
             </button>
           </form>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-primary-foreground/40 text-xs mt-10 font-medium tracking-wide">
+        <p className="mt-10 text-center text-xs font-medium tracking-wide text-primary-foreground/40">
           &copy; 2026 Tech Arauz &bull; Araúz & Advogados Associados
         </p>
       </div>

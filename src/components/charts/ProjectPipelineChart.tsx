@@ -35,7 +35,13 @@ const statusColors: Record<string, string> = {
   suspenso: '#6b7280',
 };
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: PipelineData }> }) {
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: PipelineData }>;
+}) {
   if (!active || !payload?.length) return null;
   const data = payload[0].payload;
   return (
@@ -48,7 +54,11 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
   );
 }
 
-export function ProjectPipelineChart({ data, onBarClick, activeStatus }: ProjectPipelineChartProps) {
+export function ProjectPipelineChart({
+  data,
+  onBarClick,
+  activeStatus,
+}: ProjectPipelineChartProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -63,12 +73,16 @@ export function ProjectPipelineChart({ data, onBarClick, activeStatus }: Project
               margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-              <XAxis type="number" className="text-xs fill-muted-foreground" allowDecimals={false} />
+              <XAxis
+                type="number"
+                className="fill-muted-foreground text-xs"
+                allowDecimals={false}
+              />
               <YAxis
                 dataKey="label"
                 type="category"
                 width={120}
-                className="text-xs fill-muted-foreground"
+                className="fill-muted-foreground text-xs"
                 tickLine={false}
                 axisLine={false}
               />
@@ -99,9 +113,7 @@ export function ProjectPipelineChart({ data, onBarClick, activeStatus }: Project
 }
 
 // Helper to transform raw project data into chart data
-export function buildPipelineData(
-  projects: Array<{ status: string }>
-): PipelineData[] {
+export function buildPipelineData(projects: Array<{ status: string }>): PipelineData[] {
   const counts: Record<string, number> = {};
   projects.forEach((p) => {
     const status = p.status || 'Sem status';

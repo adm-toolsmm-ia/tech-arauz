@@ -27,23 +27,24 @@ interface TraceListProps {
   className?: string;
 }
 
-const statusConfig: Record<string, { icon: typeof CheckCircle; label: string; className: string }> = {
-  completed: {
-    icon: CheckCircle,
-    label: 'Concluído',
-    className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  },
-  failed: {
-    icon: XCircle,
-    label: 'Falhou',
-    className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-  },
-  running: {
-    icon: Clock,
-    label: 'Executando',
-    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  },
-};
+const statusConfig: Record<string, { icon: typeof CheckCircle; label: string; className: string }> =
+  {
+    completed: {
+      icon: CheckCircle,
+      label: 'Concluído',
+      className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    },
+    failed: {
+      icon: XCircle,
+      label: 'Falhou',
+      className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    },
+    running: {
+      icon: Clock,
+      label: 'Executando',
+      className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    },
+  };
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString('pt-BR', {
@@ -73,8 +74,8 @@ export function TraceList({ traces, onTraceClick, className }: TraceListProps) {
           <Card
             key={trace.id}
             className={cn(
-              'cursor-pointer transition-all hover:shadow-sm hover:border-primary/30',
-              'animate-fade-in'
+              'cursor-pointer transition-all hover:border-primary/30 hover:shadow-sm',
+              'animate-fade-in',
             )}
             style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'both' }}
             onClick={() => onTraceClick?.(trace)}
@@ -83,11 +84,20 @@ export function TraceList({ traces, onTraceClick, className }: TraceListProps) {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
-                    <Icon className={cn('h-4 w-4', trace.status === 'completed' ? 'text-green-500' : trace.status === 'failed' ? 'text-red-500' : 'text-blue-500')} />
-                    <p className="text-sm font-medium line-clamp-1">{trace.input_preview}</p>
+                    <Icon
+                      className={cn(
+                        'h-4 w-4',
+                        trace.status === 'completed'
+                          ? 'text-green-500'
+                          : trace.status === 'failed'
+                            ? 'text-red-500'
+                            : 'text-blue-500',
+                      )}
+                    />
+                    <p className="line-clamp-1 text-sm font-medium">{trace.input_preview}</p>
                   </div>
                   {trace.output_preview && (
-                    <p className="text-xs text-muted-foreground line-clamp-1 pl-6">
+                    <p className="line-clamp-1 pl-6 text-xs text-muted-foreground">
                       {trace.output_preview}
                     </p>
                   )}
@@ -99,8 +109,13 @@ export function TraceList({ traces, onTraceClick, className }: TraceListProps) {
                     <span>${trace.cost_usd.toFixed(4)}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium', config.className)}>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span
+                    className={cn(
+                      'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+                      config.className,
+                    )}
+                  >
                     {config.label}
                   </span>
                   {trace.trace_url && (
@@ -109,7 +124,7 @@ export function TraceList({ traces, onTraceClick, className }: TraceListProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-muted-foreground hover:text-primary transition-colors"
+                      className="text-muted-foreground transition-colors hover:text-primary"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>

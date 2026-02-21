@@ -13,7 +13,9 @@ const TENANT_ARAUZ_ID = '00000000-0000-0000-0000-000000000001';
 export async function POST() {
   // 1. Verify user is authenticated and is admin
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ success: false, error: 'Não autenticado' }, { status: 401 });
@@ -26,7 +28,10 @@ export async function POST() {
     .single();
 
   if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ success: false, error: 'Acesso negado - apenas admins' }, { status: 403 });
+    return NextResponse.json(
+      { success: false, error: 'Acesso negado - apenas admins' },
+      { status: 403 },
+    );
   }
 
   // 2. Use service client to bypass RLS
@@ -85,12 +90,14 @@ export async function POST() {
       message: 'API cadastrada com sucesso',
       api: newApi,
     });
-
   } catch (err) {
     console.error('Setup error:', err);
-    return NextResponse.json({
-      success: false,
-      error: err instanceof Error ? err.message : 'Erro desconhecido',
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: err instanceof Error ? err.message : 'Erro desconhecido',
+      },
+      { status: 500 },
+    );
   }
 }

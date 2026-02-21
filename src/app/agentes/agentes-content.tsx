@@ -41,7 +41,7 @@ export function AgentsContent({ agents: rawAgents, budget }: AgentsContentProps)
         <AgentKPIs agents={agents} />
 
         {/* Budget */}
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
             {/* Agent list */}
             <div className="space-y-3">
@@ -55,11 +55,7 @@ export function AgentsContent({ agents: rawAgents, budget }: AgentsContentProps)
                 </div>
               ) : (
                 agents.map((agent) => (
-                  <AgentCard
-                    key={agent.id}
-                    agent={agent}
-                    onClick={handleAgentClick}
-                  />
+                  <AgentCard key={agent.id} agent={agent} onClick={handleAgentClick} />
                 ))
               )}
             </div>

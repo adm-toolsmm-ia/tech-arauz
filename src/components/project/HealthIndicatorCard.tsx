@@ -49,10 +49,10 @@ export function HealthIndicatorCard({
   return (
     <Card
       className={cn(
-        'transition-all duration-300 hover:shadow-card-hover animate-scale-in',
+        'animate-scale-in transition-all duration-300 hover:shadow-card-hover',
         config.bg,
         config.border,
-        className
+        className,
       )}
     >
       <CardContent className="p-4">
@@ -62,30 +62,21 @@ export function HealthIndicatorCard({
               className={cn(
                 'flex size-10 items-center justify-center rounded-lg',
                 config.bg,
-                config.text
+                config.text,
               )}
             >
               <Icon className="size-5" />
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">{title}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span
-                  className={cn(
-                    'size-2.5 rounded-full animate-pulse-soft',
-                    config.dot
-                  )}
-                />
-                <span className={cn('text-sm font-semibold', config.text)}>
-                  {config.label}
-                </span>
+              <div className="mt-1 flex items-center gap-2">
+                <span className={cn('animate-pulse-soft size-2.5 rounded-full', config.dot)} />
+                <span className={cn('text-sm font-semibold', config.text)}>{config.label}</span>
               </div>
             </div>
           </div>
         </div>
-        {subtitle && (
-          <p className="mt-2 text-xs text-muted-foreground">{subtitle}</p>
-        )}
+        {subtitle && <p className="mt-2 text-xs text-muted-foreground">{subtitle}</p>}
       </CardContent>
     </Card>
   );

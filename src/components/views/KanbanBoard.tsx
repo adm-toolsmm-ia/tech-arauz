@@ -47,10 +47,13 @@ interface KanbanBoardProps {
 
 // Priority styles (Softer, cleaner)
 const priorityStyles: Record<string, string> = {
-  urgente: 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30',
+  urgente:
+    'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30',
   alta: 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-900/30',
-  normal: 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/30',
-  baixa: 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-800',
+  normal:
+    'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/30',
+  baixa:
+    'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-800',
 };
 
 // Column header colors (Clean accents)
@@ -100,30 +103,32 @@ function DefaultCardContent({ item }: { item: KanbanItem }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-start justify-between gap-2">
-        <span className="font-semibold text-sm leading-tight text-foreground/90 line-clamp-2">
+        <span className="line-clamp-2 text-sm font-semibold leading-tight text-foreground/90">
           {item.title}
         </span>
       </div>
 
       <div className="flex flex-col gap-1">
         {item.subtitle && (
-          <p className="text-[11px] text-muted-foreground font-mono bg-muted/30 w-fit px-1 rounded">
+          <p className="w-fit rounded bg-muted/30 px-1 font-mono text-[11px] text-muted-foreground">
             {item.subtitle}
           </p>
         )}
 
-        <div className="flex items-center justify-between mt-1">
+        <div className="mt-1 flex items-center justify-between">
           {item.value ? (
             <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
               {item.value}
             </div>
-          ) : <div />}
+          ) : (
+            <div />
+          )}
 
           {item.priority && (
             <span
               className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-full border font-medium uppercase tracking-wider',
-                priorityStyles[item.priority]
+                'rounded-full border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider',
+                priorityStyles[item.priority],
               )}
             >
               {item.priority}
@@ -133,12 +138,15 @@ function DefaultCardContent({ item }: { item: KanbanItem }) {
 
         {/* Última mensagem de movimentação */}
         {lastMessage && (
-          <div className="mt-1.5 pt-1.5 border-t border-border/30">
-            <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed" title={lastMessage}>
+          <div className="mt-1.5 border-t border-border/30 pt-1.5">
+            <p
+              className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground"
+              title={lastMessage}
+            >
               {lastMessage}
             </p>
             {lastDate && (
-              <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+              <p className="mt-0.5 text-[10px] text-muted-foreground/60">
                 {formatRelativeDate(lastDate)}
               </p>
             )}
@@ -168,10 +176,10 @@ function DraggableCard({
     <div
       ref={setNodeRef}
       className={cn(
-        'group relative bg-card rounded-lg border border-border/40 shadow-sm transition-all duration-200',
-        'hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5',
+        'group relative rounded-lg border border-border/40 bg-card shadow-sm transition-all duration-200',
+        'hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md',
         'cursor-grab active:cursor-grabbing',
-        isDragging && 'opacity-40 scale-95 shadow-none grayscale'
+        isDragging && 'scale-95 opacity-40 shadow-none grayscale',
       )}
       style={{ touchAction: 'none' }}
       onClick={() => onItemClick?.(item)}
@@ -183,7 +191,7 @@ function DraggableCard({
       </div>
 
       {/* Hover decoration */}
-      <div className="absolute inset-x-0 bottom-0 h-0.5 bg-primary/0 transition-colors group-hover:bg-primary/10 rounded-b-lg" />
+      <div className="absolute inset-x-0 bottom-0 h-0.5 rounded-b-lg bg-primary/0 transition-colors group-hover:bg-primary/10" />
     </div>
   );
 }
@@ -197,7 +205,7 @@ function DragOverlayCard({
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
 }) {
   return (
-    <div className="bg-card rounded-lg border border-primary/30 shadow-xl ring-2 ring-primary/10 rotate-2 cursor-grabbing w-[260px] p-3">
+    <div className="w-[260px] rotate-2 cursor-grabbing rounded-lg border border-primary/30 bg-card p-3 shadow-xl ring-2 ring-primary/10">
       {renderItemContent ? renderItemContent(item) : <DefaultCardContent item={item} />}
     </div>
   );
@@ -229,24 +237,24 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex h-full flex-col rounded-xl bg-muted/20 border border-transparent transition-all duration-200',
-        isOver && cn('border-dashed scale-[1.01]', dropStateClass)
+        'flex h-full flex-col rounded-xl border border-transparent bg-muted/20 transition-all duration-200',
+        isOver && cn('scale-[1.01] border-dashed', dropStateClass),
       )}
     >
       {/* Header */}
-      <div className={cn(
-        "flex items-center justify-between p-3 border-t-2 bg-background/50 rounded-t-xl backdrop-blur-sm",
-        colorBorderClass
-      )}>
-        <h3 className="text-sm font-semibold text-foreground/80 tracking-tight">
-          {column.title}
-        </h3>
-        <span className={cn(
-          "text-[10px] font-bold px-2 py-0.5 rounded-full",
-          items.length > 0
-            ? "bg-primary/10 text-primary"
-            : "bg-muted text-muted-foreground"
-        )}>
+      <div
+        className={cn(
+          'flex items-center justify-between rounded-t-xl border-t-2 bg-background/50 p-3 backdrop-blur-sm',
+          colorBorderClass,
+        )}
+      >
+        <h3 className="text-sm font-semibold tracking-tight text-foreground/80">{column.title}</h3>
+        <span
+          className={cn(
+            'rounded-full px-2 py-0.5 text-[10px] font-bold',
+            items.length > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+          )}
+        >
           {items.length}
         </span>
       </div>
@@ -258,15 +266,17 @@ function DroppableColumn({
             {items.length === 0 ? (
               <div
                 className={cn(
-                  'flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed rounded-lg transition-colors border-muted/40',
-                  isOver ? 'border-primary/30 bg-primary/5' : 'bg-transparent'
+                  'flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted/40 px-4 py-12 text-center transition-colors',
+                  isOver ? 'border-primary/30 bg-primary/5' : 'bg-transparent',
                 )}
               >
                 {isOver ? (
-                  <span className="text-primary font-medium text-sm animate-pulse">Solte para mover</span>
+                  <span className="animate-pulse text-sm font-medium text-primary">
+                    Solte para mover
+                  </span>
                 ) : (
                   <div className="space-y-1 opacity-50">
-                    <div className="text-xs text-muted-foreground font-medium">Vazio</div>
+                    <div className="text-xs font-medium text-muted-foreground">Vazio</div>
                   </div>
                 )}
               </div>
@@ -306,7 +316,7 @@ export function KanbanBoard({
       activationConstraint: {
         distance: 5, // Reduced for snappier feel
       },
-    })
+    }),
   );
 
   // Group items by status
@@ -365,7 +375,7 @@ export function KanbanBoard({
 
   if (columns.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground p-8 bg-muted/10 rounded-xl border border-dashed border-muted">
+      <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-muted bg-muted/10 p-8 text-muted-foreground">
         {emptyMessage}
       </div>
     );
@@ -381,13 +391,13 @@ export function KanbanBoard({
     >
       <div
         className={cn(
-          'grid gap-4 items-start',
+          'grid items-start gap-4',
           columns.length === 1 && 'grid-cols-1',
           columns.length === 2 && 'grid-cols-1 md:grid-cols-2',
           columns.length === 3 && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
           columns.length >= 4 && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
           columns.length >= 5 && 'xl:grid-cols-5',
-          className
+          className,
         )}
         style={{ minHeight: 'calc(100vh - 200px)' }}
       >
@@ -404,10 +414,12 @@ export function KanbanBoard({
       </div>
 
       {/* Drag Overlay - floating card that follows cursor */}
-      <DragOverlay dropAnimation={{
-        duration: 250,
-        easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-      }}>
+      <DragOverlay
+        dropAnimation={{
+          duration: 250,
+          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+        }}
+      >
         {activeItem ? (
           <DragOverlayCard item={activeItem} renderItemContent={renderItemContent} />
         ) : null}

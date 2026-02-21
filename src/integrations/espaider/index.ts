@@ -4,22 +4,22 @@
 
 // Types
 export type {
-    EspaiderDataset,
-    ExportarDadosParams,
-    ExportarDadosResponse,
-    CampoEspaider,
-    RegistroEspaider,
-    ProjetoMapeado,
-    EntregaMapeada,
-    CronogramaMapeado,
-    RequisitoMapeado,
-    HistoricoMapeado,
-    OrcamentoMapeado,
-    AprovadorMapeado,
-    EspaiderError,
-    EspaiderErrorType,
-    EspaiderConfig,
-    SyncMetrics,
+  EspaiderDataset,
+  ExportarDadosParams,
+  ExportarDadosResponse,
+  CampoEspaider,
+  RegistroEspaider,
+  ProjetoMapeado,
+  EntregaMapeada,
+  CronogramaMapeado,
+  RequisitoMapeado,
+  HistoricoMapeado,
+  OrcamentoMapeado,
+  AprovadorMapeado,
+  EspaiderError,
+  EspaiderErrorType,
+  EspaiderConfig,
+  SyncMetrics,
 } from './types';
 
 // Config
@@ -30,12 +30,12 @@ export { exportarDados, createSyncMetrics, resetCircuitBreaker } from './client'
 
 // Mappers
 export {
-    mapearProjeto,
-    mapearEntrega,
-    mapearCronograma,
-    mapearRequisito,
-    mapearHistorico,
-    mapearOrcamento,
-    mapearAprovador,
-    mapearRegistros,
+  mapearProjeto,
+  mapearEntrega,
+  mapearCronograma,
+  mapearRequisito,
+  mapearHistorico,
+  mapearOrcamento,
+  mapearAprovador,
+  mapearRegistros,
 } from './mapper';

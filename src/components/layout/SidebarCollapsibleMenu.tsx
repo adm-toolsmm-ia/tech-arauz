@@ -12,11 +12,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import type { NavItem } from './sidebar-types';
 
@@ -27,7 +23,7 @@ interface SidebarCollapsibleMenuProps {
 export function SidebarCollapsibleMenu({ item }: SidebarCollapsibleMenuProps) {
   const pathname = usePathname();
   const isActive = item.subItems?.some(
-    (sub) => pathname === sub.url || pathname.startsWith(`${sub.url}/`)
+    (sub) => pathname === sub.url || pathname.startsWith(`${sub.url}/`),
   );
   const [isOpen, setIsOpen] = useState(isActive);
 
@@ -35,17 +31,13 @@ export function SidebarCollapsibleMenu({ item }: SidebarCollapsibleMenuProps) {
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
-          <SidebarMenuButton
-            isActive={isActive}
-            tooltip={item.title}
-            className="group/collapsible"
-          >
+          <SidebarMenuButton isActive={isActive} tooltip={item.title} className="group/collapsible">
             <item.icon className="size-4" />
             <span>{item.title}</span>
             <ChevronDown
               className={cn(
                 'ml-auto size-4 transition-transform duration-200',
-                isOpen && 'rotate-180'
+                isOpen && 'rotate-180',
               )}
             />
           </SidebarMenuButton>

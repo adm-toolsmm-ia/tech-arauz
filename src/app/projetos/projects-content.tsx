@@ -1,7 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { Search, FolderOpen, Clock, DollarSign, TrendingUp, RefreshCw, Loader2 } from 'lucide-react';
+import {
+  Search,
+  FolderOpen,
+  Clock,
+  DollarSign,
+  TrendingUp,
+  RefreshCw,
+  Loader2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
@@ -136,18 +144,21 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
   };
 
   // Extract unique values for filter options
-  const availableValues = React.useMemo(() => ({
-    status: extractUniqueValues(projects, 'status'),
-    fase_atual: extractUniqueValues(projects, 'fase_atual'),
-    area: extractUniqueValues(projects, 'area'),
-    tipo_chamado: extractUniqueValues(projects, 'tipo_chamado'),
-    tipo_assunto: extractUniqueValues(projects, 'tipo_assunto'),
-    responsavel: extractUniqueValues(projects, 'responsible'),
-    solicitante: extractUniqueValues(projects, 'solicitante'),
-    prioridade: extractUniqueValues(projects, 'priority'),
-    complexidade_tecnica: extractUniqueValues(projects, 'complexidade_tecnica'),
-    impacto_operacional: extractUniqueValues(projects, 'impacto_operacional'),
-  }), [projects]);
+  const availableValues = React.useMemo(
+    () => ({
+      status: extractUniqueValues(projects, 'status'),
+      fase_atual: extractUniqueValues(projects, 'fase_atual'),
+      area: extractUniqueValues(projects, 'area'),
+      tipo_chamado: extractUniqueValues(projects, 'tipo_chamado'),
+      tipo_assunto: extractUniqueValues(projects, 'tipo_assunto'),
+      responsavel: extractUniqueValues(projects, 'responsible'),
+      solicitante: extractUniqueValues(projects, 'solicitante'),
+      prioridade: extractUniqueValues(projects, 'priority'),
+      complexidade_tecnica: extractUniqueValues(projects, 'complexidade_tecnica'),
+      impacto_operacional: extractUniqueValues(projects, 'impacto_operacional'),
+    }),
+    [projects],
+  );
 
   // Filter projects
   const filteredProjects = React.useMemo(() => {
@@ -155,15 +166,15 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
   }, [projects, filters]);
 
   // Debug: Check statuses
-  console.log('Project Statuses:', Array.from(new Set(projects.map(p => p.status))));
+  console.log('Project Statuses:', Array.from(new Set(projects.map((p) => p.status))));
 
   // Calculate KPIs
   const totalValue = projects.reduce((sum, p) => sum + (p.total_value || 0), 0);
   const activeProjects = projects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'em execução'
+    (p) => (p.status || '').trim().toLowerCase() === 'em execução',
   ).length;
   const completedProjects = projects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'concluído'
+    (p) => (p.status || '').trim().toLowerCase() === 'concluído',
   ).length;
 
   // Transform to Kanban items
@@ -185,14 +196,15 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
   // Calculate dynamic columns based on FASE (not status)
   const dynamicColumns = React.useMemo(() => {
     // Extrai fases únicas (usa fase_atual, fallback para status)
-    const existingPhases = Array.from(new Set(projects.map((p) => normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos')));
+    const existingPhases = Array.from(
+      new Set(projects.map((p) => normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos')),
+    );
 
     // Fases Proibidas (Nunca visíveis no Board)
     const bannedPhases = ['fila_projetos', 'fila_de_projetos'];
 
     // Combine phases (only show phases that actually exist)
-    const phases = Array.from(new Set(existingPhases))
-      .filter(p => !bannedPhases.includes(p));
+    const phases = Array.from(new Set(existingPhases)).filter((p) => !bannedPhases.includes(p));
 
     // Ordem das fases no fluxo de projeto
     const phaseOrder = [
@@ -262,7 +274,9 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
 
     return sortedPhases.map((phase) => {
       // Tenta encontrar o título original da fase de um projeto
-      const project = projects.find(p => normalizeFaseSlug(p.fase_atual) === phase || p.status === phase);
+      const project = projects.find(
+        (p) => normalizeFaseSlug(p.fase_atual) === phase || p.status === phase,
+      );
       const originalTitle = project?.fase_atual || project?.aprovador_atual;
 
       // Formata o título: usa label conhecido, ou título original, ou formata o slug
@@ -273,7 +287,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
       if (!title) {
         title = phase
           .split('_')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ');
       }
 
@@ -284,8 +298,6 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
       };
     });
   }, [projects]);
-
-
 
   // Handle drag-and-drop phase change (optimistic update)
   // NOTA: Agora atualiza fase_atual ao invés de status
@@ -300,7 +312,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
     // Optimistic update: immediately move card in UI
     // Atualiza fase_atual (para agrupamento visual) e mantém status original
     setProjects((prev) =>
-      prev.map((p) => (p.id === projectId ? { ...p, fase_atual: newPhase } : p))
+      prev.map((p) => (p.id === projectId ? { ...p, fase_atual: newPhase } : p)),
     );
     toast.info('Atualizando fase...');
 
@@ -313,14 +325,18 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
       } else {
         // Revert on failure
         setProjects((prev) =>
-          prev.map((p) => (p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p))
+          prev.map((p) =>
+            p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p,
+          ),
         );
         toast.error(result.message);
       }
     } catch {
       // Revert on error
       setProjects((prev) =>
-        prev.map((p) => (p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p))
+        prev.map((p) =>
+          p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p,
+        ),
       );
       toast.error('Erro inesperado ao atualizar fase.');
     }
@@ -359,7 +375,10 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
             title="Concluídos"
             value={completedProjects}
             icon={TrendingUp}
-            trend={{ value: `${Math.round((completedProjects / projects.length) * 100) || 0}%`, positive: true }}
+            trend={{
+              value: `${Math.round((completedProjects / projects.length) * 100) || 0}%`,
+              positive: true,
+            }}
           />
           <KPICard
             title="Valor Total"
@@ -370,16 +389,16 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
         </div>
 
         {/* Filters Bar */}
-        <div className="flex flex-col gap-4 bg-card p-4 rounded-lg border shadow-sm">
+        <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-1 gap-2 items-center">
-              <div className="relative flex-1 max-w-sm">
+            <div className="flex flex-1 items-center gap-2">
+              <div className="relative max-w-sm flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Buscar projetos..."
                   value={filters.search}
                   onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  className="pl-9 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-colors"
+                  className="border-muted-foreground/20 bg-background/50 pl-9 transition-colors focus:border-primary/50"
                 />
               </div>
             </div>
@@ -396,9 +415,11 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
                 ) : (
                   <RefreshCw className="mr-2 h-4 w-4" />
                 )}
-                <span className="sr-only sm:not-sr-only">{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</span>
+                <span className="sr-only sm:not-sr-only">
+                  {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
+                </span>
               </Button>
-              <div className="h-8 w-px bg-border mx-2" />
+              <div className="mx-2 h-8 w-px bg-border" />
               <ViewToggle view={view} onViewChange={setView} />
             </div>
           </div>
@@ -429,7 +450,11 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
           isOpen={!!selectedProject}
           onClose={() => setSelectedProject(null)}
           title={selectedProject?.project_name || 'Visao 360'}
-          subtitle={selectedProject ? `${selectedProject.espaider_code}${selectedProject.pasta_consultivo ? ` • ${selectedProject.pasta_consultivo}` : ''}` : undefined}
+          subtitle={
+            selectedProject
+              ? `${selectedProject.espaider_code}${selectedProject.pasta_consultivo ? ` • ${selectedProject.pasta_consultivo}` : ''}`
+              : undefined
+          }
           width="wide"
         >
           {selectedProject && (
@@ -545,9 +570,14 @@ function ImpactBadge({ level }: { level: string | null | undefined }) {
     baixo: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300',
     normal: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300',
   };
-  const key = level.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const key = level
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
   return (
-    <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ${colors[key] || colors.normal}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ${colors[key] || colors.normal}`}
+    >
       {level}
     </span>
   );
@@ -561,7 +591,8 @@ function normalizeFaseSlug(fase: string | null | undefined): string {
   return fase
     .trim()
     .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
     .replace(/[^a-z0-9]+/g, '_') // Substitui caracteres especiais por _
     .replace(/^_+|_+$/g, ''); // Remove _ do início e fim
 }
@@ -590,16 +621,26 @@ function ProjectList({
     return [...projects].sort((a, b) => {
       const getValue = (p: Project) => {
         switch (sortField) {
-          case 'project_name': return p.project_name || '';
-          case 'area': return p.area || '';
-          case 'responsible': return p.responsible || '';
-          case 'fase_atual': return p.fase_atual || '';
-          case 'priority': return p.priority || '';
-          case 'end_date': return p.end_date || '';
-          case 'impacto_operacional': return p.impacto_operacional || '';
-          case 'impacto_estrategico': return p.impacto_estrategico || '';
-          case 'status': return p.status || '';
-          default: return '';
+          case 'project_name':
+            return p.project_name || '';
+          case 'area':
+            return p.area || '';
+          case 'responsible':
+            return p.responsible || '';
+          case 'fase_atual':
+            return p.fase_atual || '';
+          case 'priority':
+            return p.priority || '';
+          case 'end_date':
+            return p.end_date || '';
+          case 'impacto_operacional':
+            return p.impacto_operacional || '';
+          case 'impacto_estrategico':
+            return p.impacto_estrategico || '';
+          case 'status':
+            return p.status || '';
+          default:
+            return '';
         }
       };
       const valA = getValue(a);
@@ -624,9 +665,17 @@ function ProjectList({
     );
   }
 
-  const SortHeader = ({ field, children, className = '' }: { field: string; children: React.ReactNode; className?: string }) => (
+  const SortHeader = ({
+    field,
+    children,
+    className = '',
+  }: {
+    field: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
     <th
-      className={`text-xs font-medium text-muted-foreground px-3 py-2.5 text-left cursor-pointer hover:text-foreground transition-colors select-none ${className}`}
+      className={`cursor-pointer select-none px-3 py-2.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground ${className}`}
       onClick={() => handleSort(field)}
     >
       <span className="flex items-center gap-1">
@@ -640,7 +689,11 @@ function ProjectList({
 
   const isOverdue = (dateStr: string | null | undefined) => {
     if (!dateStr) return false;
-    try { return new Date(dateStr) < new Date(); } catch { return false; }
+    try {
+      return new Date(dateStr) < new Date();
+    } catch {
+      return false;
+    }
   };
 
   return (
@@ -650,7 +703,9 @@ function ProjectList({
           <table className="w-full">
             <thead className="border-b bg-muted/30">
               <tr>
-                <SortHeader field="project_name" className="min-w-[200px]">Projeto</SortHeader>
+                <SortHeader field="project_name" className="min-w-[200px]">
+                  Projeto
+                </SortHeader>
                 <SortHeader field="area">Área</SortHeader>
                 <SortHeader field="responsible">Responsável</SortHeader>
                 <SortHeader field="fase_atual">Fase</SortHeader>
@@ -658,7 +713,9 @@ function ProjectList({
                 <SortHeader field="end_date">Prazo</SortHeader>
                 <SortHeader field="impacto_operacional">Imp. Operacional</SortHeader>
                 <SortHeader field="impacto_estrategico">Imp. Estratégico</SortHeader>
-                <th className="text-xs font-medium text-muted-foreground px-3 py-2.5 text-left min-w-[180px]">Última Mensagem</th>
+                <th className="min-w-[180px] px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">
+                  Última Mensagem
+                </th>
                 <SortHeader field="status">Status</SortHeader>
               </tr>
             </thead>
@@ -693,12 +750,14 @@ function ProjectList({
                 return (
                   <tr
                     key={project.id}
-                    className="hover:bg-muted/50 transition-colors cursor-pointer"
+                    className="cursor-pointer transition-colors hover:bg-muted/50"
                     onClick={() => onItemClick(project)}
                   >
                     <td className="px-3 py-3">
-                      <p className="font-medium text-sm line-clamp-1">{project.project_name}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">{project.espaider_code}</p>
+                      <p className="line-clamp-1 text-sm font-medium">{project.project_name}</p>
+                      <p className="font-mono text-[11px] text-muted-foreground">
+                        {project.espaider_code}
+                      </p>
                     </td>
                     <td className="px-3 py-3">
                       <span className="text-xs text-muted-foreground">{project.area || '-'}</span>
@@ -711,20 +770,35 @@ function ProjectList({
                     </td>
                     <td className="px-3 py-3">
                       {project.priority ? (
-                        <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium border uppercase tracking-wider ${project.priority === 'urgente' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300' :
-                          project.priority === 'alta' ? 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300' :
-                            'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300'
-                          }`}>
+                        <span
+                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                            project.priority === 'urgente'
+                              ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                              : project.priority === 'alta'
+                                ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
+                                : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                          }`}
+                        >
                           {project.priority}
                         </span>
-                      ) : <span className="text-xs text-muted-foreground">-</span>}
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
                     </td>
                     <td className="px-3 py-3">
                       {project.end_date ? (
-                        <span className={`text-xs ${isOverdue(project.end_date) && project.status !== 'concluido' ? 'text-red-600 font-medium dark:text-red-400' : 'text-muted-foreground'}`}>
-                          {new Date(project.end_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                        <span
+                          className={`text-xs ${isOverdue(project.end_date) && project.status !== 'concluido' ? 'font-medium text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}
+                        >
+                          {new Date(project.end_date).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: '2-digit',
+                          })}
                         </span>
-                      ) : <span className="text-xs text-muted-foreground">-</span>}
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
                     </td>
                     <td className="px-3 py-3">
                       <ImpactBadge level={project.impacto_operacional} />
@@ -735,14 +809,21 @@ function ProjectList({
                     <td className="px-3 py-3">
                       {project.mensagem_movimentacao ? (
                         <div>
-                          <p className="text-[11px] text-muted-foreground line-clamp-1" title={project.mensagem_movimentacao}>
+                          <p
+                            className="line-clamp-1 text-[11px] text-muted-foreground"
+                            title={project.mensagem_movimentacao}
+                          >
                             {project.mensagem_movimentacao}
                           </p>
                           {project.last_update && (
-                            <p className="text-[10px] text-muted-foreground/60">{formatRelativeDate(project.last_update)}</p>
+                            <p className="text-[10px] text-muted-foreground/60">
+                              {formatRelativeDate(project.last_update)}
+                            </p>
                           )}
                         </div>
-                      ) : <span className="text-xs text-muted-foreground">-</span>}
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
                     </td>
                     <td className="px-3 py-3">
                       <StatusBadge status={statusSlug} />
@@ -759,7 +840,15 @@ function ProjectList({
 }
 
 // Project Detail Component (360° View)
-function ProjectDetail({ project, onSync, isSyncing }: { project: Project; onSync?: () => void; isSyncing?: boolean }) {
+function ProjectDetail({
+  project,
+  onSync,
+  isSyncing,
+}: {
+  project: Project;
+  onSync?: () => void;
+  isSyncing?: boolean;
+}) {
   return (
     <Tabs defaultValue="resumo" className="w-full">
       <TabsList className="w-full justify-start">
@@ -860,7 +949,7 @@ function ProjectDetail({ project, onSync, isSyncing }: { project: Project; onSyn
             )}
             {isSyncing ? 'Sincronizando...' : 'Sincronizar com Espaider'}
           </Button>
-          <p className="text-xs text-muted-foreground text-center pt-2">
+          <p className="pt-2 text-center text-xs text-muted-foreground">
             Projetos são gerenciados no Espaider. Use a sincronização para atualizar os dados.
           </p>
         </div>
@@ -871,9 +960,7 @@ function ProjectDetail({ project, onSync, isSyncing }: { project: Project; onSyn
 
 // Empty State Component
 function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="py-8 text-center text-sm text-muted-foreground">{message}</div>
-  );
+  return <div className="py-8 text-center text-sm text-muted-foreground">{message}</div>;
 }
 
 // Status Badge Component
@@ -883,7 +970,8 @@ function StatusBadge({ status }: { status: string }) {
     fila_projetos: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
     em_aprovacao: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
     em_execucao: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    execucao_homologacao: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    execucao_homologacao:
+      'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
     execucao_producao: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
     em_homologacao: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
     validacao_homologacao: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
@@ -912,8 +1000,9 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
-        }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        statusStyles[status] || statusStyles.projeto_futuro
+      }`}
     >
       {statusLabels[status] || status}
     </span>

@@ -3,10 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
   const { id } = await params;
 
@@ -28,15 +25,12 @@ export async function GET(
       {
         headers: { 'Content-Type': 'application/json' },
         next: { revalidate: 10 },
-      }
+      },
     );
 
     const data = await res.json();
     return NextResponse.json(data);
   } catch {
-    return NextResponse.json(
-      { error: 'AI service unavailable' },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: 'AI service unavailable' }, { status: 503 });
   }
 }

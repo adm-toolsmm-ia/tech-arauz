@@ -164,8 +164,14 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      sans-serif;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 
   /* Custom scrollbar */
@@ -179,7 +185,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/40;
+    @apply rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/40;
   }
 
   /* Focus outline styling */
@@ -189,7 +195,6 @@
 }
 
 @layer components {
-
   /* KPI Card - Design limpo e funcional */
   .kpi-card {
     @apply relative overflow-hidden rounded-xl border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md;
@@ -197,16 +202,16 @@
 
   /* Kanban Column - Visual neutro */
   .kanban-column {
-    @apply flex flex-col rounded-lg bg-muted/30 min-h-[500px] border border-border;
+    @apply flex min-h-[500px] flex-col rounded-lg border border-border bg-muted/30;
   }
 
   .kanban-column-header {
-    @apply sticky top-0 z-10 flex items-center justify-between rounded-t-lg px-4 py-3 font-medium bg-muted/50 border-b border-border;
+    @apply sticky top-0 z-10 flex items-center justify-between rounded-t-lg border-b border-border bg-muted/50 px-4 py-3 font-medium;
   }
 
   /* Ticket Card - Hover sutil */
   .ticket-card {
-    @apply rounded-lg border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/30 cursor-pointer;
+    @apply cursor-pointer rounded-lg border bg-card p-4 shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md;
   }
 
   /* Status Badge Base */
@@ -221,7 +226,7 @@
 
   /* Sidebar Navigation */
   .sidebar-nav-item {
-    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 text-sidebar-foreground/80;
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/80 transition-all duration-200;
   }
 
   .sidebar-nav-item:hover {
@@ -229,7 +234,7 @@
   }
 
   .sidebar-nav-item.active,
-  .sidebar-nav-item[data-active="true"] {
+  .sidebar-nav-item[data-active='true'] {
     @apply bg-accent text-accent-foreground shadow-sm;
   }
 
@@ -240,7 +245,6 @@
 }
 
 @layer utilities {
-
   /* Animate spin slow */
   .animate-spin-slow {
     animation: spin 2s linear infinite;
@@ -284,10 +288,12 @@
 
   .animate-shimmer {
     animation: shimmer 2s linear infinite;
-    background: linear-gradient(90deg,
-        hsl(var(--muted)) 0%,
-        hsl(var(--muted-foreground) / 0.1) 50%,
-        hsl(var(--muted)) 100%);
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
     background-size: 200% 100%;
   }
 
@@ -360,7 +366,6 @@
   }
 
   @keyframes pulseSoft {
-
     0%,
     100% {
       opacity: 1;

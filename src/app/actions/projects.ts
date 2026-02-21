@@ -25,7 +25,7 @@ const NOTES_HTML_MAX_LENGTH = 100_000;
  */
 export async function updateProjectStatusAction(
   projectId: string,
-  newStatus: string
+  newStatus: string,
 ): Promise<UpdateStatusResult> {
   const supabase = await createClient();
 
@@ -118,7 +118,7 @@ export async function updateProjectStatusAction(
  */
 export async function updateProjectNotesAction(
   projectId: string,
-  notesHtml: string | null
+  notesHtml: string | null,
 ): Promise<UpdateNotesResult> {
   const supabase = await createClient();
 

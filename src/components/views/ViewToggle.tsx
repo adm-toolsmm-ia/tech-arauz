@@ -2,12 +2,7 @@
 
 import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 export type ViewMode = 'kanban' | 'list';
@@ -29,8 +24,7 @@ export function ViewToggle({ view, onViewChange, className }: ViewToggleProps) {
               size="sm"
               className={cn(
                 'h-8 w-8 p-0',
-                view === 'kanban' &&
-                  'bg-background shadow-sm hover:bg-background'
+                view === 'kanban' && 'bg-background shadow-sm hover:bg-background',
               )}
               onClick={() => onViewChange('kanban')}
             >
@@ -48,8 +42,7 @@ export function ViewToggle({ view, onViewChange, className }: ViewToggleProps) {
               size="sm"
               className={cn(
                 'h-8 w-8 p-0',
-                view === 'list' &&
-                  'bg-background shadow-sm hover:bg-background'
+                view === 'list' && 'bg-background shadow-sm hover:bg-background',
               )}
               onClick={() => onViewChange('list')}
             >

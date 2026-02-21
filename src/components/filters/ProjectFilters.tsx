@@ -8,13 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import {
   Select,
   SelectContent,
@@ -162,10 +156,11 @@ function MultiSelectFilter({
                   onChange([...selected, option]);
                 }
               }}
-              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border transition-colors ${isSelected
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted hover:text-foreground'
-                }`}
+              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                isSelected
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-transparent bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
             >
               {option || '(vazio)'}
             </button>
@@ -176,11 +171,7 @@ function MultiSelectFilter({
   );
 }
 
-export function ProjectFilters({
-  filters,
-  onFiltersChange,
-  availableValues,
-}: ProjectFiltersProps) {
+export function ProjectFilters({ filters, onFiltersChange, availableValues }: ProjectFiltersProps) {
   const activeCount = getActiveFilterCount(filters);
   const [open, setOpen] = React.useState(false);
 
@@ -214,7 +205,7 @@ export function ProjectFilters({
     <div className="flex flex-col gap-3">
       {/* Quick Filters Row */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground font-medium mr-1">Filtros rápidos:</span>
+        <span className="mr-1 text-xs font-medium text-muted-foreground">Filtros rápidos:</span>
         {quickFilters.map((qf) => {
           const Icon = qf.icon;
           const active = qf.isActive(filters);
@@ -224,7 +215,7 @@ export function ProjectFilters({
               variant={active ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleQuickFilter(qf)}
-              className={`h-7 text-xs rounded-full gap-1.5 ${active ? 'shadow-md' : 'bg-transparent border-muted-foreground/30'}`}
+              className={`h-7 gap-1.5 rounded-full text-xs ${active ? 'shadow-md' : 'border-muted-foreground/30 bg-transparent'}`}
             >
               <Icon className="size-3" />
               {qf.label}
@@ -232,35 +223,40 @@ export function ProjectFilters({
           );
         })}
 
-        <Separator orientation="vertical" className="h-5 mx-1" />
+        <Separator orientation="vertical" className="mx-1 h-5" />
 
         {/* Advanced Filter Sheet Trigger */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 text-xs rounded-full gap-1.5">
+            <Button variant="outline" size="sm" className="h-7 gap-1.5 rounded-full text-xs">
               <SlidersHorizontal className="size-3" />
               Filtros Avançados
               {activeCount > 0 && (
-                <Badge variant="default" className="ml-1 h-4 px-1.5 text-[10px] rounded-full">
+                <Badge variant="default" className="ml-1 h-4 rounded-full px-1.5 text-[10px]">
                   {activeCount}
                 </Badge>
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-[400px] sm:w-[440px] overflow-y-auto">
+          <SheetContent className="w-[400px] overflow-y-auto sm:w-[440px]">
             <SheetHeader>
               <SheetTitle className="flex items-center justify-between">
                 Filtros Avançados
                 {activeCount > 0 && (
-                  <Button variant="ghost" size="sm" onClick={handleClear} className="text-xs text-muted-foreground">
-                    <X className="size-3 mr-1" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClear}
+                    className="text-xs text-muted-foreground"
+                  >
+                    <X className="mr-1 size-3" />
                     Limpar todos
                   </Button>
                 )}
               </SheetTitle>
             </SheetHeader>
 
-            <div className="space-y-6 mt-6">
+            <div className="mt-6 space-y-6">
               {/* Status */}
               <MultiSelectFilter
                 label="Status"
@@ -346,7 +342,9 @@ export function ProjectFilters({
               {/* Toggle Filters */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="importancia" className="text-sm">Importância Especial</Label>
+                  <Label htmlFor="importancia" className="text-sm">
+                    Importância Especial
+                  </Label>
                   <Switch
                     id="importancia"
                     checked={filters.importancia_especial === true}
@@ -356,7 +354,9 @@ export function ProjectFilters({
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="vencido" className="text-sm">Apenas Atrasados</Label>
+                  <Label htmlFor="vencido" className="text-sm">
+                    Apenas Atrasados
+                  </Label>
                   <Switch
                     id="vencido"
                     checked={filters.prazo_vencido}
@@ -366,7 +366,9 @@ export function ProjectFilters({
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="concluidos" className="text-sm">Mostrar Concluídos</Label>
+                  <Label htmlFor="concluidos" className="text-sm">
+                    Mostrar Concluídos
+                  </Label>
                   <Switch
                     id="concluidos"
                     checked={filters.concluidos}
@@ -382,8 +384,13 @@ export function ProjectFilters({
 
         {/* Active filter count & clear */}
         {activeCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={handleClear} className="h-7 text-xs text-muted-foreground hover:text-destructive">
-            <X className="size-3 mr-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClear}
+            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+          >
+            <X className="mr-1 size-3" />
             Limpar ({activeCount})
           </Button>
         )}
@@ -395,7 +402,7 @@ export function ProjectFilters({
 // Utility: Extract unique non-null values from project field
 export function extractUniqueValues<T extends Record<string, any>>(
   items: T[],
-  field: keyof T
+  field: keyof T,
 ): string[] {
   const values = new Set<string>();
   items.forEach((item) => {
@@ -410,11 +417,18 @@ export function extractUniqueValues<T extends Record<string, any>>(
 // Utility: Apply filters to project list
 export function applyProjectFilters<T extends Record<string, any>>(
   projects: T[],
-  filters: ProjectFilterState
+  filters: ProjectFilterState,
 ): T[] {
   let result = projects;
 
-  const normalize = (s: string) => s?.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || '';
+  const normalize = (s: string) =>
+    s
+      ?.trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') || '';
 
   // Filter Concluídos logic
   if (filters.concluidos) {
@@ -429,10 +443,10 @@ export function applyProjectFilters<T extends Record<string, any>>(
     // Let's assume:
     // - Default (concluidos=false): Hide 'concluido' and 'cancelado'? Or just 'concluido'? User said "projetos concluídos".
     // - Active (concluidos=true): Show ONLY 'concluido'. This is a common pattern for "Archived/Completed" views.
-    result = result.filter(p => normalize(p.status) === 'concluido');
+    result = result.filter((p) => normalize(p.status) === 'concluido');
   } else {
     // Default: Hide concluded
-    result = result.filter(p => normalize(p.status) !== 'concluido');
+    result = result.filter((p) => normalize(p.status) !== 'concluido');
   }
 
   // Search
@@ -441,7 +455,7 @@ export function applyProjectFilters<T extends Record<string, any>>(
     result = result.filter(
       (p) =>
         (p.project_name || '').toLowerCase().includes(term) ||
-        (p.espaider_code || '').toLowerCase().includes(term)
+        (p.espaider_code || '').toLowerCase().includes(term),
     );
   }
 
@@ -471,10 +485,15 @@ export function applyProjectFilters<T extends Record<string, any>>(
     result = result.filter((p) => p.priority && filters.prioridade.includes(p.priority));
   }
   if (filters.complexidade_tecnica.length > 0) {
-    result = result.filter((p) => p.complexidade_tecnica && filters.complexidade_tecnica.includes(p.complexidade_tecnica));
+    result = result.filter(
+      (p) =>
+        p.complexidade_tecnica && filters.complexidade_tecnica.includes(p.complexidade_tecnica),
+    );
   }
   if (filters.impacto_operacional.length > 0) {
-    result = result.filter((p) => p.impacto_operacional && filters.impacto_operacional.includes(p.impacto_operacional));
+    result = result.filter(
+      (p) => p.impacto_operacional && filters.impacto_operacional.includes(p.impacto_operacional),
+    );
   }
 
   // Toggle filters
@@ -488,7 +507,11 @@ export function applyProjectFilters<T extends Record<string, any>>(
       // (Though if 'concluidos=true' we are showing completed, so they shouldn't be overdue anyway)
       const status = normalize(p.status);
       if (!p.end_date || status === 'concluido' || status === 'cancelado') return false;
-      try { return new Date(p.end_date) < now; } catch { return false; }
+      try {
+        return new Date(p.end_date) < now;
+      } catch {
+        return false;
+      }
     });
   }
 

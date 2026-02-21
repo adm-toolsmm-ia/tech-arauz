@@ -27,6 +27,9 @@ jobs:
     - name: Run Lint
       run: npm run lint
 
+    - name: Check Formatting
+      run: npm run format:check
+
     - name: Run Tests
       # Assuming 'test' script runs vitest. 
       # Using --passWithNoTests to avoid failure if no tests exist yet.

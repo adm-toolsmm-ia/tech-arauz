@@ -23,11 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -180,8 +176,18 @@ function isWithin7Days(dateStr: string | null): boolean {
 }
 
 const MONTH_NAMES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
 ];
 
 const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -242,7 +248,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
         (s) =>
           s.atividade?.toLowerCase().includes(term) ||
           s.responsavel?.toLowerCase().includes(term) ||
-          s.project?.titulo?.toLowerCase().includes(term)
+          s.project?.titulo?.toLowerCase().includes(term),
       );
     }
 
@@ -264,11 +270,9 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   // KPI calculations
   const totalActivities = schedules.length;
   const delayedCount = schedules.filter((s) => s.atrasado === true).length;
-  const completedCount = schedules.filter((s) =>
-    s.status?.toLowerCase().includes('conclu')
-  ).length;
+  const completedCount = schedules.filter((s) => s.status?.toLowerCase().includes('conclu')).length;
   const nearDeadlineCount = schedules.filter((s) =>
-    isWithin7Days(s.data_prazo || s.data_fim)
+    isWithin7Days(s.data_prazo || s.data_fim),
   ).length;
 
   // Navigation
@@ -306,7 +310,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
         return false;
       });
     },
-    [filteredSchedules]
+    [filteredSchedules],
   );
 
   // Active filter count
@@ -325,10 +329,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
   return (
     <div className="flex flex-col">
-      <DashboardHeader
-        title="Cronogramas"
-        subtitle="Visualize todos os cronogramas de projetos"
-      />
+      <DashboardHeader title="Cronogramas" subtitle="Visualize todos os cronogramas de projetos" />
 
       <div className="flex-1 space-y-6 p-6">
         {/* KPIs */}
@@ -343,17 +344,23 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             title="Atrasadas"
             value={delayedCount}
             icon={AlertTriangle}
-            className={delayedCount > 0 ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500' : ''}
+            className={
+              delayedCount > 0 ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500' : ''
+            }
             subtitle={delayedCount > 0 ? 'Requerem atenção imediata' : 'Nenhuma atividade atrasada'}
           />
           <KPICard
             title="Concluídas"
             value={completedCount}
             icon={CheckCircle2}
-            trend={totalActivities > 0 ? {
-              value: `${Math.round((completedCount / totalActivities) * 100)}%`,
-              positive: true,
-            } : undefined}
+            trend={
+              totalActivities > 0
+                ? {
+                    value: `${Math.round((completedCount / totalActivities) * 100)}%`,
+                    positive: true,
+                  }
+                : undefined
+            }
           />
           <KPICard
             title="Próximas do Prazo"
@@ -364,18 +371,18 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
         </div>
 
         {/* View Toggle + Filters Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-card p-4 rounded-lg border shadow-sm">
-          <div className="flex flex-1 gap-2 items-center">
-            <div className="relative flex-1 max-w-sm">
+        <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-1 items-center gap-2">
+            <div className="relative max-w-sm flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Buscar atividades..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-colors"
+                className="border-muted-foreground/20 bg-background/50 pl-9 transition-colors focus:border-primary/50"
               />
             </div>
-            <div className="h-8 w-px bg-border mx-2" />
+            <div className="mx-2 h-8 w-px bg-border" />
             <Button
               variant={showFilters ? 'secondary' : 'ghost'}
               size="sm"
@@ -385,7 +392,10 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               <Filter className="mr-2 h-4 w-4" />
               Filtros
               {activeFilterCount > 0 && (
-                <Badge variant="destructive" className="ml-1.5 h-5 w-5 p-0 text-[10px] flex items-center justify-center rounded-full">
+                <Badge
+                  variant="destructive"
+                  className="ml-1.5 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
+                >
                   {activeFilterCount}
                 </Badge>
               )}
@@ -395,7 +405,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="text-muted-foreground hover:text-destructive h-8 px-2"
+                className="h-8 px-2 text-muted-foreground hover:text-destructive"
               >
                 <X className="h-3.5 w-3.5" />
               </Button>
@@ -410,13 +420,13 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             >
               Hoje
             </Button>
-            <div className="h-8 w-px bg-border mx-1" />
+            <div className="mx-1 h-8 w-px bg-border" />
             <div className="flex items-center rounded-lg border bg-muted/30 p-0.5">
               <Button
                 variant={viewMode === 'month' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('month')}
-                className="h-7 text-xs rounded-md"
+                className="h-7 rounded-md text-xs"
               >
                 <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
                 Mês
@@ -425,7 +435,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                 variant={viewMode === 'week' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('week')}
-                className="h-7 text-xs rounded-md"
+                className="h-7 rounded-md text-xs"
               >
                 <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
                 Semana
@@ -436,7 +446,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
         {/* Filter Panel (Collapsible) */}
         {showFilters && (
-          <div className="p-4 bg-muted/30 rounded-lg border border-dashed animate-in slide-in-from-top-2">
+          <div className="rounded-lg border border-dashed bg-muted/30 p-4 animate-in slide-in-from-top-2">
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Projeto</label>
@@ -455,7 +465,9 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Setor Responsável</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  Setor Responsável
+                </label>
                 <Select value={setorFilter} onValueChange={setSetorFilter}>
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue placeholder="Todos os setores" />
@@ -627,7 +639,7 @@ function MonthView({
     <Card className="shadow-soft">
       <CardContent className="p-4 sm:p-6">
         {/* Header with navigation */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" size="icon" onClick={() => onNavigate(-1)} className="h-8 w-8">
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -640,12 +652,9 @@ function MonthView({
         </div>
 
         {/* Day headers */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="mb-2 grid grid-cols-7 gap-1">
           {DAY_NAMES.map((name) => (
-            <div
-              key={name}
-              className="text-center text-xs font-medium text-muted-foreground py-1"
-            >
+            <div key={name} className="py-1 text-center text-xs font-medium text-muted-foreground">
               {name}
             </div>
           ))}
@@ -670,38 +679,40 @@ function MonthView({
                   <button
                     onClick={() => onSelectDay(date)}
                     className={cn(
-                      'aspect-square rounded-lg p-1 flex flex-col items-center justify-start gap-0.5 transition-all text-sm relative',
+                      'relative flex aspect-square flex-col items-center justify-start gap-0.5 rounded-lg p-1 text-sm transition-all',
                       'hover:bg-accent/60 focus:outline-none focus:ring-2 focus:ring-ring/50',
                       isToday && 'bg-accent font-bold',
-                      isSelected && 'ring-2 ring-primary bg-primary/5',
-                      hasDelayed && daySchedules.length > 0 && 'ring-1 ring-red-300 dark:ring-red-700'
+                      isSelected && 'bg-primary/5 ring-2 ring-primary',
+                      hasDelayed &&
+                        daySchedules.length > 0 &&
+                        'ring-1 ring-red-300 dark:ring-red-700',
                     )}
                   >
                     <span
                       className={cn(
-                        'text-xs leading-none mt-0.5',
-                        isToday && 'text-primary font-bold',
-                        date.getMonth() !== month && 'text-muted-foreground/50'
+                        'mt-0.5 text-xs leading-none',
+                        isToday && 'font-bold text-primary',
+                        date.getMonth() !== month && 'text-muted-foreground/50',
                       )}
                     >
                       {date.getDate()}
                     </span>
                     {daySchedules.length > 0 && (
-                      <div className="flex flex-wrap gap-0.5 justify-center mt-auto mb-0.5">
+                      <div className="mb-0.5 mt-auto flex flex-wrap justify-center gap-0.5">
                         {daySchedules.slice(0, maxDots).map((s) => {
                           const colorIdx = getProjectColorIndex(s.project_id, projectIds);
                           return (
                             <div
                               key={s.id}
                               className={cn(
-                                'w-1.5 h-1.5 rounded-full',
-                                s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx]
+                                'h-1.5 w-1.5 rounded-full',
+                                s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
                               )}
                             />
                           );
                         })}
                         {daySchedules.length > maxDots && (
-                          <span className="text-[8px] text-muted-foreground leading-none">
+                          <span className="text-[8px] leading-none text-muted-foreground">
                             +{daySchedules.length - maxDots}
                           </span>
                         )}
@@ -719,31 +730,34 @@ function MonthView({
                           month: 'long',
                         })}
                       </p>
-                      <div className="space-y-1.5 max-h-60 overflow-y-auto">
+                      <div className="max-h-60 space-y-1.5 overflow-y-auto">
                         {daySchedules.map((s) => {
                           const colorIdx = getProjectColorIndex(s.project_id, projectIds);
                           return (
                             <div
                               key={s.id}
-                              className="flex items-start gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                              className="flex cursor-pointer items-start gap-2 rounded p-1.5 transition-colors hover:bg-muted/50"
                               onClick={() => onSelectDay(date)}
                             >
                               <div
                                 className={cn(
-                                  'w-2 h-2 rounded-full mt-1.5 shrink-0',
-                                  s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx]
+                                  'mt-1.5 h-2 w-2 shrink-0 rounded-full',
+                                  s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
                                 )}
                               />
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-medium truncate">
+                                <p className="truncate text-xs font-medium">
                                   {s.atividade || 'Sem nome'}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground truncate">
+                                <p className="truncate text-[10px] text-muted-foreground">
                                   {s.project?.titulo || 'Projeto'}
                                 </p>
                               </div>
                               {s.atrasado && (
-                                <Badge variant="destructive" className="text-[9px] h-4 px-1 shrink-0">
+                                <Badge
+                                  variant="destructive"
+                                  className="h-4 shrink-0 px-1 text-[9px]"
+                                >
                                   Atrasado
                                 </Badge>
                               )}
@@ -788,7 +802,7 @@ function WeekView({
     <Card className="shadow-soft">
       <CardContent className="p-4 sm:p-6">
         {/* Header with navigation */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" size="icon" onClick={() => onNavigate(-1)} className="h-8 w-8">
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -819,28 +833,23 @@ function WeekView({
                 key={date.toISOString()}
                 onClick={() => onSelectDay(date)}
                 className={cn(
-                  'rounded-lg border p-2 min-h-[120px] flex flex-col transition-all',
+                  'flex min-h-[120px] flex-col rounded-lg border p-2 transition-all',
                   'hover:border-primary/50 hover:bg-accent/30 focus:outline-none focus:ring-2 focus:ring-ring/50',
                   isToday && 'border-primary bg-primary/5',
                   isSelected && 'ring-2 ring-primary',
-                  hasDelayed && 'border-red-300 dark:border-red-700'
+                  hasDelayed && 'border-red-300 dark:border-red-700',
                 )}
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span
-                    className={cn(
-                      'text-xs font-medium',
-                      isToday && 'text-primary font-bold'
-                    )}
-                  >
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className={cn('text-xs font-medium', isToday && 'font-bold text-primary')}>
                     {DAY_NAMES[date.getDay()]}
                   </span>
                   <span
                     className={cn(
                       'text-xs',
                       isToday
-                        ? 'bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold'
-                        : 'text-muted-foreground'
+                        ? 'flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {date.getDate()}
@@ -853,10 +862,10 @@ function WeekView({
                       <div
                         key={s.id}
                         className={cn(
-                          'text-[10px] px-1 py-0.5 rounded truncate font-medium',
+                          'truncate rounded px-1 py-0.5 text-[10px] font-medium',
                           s.atrasado
                             ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                            : PROJECT_COLORS_LIGHT[colorIdx]
+                            : PROJECT_COLORS_LIGHT[colorIdx],
                         )}
                       >
                         {s.atividade || 'Sem nome'}
@@ -864,7 +873,7 @@ function WeekView({
                     );
                   })}
                   {daySchedules.length > 3 && (
-                    <p className="text-[9px] text-muted-foreground text-center">
+                    <p className="text-center text-[9px] text-muted-foreground">
                       +{daySchedules.length - 3} mais
                     </p>
                   )}
@@ -912,7 +921,7 @@ function SelectedDayPanel({
   return (
     <Card className="animate-in slide-in-from-top-2">
       <CardContent className="p-4">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="mb-4 flex items-center gap-2">
           <CalendarIcon className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold">
             {date.toLocaleDateString('pt-BR', {
@@ -932,40 +941,38 @@ function SelectedDayPanel({
             return (
               <div
                 key={s.id}
-                className="flex items-center gap-3 p-2.5 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer transition-colors"
+                className="flex cursor-pointer items-center gap-3 rounded-lg border bg-card p-2.5 transition-colors hover:bg-muted/50"
                 onClick={() => onActivityClick(s)}
               >
                 <div
                   className={cn(
-                    'w-1 h-8 rounded-full shrink-0',
-                    s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx]
+                    'h-8 w-1 shrink-0 rounded-full',
+                    s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
                   )}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">
-                    {s.atividade || 'Sem nome'}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px] text-muted-foreground truncate">
+                  <p className="truncate text-sm font-medium">{s.atividade || 'Sem nome'}</p>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <span className="truncate text-[11px] text-muted-foreground">
                       {s.project?.titulo || 'Projeto'}
                     </span>
                     {s.responsavel && (
                       <>
                         <span className="text-muted-foreground/50">|</span>
-                        <span className="text-[11px] text-muted-foreground truncate">
+                        <span className="truncate text-[11px] text-muted-foreground">
                           {s.responsavel}
                         </span>
                       </>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex shrink-0 items-center gap-1.5">
                   {s.atrasado && (
-                    <Badge variant="destructive" className="text-[10px] h-5 px-1.5">
+                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
                       Atrasado
                     </Badge>
                   )}
-                  <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+                  <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
                     {s.status || 'Pendente'}
                   </Badge>
                 </div>
@@ -997,9 +1004,9 @@ function ActivityCard({
   return (
     <Card
       className={cn(
-        'shadow-soft hover:shadow-card-hover transition-all duration-300 cursor-pointer',
-        'hover:-translate-y-0.5 animate-scale-in',
-        isOverdue && 'border-red-300 dark:border-red-800'
+        'cursor-pointer shadow-soft transition-all duration-300 hover:shadow-card-hover',
+        'animate-scale-in hover:-translate-y-0.5',
+        isOverdue && 'border-red-300 dark:border-red-800',
       )}
       onClick={onClick}
     >
@@ -1008,27 +1015,27 @@ function ActivityCard({
         <div className="flex items-start gap-3">
           <div
             className={cn(
-              'w-1 h-full min-h-[40px] rounded-full shrink-0',
-              isOverdue ? 'bg-red-500' : PROJECT_COLORS[colorIdx]
+              'h-full min-h-[40px] w-1 shrink-0 rounded-full',
+              isOverdue ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
             )}
           />
           <div className="min-w-0 flex-1 space-y-2.5">
             {/* Activity name */}
             <div>
               <div className="flex items-start justify-between gap-2">
-                <h4 className="text-sm font-semibold leading-tight line-clamp-2">
+                <h4 className="line-clamp-2 text-sm font-semibold leading-tight">
                   {schedule.atividade || 'Sem nome'}
                 </h4>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex shrink-0 items-center gap-1">
                   {isOverdue && (
-                    <Badge variant="destructive" className="text-[10px] h-5 px-1.5">
-                      <AlertTriangle className="h-3 w-3 mr-0.5" />
+                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+                      <AlertTriangle className="mr-0.5 h-3 w-3" />
                       Atrasado
                     </Badge>
                   )}
                   {isNearDeadline && (
-                    <Badge className="text-[10px] h-5 px-1.5 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-0">
-                      <Clock className="h-3 w-3 mr-0.5" />
+                    <Badge className="h-5 border-0 bg-amber-100 px-1.5 text-[10px] text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                      <Clock className="mr-0.5 h-3 w-3" />
                       Prazo
                     </Badge>
                   )}
@@ -1038,8 +1045,8 @@ function ActivityCard({
 
             {/* Project tag */}
             <div className="flex items-center gap-1.5">
-              <FolderKanban className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span className="text-[11px] text-muted-foreground truncate">
+              <FolderKanban className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <span className="truncate text-[11px] text-muted-foreground">
                 {schedule.project?.titulo || 'Projeto'}
               </span>
             </div>
@@ -1048,15 +1055,15 @@ function ActivityCard({
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
               {schedule.responsavel && (
                 <div className="flex items-center gap-1.5">
-                  <User className="h-3 w-3 text-muted-foreground shrink-0" />
-                  <span className="text-[11px] text-muted-foreground truncate">
+                  <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+                  <span className="truncate text-[11px] text-muted-foreground">
                     {schedule.responsavel}
                   </span>
                 </div>
               )}
               {schedule.setor_responsavel && (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] text-muted-foreground truncate">
+                  <span className="truncate text-[11px] text-muted-foreground">
                     {schedule.setor_responsavel}
                   </span>
                 </div>
@@ -1067,12 +1074,18 @@ function ActivityCard({
             <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
               {schedule.data_inicio && (
                 <span>
-                  Início: <span className="font-medium text-foreground/80">{formatDateBR(schedule.data_inicio)}</span>
+                  Início:{' '}
+                  <span className="font-medium text-foreground/80">
+                    {formatDateBR(schedule.data_inicio)}
+                  </span>
                 </span>
               )}
               {schedule.data_fim && (
                 <span>
-                  Fim: <span className="font-medium text-foreground/80">{formatDateBR(schedule.data_fim)}</span>
+                  Fim:{' '}
+                  <span className="font-medium text-foreground/80">
+                    {formatDateBR(schedule.data_fim)}
+                  </span>
                 </span>
               )}
               {schedule.data_prazo && (
@@ -1082,18 +1095,19 @@ function ActivityCard({
               )}
               {schedule.data_novo_prazo && (
                 <span className="text-amber-600 dark:text-amber-400">
-                  Novo Prazo: <span className="font-medium">{formatDateBR(schedule.data_novo_prazo)}</span>
+                  Novo Prazo:{' '}
+                  <span className="font-medium">{formatDateBR(schedule.data_novo_prazo)}</span>
                 </span>
               )}
             </div>
 
             {/* Status badge */}
             <div className="flex items-center gap-1.5 pt-0.5">
-              <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+              <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
                 {schedule.status || 'Pendente'}
               </Badge>
               {schedule.fase_atividade && (
-                <Badge variant="outline" className="text-[10px] h-5 px-1.5">
+                <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
                   {schedule.fase_atividade}
                 </Badge>
               )}

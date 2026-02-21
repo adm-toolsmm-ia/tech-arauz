@@ -1,11 +1,7 @@
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 
-export default function AgentsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AgentsLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar />

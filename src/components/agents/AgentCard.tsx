@@ -45,10 +45,22 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 };
 
 const typeConfig: Record<string, { label: string; className: string }> = {
-  automation: { label: 'Automação', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
-  analysis: { label: 'Análise', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
-  integration: { label: 'Integração', className: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300' },
-  assistant: { label: 'Assistente', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
+  automation: {
+    label: 'Automação',
+    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+  },
+  analysis: {
+    label: 'Análise',
+    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+  },
+  integration: {
+    label: 'Integração',
+    className: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+  },
+  assistant: {
+    label: 'Assistente',
+    className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+  },
 };
 
 function formatRelativeTime(dateStr: string | null): string {
@@ -70,8 +82,8 @@ export function AgentCard({ agent, onClick }: AgentCardProps) {
   return (
     <Card
       className={cn(
-        'cursor-pointer transition-all hover:shadow-md hover:border-primary/50',
-        'active:scale-[0.99]'
+        'cursor-pointer transition-all hover:border-primary/50 hover:shadow-md',
+        'active:scale-[0.99]',
       )}
       onClick={() => onClick?.(agent)}
     >
@@ -86,16 +98,24 @@ export function AgentCard({ agent, onClick }: AgentCardProps) {
                 <h3 className="font-semibold">{agent.name}</h3>
                 <span className="text-xs text-muted-foreground">v{agent.version}</span>
               </div>
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {agent.description}
-              </p>
+              <p className="line-clamp-2 text-sm text-muted-foreground">{agent.description}</p>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium', status.className)}>
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <span
+              className={cn(
+                'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+                status.className,
+              )}
+            >
               {status.label}
             </span>
-            <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium', type.className)}>
+            <span
+              className={cn(
+                'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+                type.className,
+              )}
+            >
               {type.label}
             </span>
           </div>

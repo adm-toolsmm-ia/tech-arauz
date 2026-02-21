@@ -23,11 +23,19 @@ interface ProjectTrendChartProps {
   data: TrendData[];
 }
 
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name: string; color: string }>; label?: string }) {
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ value: number; name: string; color: string }>;
+  label?: string;
+}) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-popover px-3 py-2 text-sm shadow-md">
-      <p className="font-medium mb-1">{label}</p>
+      <p className="mb-1 font-medium">{label}</p>
       {payload.map((entry) => (
         <p key={entry.name} style={{ color: entry.color }}>
           {entry.name === 'created' ? 'Criados' : 'Concluídos'}: {entry.value}
@@ -46,19 +54,16 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
       <CardContent>
         <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-            >
+            <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis
                 dataKey="label"
-                className="text-xs fill-muted-foreground"
+                className="fill-muted-foreground text-xs"
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                className="text-xs fill-muted-foreground"
+                className="fill-muted-foreground text-xs"
                 allowDecimals={false}
                 tickLine={false}
                 axisLine={false}
@@ -100,9 +105,22 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 
 // Helper to build trend data from projects
 export function buildTrendData(
-  projects: Array<{ status: string; created_at: string }>
+  projects: Array<{ status: string; created_at: string }>,
 ): TrendData[] {
-  const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const monthNames = [
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
+  ];
   const monthMap: Record<string, { created: number; completed: number }> = {};
 
   projects.forEach((p) => {

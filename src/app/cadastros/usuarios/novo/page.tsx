@@ -30,7 +30,7 @@ function SubmitButton() {
 
   return (
     <Button type="submit" className="w-full sm:w-auto" disabled={pending}>
-      <UserPlus className="size-4 mr-2" />
+      <UserPlus className="mr-2 size-4" />
       {pending ? 'Cadastrando...' : 'Cadastrar Usuário'}
     </Button>
   );
@@ -64,11 +64,11 @@ export default function NovoUsuarioPage() {
             <form ref={formRef} action={formAction} className="space-y-8">
               {/* Seção: Dados Pessoais */}
               <section>
-                <div className="flex items-center gap-2 mb-4 border-b pb-2">
+                <div className="mb-4 flex items-center gap-2 border-b pb-2">
                   <User className="size-5 text-primary" />
-                  <h3 className="font-semibold text-base">Dados Pessoais</h3>
+                  <h3 className="text-base font-semibold">Dados Pessoais</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="fullName">Nome Completo</Label>
                     <Input
@@ -86,7 +86,7 @@ export default function NovoUsuarioPage() {
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                      <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="email"
                         name="email"
@@ -105,11 +105,11 @@ export default function NovoUsuarioPage() {
 
               {/* Seção: Permissões */}
               <section>
-                <div className="flex items-center gap-2 mb-4 border-b pb-2">
+                <div className="mb-4 flex items-center gap-2 border-b pb-2">
                   <Shield className="size-5 text-primary" />
-                  <h3 className="font-semibold text-base">Permissões e Acesso</h3>
+                  <h3 className="text-base font-semibold">Permissões e Acesso</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="role">Perfil de Acesso</Label>
                     <Select name="role" defaultValue="admin">
@@ -131,7 +131,7 @@ export default function NovoUsuarioPage() {
                     <Label>Status</Label>
                     <div className="flex items-center gap-3 pt-2">
                       <Switch id="isActive" name="isActive" defaultChecked />
-                      <Label htmlFor="isActive" className="font-normal text-sm cursor-pointer">
+                      <Label htmlFor="isActive" className="cursor-pointer text-sm font-normal">
                         Usuário ativo
                       </Label>
                     </div>

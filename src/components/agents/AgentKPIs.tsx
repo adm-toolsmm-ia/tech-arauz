@@ -13,19 +13,12 @@ export function AgentKPIs({ agents }: AgentKPIsProps) {
   const activeAgents = agents.filter((a) => a.status === 'active').length;
   const totalRuns = agents.reduce((sum, a) => sum + a.total_runs, 0);
   const avgSuccessRate =
-    agents.length > 0
-      ? agents.reduce((sum, a) => sum + a.success_rate, 0) / agents.length
-      : 0;
+    agents.length > 0 ? agents.reduce((sum, a) => sum + a.success_rate, 0) / agents.length : 0;
   const totalCost = agents.reduce((sum, a) => sum + a.total_cost_usd, 0);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <KPICard
-        title="Agentes"
-        value={totalAgents}
-        icon={Bot}
-        subtitle={`${activeAgents} ativos`}
-      />
+      <KPICard title="Agentes" value={totalAgents} icon={Bot} subtitle={`${activeAgents} ativos`} />
       <KPICard
         title="Total de Execuções"
         value={totalRuns}
@@ -36,7 +29,10 @@ export function AgentKPIs({ agents }: AgentKPIsProps) {
         title="Taxa de Sucesso"
         value={`${avgSuccessRate.toFixed(1)}%`}
         icon={TrendingUp}
-        trend={{ value: avgSuccessRate >= 90 ? 'Saudável' : 'Atenção', positive: avgSuccessRate >= 90 }}
+        trend={{
+          value: avgSuccessRate >= 90 ? 'Saudável' : 'Atenção',
+          positive: avgSuccessRate >= 90,
+        }}
       />
       <KPICard
         title="Custo Total"

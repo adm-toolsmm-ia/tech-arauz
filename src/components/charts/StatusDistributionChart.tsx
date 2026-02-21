@@ -27,7 +27,13 @@ const statusColors: Record<string, string> = {
   suspenso: '#6b7280',
 };
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: DistributionData }> }) {
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: DistributionData }>;
+}) {
   if (!active || !payload?.length) return null;
   const data = payload[0].payload;
   return (
@@ -46,10 +52,7 @@ function CustomLegend({ payload }: { payload?: Array<{ value: string; color: str
     <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs">
       {payload.map((entry) => (
         <div key={entry.value} className="flex items-center gap-1.5">
-          <div
-            className="h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: entry.color }}
-          />
+          <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.value}</span>
         </div>
       ))}
@@ -57,7 +60,11 @@ function CustomLegend({ payload }: { payload?: Array<{ value: string; color: str
   );
 }
 
-export function StatusDistributionChart({ data, onSegmentClick, activeStatus }: StatusDistributionChartProps) {
+export function StatusDistributionChart({
+  data,
+  onSegmentClick,
+  activeStatus,
+}: StatusDistributionChartProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -103,9 +110,7 @@ export function StatusDistributionChart({ data, onSegmentClick, activeStatus }: 
 }
 
 // Helper to build distribution data
-export function buildDistributionData(
-  projects: Array<{ status: string }>
-): DistributionData[] {
+export function buildDistributionData(projects: Array<{ status: string }>): DistributionData[] {
   const counts: Record<string, number> = {};
   projects.forEach((p) => {
     const status = p.status || 'Sem status';

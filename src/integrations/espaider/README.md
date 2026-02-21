@@ -4,22 +4,18 @@ Módulo de integração com a API do ERP Espaider para importação de dados de 
 
 ## Arquivos
 
-| Arquivo | Descrição |
-|---------|-----------|
-| `types.ts` | Interfaces TypeScript para requisição, resposta e mapeamento |
-| `config.ts` | Carrega configuração de env vars, mascaramento de tokens |
-| `client.ts` | Client HTTP com retry, circuit breaker e logging |
-| `mapper.ts` | Converte ListaCampos para objetos tipados |
-| `index.ts` | Barrel export |
+| Arquivo     | Descrição                                                    |
+| ----------- | ------------------------------------------------------------ |
+| `types.ts`  | Interfaces TypeScript para requisição, resposta e mapeamento |
+| `config.ts` | Carrega configuração de env vars, mascaramento de tokens     |
+| `client.ts` | Client HTTP com retry, circuit breaker e logging             |
+| `mapper.ts` | Converte ListaCampos para objetos tipados                    |
+| `index.ts`  | Barrel export                                                |
 
 ## Uso
 
 ```typescript
-import { 
-  exportarDados, 
-  mapearProjeto, 
-  mapearRegistros 
-} from '@/integrations/espaider';
+import { exportarDados, mapearProjeto, mapearRegistros } from '@/integrations/espaider';
 
 // Buscar projetos
 const response = await exportarDados({ identificador: 'Projetos' });

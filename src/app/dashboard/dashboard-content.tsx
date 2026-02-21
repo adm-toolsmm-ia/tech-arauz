@@ -102,7 +102,12 @@ function isOverdue(project: UIProject): boolean {
   }
 }
 
-export function DashboardContent({ user, profile, projects, chartProjects = [] }: DashboardContentProps) {
+export function DashboardContent({
+  user,
+  profile,
+  projects,
+  chartProjects = [],
+}: DashboardContentProps) {
   const [activeFilter, setActiveFilter] = React.useState<ActiveFilter | null>(null);
   const [selectedProject, setSelectedProject] = React.useState<UIProject | null>(null);
   const filteredListRef = React.useRef<HTMLDivElement>(null);
@@ -111,21 +116,25 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
   const totalProjects = chartProjects.length;
 
   const activeProjects = chartProjects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'em execução'
+    (p) => (p.status || '').trim().toLowerCase() === 'em execução',
   ).length;
 
   const completedProjects = chartProjects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'concluído'
+    (p) => (p.status || '').trim().toLowerCase() === 'concluído',
   ).length;
 
   const overdueProjects = chartProjects.filter((p) => {
     const status = (p.status || '').trim().toLowerCase();
     if (!p.prazo_final || status === 'concluído' || status === 'cancelado') return false;
-    try { return new Date(p.prazo_final) < new Date(); } catch { return false; }
+    try {
+      return new Date(p.prazo_final) < new Date();
+    } catch {
+      return false;
+    }
   }).length;
 
   const highPriorityCount = chartProjects.filter(
-    (p) => p.prioridade === 'urgente' || p.prioridade === 'alta'
+    (p) => p.prioridade === 'urgente' || p.prioridade === 'alta',
   ).length;
 
   const specialCount = chartProjects.filter((p) => p.importancia_especial).length;
@@ -137,10 +146,14 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
   const lastMonthKey = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
 
   const completedThisMonth = chartProjects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'concluído' && p.data_encerramento?.startsWith(thisMonth)
+    (p) =>
+      (p.status || '').trim().toLowerCase() === 'concluído' &&
+      p.data_encerramento?.startsWith(thisMonth),
   ).length;
   const completedLastMonth = chartProjects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'concluído' && p.data_encerramento?.startsWith(lastMonthKey)
+    (p) =>
+      (p.status || '').trim().toLowerCase() === 'concluído' &&
+      p.data_encerramento?.startsWith(lastMonthKey),
   ).length;
 
   // Top areas
@@ -158,7 +171,10 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
   // ─── Chart Data ───
   const pipelineData = React.useMemo(() => buildPipelineData(chartProjects), [chartProjects]);
   const trendData = React.useMemo(() => buildTrendData(chartProjects), [chartProjects]);
-  const distributionData = React.useMemo(() => buildDistributionData(chartProjects), [chartProjects]);
+  const distributionData = React.useMemo(
+    () => buildDistributionData(chartProjects),
+    [chartProjects],
+  );
 
   // ─── Filtered Project List ───
   const filteredProjects = React.useMemo(() => {
@@ -167,13 +183,9 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
       case 'all':
         return projects;
       case 'active':
-        return projects.filter(
-          (p) => (p.status || '').trim().toLowerCase() === 'em execução'
-        );
+        return projects.filter((p) => (p.status || '').trim().toLowerCase() === 'em execução');
       case 'completed':
-        return projects.filter(
-          (p) => (p.status || '').trim().toLowerCase() === 'concluído'
-        );
+        return projects.filter((p) => (p.status || '').trim().toLowerCase() === 'concluído');
       case 'overdue':
         return projects.filter(isOverdue);
       case 'high_priority':
@@ -239,10 +251,14 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
             title="Concluídos"
             value={completedProjects}
             icon={CheckCircle}
-            trend={completedThisMonth > 0 ? {
-              value: `${completedThisMonth} este mês`,
-              positive: completedThisMonth >= completedLastMonth,
-            } : undefined}
+            trend={
+              completedThisMonth > 0
+                ? {
+                    value: `${completedThisMonth} este mês`,
+                    positive: completedThisMonth >= completedLastMonth,
+                  }
+                : undefined
+            }
             subtitle={completedThisMonth === 0 ? 'Nenhum este mês' : undefined}
             onClick={() => handleKPIClick({ type: 'completed', label: 'Projetos Concluídos' })}
             active={activeFilter?.type === 'completed'}
@@ -278,27 +294,37 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
           />
           <KPICard
             title="Taxa de Conclusão"
-            value={totalProjects > 0 ? `${Math.round((completedProjects / totalProjects) * 100)}%` : '0%'}
+            value={
+              totalProjects > 0 ? `${Math.round((completedProjects / totalProjects) * 100)}%` : '0%'
+            }
             icon={TrendingUp}
-            trend={completedThisMonth > completedLastMonth ? {
-              value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
-              positive: true,
-            } : completedLastMonth > completedThisMonth ? {
-              value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
-              positive: false,
-            } : undefined}
+            trend={
+              completedThisMonth > completedLastMonth
+                ? {
+                    value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
+                    positive: true,
+                  }
+                : completedLastMonth > completedThisMonth
+                  ? {
+                      value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
+                      positive: false,
+                    }
+                  : undefined
+            }
           />
           <KPICard
             title="Projetos por Área"
             value={Object.keys(areaCounts).length}
             icon={Building2}
-            subtitle={topAreas.length > 0 ? topAreas.map(([a, c]) => `${a} (${c})`).join(', ') : 'Sem dados'}
+            subtitle={
+              topAreas.length > 0 ? topAreas.map(([a, c]) => `${a} (${c})`).join(', ') : 'Sem dados'
+            }
           />
         </div>
 
         {/* Charts: Pipeline + Distribution + Trend */}
         {chartProjects.length > 0 && (
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <ProjectPipelineChart
               data={pipelineData}
               onBarClick={handleChartStatusClick}
@@ -323,8 +349,9 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
                     <BarChart3 className="size-5 text-primary" />
                     <div>
                       <CardTitle className="text-base">{activeFilter.label}</CardTitle>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {filteredProjects.length} {filteredProjects.length === 1 ? 'projeto' : 'projetos'}
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {filteredProjects.length}{' '}
+                        {filteredProjects.length === 1 ? 'projeto' : 'projetos'}
                       </p>
                     </div>
                   </div>
@@ -334,7 +361,7 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
                     onClick={() => setActiveFilter(null)}
                     className="text-xs text-muted-foreground"
                   >
-                    <X className="size-3 mr-1" />
+                    <X className="mr-1 size-3" />
                     Fechar
                   </Button>
                 </div>
@@ -352,13 +379,13 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
                         <div
                           key={project.id}
                           onClick={() => handleProjectClick(project)}
-                          className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors cursor-pointer group"
+                          className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
                         >
-                          <div className="flex-1 min-w-0 space-y-1">
+                          <div className="min-w-0 flex-1 space-y-1">
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium truncate">{project.project_name}</p>
+                              <p className="truncate text-sm font-medium">{project.project_name}</p>
                               {project.importancia_especial && (
-                                <Star className="size-3 text-amber-500 flex-shrink-0" />
+                                <Star className="size-3 flex-shrink-0 text-amber-500" />
                               )}
                             </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -378,19 +405,17 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
                               {project.end_date && (
                                 <>
                                   <span>·</span>
-                                  <span className={overdue ? 'text-destructive font-medium' : ''}>
+                                  <span className={overdue ? 'font-medium text-destructive' : ''}>
                                     Prazo: {new Date(project.end_date).toLocaleDateString('pt-BR')}
                                   </span>
                                 </>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                            {project.priority && (
-                              <PriorityBadge priority={project.priority} />
-                            )}
+                          <div className="ml-4 flex flex-shrink-0 items-center gap-3">
+                            {project.priority && <PriorityBadge priority={project.priority} />}
                             <StatusBadge status={project.status} />
-                            <ArrowRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <ArrowRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                           </div>
                         </div>
                       );
@@ -422,13 +447,13 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
                   <div
                     key={project.id}
                     onClick={() => handleProjectClick(project)}
-                    className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors cursor-pointer group"
+                    className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
                   >
-                    <div className="flex-1 min-w-0 space-y-1">
+                    <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium truncate">{project.project_name}</p>
+                        <p className="truncate text-sm font-medium">{project.project_name}</p>
                         {project.importancia_especial && (
-                          <Star className="size-3 text-amber-500 flex-shrink-0" />
+                          <Star className="size-3 flex-shrink-0 text-amber-500" />
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -447,9 +472,9 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                    <div className="ml-4 flex flex-shrink-0 items-center gap-3">
                       <StatusBadge status={project.status} />
-                      <ArrowRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                     </div>
                   </div>
                 ))}
@@ -485,8 +510,9 @@ export function DashboardContent({ user, profile, projects, chartProjects = [] }
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
-        }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        statusStyles[status] || statusStyles.projeto_futuro
+      }`}
     >
       {statusLabels[status] || status}
     </span>
@@ -508,8 +534,9 @@ function PriorityBadge({ priority }: { priority: string }) {
   };
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[priority] || 'bg-gray-100 text-gray-700'
-        }`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+        styles[priority] || 'bg-gray-100 text-gray-700'
+      }`}
     >
       {labels[priority] || priority}
     </span>

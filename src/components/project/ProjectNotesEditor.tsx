@@ -47,11 +47,7 @@ function ToolbarButton({
   );
 }
 
-export function ProjectNotesEditor({
-  projectId,
-  initialContent,
-  onSave,
-}: ProjectNotesEditorProps) {
+export function ProjectNotesEditor({ projectId, initialContent, onSave }: ProjectNotesEditorProps) {
   const [isSaving, setIsSaving] = React.useState(false);
 
   const editor = useEditor({
@@ -101,7 +97,7 @@ export function ProjectNotesEditor({
   return (
     <div className="space-y-4">
       <div
-        className="rounded-md border bg-muted/30 p-2 flex flex-wrap items-center gap-1"
+        className="flex flex-wrap items-center gap-1 rounded-md border bg-muted/30 p-2"
         role="toolbar"
         aria-label="Formatação do texto"
       >
@@ -158,7 +154,8 @@ export function ProjectNotesEditor({
 
       {isEmpty && (
         <p className="text-sm text-muted-foreground">
-          Use a barra de ferramentas para formatar. Suas anotações ficam salvas apenas neste projeto.
+          Use a barra de ferramentas para formatar. Suas anotações ficam salvas apenas neste
+          projeto.
         </p>
       )}
 

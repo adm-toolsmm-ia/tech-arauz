@@ -28,20 +28,14 @@ interface ProjectTimelineProps {
   }>;
 }
 
-function getScheduleStatus(
-  status: string,
-  date: Date
-): TimelineItem['status'] {
+function getScheduleStatus(status: string, date: Date): TimelineItem['status'] {
   if (status === 'Concluido' || status === 'concluido') return 'concluido';
   if (status === 'Em Andamento' || status === 'em_andamento') return 'em_andamento';
   if (date < new Date()) return 'atrasado';
   return 'pendente';
 }
 
-function getDeliveryStatus(
-  completed: boolean,
-  deadline: Date
-): TimelineItem['status'] {
+function getDeliveryStatus(completed: boolean, deadline: Date): TimelineItem['status'] {
   if (completed) return 'concluido';
   if (deadline < new Date()) return 'atrasado';
   return 'pendente';
@@ -79,41 +73,35 @@ const statusConfig = {
   },
 } as const;
 
-function TimelineItemCard({
-  item,
-  index,
-}: {
-  item: TimelineItem;
-  index: number;
-}) {
+function TimelineItemCard({ item, index }: { item: TimelineItem; index: number }) {
   const config = statusConfig[item.status];
   const Icon = config.icon;
   const TypeIcon = item.type === 'schedule' ? Calendar : Package;
 
   return (
     <div
-      className="relative flex gap-4 pb-8 last:pb-0 animate-slide-in-left"
+      className="relative flex animate-slide-in-left gap-4 pb-8 last:pb-0"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       {/* Timeline line */}
-      <div className="absolute left-[15px] top-8 bottom-0 w-0.5 bg-border last:hidden" />
+      <div className="absolute bottom-0 left-[15px] top-8 w-0.5 bg-border last:hidden" />
 
       {/* Icon */}
       <div
         className={cn(
           'relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-background',
-          config.bg
+          config.bg,
         )}
       >
         <Icon className={cn('size-4', config.color)} />
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <TypeIcon className="size-4 text-muted-foreground" />
-            <span className="text-sm font-medium truncate">{item.title}</span>
+            <span className="truncate text-sm font-medium">{item.title}</span>
           </div>
           <Badge
             variant={config.badge as 'default' | 'secondary' | 'destructive' | 'outline'}
@@ -159,10 +147,8 @@ export function ProjectTimeline({ schedules, deliveries }: ProjectTimelineProps)
   if (timelineItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Calendar className="size-12 text-muted-foreground/50 mb-4" />
-        <p className="text-sm text-muted-foreground">
-          Nenhum cronograma ou entrega cadastrado
-        </p>
+        <Calendar className="mb-4 size-12 text-muted-foreground/50" />
+        <p className="text-sm text-muted-foreground">Nenhum cronograma ou entrega cadastrado</p>
       </div>
     );
   }

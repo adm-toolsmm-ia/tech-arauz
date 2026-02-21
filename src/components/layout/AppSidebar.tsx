@@ -40,7 +40,7 @@ function SidebarSimpleMenu({ item }: { item: NavItem }) {
                 'ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium',
                 item.badge === 'MVP'
                   ? 'bg-primary/20 text-primary'
-                  : 'bg-muted text-muted-foreground'
+                  : 'bg-muted text-muted-foreground',
               )}
             >
               {item.badge}
@@ -65,7 +65,7 @@ export function AppSidebar() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground overflow-hidden">
+              <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <Image
                   src="/assets/logo-arauz-2026.png"
                   alt="Tech Arauz"
@@ -97,7 +97,7 @@ export function AppSidebar() {
                     <SidebarCollapsibleMenu key={item.url} item={item} />
                   ) : (
                     <SidebarSimpleMenu key={item.url} item={item} />
-                  )
+                  ),
                 )}
               </SidebarMenu>
             </SidebarGroupContent>

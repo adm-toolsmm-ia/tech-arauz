@@ -16,10 +16,12 @@ export default async function CronogramasPage() {
   // Fetch schedules with their project info
   const { data: schedules, error } = await supabase
     .from('project_schedules')
-    .select(`
+    .select(
+      `
       *,
       project:projects(id, titulo, codigo, status, fase_atual)
-    `)
+    `,
+    )
     .order('data_fim', { ascending: true });
 
   if (error) {

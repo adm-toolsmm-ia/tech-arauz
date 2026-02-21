@@ -5,13 +5,13 @@
  */
 
 import type {
-    ExportarDadosParams,
-    ExportarDadosResponse,
-    EspaiderConfig,
-    EspaiderError,
-    EspaiderErrorType,
-    SyncMetrics,
-    EspaiderDataset,
+  ExportarDadosParams,
+  ExportarDadosResponse,
+  EspaiderConfig,
+  EspaiderError,
+  EspaiderErrorType,
+  SyncMetrics,
+  EspaiderDataset,
 } from './types';
 import { loadConfig, maskToken, generateRequestId } from './config';
 
@@ -20,15 +20,15 @@ import { loadConfig, maskToken, generateRequestId } from './config';
 // =============================================================================
 
 interface CircuitBreakerState {
-    failures: number;
-    lastFailure: number;
-    isOpen: boolean;
+  failures: number;
+  lastFailure: number;
+  isOpen: boolean;
 }
 
 const circuitState: CircuitBreakerState = {
-    failures: 0,
-    lastFailure: 0,
-    isOpen: false,
+  failures: 0,
+  lastFailure: 0,
+  isOpen: false,
 };
 
 // =============================================================================
@@ -36,32 +36,32 @@ const circuitState: CircuitBreakerState = {
 // =============================================================================
 
 interface LogContext {
-    requestId: string;
-    dataset?: string;
-    duration?: number;
-    attempt?: number;
-    statusCode?: number;
-    error?: string;
+  requestId: string;
+  dataset?: string;
+  duration?: number;
+  attempt?: number;
+  statusCode?: number;
+  error?: string;
 }
 
 function log(level: 'INFO' | 'WARN' | 'ERROR', message: string, context: LogContext): void {
-    const timestamp = new Date().toISOString();
-    const logEntry = {
-        timestamp,
-        level,
-        message,
-        ...context,
-    };
+  const timestamp = new Date().toISOString();
+  const logEntry = {
+    timestamp,
+    level,
+    message,
+    ...context,
+  };
 
-    // Em produção, enviar para sistema de logs (Sentry, etc)
-    // Aqui usamos console para desenvolvimento
-    if (level === 'ERROR') {
-        console.error(JSON.stringify(logEntry));
-    } else if (level === 'WARN') {
-        console.warn(JSON.stringify(logEntry));
-    } else {
-        console.log(JSON.stringify(logEntry));
-    }
+  // Em produção, enviar para sistema de logs (Sentry, etc)
+  // Aqui usamos console para desenvolvimento
+  if (level === 'ERROR') {
+    console.error(JSON.stringify(logEntry));
+  } else if (level === 'WARN') {
+    console.warn(JSON.stringify(logEntry));
+  } else {
+    console.log(JSON.stringify(logEntry));
+  }
 }
 
 // =============================================================================
@@ -69,38 +69,38 @@ function log(level: 'INFO' | 'WARN' | 'ERROR', message: string, context: LogCont
 // =============================================================================
 
 function checkCircuitBreaker(config: EspaiderConfig, requestId: string): void {
-    const now = Date.now();
-    const { failureThreshold, windowMs, resetTimeoutMs } = config.circuitBreaker;
+  const now = Date.now();
+  const { failureThreshold, windowMs, resetTimeoutMs } = config.circuitBreaker;
 
-    // Se o circuito está aberto, verifica se pode resetar
-    if (circuitState.isOpen) {
-        if (now - circuitState.lastFailure > resetTimeoutMs) {
-            circuitState.isOpen = false;
-            circuitState.failures = 0;
-            log('INFO', 'Circuit breaker reset', { requestId });
-        } else {
-            throw createError('CIRCUIT_OPEN', 'Circuit breaker is open', requestId);
-        }
+  // Se o circuito está aberto, verifica se pode resetar
+  if (circuitState.isOpen) {
+    if (now - circuitState.lastFailure > resetTimeoutMs) {
+      circuitState.isOpen = false;
+      circuitState.failures = 0;
+      log('INFO', 'Circuit breaker reset', { requestId });
+    } else {
+      throw createError('CIRCUIT_OPEN', 'Circuit breaker is open', requestId);
     }
+  }
 
-    // Limpa falhas antigas fora da janela
-    if (now - circuitState.lastFailure > windowMs) {
-        circuitState.failures = 0;
-    }
+  // Limpa falhas antigas fora da janela
+  if (now - circuitState.lastFailure > windowMs) {
+    circuitState.failures = 0;
+  }
 }
 
 function recordFailure(config: EspaiderConfig, requestId: string): void {
-    circuitState.failures++;
-    circuitState.lastFailure = Date.now();
+  circuitState.failures++;
+  circuitState.lastFailure = Date.now();
 
-    if (circuitState.failures >= config.circuitBreaker.failureThreshold) {
-        circuitState.isOpen = true;
-        log('WARN', 'Circuit breaker opened', { requestId });
-    }
+  if (circuitState.failures >= config.circuitBreaker.failureThreshold) {
+    circuitState.isOpen = true;
+    log('WARN', 'Circuit breaker opened', { requestId });
+  }
 }
 
 function recordSuccess(): void {
-    circuitState.failures = 0;
+  circuitState.failures = 0;
 }
 
 // =============================================================================
@@ -108,33 +108,33 @@ function recordSuccess(): void {
 // =============================================================================
 
 function createError(
-    type: EspaiderErrorType,
-    message: string,
-    requestId: string,
-    statusCode?: number
+  type: EspaiderErrorType,
+  message: string,
+  requestId: string,
+  statusCode?: number,
 ): EspaiderError {
-    const retryable = ['TIMEOUT', 'NETWORK_ERROR', 'RATE_LIMIT'].includes(type);
+  const retryable = ['TIMEOUT', 'NETWORK_ERROR', 'RATE_LIMIT'].includes(type);
 
-    return {
-        type,
-        message,
-        statusCode,
-        retryable,
-        requestId,
-    };
+  return {
+    type,
+    message,
+    statusCode,
+    retryable,
+    requestId,
+  };
 }
 
 function classifyError(error: unknown, requestId: string): EspaiderError {
-    if (error instanceof Error) {
-        if (error.name === 'AbortError' || error.message.includes('timeout')) {
-            return createError('TIMEOUT', 'Request timed out', requestId);
-        }
-        if (error.message.includes('fetch')) {
-            return createError('NETWORK_ERROR', 'Network error', requestId);
-        }
+  if (error instanceof Error) {
+    if (error.name === 'AbortError' || error.message.includes('timeout')) {
+      return createError('TIMEOUT', 'Request timed out', requestId);
     }
+    if (error.message.includes('fetch')) {
+      return createError('NETWORK_ERROR', 'Network error', requestId);
+    }
+  }
 
-    return createError('UNKNOWN', 'Unknown error occurred', requestId);
+  return createError('UNKNOWN', 'Unknown error occurred', requestId);
 }
 
 // =============================================================================
@@ -142,13 +142,13 @@ function classifyError(error: unknown, requestId: string): EspaiderError {
 // =============================================================================
 
 async function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function calculateDelay(attempt: number, config: EspaiderConfig): number {
-    const { baseDelay, maxDelay } = config.retry;
-    const delay = baseDelay * Math.pow(2, attempt - 1);
-    return Math.min(delay, maxDelay);
+  const { baseDelay, maxDelay } = config.retry;
+  const delay = baseDelay * Math.pow(2, attempt - 1);
+  return Math.min(delay, maxDelay);
 }
 
 // =============================================================================
@@ -156,25 +156,25 @@ function calculateDelay(attempt: number, config: EspaiderConfig): number {
 // =============================================================================
 
 function buildUrl(config: EspaiderConfig, params: ExportarDadosParams): string {
-    // URL correta: baseUrl já inclui o caminho até WCFExportaDados.svc
-    const url = new URL(`${config.baseUrl}/ExportaDados`);
-    url.searchParams.set('Token', config.token);
+  // URL correta: baseUrl já inclui o caminho até WCFExportaDados.svc
+  const url = new URL(`${config.baseUrl}/ExportaDados`);
+  url.searchParams.set('Token', config.token);
 
-    // Key é opcional — só envia se fornecido e não vazio
-    if (config.key) {
-        url.searchParams.set('Key', config.key);
+  // Key é opcional — só envia se fornecido e não vazio
+  if (config.key) {
+    url.searchParams.set('Key', config.key);
+  }
+
+  url.searchParams.set('Identificador', params.identificador);
+
+  // Adiciona filtros (BlocoFiltros) se existirem
+  if (params.filtros) {
+    for (const [key, value] of Object.entries(params.filtros)) {
+      url.searchParams.set(key, value);
     }
+  }
 
-    url.searchParams.set('Identificador', params.identificador);
-
-    // Adiciona filtros (BlocoFiltros) se existirem
-    if (params.filtros) {
-        for (const [key, value] of Object.entries(params.filtros)) {
-            url.searchParams.set(key, value);
-        }
-    }
-
-    return url.toString();
+  return url.toString();
 }
 
 // =============================================================================
@@ -185,99 +185,97 @@ function buildUrl(config: EspaiderConfig, params: ExportarDadosParams): string {
  * Executa uma requisição individual com retry
  */
 async function executeWithRetry(
-    url: string,
-    method: 'POST' | 'GET',
-    config: EspaiderConfig,
-    requestId: string
+  url: string,
+  method: 'POST' | 'GET',
+  config: EspaiderConfig,
+  requestId: string,
 ): Promise<ExportarDadosResponse> {
-    let attempt = 0;
-    let lastError: EspaiderError | null = null;
+  let attempt = 0;
+  let lastError: EspaiderError | null = null;
 
-    while (attempt < config.retry.maxAttempts) {
-        attempt++;
+  while (attempt < config.retry.maxAttempts) {
+    attempt++;
 
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), config.timeout);
 
-            try {
-                const response = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    signal: controller.signal,
-                });
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+        });
 
-                clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-                if (!response.ok) {
-                    const statusCode = response.status;
+        if (!response.ok) {
+          const statusCode = response.status;
 
-                    if (statusCode >= 400 && statusCode < 500 && statusCode !== 429) {
-                        const errorType = statusCode === 401 || statusCode === 403 ? 'AUTH_ERROR' : 'UNKNOWN';
-                        throw createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
-                    }
+          if (statusCode >= 400 && statusCode < 500 && statusCode !== 429) {
+            const errorType = statusCode === 401 || statusCode === 403 ? 'AUTH_ERROR' : 'UNKNOWN';
+            throw createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
+          }
 
-                    const errorType = statusCode === 429 ? 'RATE_LIMIT' : 'NETWORK_ERROR';
-                    lastError = createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
+          const errorType = statusCode === 429 ? 'RATE_LIMIT' : 'NETWORK_ERROR';
+          lastError = createError(errorType, `HTTP ${statusCode}`, requestId, statusCode);
 
-                    log('WARN', `Request failed, retrying`, { requestId, attempt, statusCode });
+          log('WARN', `Request failed, retrying`, { requestId, attempt, statusCode });
 
-                    if (attempt < config.retry.maxAttempts) {
-                        await sleep(calculateDelay(attempt, config));
-                        continue;
-                    }
-                    throw lastError;
-                }
-
-                const data = await response.json();
-
-                if (!data || typeof data !== 'object') {
-                    throw createError('INVALID_RESPONSE', 'Invalid JSON response', requestId);
-                }
-
-                // Verifica Situacao do Espaider
-                if (data.Situacao === 'E') {
-                    throw createError(
-                        'INVALID_RESPONSE',
-                        `Espaider error: ${data.MensagemRetorno || 'Erro desconhecido'}`,
-                        requestId
-                    );
-                }
-
-                if (!Array.isArray(data.ListaRegistros)) {
-                    data.ListaRegistros = [];
-                }
-
-                recordSuccess();
-                return data as ExportarDadosResponse;
-
-            } finally {
-                clearTimeout(timeoutId);
-            }
-
-        } catch (error) {
-            if ((error as EspaiderError).type) {
-                lastError = error as EspaiderError;
-            } else {
-                lastError = classifyError(error, requestId);
-            }
-
-            if (!lastError.retryable) {
-                recordFailure(config, requestId);
-                log('ERROR', lastError.message, { requestId, error: lastError.type });
-                throw lastError;
-            }
-
-            if (attempt < config.retry.maxAttempts) {
-                log('WARN', `Retrying`, { requestId, attempt, error: lastError.type });
-                await sleep(calculateDelay(attempt, config));
-                continue;
-            }
+          if (attempt < config.retry.maxAttempts) {
+            await sleep(calculateDelay(attempt, config));
+            continue;
+          }
+          throw lastError;
         }
-    }
 
-    recordFailure(config, requestId);
-    throw lastError || createError('UNKNOWN', 'Unknown error', requestId);
+        const data = await response.json();
+
+        if (!data || typeof data !== 'object') {
+          throw createError('INVALID_RESPONSE', 'Invalid JSON response', requestId);
+        }
+
+        // Verifica Situacao do Espaider
+        if (data.Situacao === 'E') {
+          throw createError(
+            'INVALID_RESPONSE',
+            `Espaider error: ${data.MensagemRetorno || 'Erro desconhecido'}`,
+            requestId,
+          );
+        }
+
+        if (!Array.isArray(data.ListaRegistros)) {
+          data.ListaRegistros = [];
+        }
+
+        recordSuccess();
+        return data as ExportarDadosResponse;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    } catch (error) {
+      if ((error as EspaiderError).type) {
+        lastError = error as EspaiderError;
+      } else {
+        lastError = classifyError(error, requestId);
+      }
+
+      if (!lastError.retryable) {
+        recordFailure(config, requestId);
+        log('ERROR', lastError.message, { requestId, error: lastError.type });
+        throw lastError;
+      }
+
+      if (attempt < config.retry.maxAttempts) {
+        log('WARN', `Retrying`, { requestId, attempt, error: lastError.type });
+        await sleep(calculateDelay(attempt, config));
+        continue;
+      }
+    }
+  }
+
+  recordFailure(config, requestId);
+  throw lastError || createError('UNKNOWN', 'Unknown error', requestId);
 }
 
 /**
@@ -299,63 +297,63 @@ async function executeWithRetry(
  * ```
  */
 export async function exportarDados(
-    params: ExportarDadosParams,
-    configOverride?: Partial<EspaiderConfig>
+  params: ExportarDadosParams,
+  configOverride?: Partial<EspaiderConfig>,
 ): Promise<ExportarDadosResponse> {
-    // Skip env validation when DB-based overrides are provided
-    const hasOverrides = !!(params.baseUrl && params.token);
-    const config = {
-        ...loadConfig(hasOverrides),
-        ...configOverride,
-        ...(params.baseUrl ? { baseUrl: params.baseUrl } : {}),
-        ...(params.token ? { token: params.token } : {}),
-    };
-    const requestId = generateRequestId();
-    const startTime = Date.now();
+  // Skip env validation when DB-based overrides are provided
+  const hasOverrides = !!(params.baseUrl && params.token);
+  const config = {
+    ...loadConfig(hasOverrides),
+    ...configOverride,
+    ...(params.baseUrl ? { baseUrl: params.baseUrl } : {}),
+    ...(params.token ? { token: params.token } : {}),
+  };
+  const requestId = generateRequestId();
+  const startTime = Date.now();
 
-    log('INFO', 'Starting Espaider export', {
-        requestId,
-        dataset: params.identificador as EspaiderDataset,
-    });
+  log('INFO', 'Starting Espaider export', {
+    requestId,
+    dataset: params.identificador as EspaiderDataset,
+  });
 
-    checkCircuitBreaker(config, requestId);
+  checkCircuitBreaker(config, requestId);
 
-    // 1) POST inicial
-    const url = buildUrl(config, params);
-    const maskedToken = maskToken(config.token);
-    const maskedUrl = url.replace(config.token, maskedToken);
-    log('INFO', `POST ${maskedUrl}`, { requestId });
+  // 1) POST inicial
+  const url = buildUrl(config, params);
+  const maskedToken = maskToken(config.token);
+  const maskedUrl = url.replace(config.token, maskedToken);
+  log('INFO', `POST ${maskedUrl}`, { requestId });
 
-    const allRegistros: ExportarDadosResponse['ListaRegistros'] = [];
-    const firstPage = await executeWithRetry(url, 'POST', config, requestId);
-    allRegistros.push(...firstPage.ListaRegistros);
+  const allRegistros: ExportarDadosResponse['ListaRegistros'] = [];
+  const firstPage = await executeWithRetry(url, 'POST', config, requestId);
+  allRegistros.push(...firstPage.ListaRegistros);
 
-    // 2) Paginação via GET (URLPaginacao)
-    let nextUrl = firstPage.URLPaginacao;
-    let pageCount = 1;
-    const MAX_PAGES = 50; // safety limit
+  // 2) Paginação via GET (URLPaginacao)
+  let nextUrl = firstPage.URLPaginacao;
+  let pageCount = 1;
+  const MAX_PAGES = 50; // safety limit
 
-    while (nextUrl && nextUrl.trim() !== '' && pageCount < MAX_PAGES) {
-        pageCount++;
-        log('INFO', `GET page ${pageCount}`, { requestId });
+  while (nextUrl && nextUrl.trim() !== '' && pageCount < MAX_PAGES) {
+    pageCount++;
+    log('INFO', `GET page ${pageCount}`, { requestId });
 
-        const page = await executeWithRetry(nextUrl, 'GET', config, requestId);
-        allRegistros.push(...page.ListaRegistros);
-        nextUrl = page.URLPaginacao;
-    }
+    const page = await executeWithRetry(nextUrl, 'GET', config, requestId);
+    allRegistros.push(...page.ListaRegistros);
+    nextUrl = page.URLPaginacao;
+  }
 
-    const duration = Date.now() - startTime;
-    log('INFO', `Export completed: ${allRegistros.length} records in ${pageCount} pages`, {
-        requestId,
-        dataset: params.identificador as EspaiderDataset,
-        duration,
-    });
+  const duration = Date.now() - startTime;
+  log('INFO', `Export completed: ${allRegistros.length} records in ${pageCount} pages`, {
+    requestId,
+    dataset: params.identificador as EspaiderDataset,
+    duration,
+  });
 
-    return {
-        Situacao: 'S',
-        ListaRegistros: allRegistros,
-        ListaURLFilhos: firstPage.ListaURLFilhos,
-    };
+  return {
+    Situacao: 'S',
+    ListaRegistros: allRegistros,
+    ListaURLFilhos: firstPage.ListaURLFilhos,
+  };
 }
 
 /**
@@ -376,76 +374,76 @@ export async function exportarDados(
  * ```
  */
 export async function buscarFilhos(
-    url: string,
-    configOverride?: Partial<EspaiderConfig>
+  url: string,
+  configOverride?: Partial<EspaiderConfig>,
 ): Promise<ExportarDadosResponse> {
-    const config = { ...loadConfig(true), ...configOverride };
-    const requestId = generateRequestId();
-    const startTime = Date.now();
+  const config = { ...loadConfig(true), ...configOverride };
+  const requestId = generateRequestId();
+  const startTime = Date.now();
 
-    log('INFO', 'Fetching child records', { requestId, dataset: url.split('/').pop() || 'filhos' });
+  log('INFO', 'Fetching child records', { requestId, dataset: url.split('/').pop() || 'filhos' });
 
-    checkCircuitBreaker(config, requestId);
+  checkCircuitBreaker(config, requestId);
 
-    const allRegistros: ExportarDadosResponse['ListaRegistros'] = [];
+  const allRegistros: ExportarDadosResponse['ListaRegistros'] = [];
 
-    // GET na URL fornecida
-    const firstPage = await executeWithRetry(url, 'GET', config, requestId);
-    allRegistros.push(...firstPage.ListaRegistros);
+  // GET na URL fornecida
+  const firstPage = await executeWithRetry(url, 'GET', config, requestId);
+  allRegistros.push(...firstPage.ListaRegistros);
 
-    // Paginação (se houver)
-    let nextUrl = firstPage.URLPaginacao;
-    let pageCount = 1;
-    const MAX_PAGES = 50;
+  // Paginação (se houver)
+  let nextUrl = firstPage.URLPaginacao;
+  let pageCount = 1;
+  const MAX_PAGES = 50;
 
-    while (nextUrl && nextUrl.trim() !== '' && pageCount < MAX_PAGES) {
-        pageCount++;
-        log('INFO', `GET child page ${pageCount}`, { requestId });
+  while (nextUrl && nextUrl.trim() !== '' && pageCount < MAX_PAGES) {
+    pageCount++;
+    log('INFO', `GET child page ${pageCount}`, { requestId });
 
-        const page = await executeWithRetry(nextUrl, 'GET', config, requestId);
-        allRegistros.push(...page.ListaRegistros);
-        nextUrl = page.URLPaginacao;
-    }
+    const page = await executeWithRetry(nextUrl, 'GET', config, requestId);
+    allRegistros.push(...page.ListaRegistros);
+    nextUrl = page.URLPaginacao;
+  }
 
-    const duration = Date.now() - startTime;
-    log('INFO', `Child fetch completed: ${allRegistros.length} records`, { requestId, duration });
+  const duration = Date.now() - startTime;
+  log('INFO', `Child fetch completed: ${allRegistros.length} records`, { requestId, duration });
 
-    return {
-        Situacao: 'S',
-        ListaRegistros: allRegistros,
-    };
+  return {
+    Situacao: 'S',
+    ListaRegistros: allRegistros,
+  };
 }
 
 /**
  * Cria métricas de sincronização
  */
 export function createSyncMetrics(
-    requestId: string,
-    dataset: EspaiderDataset,
-    startedAt: Date,
-    results: { new: number; updated: number; errors: number; retries: number }
+  requestId: string,
+  dataset: EspaiderDataset,
+  startedAt: Date,
+  results: { new: number; updated: number; errors: number; retries: number },
 ): SyncMetrics {
-    const completedAt = new Date();
+  const completedAt = new Date();
 
-    return {
-        requestId,
-        dataset,
-        startedAt,
-        completedAt,
-        durationMs: completedAt.getTime() - startedAt.getTime(),
-        totalRecords: results.new + results.updated,
-        newRecords: results.new,
-        updatedRecords: results.updated,
-        errors: results.errors,
-        retries: results.retries,
-    };
+  return {
+    requestId,
+    dataset,
+    startedAt,
+    completedAt,
+    durationMs: completedAt.getTime() - startedAt.getTime(),
+    totalRecords: results.new + results.updated,
+    newRecords: results.new,
+    updatedRecords: results.updated,
+    errors: results.errors,
+    retries: results.retries,
+  };
 }
 
 /**
  * Reseta o circuit breaker (para testes)
  */
 export function resetCircuitBreaker(): void {
-    circuitState.failures = 0;
-    circuitState.lastFailure = 0;
-    circuitState.isOpen = false;
+  circuitState.failures = 0;
+  circuitState.lastFailure = 0;
+  circuitState.isOpen = false;
 }

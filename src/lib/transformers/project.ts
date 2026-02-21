@@ -14,7 +14,6 @@
 // DB row types (match Supabase schema exactly)
 // =============================================================================
 
-
 export interface DBProject {
   id: string;
   tenant_id: string;
@@ -277,7 +276,14 @@ export function dbScheduleToUI(row: DBSchedule): UISchedule {
  * Convert a DB delivery row to the UI delivery format.
  */
 export function dbDeliveryToUI(row: DBDelivery): UIDelivery {
-  const completedStatuses = ['concluida', 'concluído', 'concluido', 'entregue', 'finalizada', 'done'];
+  const completedStatuses = [
+    'concluida',
+    'concluído',
+    'concluido',
+    'entregue',
+    'finalizada',
+    'done',
+  ];
   return {
     id: row.id,
     description: row.titulo,
@@ -320,7 +326,8 @@ export function dbProjectToUI(row: DBProject): UIProject {
     tipo_assunto: row.tipo_assunto || raw?.TIPOASSUNTO || null,
     solicitante: row.solicitante || raw?.SOLICITANTE || null,
     objetivo: row.objetivo || raw?.OBJETIVO || null,
-    motivo_importancia_especial: row.motivo_importancia_especial || raw?.MOTIVO_IMPORTANCIAESPECIAL || null,
+    motivo_importancia_especial:
+      row.motivo_importancia_especial || raw?.MOTIVO_IMPORTANCIAESPECIAL || null,
     mensagem_movimentacao: row.mensagem_movimentacao || raw?.MENSAGEM_MOVIMENTACAO || null,
     justificativa: row.justificativa || raw?.JUSTIFICATIVA || null,
     importancia_especial: row.importancia_especial || raw?.IMPORTANCIAESPECIAL === 'Sim' || false,

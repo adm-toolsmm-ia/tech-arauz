@@ -26,10 +26,22 @@ interface AgentDetailContentProps {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  active: { label: 'Ativo', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
-  inactive: { label: 'Inativo', className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300' },
-  development: { label: 'Em Desenvolvimento', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
-  deprecated: { label: 'Descontinuado', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  active: {
+    label: 'Ativo',
+    className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+  },
+  inactive: {
+    label: 'Inativo',
+    className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300',
+  },
+  development: {
+    label: 'Em Desenvolvimento',
+    className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+  },
+  deprecated: {
+    label: 'Descontinuado',
+    className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  },
 };
 
 const typeLabels: Record<string, string> = {
@@ -39,7 +51,10 @@ const typeLabels: Record<string, string> = {
   assistant: 'Assistente',
 };
 
-export function AgentDetailContent({ agent: rawAgent, traces: rawTraces }: AgentDetailContentProps) {
+export function AgentDetailContent({
+  agent: rawAgent,
+  traces: rawTraces,
+}: AgentDetailContentProps) {
   const agent = rawAgent as unknown as Agent;
   const traces = rawTraces as unknown as Trace[];
   const [selectedTrace, setSelectedTrace] = React.useState<Trace | null>(null);
@@ -48,10 +63,7 @@ export function AgentDetailContent({ agent: rawAgent, traces: rawTraces }: Agent
 
   return (
     <div className="flex flex-col">
-      <DashboardHeader
-        title={agent.name}
-        subtitle={agent.description}
-      />
+      <DashboardHeader title={agent.name} subtitle={agent.description} />
 
       <div className="flex-1 space-y-6 p-6">
         {/* Back button */}
@@ -73,13 +85,19 @@ export function AgentDetailContent({ agent: rawAgent, traces: rawTraces }: Agent
                 <div className="flex items-center gap-3">
                   <h2 className="text-xl font-semibold">{agent.name}</h2>
                   <span className="text-sm text-muted-foreground">v{agent.version}</span>
-                  <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', status.className)}>
+                  <span
+                    className={cn(
+                      'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                      status.className,
+                    )}
+                  >
                     {status.label}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">{agent.description}</p>
                 <p className="text-xs text-muted-foreground">
-                  Tipo: {typeLabels[agent.type] || agent.type} | Criado em: {new Date(agent.created_at).toLocaleDateString('pt-BR')}
+                  Tipo: {typeLabels[agent.type] || agent.type} | Criado em:{' '}
+                  {new Date(agent.created_at).toLocaleDateString('pt-BR')}
                 </p>
               </div>
             </div>
@@ -88,16 +106,15 @@ export function AgentDetailContent({ agent: rawAgent, traces: rawTraces }: Agent
 
         {/* KPIs */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard
-            title="Execuções"
-            value={agent.total_runs}
-            icon={Activity}
-          />
+          <KPICard title="Execuções" value={agent.total_runs} icon={Activity} />
           <KPICard
             title="Taxa de Sucesso"
             value={`${agent.success_rate}%`}
             icon={TrendingUp}
-            trend={{ value: agent.success_rate >= 90 ? 'Saudável' : 'Atenção', positive: agent.success_rate >= 90 }}
+            trend={{
+              value: agent.success_rate >= 90 ? 'Saudável' : 'Atenção',
+              positive: agent.success_rate >= 90,
+            }}
           />
           <KPICard
             title="Latência Média"
@@ -119,15 +136,12 @@ export function AgentDetailContent({ agent: rawAgent, traces: rawTraces }: Agent
           </TabsList>
 
           <TabsContent value="traces" className="mt-4">
-            <TraceList
-              traces={traces}
-              onTraceClick={(trace) => setSelectedTrace(trace)}
-            />
+            <TraceList traces={traces} onTraceClick={(trace) => setSelectedTrace(trace)} />
           </TabsContent>
 
           <TabsContent value="config" className="mt-4">
             <Card>
-              <CardContent className="p-5 space-y-4">
+              <CardContent className="space-y-4 p-5">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">ID do Agente</label>
                   <p className="font-mono text-sm">{agent.id}</p>
@@ -177,7 +191,11 @@ export function AgentDetailContent({ agent: rawAgent, traces: rawTraces }: Agent
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="text-xs text-muted-foreground">Duração</label>
-                  <p className="font-medium">{selectedTrace.duration_ms ? `${(selectedTrace.duration_ms / 1000).toFixed(1)}s` : '-'}</p>
+                  <p className="font-medium">
+                    {selectedTrace.duration_ms
+                      ? `${(selectedTrace.duration_ms / 1000).toFixed(1)}s`
+                      : '-'}
+                  </p>
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Tokens</label>
@@ -191,7 +209,9 @@ export function AgentDetailContent({ agent: rawAgent, traces: rawTraces }: Agent
 
               {/* Timeline */}
               <div>
-                <label className="text-sm font-medium text-muted-foreground mb-3 block">Pipeline de Execução</label>
+                <label className="mb-3 block text-sm font-medium text-muted-foreground">
+                  Pipeline de Execução
+                </label>
                 <TraceTimeline steps={selectedTrace.steps} />
               </div>
 

@@ -31,14 +31,9 @@ export function ExecutiveSummary({ project, deliveries }: ExecutiveSummaryProps)
   const completedDeliveries = deliveries.filter((d) => d.completed).length;
   const totalDeliveries = deliveries.length;
   const completionRate =
-    totalDeliveries > 0
-      ? Math.round((completedDeliveries / totalDeliveries) * 100)
-      : 0;
+    totalDeliveries > 0 ? Math.round((completedDeliveries / totalDeliveries) * 100) : 0;
 
-  const financials = useMemo(
-    () => generateProjectFinancials(project.id),
-    [project.id]
-  );
+  const financials = useMemo(() => generateProjectFinancials(project.id), [project.id]);
 
   const prazoHealth = calculatePrazoHealth(project.end_date, completionRate);
   const custoHealth = calculateCustoHealth(financials);
@@ -47,7 +42,7 @@ export function ExecutiveSummary({ project, deliveries }: ExecutiveSummaryProps)
   const daysRemaining = getDaysUntilDeadline(project.end_date);
 
   return (
-    <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <HealthIndicatorCard
         title="Saude Geral"
         status={saudeGeral}

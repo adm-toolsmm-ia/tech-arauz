@@ -70,7 +70,7 @@ export function SplitView({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm animate-fade-in"
+        className="animate-fade-in fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -81,9 +81,9 @@ export function SplitView({
         aria-modal="true"
         aria-labelledby="split-view-title"
         className={cn(
-          'fixed inset-y-0 right-0 z-50 w-full border-l bg-background shadow-lg animate-slide-in-right',
+          'animate-slide-in-right fixed inset-y-0 right-0 z-50 w-full border-l bg-background shadow-lg',
           widthClasses[width],
-          className
+          className,
         )}
       >
         {/* Header */}
@@ -92,8 +92,8 @@ export function SplitView({
             {healthStatus && (
               <div
                 className={cn(
-                  'size-3 rounded-full animate-pulse-soft',
-                  healthDotColors[healthStatus]
+                  'animate-pulse-soft size-3 rounded-full',
+                  healthDotColors[healthStatus],
                 )}
               />
             )}
@@ -101,17 +101,10 @@ export function SplitView({
               <h2 id="split-view-title" className="text-lg font-semibold">
                 {title}
               </h2>
-              {subtitle && (
-                <p className="text-sm text-muted-foreground">{subtitle}</p>
-              )}
+              {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
             <X className="h-4 w-4" />
             <span className="sr-only">Fechar</span>
           </Button>

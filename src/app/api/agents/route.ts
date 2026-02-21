@@ -39,9 +39,6 @@ export async function GET(request: Request) {
     const data = await res.json();
     return NextResponse.json(data);
   } catch {
-    return NextResponse.json(
-      { error: 'AI service unavailable' },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: 'AI service unavailable' }, { status: 503 });
   }
 }

@@ -7,7 +7,7 @@
 function hashCode(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = (hash << 5) - hash + str.charCodeAt(i);
     hash |= 0;
   }
   return Math.abs(hash);
@@ -96,7 +96,7 @@ const roles = [
 
 export function generateProjectTeam(
   responsavel: string | null,
-  projectId: string
+  projectId: string,
 ): MockTeamMember[] {
   const seed = hashCode(projectId);
   const teamSize = 2 + (seed % 4); // 2-5 members
@@ -131,7 +131,7 @@ export type HealthStatus = 'verde' | 'amarelo' | 'vermelho';
 
 export function calculatePrazoHealth(
   prazoFinal: string | null,
-  percentComplete: number
+  percentComplete: number,
 ): HealthStatus {
   if (!prazoFinal) return 'amarelo';
 
@@ -141,9 +141,7 @@ export function calculatePrazoHealth(
   if (isNaN(deadline.getTime())) return 'amarelo';
 
   const today = new Date();
-  const daysRemaining = Math.ceil(
-    (deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const daysRemaining = Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   if (daysRemaining < 0) return 'vermelho';
   if (daysRemaining < 7 && percentComplete < 80) return 'vermelho';
@@ -157,10 +155,7 @@ export function calculateCustoHealth(financials: MockFinancials): HealthStatus {
   return 'verde';
 }
 
-export function calculateOverallHealth(
-  prazo: HealthStatus,
-  custo: HealthStatus
-): HealthStatus {
+export function calculateOverallHealth(prazo: HealthStatus, custo: HealthStatus): HealthStatus {
   if (prazo === 'vermelho' || custo === 'vermelho') return 'vermelho';
   if (prazo === 'amarelo' || custo === 'amarelo') return 'amarelo';
   return 'verde';
@@ -183,7 +178,5 @@ export function getDaysUntilDeadline(prazoFinal: string | null): number | null {
   if (isNaN(deadline.getTime())) return null;
 
   const today = new Date();
-  return Math.ceil(
-    (deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  return Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }

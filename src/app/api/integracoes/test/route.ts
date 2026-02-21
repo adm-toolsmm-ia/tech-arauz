@@ -10,7 +10,9 @@ import { exportarDados } from '@/integrations/espaider/client';
  */
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
 
   try {
@@ -19,7 +21,7 @@ export async function POST(req: NextRequest) {
     if (!base_url || !token || !identificador) {
       return NextResponse.json(
         { success: false, error: 'Parâmetros obrigatórios: base_url, token, identificador' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,11 +37,12 @@ export async function POST(req: NextRequest) {
       situacao: response.Situacao,
     });
   } catch (err) {
-    const message = err instanceof Error
-      ? err.message
-      : typeof err === 'object' && err !== null && 'message' in err
-        ? String((err as { message: unknown }).message)
-        : 'Erro desconhecido';
+    const message =
+      err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : 'Erro desconhecido';
 
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }

@@ -6,13 +6,12 @@ import { createClient } from '@/lib/supabase/server';
  */
 export async function GET() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
 
-  const { data, error } = await supabase
-    .from('espaider_apis')
-    .select('*')
-    .order('tipo');
+  const { data, error } = await supabase.from('espaider_apis').select('*').order('tipo');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ data });
@@ -23,7 +22,9 @@ export async function GET() {
  */
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
 
   const body = await req.json();
@@ -64,7 +65,9 @@ export async function POST(req: NextRequest) {
  */
 export async function PUT(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
 
   const body = await req.json();
@@ -88,16 +91,15 @@ export async function PUT(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
 
   const id = req.nextUrl.searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'ID obrigatório' }, { status: 400 });
 
-  const { error } = await supabase
-    .from('espaider_apis')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from('espaider_apis').delete().eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });

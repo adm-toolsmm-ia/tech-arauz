@@ -16,7 +16,7 @@ export default function LogoutPage() {
   }, []);
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
+    <main className="flex min-h-screen items-center justify-center">
       <p className="text-muted-foreground">Saindo...</p>
     </main>
   );

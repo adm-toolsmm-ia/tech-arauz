@@ -6,12 +6,7 @@ import { useTheme } from 'next-themes';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DashboardHeaderProps {
   title: string;
@@ -39,9 +34,7 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
       {/* Title */}
       <div className="flex-1">
         <h1 className="text-lg font-semibold">{title}</h1>
-        {subtitle && (
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
       </div>
 
       {/* Actions */}
@@ -63,12 +56,7 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                disabled={!mounted}
-              >
+              <Button variant="ghost" size="icon" onClick={toggleTheme} disabled={!mounted}>
                 {mounted && theme === 'dark' ? (
                   <Sun className="h-5 w-5" />
                 ) : (

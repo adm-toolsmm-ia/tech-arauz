@@ -1,6 +1,18 @@
 'use client';
 
-import { RefreshCw, Calendar, Package, FileText, ListChecks, Clock, DollarSign, History, UserCheck, ArrowRight, StickyNote } from 'lucide-react';
+import {
+  RefreshCw,
+  Calendar,
+  Package,
+  FileText,
+  ListChecks,
+  Clock,
+  DollarSign,
+  History,
+  UserCheck,
+  ArrowRight,
+  StickyNote,
+} from 'lucide-react';
 import { ProjectNotesEditor } from './ProjectNotesEditor';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -189,26 +201,26 @@ export function ProjectCockpit({
 
       {/* Tabs */}
       <Tabs defaultValue="detalhes" className="w-full">
-        <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+        <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
           <TabsTrigger
             value="detalhes"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            <FileText className="size-4 mr-2" />
+            <FileText className="mr-2 size-4" />
             Detalhes
           </TabsTrigger>
           <TabsTrigger
             value="anotacoes"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            <StickyNote className="size-4 mr-2" />
+            <StickyNote className="mr-2 size-4" />
             Anotações
           </TabsTrigger>
           <TabsTrigger
             value="entregas"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            <Package className="size-4 mr-2" />
+            <Package className="mr-2 size-4" />
             Entregas
             {deliveries.length > 0 && (
               <span className="ml-2 text-xs text-muted-foreground">
@@ -218,76 +230,64 @@ export function ProjectCockpit({
           </TabsTrigger>
           <TabsTrigger
             value="orcamentos"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            <DollarSign className="size-4 mr-2" />
+            <DollarSign className="mr-2 size-4" />
             Orçamentos
             {budgets.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                ({budgets.length})
-              </span>
+              <span className="ml-2 text-xs text-muted-foreground">({budgets.length})</span>
             )}
           </TabsTrigger>
           <TabsTrigger
             value="cronograma"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            <Calendar className="size-4 mr-2" />
+            <Calendar className="mr-2 size-4" />
             Cronograma
             {schedules.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                ({schedules.length})
-              </span>
+              <span className="ml-2 text-xs text-muted-foreground">({schedules.length})</span>
             )}
           </TabsTrigger>
           <TabsTrigger
             value="historicos"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            <History className="size-4 mr-2" />
+            <History className="mr-2 size-4" />
             Histórico
             {histories.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                ({histories.length})
-              </span>
+              <span className="ml-2 text-xs text-muted-foreground">({histories.length})</span>
             )}
           </TabsTrigger>
           <TabsTrigger
             value="aprovadores"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            <UserCheck className="size-4 mr-2" />
+            <UserCheck className="mr-2 size-4" />
             Aprovadores
             {approvers.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                ({approvers.length})
-              </span>
+              <span className="ml-2 text-xs text-muted-foreground">({approvers.length})</span>
             )}
           </TabsTrigger>
           <TabsTrigger
             value="acoes"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2.5"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            <ListChecks className="size-4 mr-2" />
+            <ListChecks className="mr-2 size-4" />
             Ações
           </TabsTrigger>
         </TabsList>
 
         {/* Tab: Anotações */}
         <TabsContent value="anotacoes" className="mt-6">
-          <ProjectNotesEditor
-            projectId={project.id}
-            initialContent={project.notes_html ?? null}
-          />
+          <ProjectNotesEditor projectId={project.id} initialContent={project.notes_html ?? null} />
         </TabsContent>
 
         {/* Tab: Detalhes */}
         <TabsContent value="detalhes" className="mt-6 space-y-8">
-
           {/* 0. Importância Especial (Top Priority) */}
           {project.importancia_especial && (
-            <div className="rounded-md bg-amber-50 dark:bg-amber-900/10 p-4 border border-amber-200 dark:border-amber-800">
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2">
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/10">
+              <p className="mb-1 flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-300">
                 ⚠️ Importância Especial
               </p>
               <p className="text-sm text-amber-700 dark:text-amber-400">
@@ -298,16 +298,21 @@ export function ProjectCockpit({
 
           {/* 1. Informações Gerais */}
           <section>
-            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+            <div className="mb-4 flex items-center gap-2 border-b pb-2">
               <FileText className="size-5 text-primary" />
-              <h3 className="font-semibold text-base">Informações Gerais</h3>
+              <h3 className="text-base font-semibold">Informações Gerais</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <InfoField label="Área" value={project.area} />
               <InfoField label="Categoria" value={project.category} />
               <InfoField label="Prioridade" value={project.priority} />
               {/* Status movido para cá, substituindo Pasta Consultivo */}
-              <InfoField label="Status" value={statusLabels[project.original_status || ''] || project.original_status || '-'} />
+              <InfoField
+                label="Status"
+                value={
+                  statusLabels[project.original_status || ''] || project.original_status || '-'
+                }
+              />
               <InfoField label="Situação (API)" value={project.status} />
               <InfoField label="Solução Aplicada" value={project.solucao_aplicada} />
               <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
@@ -316,11 +321,11 @@ export function ProjectCockpit({
 
           {/* 3. Participantes */}
           <section>
-            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+            <div className="mb-4 flex items-center gap-2 border-b pb-2">
               <ListChecks className="size-5 text-primary" />
-              <h3 className="font-semibold text-base">Participantes</h3>
+              <h3 className="text-base font-semibold">Participantes</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <InfoField label="Responsável" value={project.responsible} />
               <InfoField label="Solicitante" value={project.solicitante} />
               <InfoField label="Aprovador Atual" value={project.aprovador_atual} />
@@ -330,13 +335,16 @@ export function ProjectCockpit({
 
           {/* 4. Datas e Prazos */}
           <section>
-            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+            <div className="mb-4 flex items-center gap-2 border-b pb-2">
               <Calendar className="size-5 text-primary" />
-              <h3 className="font-semibold text-base">Datas e Prazos</h3>
+              <h3 className="text-base font-semibold">Datas e Prazos</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
               <InfoField label="Prazo Final" value={formatDate(project.end_date)} />
-              <InfoField label="Início Aprovação" value={formatDate(project.data_inicio_aprovacao)} />
+              <InfoField
+                label="Início Aprovação"
+                value={formatDate(project.data_inicio_aprovacao)}
+              />
               <InfoField label="Encerramento" value={formatDate(project.data_encerramento)} />
               <InfoField label="Última Movimentação" value={formatDateTime(project.last_update)} />
             </div>
@@ -345,13 +353,13 @@ export function ProjectCockpit({
           {/* 5. Estratégia e Escopo */}
           {/* 5. Estratégia */}
           <section>
-            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+            <div className="mb-4 flex items-center gap-2 border-b pb-2">
               <RefreshCw className="size-5 text-primary" />
-              <h3 className="font-semibold text-base">Estratégia</h3>
+              <h3 className="text-base font-semibold">Estratégia</h3>
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <InfoField label="Impacto Estratégico" value={project.impacto_estrategico} />
                 <InfoField label="Impacto Operacional" value={project.impacto_operacional} />
               </div>
@@ -360,50 +368,67 @@ export function ProjectCockpit({
 
           {/* 6. Detalhamento do Projeto (Textos Longos) */}
           <section>
-            <div className="flex items-center gap-2 mb-4 border-b pb-2">
+            <div className="mb-4 flex items-center gap-2 border-b pb-2">
               <FileText className="size-5 text-primary" />
-              <h3 className="font-semibold text-base">Detalhamento do Projeto</h3>
+              <h3 className="text-base font-semibold">Detalhamento do Projeto</h3>
             </div>
 
             <div className="grid grid-cols-1 gap-6">
               {project.objetivo && (
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Objetivo</p>
-                  <p className="text-sm text-card-foreground bg-muted/40 p-4 rounded-md whitespace-pre-wrap leading-relaxed border">{project.objetivo}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Objetivo</p>
+                  <p className="whitespace-pre-wrap rounded-md border bg-muted/40 p-4 text-sm leading-relaxed text-card-foreground">
+                    {project.objetivo}
+                  </p>
                 </div>
               )}
               {project.escopo && (
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Escopo</p>
-                  <p className="text-sm text-card-foreground bg-muted/40 p-4 rounded-md whitespace-pre-wrap leading-relaxed border">{project.escopo}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Escopo</p>
+                  <p className="whitespace-pre-wrap rounded-md border bg-muted/40 p-4 text-sm leading-relaxed text-card-foreground">
+                    {project.escopo}
+                  </p>
                 </div>
               )}
               {project.justificativa && (
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Justificativa</p>
-                  <p className="text-sm text-card-foreground bg-muted/40 p-4 rounded-md whitespace-pre-wrap leading-relaxed border">{project.justificativa}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Justificativa</p>
+                  <p className="whitespace-pre-wrap rounded-md border bg-muted/40 p-4 text-sm leading-relaxed text-card-foreground">
+                    {project.justificativa}
+                  </p>
                 </div>
               )}
             </div>
           </section>
 
           {/* 6. Metadados */}
-          <section className="pt-4 border-t">
-            <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Metadados do Sistema</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-muted-foreground">
-              <p>Origem: <span className="font-mono text-foreground">Espaider</span></p>
-              <p>ID Interno: <span className="font-mono text-foreground">{project.id}</span></p>
-              <p>Código Espaider: <span className="font-mono text-foreground">{project.espaider_code}</span></p>
-              <p>TRM Espaider: <span className="font-mono text-foreground">{project.trm_espaider || '-'}</span></p>
+          <section className="border-t pt-4">
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Metadados do Sistema
+            </h4>
+            <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground md:grid-cols-4">
+              <p>
+                Origem: <span className="font-mono text-foreground">Espaider</span>
+              </p>
+              <p>
+                ID Interno: <span className="font-mono text-foreground">{project.id}</span>
+              </p>
+              <p>
+                Código Espaider:{' '}
+                <span className="font-mono text-foreground">{project.espaider_code}</span>
+              </p>
+              <p>
+                TRM Espaider:{' '}
+                <span className="font-mono text-foreground">{project.trm_espaider || '-'}</span>
+              </p>
             </div>
           </section>
-
         </TabsContent>
 
         {/* Tab: Históricos (Timeline) */}
         <TabsContent value="historicos" className="mt-6">
           {histories.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
+            <div className="py-12 text-center text-sm text-muted-foreground">
               Nenhum histórico encontrado
             </div>
           ) : (
@@ -414,36 +439,40 @@ export function ProjectCockpit({
                   <div key={hist.id} className="relative flex gap-4 pb-6 last:pb-0">
                     {/* Timeline line */}
                     {index < histories.length - 1 && (
-                      <div className="absolute left-[15px] top-8 bottom-0 w-0.5 bg-border" />
+                      <div className="absolute bottom-0 left-[15px] top-8 w-0.5 bg-border" />
                     )}
                     {/* Timeline dot */}
                     <div className="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-background bg-primary/10">
                       <History className="size-3.5 text-primary" />
                     </div>
                     {/* Content */}
-                    <div className="flex-1 min-w-0 space-y-2 p-3 rounded-lg border bg-card">
+                    <div className="min-w-0 flex-1 space-y-2 rounded-lg border bg-card p-3">
                       <div className="flex items-center justify-between gap-2">
-                        <Badge variant="outline" className="text-xs">{hist.type || 'Movimentação'}</Badge>
-                        <span className="text-xs text-muted-foreground shrink-0">{formatDateTime(hist.date)}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {hist.type || 'Movimentação'}
+                        </Badge>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {formatDateTime(hist.date)}
+                        </span>
                       </div>
                       {hist.message && hist.message !== '-' && (
-                        <p className="text-sm text-card-foreground bg-muted/40 p-3 rounded-md whitespace-pre-wrap leading-relaxed">
+                        <p className="whitespace-pre-wrap rounded-md bg-muted/40 p-3 text-sm leading-relaxed text-card-foreground">
                           {hist.message}
                         </p>
                       )}
                       {(hist.from !== '-' || hist.to !== '-') && (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                           {hist.from !== '-' && (
-                            <span className="bg-muted/50 px-2 py-0.5 rounded">{hist.from}</span>
+                            <span className="rounded bg-muted/50 px-2 py-0.5">{hist.from}</span>
                           )}
                           {hist.from !== '-' && hist.to !== '-' && (
                             <ArrowRight className="size-3 text-muted-foreground/50" />
                           )}
                           {hist.to !== '-' && (
-                            <span className="bg-muted/50 px-2 py-0.5 rounded">{hist.to}</span>
+                            <span className="rounded bg-muted/50 px-2 py-0.5">{hist.to}</span>
                           )}
                           {hist.step_from !== '-' && hist.step_to !== '-' && (
-                            <span className="text-muted-foreground/60 ml-2">
+                            <span className="ml-2 text-muted-foreground/60">
                               ({hist.step_from} → {hist.step_to})
                             </span>
                           )}
@@ -459,15 +488,18 @@ export function ProjectCockpit({
         {/* Tab: Aprovadores */}
         <TabsContent value="aprovadores" className="mt-6">
           {approvers.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
+            <div className="py-12 text-center text-sm text-muted-foreground">
               Nenhum aprovador encontrado
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {approvers.map((appr) => (
-                <div key={appr.id} className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                <div
+                  key={appr.id}
+                  className="flex items-center justify-between rounded-lg border bg-card p-4"
+                >
                   <div>
-                    <p className="font-medium text-sm">{appr.responsible}</p>
+                    <p className="text-sm font-medium">{appr.responsible}</p>
                     <p className="text-xs text-muted-foreground">{appr.type}</p>
                   </div>
                   <Badge variant="outline">Definido</Badge>
@@ -480,20 +512,26 @@ export function ProjectCockpit({
         {/* Tab: Orçamentos */}
         <TabsContent value="orcamentos" className="mt-6">
           {budgets.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
+            <div className="py-12 text-center text-sm text-muted-foreground">
               Nenhum orçamento encontrado
             </div>
           ) : (
             <div className="space-y-3">
               {budgets.map((budget) => (
-                <div key={budget.id} className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                <div
+                  key={budget.id}
+                  className="flex items-center justify-between rounded-lg border bg-card p-4"
+                >
                   <div>
-                    <p className="font-medium text-sm">{budget.supplier}</p>
-                    <p className="text-xs text-muted-foreground">Cotação: {formatDate(budget.date)}</p>
+                    <p className="text-sm font-medium">{budget.supplier}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Cotação: {formatDate(budget.date)}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-sm">
-                      {budget.currency} {budget.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    <p className="text-sm font-bold">
+                      {budget.currency}{' '}
+                      {budget.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 </div>
@@ -502,11 +540,10 @@ export function ProjectCockpit({
           )}
         </TabsContent>
 
-
         {/* Tab: Entregas */}
         <TabsContent value="entregas" className="mt-6">
           {deliveries.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
+            <div className="py-12 text-center text-sm text-muted-foreground">
               Nenhuma entrega cadastrada
             </div>
           ) : (
@@ -515,24 +552,24 @@ export function ProjectCockpit({
                 <div
                   key={delivery.id}
                   className={cn(
-                    'flex items-center justify-between p-4 rounded-lg border',
-                    delivery.completed && 'bg-green-50/50 dark:bg-green-950/20'
+                    'flex items-center justify-between rounded-lg border p-4',
+                    delivery.completed && 'bg-green-50/50 dark:bg-green-950/20',
                   )}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div
                       className={cn(
-                        'size-2.5 rounded-full shrink-0',
+                        'size-2.5 shrink-0 rounded-full',
                         delivery.completed
                           ? 'bg-green-500'
                           : new Date(delivery.deadline) < new Date()
                             ? 'bg-red-500'
-                            : 'bg-amber-500'
+                            : 'bg-amber-500',
                       )}
                     />
-                    <span className="text-sm truncate">{delivery.description}</span>
+                    <span className="truncate text-sm">{delivery.description}</span>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex shrink-0 items-center gap-3">
                     <span className="text-xs text-muted-foreground">
                       {formatDate(delivery.deadline)}
                     </span>
@@ -540,7 +577,7 @@ export function ProjectCockpit({
                       variant={delivery.completed ? 'outline' : 'secondary'}
                       className={cn(
                         'text-xs',
-                        delivery.completed && 'border-green-500 text-green-600'
+                        delivery.completed && 'border-green-500 text-green-600',
                       )}
                     >
                       {delivery.completed ? 'Concluída' : 'Pendente'}
@@ -555,7 +592,7 @@ export function ProjectCockpit({
         {/* Tab: Cronograma */}
         <TabsContent value="cronograma" className="mt-6">
           {schedules.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
+            <div className="py-12 text-center text-sm text-muted-foreground">
               Nenhum cronograma cadastrado
             </div>
           ) : (
@@ -563,15 +600,15 @@ export function ProjectCockpit({
               {schedules.map((schedule) => (
                 <div
                   key={schedule.id}
-                  className="flex items-center justify-between p-4 rounded-lg border"
+                  className="flex items-center justify-between rounded-lg border p-4"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{schedule.schedule_code}</p>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    <p className="truncate text-sm font-medium">{schedule.schedule_code}</p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {schedule.description}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex shrink-0 items-center gap-3">
                     <span className="text-xs text-muted-foreground">
                       {formatDate(schedule.scheduled_date)}
                     </span>
@@ -589,19 +626,14 @@ export function ProjectCockpit({
         <TabsContent value="acoes" className="mt-6">
           <div className="space-y-4">
             {onSync && (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={onSync}
-                disabled={isSyncing}
-              >
-                <RefreshCw className={cn('size-4 mr-2', isSyncing && 'animate-spin')} />
+              <Button variant="outline" className="w-full" onClick={onSync} disabled={isSyncing}>
+                <RefreshCw className={cn('mr-2 size-4', isSyncing && 'animate-spin')} />
                 {isSyncing ? 'Sincronizando...' : 'Sincronizar com Espaider'}
               </Button>
             )}
-            <p className="text-xs text-muted-foreground text-center pt-2">
-              Os dados deste projeto são gerenciados no Espaider.
-              Use a sincronização para atualizar as informações.
+            <p className="pt-2 text-center text-xs text-muted-foreground">
+              Os dados deste projeto são gerenciados no Espaider. Use a sincronização para atualizar
+              as informações.
             </p>
           </div>
         </TabsContent>

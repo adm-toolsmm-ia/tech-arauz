@@ -18,14 +18,16 @@ export default async function ProjectsPage() {
   // Buscar projetos com dados relacionados
   const { data: projects, error } = await supabase
     .from('projects')
-    .select(`
+    .select(
+      `
       *,
       schedules:project_schedules(*),
       deliveries:project_deliveries(*),
       histories:project_histories(*),
       approvers:project_approvers(*),
       budgets:project_budgets(*)
-    `)
+    `,
+    )
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -33,7 +35,7 @@ export default async function ProjectsPage() {
   }
 
   // Transform DB rows to UI format
-  const uiProjects = (projects as DBProject[] || []).map(dbProjectToUI);
+  const uiProjects = ((projects as DBProject[]) || []).map(dbProjectToUI);
 
   return <ProjectsContent projects={uiProjects} />;
 }

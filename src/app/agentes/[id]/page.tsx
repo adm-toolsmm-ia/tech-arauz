@@ -4,11 +4,7 @@ import { AgentDetailContent } from './agente-detail';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
-export default async function AgentDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function AgentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
   const { id } = await params;
 

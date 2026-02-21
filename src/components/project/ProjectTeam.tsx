@@ -35,8 +35,8 @@ function TeamMemberCard({
   return (
     <Card
       className={cn(
-        'transition-all duration-300 hover:shadow-card-hover animate-scale-in',
-        isLead && 'border-primary/50 bg-primary/5'
+        'animate-scale-in transition-all duration-300 hover:shadow-card-hover',
+        isLead && 'border-primary/50 bg-primary/5',
       )}
       style={{ animationDelay: `${index * 50}ms` }}
     >
@@ -46,25 +46,19 @@ function TeamMemberCard({
           <div
             className={cn(
               'flex size-10 items-center justify-center rounded-full text-sm font-semibold',
-              isLead
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'
+              isLead ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
             )}
           >
             {getInitials(member.name)}
           </div>
 
           {/* Info */}
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-medium truncate">{member.name}</span>
-              {isLead && (
-                <Crown className="size-4 text-amber-500 shrink-0" />
-              )}
+              <span className="truncate font-medium">{member.name}</span>
+              {isLead && <Crown className="size-4 shrink-0 text-amber-500" />}
             </div>
-            <p className="text-sm text-muted-foreground truncate">
-              {member.role}
-            </p>
+            <p className="truncate text-sm text-muted-foreground">{member.role}</p>
           </div>
 
           {/* Allocation */}
@@ -87,10 +81,7 @@ function TeamMemberCard({
 }
 
 export function ProjectTeam({ projectId, responsavel }: ProjectTeamProps) {
-  const team = useMemo(
-    () => generateProjectTeam(responsavel, projectId),
-    [responsavel, projectId]
-  );
+  const team = useMemo(() => generateProjectTeam(responsavel, projectId), [responsavel, projectId]);
 
   const lead = team.find((m) => m.role === 'Responsavel');
   const members = team.filter((m) => m.role !== 'Responsavel');
@@ -100,7 +91,7 @@ export function ProjectTeam({ projectId, responsavel }: ProjectTeamProps) {
       {/* Lead */}
       {lead && (
         <div>
-          <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <Crown className="size-4" />
             Responsavel
           </h4>
@@ -111,25 +102,20 @@ export function ProjectTeam({ projectId, responsavel }: ProjectTeamProps) {
       {/* Team Members */}
       {members.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <Users className="size-4" />
             Equipe ({members.length})
           </h4>
           <div className="grid gap-3 sm:grid-cols-2">
             {members.map((member, index) => (
-              <TeamMemberCard
-                key={member.id}
-                member={member}
-                isLead={false}
-                index={index + 1}
-              />
+              <TeamMemberCard key={member.id} member={member} isLead={false} index={index + 1} />
             ))}
           </div>
         </div>
       )}
 
       {/* Note */}
-      <p className="text-xs text-muted-foreground text-center italic">
+      <p className="text-center text-xs italic text-muted-foreground">
         * Membros da equipe simulados para demonstracao
       </p>
     </div>

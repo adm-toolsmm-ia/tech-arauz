@@ -41,16 +41,10 @@ export function BudgetGauge({ spentUsd, limitUsd, usagePercentage, className }: 
         <div className="space-y-3">
           <div className="flex items-end justify-between">
             <div>
-              <p className={cn('text-2xl font-bold', color)}>
-                ${spentUsd.toFixed(2)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                de ${limitUsd.toFixed(2)} mensal
-              </p>
+              <p className={cn('text-2xl font-bold', color)}>${spentUsd.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground">de ${limitUsd.toFixed(2)} mensal</p>
             </div>
-            <p className={cn('text-lg font-semibold', color)}>
-              {clampedPercentage.toFixed(0)}%
-            </p>
+            <p className={cn('text-lg font-semibold', color)}>{clampedPercentage.toFixed(0)}%</p>
           </div>
 
           {/* Bar */}
@@ -62,7 +56,7 @@ export function BudgetGauge({ spentUsd, limitUsd, usagePercentage, className }: 
           </div>
 
           {/* Remaining */}
-          <p className="text-xs text-muted-foreground text-right">
+          <p className="text-right text-xs text-muted-foreground">
             Restante: ${(limitUsd - spentUsd).toFixed(2)}
           </p>
         </div>

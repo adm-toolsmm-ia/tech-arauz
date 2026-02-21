@@ -15,18 +15,16 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet: { name: string; value: string; options: any }[]) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   const {
@@ -36,14 +34,12 @@ export async function middleware(request: NextRequest) {
   // Rotas protegidas (todas as áreas da aplicação)
   const protectedRoutes = ['/dashboard', '/integracoes', '/projetos', '/agentes'];
   const isProtectedRoute = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    request.nextUrl.pathname.startsWith(route),
   );
 
   // Rotas de autenticação (redirecionar se já logado)
   const authRoutes = ['/login'];
-  const isAuthRoute = authRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  );
+  const isAuthRoute = authRoutes.some((route) => request.nextUrl.pathname.startsWith(route));
 
   // Se não está logado e tenta acessar rota protegida
   if (!user && isProtectedRoute) {

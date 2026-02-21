@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { syncEspaiderAction } from '@/app/actions/sync';
 import { updateProjectStatusAction } from '@/app/actions/projects';
 import { ProjectCockpit } from '@/components/project';
+import { ProjectKanbanCard } from '@/components/project/ProjectKanbanCard';
 import {
   ProjectFilters,
   type ProjectFilterState,
@@ -190,6 +191,12 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
   const completedProjects = projects.filter(
     (p) => (p.status || '').trim().toLowerCase() === 'concluído',
   ).length;
+
+  // Stable sorted list of project IDs for color assignment
+  const projectIds = React.useMemo(
+    () => projects.map((p) => p.id).sort(),
+    [projects],
+  );
 
   // Transform to Kanban items
   // IMPORTANTE: Usa fase_atual para agrupamento, não status!
@@ -424,6 +431,16 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
             selectedId={selectedProject?.id}
             onItemClick={handleItemClick}
             onStatusChange={handleStatusChange}
+            renderItemContent={(item) => {
+              const project = filteredProjects.find((p) => p.id === item.id);
+              if (!project) return null;
+              return (
+                <ProjectKanbanCard
+                  project={project}
+                  projectIds={projectIds}
+                />
+              );
+            }}
             emptyMessage="Nenhum projeto encontrado. Sincronize com o Espaider para importar projetos."
           />
         ) : (

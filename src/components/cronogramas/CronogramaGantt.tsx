@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 export interface ScheduleProject {
     id: string;
@@ -67,9 +68,11 @@ const TaskListHeaderDefault = ({ headerHeight, fontFamily, fontSize }: any) => {
             className="flex items-center border-b border-border bg-muted/40 text-muted-foreground font-semibold"
             style={{ height: headerHeight, fontFamily, fontSize: '0.75rem' }}
         >
-            <div className="flex-1 px-4 truncate">Atividade / Projeto</div>
-            <div className="w-24 px-2 truncate hidden md:block">Início</div>
-            <div className="w-24 px-2 truncate hidden md:block">Fim</div>
+            <div className="flex-1 px-4 truncate min-w-[120px]">Atividade / Projeto</div>
+            <div className="w-20 px-2 truncate hidden lg:block text-xs">Resp.</div>
+            <div className="w-20 px-2 truncate hidden lg:block text-xs">Status</div>
+            <div className="w-16 px-1 truncate hidden xl:block text-xs text-center border-l">Início</div>
+            <div className="w-16 px-1 truncate hidden xl:block text-xs text-center">Fim</div>
         </div>
     );
 };
@@ -78,7 +81,7 @@ const TaskListHeaderDefault = ({ headerHeight, fontFamily, fontSize }: any) => {
 const TaskListTableDefault = ({ rowHeight, rowWidth, tasks, fontFamily, fontSize, onExpanderClick }: any) => {
     return (
         <div style={{ fontFamily, fontSize: '0.75rem' }} className="flex flex-col">
-            {tasks.map((t: Task) => {
+            {tasks.map((t: any) => {
                 const isProject = t.type === 'project';
                 return (
                     <div
@@ -88,7 +91,7 @@ const TaskListTableDefault = ({ rowHeight, rowWidth, tasks, fontFamily, fontSize
                         style={{ height: rowHeight }}
                     >
                         <div
-                            className="flex-1 flex items-center px-2 truncate"
+                            className="flex-1 flex items-center px-2 truncate min-w-[120px]"
                             style={{ paddingLeft: isProject ? '0.5rem' : '1.5rem' }}
                         >
                             {isProject && (
@@ -108,11 +111,19 @@ const TaskListTableDefault = ({ rowHeight, rowWidth, tasks, fontFamily, fontSize
                             )}
                             <span className="truncate" title={t.name}>{t.name}</span>
                         </div>
-                        <div className="w-24 px-2 text-muted-foreground truncate hidden md:block">
-                            {t.start.toLocaleDateString('pt-BR')}
+                        <div className="w-20 px-2 text-muted-foreground truncate hidden lg:block text-[10px]">
+                            <span className="truncate block" title={t.responsavel || '-'}>{t.responsavel || '-'}</span>
                         </div>
-                        <div className="w-24 px-2 text-muted-foreground truncate hidden md:block">
-                            {t.end.toLocaleDateString('pt-BR')}
+                        <div className="w-20 px-2 text-muted-foreground truncate hidden lg:block text-[10px]">
+                            {t.status && !isProject ? (
+                                <Badge variant="secondary" className="px-1 py-0 h-4 text-[9px] font-normal truncate uppercase">{t.status}</Badge>
+                            ) : '-'}
+                        </div>
+                        <div className="w-16 px-1 text-muted-foreground truncate hidden xl:block text-[10px] text-center border-l border-border/30">
+                            {t.originalStart ? t.originalStart.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : t.start.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                        </div>
+                        <div className="w-16 px-1 text-muted-foreground truncate hidden xl:block text-[10px] text-center">
+                            {t.originalEnd ? t.originalEnd.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : t.end.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                         </div>
                     </div>
                 );
@@ -125,16 +136,16 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
     const { theme } = useTheme();
     const [viewMode, setViewMode] = React.useState<ViewMode>(ViewMode.Day);
     const [collapsedIds, setCollapsedIds] = React.useState<string[]>([]);
-    const [listWidth, setListWidth] = React.useState<string>("350px");
+    const [listWidth, setListWidth] = React.useState<string>("480px");
 
     React.useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setListWidth("180px"); // Only show name, dates are hidden via CSS md:block
+            if (window.innerWidth < 1024) {
+                setListWidth("200px"); // Only name
             } else if (window.innerWidth < 1280) {
-                setListWidth("280px"); // Slightly compact
+                setListWidth("360px"); // Name + Resp + Status
             } else {
-                setListWidth("380px"); // Full width on large desktop to prevent text cutoff
+                setListWidth("480px"); // Full width (Name + Resp + Status + Dates)
             }
         };
 
@@ -143,11 +154,25 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const tasks: Task[] = React.useMemo(() => {
+    const tasks: any[] = React.useMemo(() => {
         const uniqueProjectIds = Array.from(new Set(schedules.map((s) => s.project_id)));
 
+        // Define clipping window constraints (Today - 5 days => Today + 30 days)
+        const today = new Date();
+        const clipWindowStart = new Date(today);
+        clipWindowStart.setDate(clipWindowStart.getDate() - 5);
+        const clipWindowEnd = new Date(today);
+        clipWindowEnd.setDate(clipWindowEnd.getDate() + 30);
+
+        // Function to clamp date within our 30-day clipped window
+        const clampDate = (d: Date) => {
+            if (d < clipWindowStart) return new Date(clipWindowStart);
+            if (d > clipWindowEnd) return new Date(clipWindowEnd);
+            return new Date(d);
+        };
+
         // Create virtual project parent tasks
-        const projectTasks: Task[] = uniqueProjectIds.map((projectId) => {
+        const projectTasks: any[] = uniqueProjectIds.map((projectId) => {
             const projectSchedules = schedules.filter((s) => s.project_id === projectId);
             const projectColor = getProjectColorHex(projectId, projectIds);
             const projectName = projectSchedules[0]?.project?.titulo || 'Projeto Sem Nome';
@@ -169,6 +194,18 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
                 maxEnd = new Date();
             }
 
+            const originalMinStart = new Date(minStart);
+            const originalMaxEnd = new Date(maxEnd);
+
+            // Constrain task bars visually
+            minStart = clampDate(minStart);
+            maxEnd = clampDate(maxEnd);
+
+            // Fix case where maxEnd < minStart after clamping due to fully out of bounds times
+            if (minStart.getTime() > maxEnd.getTime()) {
+                maxEnd = new Date(minStart);
+            }
+
             const isCollapsed = collapsedIds.includes(`project-${projectId}`);
             const progress = projectSchedules.length > 0 ? (completedCount / projectSchedules.length) * 100 : 0;
 
@@ -178,6 +215,8 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
                 name: projectName,
                 start: minStart,
                 end: maxEnd,
+                originalStart: originalMinStart,
+                originalEnd: originalMaxEnd,
                 progress: progress,
                 hideChildren: isCollapsed,
                 styles: {
@@ -186,17 +225,28 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
                     progressColor: projectColor,
                 },
                 isDisabled: false,
-            } as Task;
+                responsavel: '',
+                status: ''
+            };
         });
 
         // Create activity child tasks
-        const activityTasks: Task[] = schedules.map((s) => {
-            const end = new Date(s.data_fim || s.data_prazo || new Date());
+        const activityTasks: any[] = schedules.map((s) => {
+            let end = new Date(s.data_fim || s.data_prazo || new Date());
             let start = new Date(s.data_inicio || end);
 
             if (start.getTime() === end.getTime()) {
-                // Default to 1 day span if start and end are the same
                 start.setDate(start.getDate() - 1);
+            }
+
+            const originalStart = new Date(start);
+            const originalEnd = new Date(end);
+
+            start = clampDate(start);
+            end = clampDate(end);
+
+            if (start.getTime() > end.getTime()) {
+                end = new Date(start);
             }
 
             const projectColor = getProjectColorHex(s.project_id, projectIds);
@@ -210,6 +260,8 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
                 name: s.atividade || 'Sem nome',
                 start,
                 end,
+                originalStart,
+                originalEnd,
                 progress: progress,
                 project: `project-${s.project_id}`,
                 styles: {
@@ -217,11 +269,12 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
                     backgroundSelectedColor: s.atrasado ? '#dc2626' : projectColor,
                     progressColor: s.atrasado ? '#b91c1c' : '#ffffff44',
                 },
-                isDisabled: false, // For Read-only logic, we handle via callbacks
-            } as Task;
+                isDisabled: false,
+                responsavel: s.responsavel,
+                status: s.status
+            };
         });
 
-        // Concatenate and sort
         const allTasks = [...projectTasks, ...activityTasks].sort((a, b) => {
             // Ensure projects come first
             if (a.type === 'project' && b.type === 'project') return a.start.getTime() - b.start.getTime();

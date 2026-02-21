@@ -242,8 +242,11 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
   // Filtered schedules
   const filteredSchedules = React.useMemo(() => {
-    // 1. Hide schedules from completed projects
-    let filtered = schedules.filter(s => s.project?.status?.toLowerCase() !== 'concluído');
+    // 1. Hide schedules from completed projects AND individual completed schedules
+    let filtered = schedules.filter(s =>
+      s.project?.status?.toLowerCase() !== 'concluído' &&
+      s.status?.toLowerCase() !== 'concluído'
+    );
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -332,10 +335,10 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex flex-col">
+      <div className="flex flex-col min-w-0 w-full max-w-full overflow-hidden">
         <DashboardHeader title="Cronogramas" subtitle="Visualize todos os cronogramas de projetos" />
 
-        <div className="flex-1 space-y-6 p-6">
+        <div className="flex-1 space-y-6 p-6 min-w-0 max-w-full overflow-x-hidden">
           {/* KPIs */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <KPICard

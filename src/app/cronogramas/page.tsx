@@ -19,7 +19,7 @@ export default async function CronogramasPage() {
     .select(
       `
       *,
-      project:projects(id, titulo, codigo, status, fase_atual)
+      project:projects(id, titulo, codigo, status:situacao_original, fase_atual)
     `,
     )
     .order('data_fim', { ascending: true });

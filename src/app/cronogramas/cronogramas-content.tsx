@@ -19,6 +19,7 @@ import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { SplitView } from '@/components/views/SplitView';
 import { ProjectCockpit } from '@/components/project';
+import { CronogramaGantt } from '@/components/cronogramas/CronogramaGantt';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -196,7 +197,7 @@ const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 // ---------- Main Component ----------
 
 export function CronogramasContent({ schedules }: CronogramasContentProps) {
-  const [viewMode, setViewMode] = React.useState<'month' | 'week'>('month');
+  const [viewMode, setViewMode] = React.useState<'month' | 'week' | 'gantt'>('month');
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -425,6 +426,15 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               <div className="mx-1 h-8 w-px bg-border" />
               <div className="flex items-center rounded-lg border bg-muted/30 p-0.5">
                 <Button
+                  variant={viewMode === 'gantt' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('gantt')}
+                  className="h-7 rounded-md text-xs"
+                >
+                  <FolderKanban className="mr-1.5 h-3.5 w-3.5" />
+                  Gantt
+                </Button>
+                <Button
                   variant={viewMode === 'month' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('month')}
@@ -505,7 +515,13 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           )}
 
           {/* Calendar Section */}
-          {viewMode === 'month' ? (
+          {viewMode === 'gantt' ? (
+            <CronogramaGantt
+              schedules={filteredSchedules}
+              projectIds={projectIds}
+              onActivityClick={setSelectedSchedule}
+            />
+          ) : viewMode === 'month' ? (
             <MonthView
               currentDate={currentDate}
               selectedDay={selectedDay}
@@ -526,7 +542,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           )}
 
           {/* Selected Day Activities */}
-          {selectedDay && (
+          {selectedDay && viewMode !== 'gantt' && (
             <SelectedDayPanel
               date={selectedDay}
               schedules={getSchedulesForDate(selectedDay)}

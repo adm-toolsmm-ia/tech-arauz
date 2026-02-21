@@ -197,7 +197,7 @@ const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 // ---------- Main Component ----------
 
 export function CronogramasContent({ schedules }: CronogramasContentProps) {
-  const [viewMode, setViewMode] = React.useState<'month' | 'week' | 'gantt'>('month');
+  const [viewMode, setViewMode] = React.useState<'day' | 'week' | 'month' | 'gantt'>('day');
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -242,7 +242,8 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
   // Filtered schedules
   const filteredSchedules = React.useMemo(() => {
-    let filtered = schedules;
+    // 1. Hide schedules from completed projects
+    let filtered = schedules.filter(s => s.project?.status?.toLowerCase() !== 'concluído');
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -374,7 +375,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           </div>
 
           {/* View Toggle + Filters Bar */}
-          <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between flex-wrap">
             <div className="flex flex-1 items-center gap-2">
               <div className="relative max-w-sm flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -415,33 +416,18 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToToday}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Hoje
-              </Button>
-              <div className="mx-1 h-8 w-px bg-border" />
               <div className="flex items-center rounded-lg border bg-muted/30 p-0.5">
                 <Button
-                  variant={viewMode === 'gantt' ? 'default' : 'ghost'}
+                  variant={viewMode === 'day' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setViewMode('gantt')}
-                  className="h-7 rounded-md text-xs"
-                >
-                  <FolderKanban className="mr-1.5 h-3.5 w-3.5" />
-                  Gantt
-                </Button>
-                <Button
-                  variant={viewMode === 'month' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('month')}
+                  onClick={() => {
+                    setViewMode('day');
+                    goToToday();
+                  }}
                   className="h-7 rounded-md text-xs"
                 >
                   <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
-                  Mês
+                  Dia
                 </Button>
                 <Button
                   variant={viewMode === 'week' ? 'default' : 'ghost'}
@@ -451,6 +437,24 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                 >
                   <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
                   Semana
+                </Button>
+                <Button
+                  variant={viewMode === 'month' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('month')}
+                  className="h-7 rounded-md text-xs"
+                >
+                  <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
+                  Mês
+                </Button>
+                <Button
+                  variant={viewMode === 'gantt' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('gantt')}
+                  className="h-7 rounded-md text-xs"
+                >
+                  <FolderKanban className="mr-1.5 h-3.5 w-3.5" />
+                  Gantt
                 </Button>
               </div>
             </div>
@@ -530,7 +534,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               getSchedulesForDate={getSchedulesForDate}
               projectIds={projectIds}
             />
-          ) : (
+          ) : viewMode === 'week' ? (
             <WeekView
               currentDate={currentDate}
               selectedDay={selectedDay}
@@ -539,10 +543,23 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               getSchedulesForDate={getSchedulesForDate}
               projectIds={projectIds}
             />
+          ) : (
+            <DayView
+              currentDate={currentDate}
+              onNavigate={(dir) => {
+                const d = new Date(currentDate);
+                d.setDate(d.getDate() + dir);
+                setCurrentDate(d);
+                setSelectedDay(null);
+              }}
+              getSchedulesForDate={getSchedulesForDate}
+              projectIds={projectIds}
+              onActivityClick={setSelectedSchedule}
+            />
           )}
 
           {/* Selected Day Activities */}
-          {selectedDay && viewMode !== 'gantt' && (
+          {selectedDay && (viewMode === 'month' || viewMode === 'week') && (
             <SelectedDayPanel
               date={selectedDay}
               schedules={getSchedulesForDate(selectedDay)}
@@ -768,40 +785,52 @@ function MonthView({
                           month: 'long',
                         })}
                       </p>
-                      <div className="max-h-60 space-y-1.5 overflow-y-auto">
-                        {daySchedules.map((s) => {
-                          const colorIdx = getProjectColorIndex(s.project_id, projectIds);
-                          return (
-                            <div
-                              key={s.id}
-                              className="flex cursor-pointer items-start gap-2 rounded p-1.5 transition-colors hover:bg-muted/50"
-                              onClick={() => onSelectDay(date)}
-                            >
-                              <div
-                                className={cn(
-                                  'mt-1.5 h-2 w-2 shrink-0 rounded-full',
-                                  s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
-                                )}
-                              />
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-xs font-medium">
-                                  {s.atividade || 'Sem nome'}
-                                </p>
-                                <p className="truncate text-[10px] text-muted-foreground">
-                                  {s.project?.titulo || 'Projeto'}
-                                </p>
-                              </div>
-                              {s.atrasado && (
-                                <Badge
-                                  variant="destructive"
-                                  className="h-4 shrink-0 px-1 text-[9px]"
+                      <div className="max-h-60 space-y-4 overflow-y-auto">
+                        {/* Group schedules by Project */}
+                        {Array.from(
+                          daySchedules.reduce((acc, s) => {
+                            const projectName = s.project?.titulo || 'Sem Projeto';
+                            if (!acc.has(projectName)) acc.set(projectName, []);
+                            acc.get(projectName)!.push(s);
+                            return acc;
+                          }, new Map<string, Schedule[]>())
+                        ).map(([projectName, projSchedules]) => (
+                          <div key={projectName} className="space-y-1.5">
+                            <h4 className="text-[11px] font-bold uppercase text-foreground/80 line-clamp-1 border-b pb-1">
+                              {projectName}
+                            </h4>
+                            {projSchedules.map((s) => {
+                              const colorIdx = getProjectColorIndex(s.project_id, projectIds);
+                              return (
+                                <div
+                                  key={s.id}
+                                  className="flex cursor-pointer items-start gap-2 rounded p-1.5 transition-colors hover:bg-muted/50"
+                                  onClick={() => onSelectDay(date)}
                                 >
-                                  Atrasado
-                                </Badge>
-                              )}
-                            </div>
-                          );
-                        })}
+                                  <div
+                                    className={cn(
+                                      'mt-1.5 h-2 w-2 shrink-0 rounded-full',
+                                      s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
+                                    )}
+                                  />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-xs font-medium">
+                                      {s.atividade || 'Sem nome'}
+                                    </p>
+                                  </div>
+                                  {s.atrasado && (
+                                    <Badge
+                                      variant="destructive"
+                                      className="h-4 shrink-0 px-1 text-[9px]"
+                                    >
+                                      Atrasado
+                                    </Badge>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </PopoverContent>
@@ -930,6 +959,68 @@ function WeekView({
               </button>
             );
           })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------- Day View ----------
+
+function DayView({
+  currentDate,
+  onNavigate,
+  getSchedulesForDate,
+  projectIds,
+  onActivityClick,
+}: {
+  currentDate: Date;
+  onNavigate: (dir: number) => void;
+  getSchedulesForDate: (d: Date) => Schedule[];
+  projectIds: string[];
+  onActivityClick: (s: Schedule) => void;
+}) {
+  const schedules = getSchedulesForDate(currentDate);
+
+  return (
+    <Card className="shadow-soft w-full min-h-[400px]">
+      <CardContent className="p-4 sm:p-6 h-full flex flex-col">
+        {/* Header with navigation */}
+        <div className="mb-6 flex items-center justify-between">
+          <Button variant="outline" size="icon" onClick={() => onNavigate(-1)} className="h-8 w-8 hover:bg-accent/60">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex flex-col items-center">
+            <h3 className="text-xl font-bold tracking-tight">
+              {currentDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+            </h3>
+            <span className="text-sm font-medium text-muted-foreground capitalize">
+              {currentDate.toLocaleDateString('pt-BR', { weekday: 'long' })}
+            </span>
+          </div>
+          <Button variant="outline" size="icon" onClick={() => onNavigate(1)} className="h-8 w-8 hover:bg-accent/60">
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin">
+          {schedules.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[200px] text-center">
+              <CalendarDays className="h-10 w-10 text-muted-foreground/30 mb-2" />
+              <p className="text-muted-foreground font-medium">Nenhuma pauta ou atividade para este dia.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {schedules.map((schedule) => (
+                <ActivityCard
+                  key={schedule.id}
+                  schedule={schedule}
+                  projectIds={projectIds}
+                  onClick={() => onActivityClick(schedule)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

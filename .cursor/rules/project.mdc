@@ -6,6 +6,13 @@ alwaysApply: true
 
 # Tech Arauz - Project Rules
 
+## AIOS — Fonte de Verdade
+
+- **Constituição**: `.aios-core/constitution.md` — regras inegociáveis
+- **CLI First** → Observability Second → UI Third (Article I da Constituição)
+- **Agentes**: `.cursor/rules/agents/` — **gerados via `npm run sync:ide`**. Não editar manualmente. Fonte: `.aios-core/development/agents/`
+- **Proibido**: Nunca carregar arquivos de `_deprecated/` — backup histórico, fora de uso
+
 ## Contexto do Projeto
 
 - **Nome**: Tech Arauz
@@ -26,9 +33,11 @@ alwaysApply: true
 
 ## MCPs Disponíveis
 
-- **supabase**: Gestão de banco, migrations, RLS
-- **context7**: Contexto de documentação
-- **shadcn**: Componentes UI
+- **supabase**: Gestão de banco, migrations, RLS (project_ref em `.cursor/mcp.json`)
+- **context7**: Documentação de libs (`CONTEXT7_API_KEY` opcional — ver `.env.example`)
+- **shadcn**: Componentes shadcn/ui
+
+Governança: add/remove MCP → @devops. Regras detalhadas: `mcp-usage.mdc`
 
 ## Design System (ADR-003)
 
@@ -112,6 +121,15 @@ import { KanbanBoard, ViewToggle, SplitView } from '@/components/views/...';
 
 - **Cabeçalhos e listas**: Sempre uma linha em branco entre um cabeçalho (`##` ou `###`) e a lista ou parágrafo seguinte (compatível com markdownlint MD022/MD032).
 - Aplica-se a `.md` em `.context/`, `.ai/`, memórias e docs gerados por agentes.
+
+## Quality Gates (rotina padrão)
+
+Antes de concluir tarefa ou PR:
+
+- `npm run lint`
+- `npm run typecheck`
+- `npm test`
+- `npm run sync:ide:check` (detectar drift entre AIOS e Cursor)
 
 ## Commits
 

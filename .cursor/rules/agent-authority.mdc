@@ -1,0 +1,36 @@
+---
+description: Agent Authority — Delegação e limites por agente AIOS (fonte: .aios-core/constitution.md)
+globs: "**/*"
+alwaysApply: true
+---
+
+# Agent Authority — AIOS
+
+Fonte: [.aios-core/constitution.md](.aios-core/constitution.md) Article II
+
+## @devops — Autoridade EXCLUSIVA
+
+| Operação                     | Outros agentes |
+| --------------------------- | -------------- |
+| `git push`, `gh pr create/merge` | BLOQUEADOS     |
+| MCP add/remove/configure    | BLOQUEADOS     |
+| CI/CD, releases, tags       | BLOQUEADOS     |
+
+## @dev — Permitido vs Bloqueado
+
+| Permitido                                  | Bloqueado                     |
+| ------------------------------------------ | ----------------------------- |
+| git add, commit, status, branch, stash, diff, log | git push → delegar @devops    |
+| Atualizar File List, checkboxes na story    | AC, scope, título → @po       |
+
+## Fluxos Cross-Agent
+
+- **Git push**: QUALQUER agente → @devops `*push`
+- **Story**: @sm *draft → @po *validate → @dev *develop → @qa *qa-gate → @devops *push
+- **Schema**: @architect (decide) → @data-engineer (implementa DDL)
+
+## Escalação
+
+1. Agente não completa → @aios-master
+2. Quality gate falha → retornar ao @dev com feedback
+3. Violação constitucional → BLOQUEAR até correção

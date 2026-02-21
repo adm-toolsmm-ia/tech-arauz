@@ -13,7 +13,7 @@ export default function LogoutPage() {
       router.push('/login');
       router.refresh();
     });
-  }, []);
+  }, [router, supabase]);
 
   return (
     <main className="flex min-h-screen items-center justify-center">

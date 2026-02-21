@@ -22,10 +22,6 @@ const mockHistoricoRegistro: RegistroEspaider = {
     { Identificador: 'MENSAGEM', Valor: 'Criado via API' },
     { Identificador: 'DATA_DE', Valor: '10/08/2020 - 17:12:33' },
   ],
-  ListaURLFilhos: [],
-  MensagemRetorno: null,
-  Situacao: 'S',
-  URLPaginacao: '',
 };
 
 const mockOrcamentoRegistro: RegistroEspaider = {
@@ -37,10 +33,6 @@ const mockOrcamentoRegistro: RegistroEspaider = {
     { Identificador: 'FORNECEDOR', Valor: 'Tech Corp' },
     { Identificador: 'DATACOTACAO', Valor: '15/05/2026' },
   ],
-  ListaURLFilhos: [],
-  MensagemRetorno: null,
-  Situacao: 'S',
-  URLPaginacao: '',
 };
 
 const mockAprovadorRegistro: RegistroEspaider = {
@@ -52,10 +44,6 @@ const mockAprovadorRegistro: RegistroEspaider = {
     { Identificador: 'RESPONSAVEL', Valor: 'Juliane Pereira' },
     { Identificador: 'PONTOSATENCAO', Valor: 'Verificar custos' },
   ],
-  ListaURLFilhos: [],
-  MensagemRetorno: null,
-  Situacao: 'S',
-  URLPaginacao: '',
 };
 
 // =============================================================================

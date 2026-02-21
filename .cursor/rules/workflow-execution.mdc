@@ -1,0 +1,43 @@
+---
+description: Workflow Execution — 4 workflows primários AIOS (SDC, QA Loop, Spec Pipeline, Brownfield)
+globs: "**/*"
+alwaysApply: false
+---
+
+# Workflow Execution — AIOS
+
+Fonte: `.aios-core/development/tasks/` e `.aios-core/development/workflows/`
+
+## Task-First Principle
+
+Workflows são compostos por **tasks conectadas**. A sequência vem de `.aios-core/development/tasks/`.
+
+## 4 Workflows Primários
+
+### 1. Story Development Cycle (SDC)
+
+1. **Create** (@sm): `create-next-story.md` → Draft
+2. **Validate** (@po): `validate-next-story.md` → GO (≥7/10) ou NO-GO
+3. **Implement** (@dev): `dev-develop-story.md` → Ready → InProgress
+4. **QA Gate** (@qa): `qa-gate.md` → PASS/CONCERNS/FAIL/WAIVED → Done
+
+### 2. QA Loop
+
+@qa review → verdict → @dev fixes → re-review (máx 5 iterações)
+
+### 3. Spec Pipeline
+
+Gather (@pm) → Assess (@architect) → Research (@analyst) → Write Spec (@pm) → Critique (@qa) → Plan (@architect)
+
+### 4. Brownfield Discovery
+
+10 fases para avaliação de dívida técnica em codebases existentes.
+
+## Guia de Seleção
+
+| Situação                         | Workflow              |
+| -------------------------------- | --------------------- |
+| Nova story de epic               | Story Development Cycle   |
+| QA encontrou issues              | QA Loop                   |
+| Feature complexa precisa spec    | Spec Pipeline → depois SDC|
+| Entrando em projeto existente    | Brownfield Discovery     |

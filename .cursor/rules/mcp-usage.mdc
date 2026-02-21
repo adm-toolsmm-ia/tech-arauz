@@ -1,0 +1,33 @@
+---
+description: MCP Usage — Governança e quando usar cada MCP no Cursor
+globs: "**/*"
+alwaysApply: false
+---
+
+# MCP Usage — Cursor (AIOS)
+
+## Governança
+
+**Add/remove/config de MCP**: EXCLUSIVO @devops. Demais agentes são **consumidores**.
+
+## MCPs Configurados (`.cursor/mcp.json`)
+
+| MCP        | Uso                                                                 |
+| ---------- | ------------------------------------------------------------------- |
+| **supabase** | migrations, schema, RLS, execução SQL. Nunca alucinar credenciais. Verificar schema antes de SQL.  |
+| **context7** | documentação de libs, referência de API. Usa `CONTEXT7_API_KEY` (opcional para uso básico).     |
+| **shadcn**   | componentes shadcn/ui — adicionar, atualizar.                                                   |
+
+## Prioridade de Ferramentas
+
+Preferir ferramentas nativas do Cursor quando aplicável:
+
+| Tarefa         | Usar            |
+| -------------- | --------------- |
+| Ler arquivos      | Read tool        |
+| Escrever/editar   | Write / Edit tools |
+| Buscar conteúdo   | Grep tool       |
+| Buscar arquivos   | Glob tool       |
+| Rodar comandos    | Shell/Bash      |
+
+MCPs para operações que exigem contexto externo (banco, docs de lib, componentes).

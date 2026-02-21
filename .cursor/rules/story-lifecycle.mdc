@@ -1,0 +1,57 @@
+---
+description: Story Lifecycle — Status progression e checklists @po/@qa
+globs: "**/*"
+alwaysApply: false
+---
+
+# Story Lifecycle — AIOS
+
+## Status Progression
+
+```text
+Draft → Ready → InProgress → InReview → Done
+```
+
+| Status     | Trigger                 | Agente                |
+| ---------- | ----------------------- | --------------------- |
+| Draft      | Story criada           | @sm                        |
+| Ready      | @po valida (GO)        | @po — MUST atualizar status|
+| InProgress | @dev implementa        | @dev                       |
+| InReview   | @qa revisa             | @qa                        |
+| Done       | @qa PASS, @devops push | @devops                    |
+
+## 10-Point Checklist (@po)
+
+1. Título claro
+2. Descrição completa
+3. AC testáveis (Given/When/Then)
+4. Escopo IN/OUT definido
+5. Dependências mapeadas
+6. Complexidade estimada
+7. Valor de negócio
+8. Riscos documentados
+9. Criteria of Done
+10. Alinhamento com PRD/Epic
+
+**Decisão**: GO (≥7/10) ou NO-GO
+
+## 7 Quality Checks (@qa)
+
+1. Code review
+2. Unit tests
+3. AC atendidos
+4. Sem regressões
+5. Performance
+6. Segurança
+7. Documentação
+
+**Veredictos**: PASS / CONCERNS / FAIL / WAIVED
+
+## Quem Edita o Quê
+
+| Seção                  | Quem                    |
+| ---------------------- | ----------------------- |
+| Título, Descrição, AC, Scope    | @po                    |
+| File List, checkboxes           | @dev                   |
+| QA Results                     | @qa                    |
+| Change Log                     | Qualquer (append only) |

@@ -161,19 +161,94 @@ export function LogViewer() {
   const fetchSummaries = React.useCallback(async () => {
     try {
       const res = await fetch('/api/integracoes/logs/summary');
+
+      if (!res.ok) {
+        console.warn(`[fetchSummaries] API returned ${res.status}, skipping summary`);
+        return;
+      }
+
       const result = await res.json();
       if (result.data) {
         setSummaries(result.data);
       }
     } catch (err) {
-      console.error('Failed to fetch summaries:', err);
+      console.warn('Failed to fetch summaries (non-critical):', err);
     }
   }, []);
 
   React.useEffect(() => {
+    // Only run on initial mount to avoid infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const controller = new AbortController();
+    setError(null);
+    setIsLoading(true);
+
+    Promise.all([
+      (async () => {
+        try {
+          const params = new URLSearchParams();
+          params.set('page', String(1));
+          params.set('limit', String(pagination.limit));
+
+          const res = await fetch(`/api/integracoes/logs?${params}`, {
+            signal: controller.signal,
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json();
+            console.error(`API Error [${res.status}]:`, errorData.error);
+            setError(errorData.error || `Erro ${res.status}: Falha ao buscar logs`);
+            setLogs([]);
+            return;
+          }
+
+          const result = await res.json();
+          if (result.data) {
+            setLogs(result.data);
+            setPagination((prev) => ({ ...prev, ...result.pagination }));
+          }
+        } catch (err) {
+          if (err instanceof Error && err.name === 'AbortError') return;
+          console.error('Failed to fetch logs:', err);
+          setError('Erro ao buscar logs. Verifique o console para detalhes.');
+          setLogs([]);
+        }
+      })(),
+      (async () => {
+        try {
+          const res = await fetch('/api/integracoes/logs/summary', {
+            signal: controller.signal,
+          });
+
+          if (!res.ok) {
+            console.warn(`[fetchSummaries] API returned ${res.status}, skipping summary`);
+            return;
+          }
+
+          const result = await res.json();
+          if (result.data) {
+            setSummaries(result.data);
+          }
+        } catch (err) {
+          if (err instanceof Error && err.name === 'AbortError') return;
+          console.warn('Failed to fetch summaries (non-critical):', err);
+        }
+      })(),
+    ]).finally(() => {
+      setIsLoading(false);
+    });
+
+    return () => controller.abort();
+  }, [pagination.limit]);
+
+  // Refetch when filters or pagination changes
+  React.useEffect(() => {
+    // Skip on initial mount (handled by first useEffect)
+    if (filters.level === '' && filters.dataset === '' && filters.startDate === '' && filters.endDate === '' && pagination.page === 1) {
+      return;
+    }
     fetchLogs();
-    fetchSummaries();
-  }, [fetchLogs, fetchSummaries]);
+  }, [filters, pagination.page, pagination.limit, fetchLogs]);
 
   // Toggle row expansion
   function toggleRow(id: string) {
@@ -199,12 +274,13 @@ export function LogViewer() {
 
   // Apply filters
   function applyFilters() {
+    setError(null);
     setPagination((prev) => ({ ...prev, page: 1 }));
-    fetchLogs();
   }
 
   // Clear filters
   function clearFilters() {
+    setError(null);
     setFilters({ level: '', dataset: '', startDate: '', endDate: '' });
     setPagination((prev) => ({ ...prev, page: 1 }));
   }

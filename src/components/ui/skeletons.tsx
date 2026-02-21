@@ -1,0 +1,54 @@
+import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function SkeletonKPI({ className }: { className?: string }) {
+  return (
+    <div className={cn('rounded-lg border bg-card p-6 shadow-soft', className)}>
+      <div className="flex items-start justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+        <Skeleton className="h-12 w-12 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+function SkeletonKanbanCard({ className }: { className?: string }) {
+  return (
+    <div className={cn('rounded-lg border border-border/40 bg-card p-3', className)}>
+      <div className="space-y-1.5">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-3 w-20" />
+        <div className="mt-1 flex items-center justify-between">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-5 w-14 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonTableRow({ className }: { className?: string }) {
+  return (
+    <tr className={cn('border-b', className)}>
+      <td className="px-3 py-3">
+        <Skeleton className="mb-1 h-4 w-32" />
+        <Skeleton className="h-3 w-20" />
+      </td>
+      <td className="px-3 py-3"><Skeleton className="h-3 w-16" /></td>
+      <td className="px-3 py-3"><Skeleton className="h-3 w-20" /></td>
+      <td className="px-3 py-3"><Skeleton className="h-3 w-24" /></td>
+      <td className="px-3 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
+      <td className="px-3 py-3"><Skeleton className="h-3 w-16" /></td>
+      <td className="px-3 py-3"><Skeleton className="h-5 w-12 rounded-full" /></td>
+      <td className="px-3 py-3"><Skeleton className="h-5 w-12 rounded-full" /></td>
+      <td className="px-3 py-3"><Skeleton className="h-3 w-28" /></td>
+      <td className="px-3 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+    </tr>
+  );
+}
+
+export { SkeletonKPI, SkeletonKanbanCard, SkeletonTableRow };

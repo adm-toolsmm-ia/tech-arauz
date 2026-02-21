@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { AlertTriangle } from 'lucide-react';
 
 // Types
 export interface KanbanItem {
@@ -33,11 +34,13 @@ export interface KanbanColumn {
   id: string;
   title: string;
   color: string;
+  wipLimit?: number;
 }
 
 interface KanbanBoardProps {
   columns: KanbanColumn[];
   items: KanbanItem[];
+  selectedId?: string | number;
   onItemClick?: (item: KanbanItem) => void;
   onStatusChange?: (itemId: string | number, newStatus: string) => void;
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
@@ -45,16 +48,7 @@ interface KanbanBoardProps {
   className?: string;
 }
 
-// Priority styles (Softer, cleaner)
-const priorityStyles: Record<string, string> = {
-  urgente:
-    'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30',
-  alta: 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-900/30',
-  normal:
-    'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/30',
-  baixa:
-    'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-800',
-};
+import { priorityStyles } from '@/lib/constants/phase-labels';
 
 // Column header colors (Clean accents)
 const columnColors: Record<string, string> = {
@@ -117,7 +111,7 @@ function DefaultCardContent({ item }: { item: KanbanItem }) {
 
         <div className="mt-1 flex items-center justify-between">
           {item.value ? (
-            <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+            <div className="text-xs font-medium text-success dark:text-success">
               {item.value}
             </div>
           ) : (
@@ -127,7 +121,7 @@ function DefaultCardContent({ item }: { item: KanbanItem }) {
           {item.priority && (
             <span
               className={cn(
-                'rounded-full border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider',
+                'rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider',
                 priorityStyles[item.priority],
               )}
             >
@@ -160,10 +154,12 @@ function DefaultCardContent({ item }: { item: KanbanItem }) {
 // Draggable Card Component (Cards 2.0)
 function DraggableCard({
   item,
+  isSelected,
   onItemClick,
   renderItemContent,
 }: {
   item: KanbanItem;
+  isSelected?: boolean;
   onItemClick?: (item: KanbanItem) => void;
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
 }) {
@@ -179,12 +175,16 @@ function DraggableCard({
         'group relative rounded-lg border border-border/40 bg-card shadow-sm transition-all duration-200',
         'hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md',
         'cursor-grab active:cursor-grabbing',
+        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
         isDragging && 'scale-95 opacity-40 shadow-none grayscale',
+        isSelected && 'ring-2 ring-primary ring-offset-1 border-primary/30',
       )}
       style={{ touchAction: 'none' }}
-      onClick={() => onItemClick?.(item)}
       {...listeners}
       {...attributes}
+      onClick={() => onItemClick?.(item)}
+      aria-roledescription="draggable item"
+      aria-label={item.title}
     >
       <div className="p-3">
         {renderItemContent ? renderItemContent(item) : <DefaultCardContent item={item} />}
@@ -216,12 +216,14 @@ function DroppableColumn({
   column,
   items,
   isOver,
+  selectedId,
   onItemClick,
   renderItemContent,
 }: {
   column: KanbanColumn;
   items: KanbanItem[];
   isOver: boolean;
+  selectedId?: string | number;
   onItemClick?: (item: KanbanItem) => void;
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
 }) {
@@ -249,14 +251,25 @@ function DroppableColumn({
         )}
       >
         <h3 className="text-sm font-semibold tracking-tight text-foreground/80">{column.title}</h3>
-        <span
-          className={cn(
-            'rounded-full px-2 py-0.5 text-[10px] font-bold',
-            items.length > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+        <div className="flex items-center gap-1">
+          {column.wipLimit != null && items.length > column.wipLimit && (
+            <span className="text-amber-500" title={`Limite WIP: ${column.wipLimit}`}>
+              <AlertTriangle className="h-3.5 w-3.5" />
+            </span>
           )}
-        >
-          {items.length}
-        </span>
+          <span
+            className={cn(
+              'rounded-full px-2 py-0.5 text-[11px] font-bold',
+              column.wipLimit != null && items.length > column.wipLimit
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                : items.length > 0
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted text-muted-foreground',
+            )}
+          >
+            {items.length}
+          </span>
+        </div>
       </div>
 
       {/* Content Area */}
@@ -285,6 +298,7 @@ function DroppableColumn({
                 <DraggableCard
                   key={item.id}
                   item={item}
+                  isSelected={selectedId != null && item.id === selectedId}
                   onItemClick={onItemClick}
                   renderItemContent={renderItemContent}
                 />
@@ -301,6 +315,7 @@ function DroppableColumn({
 export function KanbanBoard({
   columns,
   items,
+  selectedId,
   onItemClick,
   onStatusChange,
   renderItemContent,
@@ -309,6 +324,7 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const [activeItem, setActiveItem] = React.useState<KanbanItem | null>(null);
   const [overColumnId, setOverColumnId] = React.useState<string | null>(null);
+  const [announcement, setAnnouncement] = React.useState('');
 
   // Configure pointer sensor with activation constraints to distinguish click vs drag
   const sensors = useSensors(
@@ -365,6 +381,8 @@ export function KanbanBoard({
     // Only trigger if status actually changed
     if (draggedItem.status !== newStatus && onStatusChange) {
       onStatusChange(draggedItem.id, newStatus);
+      const targetCol = columns.find((c) => c.id === newStatus);
+      setAnnouncement(`${draggedItem.title} movido para ${targetCol?.title || newStatus}`);
     }
   };
 
@@ -389,6 +407,9 @@ export function KanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
+      <div className="sr-only" aria-live="polite" role="status">
+        {announcement}
+      </div>
       <div
         className={cn(
           'grid items-start gap-4',
@@ -407,6 +428,7 @@ export function KanbanBoard({
             column={column}
             items={itemsByStatus[column.id] || []}
             isOver={overColumnId === column.id}
+            selectedId={selectedId}
             onItemClick={onItemClick}
             renderItemContent={renderItemContent}
           />

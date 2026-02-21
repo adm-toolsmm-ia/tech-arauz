@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 // ---------- Types ----------
@@ -328,6 +329,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   };
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="flex flex-col">
       <DashboardHeader title="Cronogramas" subtitle="Visualize todos os cronogramas de projetos" />
 
@@ -596,6 +598,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
         </SplitView>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
 
@@ -691,8 +694,8 @@ function MonthView({
                     <span
                       className={cn(
                         'mt-0.5 text-xs leading-none',
-                        isToday && 'font-bold text-primary',
-                        date.getMonth() !== month && 'text-muted-foreground/50',
+                        isToday && 'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
+                        !isToday && date.getMonth() !== month && 'text-muted-foreground/50',
                       )}
                     >
                       {date.getDate()}
@@ -702,13 +705,20 @@ function MonthView({
                         {daySchedules.slice(0, maxDots).map((s) => {
                           const colorIdx = getProjectColorIndex(s.project_id, projectIds);
                           return (
-                            <div
-                              key={s.id}
-                              className={cn(
-                                'h-1.5 w-1.5 rounded-full',
-                                s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
-                              )}
-                            />
+                            <Tooltip key={s.id}>
+                              <TooltipTrigger asChild>
+                                <div
+                                  className={cn(
+                                    'h-1.5 w-1.5 rounded-full',
+                                    s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
+                                  )}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-[200px]">
+                                <p className="text-xs font-medium">{s.atividade || 'Sem nome'}</p>
+                                <p className="text-[10px] text-muted-foreground">{s.project?.titulo || 'Projeto'}</p>
+                              </TooltipContent>
+                            </Tooltip>
                           );
                         })}
                         {daySchedules.length > maxDots && (
@@ -835,11 +845,12 @@ function WeekView({
                 className={cn(
                   'flex min-h-[120px] flex-col rounded-lg border p-2 transition-all',
                   'hover:border-primary/50 hover:bg-accent/30 focus:outline-none focus:ring-2 focus:ring-ring/50',
-                  isToday && 'border-primary bg-primary/5',
+                  isToday && 'border-primary bg-primary/5 shadow-sm',
                   isSelected && 'ring-2 ring-primary',
                   hasDelayed && 'border-red-300 dark:border-red-700',
                 )}
               >
+                {isToday && <div className="mb-1 h-0.5 w-full rounded-full bg-primary" />}
                 <div className="mb-1.5 flex items-center justify-between">
                   <span className={cn('text-xs font-medium', isToday && 'font-bold text-primary')}>
                     {DAY_NAMES[date.getDay()]}
@@ -859,17 +870,27 @@ function WeekView({
                   {daySchedules.slice(0, 3).map((s) => {
                     const colorIdx = getProjectColorIndex(s.project_id, projectIds);
                     return (
-                      <div
-                        key={s.id}
-                        className={cn(
-                          'truncate rounded px-1 py-0.5 text-[10px] font-medium',
-                          s.atrasado
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                            : PROJECT_COLORS_LIGHT[colorIdx],
-                        )}
-                      >
-                        {s.atividade || 'Sem nome'}
-                      </div>
+                      <Tooltip key={s.id}>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={cn(
+                              'truncate rounded px-1 py-0.5 text-[10px] font-medium',
+                              s.atrasado
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                : PROJECT_COLORS_LIGHT[colorIdx],
+                            )}
+                          >
+                            {s.atividade || 'Sem nome'}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[240px]">
+                          <p className="text-xs font-medium">{s.atividade || 'Sem nome'}</p>
+                          <p className="text-[10px] text-muted-foreground">{s.project?.titulo || 'Projeto'}</p>
+                          {s.responsavel && (
+                            <p className="text-[10px] text-muted-foreground">Resp: {s.responsavel}</p>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
                     );
                   })}
                   {daySchedules.length > 3 && (
@@ -903,15 +924,21 @@ function SelectedDayPanel({
   if (schedules.length === 0) {
     return (
       <Card className="animate-in slide-in-from-top-2">
-        <CardContent className="py-8 text-center">
-          <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground/50" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            Nenhuma atividade em{' '}
+        <CardContent className="py-12 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/50">
+            <CalendarDays className="h-8 w-8 text-muted-foreground/40" />
+          </div>
+          <h3 className="mt-4 text-sm font-medium text-foreground">Nenhuma atividade</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Não há atividades programadas para{' '}
             {date.toLocaleDateString('pt-BR', {
               weekday: 'long',
               day: '2-digit',
               month: 'long',
             })}
+          </p>
+          <p className="mt-3 text-xs text-muted-foreground/70">
+            Selecione outro dia no calendário ou ajuste os filtros.
           </p>
         </CardContent>
       </Card>

@@ -31,6 +31,14 @@ import {
   extractUniqueValues,
   applyProjectFilters,
 } from '@/components/filters/ProjectFilters';
+import {
+  phaseLabels,
+  phaseColors,
+  phaseOrder,
+  bannedPhases,
+  resolvePhaseLabel,
+} from '@/lib/constants/phase-labels';
+import { SkeletonKanbanCard, SkeletonTableRow } from '@/components/ui/skeletons';
 
 interface Project {
   id: string;
@@ -112,9 +120,10 @@ interface Project {
 
 interface ProjectsContentProps {
   projects: Project[];
+  isLoading?: boolean;
 }
 
-export function ProjectsContent({ projects: initialProjects }: ProjectsContentProps) {
+export function ProjectsContent({ projects: initialProjects, isLoading = false }: ProjectsContentProps) {
   const [projects, setProjects] = React.useState<Project[]>(initialProjects);
   const [view, setView] = React.useState<ViewMode>('kanban');
   const [filters, setFilters] = React.useState<ProjectFilterState>(defaultFilters);
@@ -165,8 +174,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
     return applyProjectFilters(projects, filters);
   }, [projects, filters]);
 
-  // Debug: Check statuses
-  console.log('Project Statuses:', Array.from(new Set(projects.map((p) => p.status))));
+
 
   // Calculate KPIs
   const totalValue = projects.reduce((sum, p) => sum + (p.total_value || 0), 0);
@@ -200,77 +208,20 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
       new Set(projects.map((p) => normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos')),
     );
 
-    // Fases Proibidas (Nunca visíveis no Board)
-    const bannedPhases = ['fila_projetos', 'fila_de_projetos'];
-
-    // Combine phases (only show phases that actually exist)
-    const phases = Array.from(new Set(existingPhases)).filter((p) => !bannedPhases.includes(p));
-
-    // Ordem das fases no fluxo de projeto
-    const phaseOrder = [
-      'fila_projetos',
-      'fila_de_projetos',
-      'levantamentos_iniciais',
-      'analise_e_definicao_do_projeto',
-      'aprovacao_do_projeto',
-      'execucao_homologacao',
-      'validacao_homologacao',
-      'execucao_producao',
-      'validacao_producao',
-      'monitoramento_producao',
-      'concluido',
-      'cancelado',
-      'suspenso',
-    ];
+    // Combine phases (only show phases that actually exist, excluding banned)
+    const phases = Array.from(new Set(existingPhases)).filter(
+      (p) => !(bannedPhases as readonly string[]).includes(p),
+    );
 
     const sortedPhases = phases.sort((a, b) => {
-      const indexA = phaseOrder.indexOf(a);
-      const indexB = phaseOrder.indexOf(b);
+      const indexA = (phaseOrder as readonly string[]).indexOf(a);
+      const indexB = (phaseOrder as readonly string[]).indexOf(b);
 
       if (indexA !== -1 && indexB !== -1) return indexA - indexB;
       if (indexA !== -1) return -1;
       if (indexB !== -1) return 1;
       return a.localeCompare(b);
     });
-
-    // Labels amigáveis para as fases
-    const phaseLabels: Record<string, string> = {
-      fila_projetos: 'Fila de Projetos',
-      fila_de_projetos: 'Fila de Projetos',
-      levantamentos_iniciais: 'Levantamentos',
-      analise_e_definicao_do_projeto: 'Análise/Definição',
-      aprovacao_do_projeto: 'Aprovação',
-      execucao_homologacao: 'Exec - Homolog',
-      validacao_homologacao: 'Valid - Homolog',
-      execucao_producao: 'Exec - Produção',
-      validacao_producao: 'Valid - Produção',
-      monitoramento_producao: 'Monitoramento',
-      concluido: 'Concluído',
-      cancelado: 'Cancelado',
-      suspenso: 'Suspenso',
-      // Legados
-      projeto_futuro: 'Futuro',
-      em_execucao: 'Em Execução',
-      aguardando_fornecedor: 'Aguard. Fornecedor',
-      em_assinatura: 'Em Assinatura',
-    };
-
-    // Cores por fase
-    const phaseColors: Record<string, string> = {
-      fila_projetos: 'blue',
-      fila_de_projetos: 'blue',
-      levantamentos_iniciais: 'amber',
-      analise_e_definicao_do_projeto: 'amber',
-      aprovacao_do_projeto: 'amber',
-      execucao_homologacao: 'purple',
-      validacao_homologacao: 'cyan',
-      execucao_producao: 'purple',
-      validacao_producao: 'cyan',
-      monitoramento_producao: 'green',
-      concluido: 'green',
-      cancelado: 'red',
-      suspenso: 'gray',
-    };
 
     return sortedPhases.map((phase) => {
       // Tenta encontrar o título original da fase de um projeto
@@ -280,7 +231,7 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
       const originalTitle = project?.fase_atual || project?.aprovador_atual;
 
       // Formata o título: usa label conhecido, ou título original, ou formata o slug
-      let title = phaseLabels[phase];
+      let title = phaseLabels[phase as keyof typeof phaseLabels];
       if (!title && originalTitle) {
         title = originalTitle;
       }
@@ -433,10 +384,38 @@ export function ProjectsContent({ projects: initialProjects }: ProjectsContentPr
         </div>
 
         {/* Content */}
-        {view === 'kanban' ? (
+        {isLoading ? (
+          view === 'kanban' ? (
+            <div className="grid auto-cols-[280px] grid-flow-col gap-4 overflow-x-auto pb-4">
+              {Array.from({ length: 3 }).map((_, col) => (
+                <div key={col} className="space-y-3 rounded-lg border bg-muted/20 p-3">
+                  <div className="h-6 w-24 animate-pulse rounded bg-muted" />
+                  {Array.from({ length: 2 }).map((_, row) => (
+                    <SkeletonKanbanCard key={row} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <tbody>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <SkeletonTableRow key={i} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        ) : view === 'kanban' ? (
           <KanbanBoard
             columns={dynamicColumns}
             items={kanbanItems}
+            selectedId={selectedProject?.id}
             onItemClick={handleItemClick}
             onStatusChange={handleStatusChange}
             emptyMessage="Nenhum projeto encontrado. Sincronize com o Espaider para importar projetos."
@@ -576,7 +555,7 @@ function ImpactBadge({ level }: { level: string | null | undefined }) {
     .replace(/[\u0300-\u036f]/g, '');
   return (
     <span
-      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ${colors[key] || colors.normal}`}
+      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-medium ${colors[key] || colors.normal}`}
     >
       {level}
     </span>
@@ -673,19 +652,32 @@ function ProjectList({
     field: string;
     children: React.ReactNode;
     className?: string;
-  }) => (
-    <th
-      className={`cursor-pointer select-none px-3 py-2.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground ${className}`}
-      onClick={() => handleSort(field)}
-    >
-      <span className="flex items-center gap-1">
-        {children}
-        {sortField === field && (
-          <span className="text-primary">{sortDir === 'asc' ? '↑' : '↓'}</span>
-        )}
-      </span>
-    </th>
-  );
+  }) => {
+    const isSorted = sortField === field;
+
+    return (
+      <th
+        className={`cursor-pointer select-none px-3 py-2.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
+        onClick={() => handleSort(field)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleSort(field);
+          }
+        }}
+        aria-sort={isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
+        tabIndex={0}
+        role="columnheader"
+      >
+        <span className="flex items-center gap-1">
+          {children}
+          {sortField === field && (
+            <span className="text-primary">{sortDir === 'asc' ? '↑' : '↓'}</span>
+          )}
+        </span>
+      </th>
+    );
+  };
 
   const isOverdue = (dateStr: string | null | undefined) => {
     if (!dateStr) return false;
@@ -719,31 +711,12 @@ function ProjectList({
                 <SortHeader field="status">Status</SortHeader>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y [&>tr:nth-child(even)]:bg-muted/20">
               {sortedProjects.map((project) => {
                 const faseSlug = normalizeFaseSlug(project.fase_atual);
                 const statusSlug = normalizeFaseSlug(project.status); // Reuse same normalization for simplicity
 
-                // Recreate phase labels map for list view (or move to shared const)
-                const phaseLabels: Record<string, string> = {
-                  fila_projetos: 'Fila de Projetos',
-                  fila_de_projetos: 'Fila de Projetos',
-                  levantamentos_iniciais: 'Levantamentos',
-                  analise_e_definicao_do_projeto: 'Análise/Definição',
-                  aprovacao_do_projeto: 'Aprovação',
-                  execucao_homologacao: 'Exec - Homolog',
-                  validacao_homologacao: 'Valid - Homolog',
-                  execucao_producao: 'Exec - Produção',
-                  validacao_producao: 'Valid - Produção',
-                  monitoramento_producao: 'Monitoramento',
-                  concluido: 'Concluído',
-                  cancelado: 'Cancelado',
-                  suspenso: 'Suspenso',
-                  projeto_futuro: 'Futuro',
-                  em_execucao: 'Em Execução',
-                  aguardando_fornecedor: 'Aguard. Fornecedor',
-                  em_assinatura: 'Em Assinatura',
-                };
+                // Now uses shared phaseLabels from @/lib/constants/phase-labels
 
                 const faseLabel = phaseLabels[faseSlug] || project.fase_atual || '-';
 
@@ -771,13 +744,12 @@ function ProjectList({
                     <td className="px-3 py-3">
                       {project.priority ? (
                         <span
-                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
-                            project.priority === 'urgente'
+                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${project.priority === 'urgente'
                               ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
                               : project.priority === 'alta'
                                 ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
                                 : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
-                          }`}
+                            }`}
                         >
                           {project.priority}
                         </span>
@@ -785,7 +757,7 @@ function ProjectList({
                         <span className="text-xs text-muted-foreground">-</span>
                       )}
                     </td>
-                    <td className="px-3 py-3">
+                    <td className="px-3 py-3 tabular-nums">
                       {project.end_date ? (
                         <span
                           className={`text-xs ${isOverdue(project.end_date) && project.status !== 'concluido' ? 'font-medium text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}
@@ -1000,9 +972,8 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status] || statusStyles.projeto_futuro
-      }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
+        }`}
     >
       {statusLabels[status] || status}
     </span>

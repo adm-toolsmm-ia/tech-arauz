@@ -31,6 +31,13 @@ import {
   buildDistributionData,
 } from '@/components/charts';
 import type { UIProject } from '@/lib/transformers/project';
+import { SkeletonKPI } from '@/components/ui/skeletons';
+import {
+  statusLabels,
+  statusStyles,
+  priorityStyles,
+  priorityLabels,
+} from '@/lib/constants/phase-labels';
 
 interface Profile {
   id: string;
@@ -70,27 +77,10 @@ interface DashboardContentProps {
   profile: Profile | null;
   projects: UIProject[];
   chartProjects?: ChartProject[];
+  isLoading?: boolean;
 }
 
-const statusLabels: Record<string, string> = {
-  projeto_futuro: 'Futuro',
-  em_aprovacao: 'Em Aprovação',
-  em_desenvolvimento: 'Em Desenvolvimento',
-  em_homologacao: 'Em Homologação',
-  concluido: 'Concluído',
-  cancelado: 'Cancelado',
-  suspenso: 'Suspenso',
-};
 
-const statusStyles: Record<string, string> = {
-  projeto_futuro: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  em_aprovacao: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  em_desenvolvimento: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-  em_homologacao: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
-  concluido: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  cancelado: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-  suspenso: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300',
-};
 
 function isOverdue(project: UIProject): boolean {
   const status = (project.status || '').trim().toLowerCase();
@@ -107,6 +97,7 @@ export function DashboardContent({
   profile,
   projects,
   chartProjects = [],
+  isLoading = false,
 }: DashboardContentProps) {
   const [activeFilter, setActiveFilter] = React.useState<ActiveFilter | null>(null);
   const [selectedProject, setSelectedProject] = React.useState<UIProject | null>(null);
@@ -231,95 +222,107 @@ export function DashboardContent({
       <div className="flex-1 space-y-6 p-6">
         {/* KPIs Row 1: Core Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard
-            title="Total de Projetos"
-            value={totalProjects}
-            icon={FolderOpen}
-            subtitle={`${activeProjects} ativos`}
-            onClick={() => handleKPIClick({ type: 'all', label: 'Todos os Projetos' })}
-            active={activeFilter?.type === 'all'}
-          />
-          <KPICard
-            title="Em Andamento"
-            value={activeProjects}
-            icon={Clock}
-            subtitle={`${chartProjects.filter((p) => p.status === 'em_desenvolvimento').length} em desenvolvimento`}
-            onClick={() => handleKPIClick({ type: 'active', label: 'Projetos Ativos' })}
-            active={activeFilter?.type === 'active'}
-          />
-          <KPICard
-            title="Concluídos"
-            value={completedProjects}
-            icon={CheckCircle}
-            trend={
-              completedThisMonth > 0
-                ? {
-                    value: `${completedThisMonth} este mês`,
-                    positive: completedThisMonth >= completedLastMonth,
-                  }
-                : undefined
-            }
-            subtitle={completedThisMonth === 0 ? 'Nenhum este mês' : undefined}
-            onClick={() => handleKPIClick({ type: 'completed', label: 'Projetos Concluídos' })}
-            active={activeFilter?.type === 'completed'}
-          />
-          <KPICard
-            title="Atrasados"
-            value={overdueProjects}
-            icon={AlertTriangle}
-            subtitle={overdueProjects > 0 ? 'Requer atenção imediata' : 'Todos no prazo'}
-            className={overdueProjects > 0 ? 'border-destructive/30' : undefined}
-            onClick={() => handleKPIClick({ type: 'overdue', label: 'Projetos Atrasados' })}
-            active={activeFilter?.type === 'overdue'}
-          />
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <SkeletonKPI key={i} />)
+          ) : (
+            <>
+              <KPICard
+                title="Total de Projetos"
+                value={totalProjects}
+                icon={FolderOpen}
+                subtitle={`${activeProjects} ativos`}
+                onClick={() => handleKPIClick({ type: 'all', label: 'Todos os Projetos' })}
+                active={activeFilter?.type === 'all'}
+              />
+              <KPICard
+                title="Em Andamento"
+                value={activeProjects}
+                icon={Clock}
+                subtitle={`${chartProjects.filter((p) => p.status === 'em_desenvolvimento').length} em desenvolvimento`}
+                onClick={() => handleKPIClick({ type: 'active', label: 'Projetos Ativos' })}
+                active={activeFilter?.type === 'active'}
+              />
+              <KPICard
+                title="Concluídos"
+                value={completedProjects}
+                icon={CheckCircle}
+                trend={
+                  completedThisMonth > 0
+                    ? {
+                      value: `${completedThisMonth} este mês`,
+                      positive: completedThisMonth >= completedLastMonth,
+                    }
+                    : undefined
+                }
+                subtitle={completedThisMonth === 0 ? 'Nenhum este mês' : undefined}
+                onClick={() => handleKPIClick({ type: 'completed', label: 'Projetos Concluídos' })}
+                active={activeFilter?.type === 'completed'}
+              />
+              <KPICard
+                title="Atrasados"
+                value={overdueProjects}
+                icon={AlertTriangle}
+                subtitle={overdueProjects > 0 ? 'Requer atenção imediata' : 'Todos no prazo'}
+                className={overdueProjects > 0 ? 'border-destructive/30' : undefined}
+                onClick={() => handleKPIClick({ type: 'overdue', label: 'Projetos Atrasados' })}
+                active={activeFilter?.type === 'overdue'}
+              />
+            </>
+          )}
         </div>
 
         {/* KPIs Row 2: Strategic Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard
-            title="Alta Prioridade"
-            value={highPriorityCount}
-            icon={Zap}
-            subtitle="Urgente + Alta"
-            onClick={() => handleKPIClick({ type: 'high_priority', label: 'Alta Prioridade' })}
-            active={activeFilter?.type === 'high_priority'}
-          />
-          <KPICard
-            title="Importância Especial"
-            value={specialCount}
-            icon={Star}
-            subtitle="Projetos estratégicos"
-            onClick={() => handleKPIClick({ type: 'special', label: 'Importância Especial' })}
-            active={activeFilter?.type === 'special'}
-          />
-          <KPICard
-            title="Taxa de Conclusão"
-            value={
-              totalProjects > 0 ? `${Math.round((completedProjects / totalProjects) * 100)}%` : '0%'
-            }
-            icon={TrendingUp}
-            trend={
-              completedThisMonth > completedLastMonth
-                ? {
-                    value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
-                    positive: true,
-                  }
-                : completedLastMonth > completedThisMonth
-                  ? {
-                      value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
-                      positive: false,
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <SkeletonKPI key={i} />)
+          ) : (
+            <>
+              <KPICard
+                title="Alta Prioridade"
+                value={highPriorityCount}
+                icon={Zap}
+                subtitle="Urgente + Alta"
+                onClick={() => handleKPIClick({ type: 'high_priority', label: 'Alta Prioridade' })}
+                active={activeFilter?.type === 'high_priority'}
+              />
+              <KPICard
+                title="Importância Especial"
+                value={specialCount}
+                icon={Star}
+                subtitle="Projetos estratégicos"
+                onClick={() => handleKPIClick({ type: 'special', label: 'Importância Especial' })}
+                active={activeFilter?.type === 'special'}
+              />
+              <KPICard
+                title="Taxa de Conclusão"
+                value={
+                  totalProjects > 0 ? `${Math.round((completedProjects / totalProjects) * 100)}%` : '0%'
+                }
+                icon={TrendingUp}
+                trend={
+                  completedThisMonth > completedLastMonth
+                    ? {
+                      value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
+                      positive: true,
                     }
-                  : undefined
-            }
-          />
-          <KPICard
-            title="Projetos por Área"
-            value={Object.keys(areaCounts).length}
-            icon={Building2}
-            subtitle={
-              topAreas.length > 0 ? topAreas.map(([a, c]) => `${a} (${c})`).join(', ') : 'Sem dados'
-            }
-          />
+                    : completedLastMonth > completedThisMonth
+                      ? {
+                        value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
+                        positive: false,
+                      }
+                      : undefined
+                }
+              />
+              <KPICard
+                title="Projetos por Área"
+                value={Object.keys(areaCounts).length}
+                icon={Building2}
+                subtitle={
+                  topAreas.length > 0 ? topAreas.map(([a, c]) => `${a} (${c})`).join(', ') : 'Sem dados'
+                }
+              />
+            </>
+          )}
         </div>
 
         {/* Charts: Pipeline + Distribution + Trend */}
@@ -378,8 +381,13 @@ export function DashboardContent({
                       return (
                         <div
                           key={project.id}
+                          role="button"
+                          tabIndex={0}
                           onClick={() => handleProjectClick(project)}
-                          className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleProjectClick(project);
+                          }}
+                          className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <div className="min-w-0 flex-1 space-y-1">
                             <div className="flex items-center gap-2">
@@ -510,9 +518,8 @@ export function DashboardContent({
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status] || statusStyles.projeto_futuro
-      }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
+        }`}
     >
       {statusLabels[status] || status}
     </span>
@@ -520,25 +527,12 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function PriorityBadge({ priority }: { priority: string }) {
-  const styles: Record<string, string> = {
-    urgente: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-    alta: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-    media: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-    baixa: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  };
-  const labels: Record<string, string> = {
-    urgente: 'Urgente',
-    alta: 'Alta',
-    media: 'Média',
-    baixa: 'Baixa',
-  };
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-        styles[priority] || 'bg-gray-100 text-gray-700'
-      }`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${priorityStyles[priority] || 'bg-gray-100 text-gray-700'
+        }`}
     >
-      {labels[priority] || priority}
+      {priorityLabels[priority] || priority}
     </span>
   );
 }

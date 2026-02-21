@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { statusLabels, statusStyles } from '@/lib/constants/phase-labels';
 
 interface UIProject {
   id: string;
@@ -115,33 +116,7 @@ interface ProjectCockpitProps {
   isSyncing?: boolean;
 }
 
-const statusLabels: Record<string, string> = {
-  projeto_futuro: 'Projeto Futuro',
-  em_aprovacao: 'Em Aprovação',
-  em_desenvolvimento: 'Em Desenvolvimento',
-  em_homologacao: 'Em Homologação',
-  concluido: 'Concluído',
-  aprovado_e_concluido: 'Aprovado e Concluído',
-  cancelado: 'Cancelado',
-  suspenso: 'Suspenso',
-};
 
-const statusStyles: Record<string, string> = {
-  projeto_futuro: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  fila_projetos: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  em_aprovacao: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  em_execucao: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  execucao_homologacao: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  execucao_producao: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  em_homologacao: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
-  validacao_homologacao: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
-  validacao_producao: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
-  concluido: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  aprovado_e_concluido: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  monitoramento_producao: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  cancelado: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  suspenso: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
-};
 
 function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
   return (

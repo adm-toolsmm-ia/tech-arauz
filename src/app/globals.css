@@ -68,7 +68,7 @@
     --status-em-atendimento: 38 92% 50%;
     --status-aguardando: 25 95% 53%;
     --status-resolvido: 142 71% 45%;
-    --status-cancelado: 220 9% 60%;
+    --status-cancelado: 220 9% 50%;
 
     /* Priority - Cores funcionais apenas */
     --priority-alta: 0 84% 60%;

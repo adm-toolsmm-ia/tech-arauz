@@ -11,19 +11,6 @@ const config: Config = {
 	theme: {
 		extend: {
 			colors: {
-				brand: {
-					'50': '#f2f8fc',
-					'100': '#e1eff8',
-					'200': '#c6e0f1',
-					'300': '#9dc8e6',
-					'400': '#5fa5d6',
-					'500': '#0F9ED5', /* Cyan Highlight */
-					'600': '#156082', /* Teal Secondary */
-					'700': '#124e6b',
-					'800': '#11425a',
-					'900': '#0E2841', /* Deep Blue Primary */
-					'950': '#081a2b'
-				},
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				card: {
@@ -121,10 +108,10 @@ const config: Config = {
 				]
 			},
 			boxShadow: {
-				soft: '0 2px 8px rgba(59, 130, 246, 0.08)',
-				medium: '0 4px 16px rgba(59, 130, 246, 0.12)',
-				card: '0 1px 3px rgba(59, 130, 246, 0.1)',
-				'card-hover': '0 8px 30px rgba(59, 130, 246, 0.15)',
+				soft: '0 2px 8px rgba(0, 0, 0, 0.06)',
+				medium: '0 4px 16px rgba(0, 0, 0, 0.08)',
+				card: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)',
+				'card-hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
 				elevated: '0 12px 40px rgba(0, 0, 0, 0.12)',
 				'inner-glow': 'inset 0 1px 0 rgba(255, 255, 255, 0.1)'
 			},

@@ -68,8 +68,8 @@ const TaskListHeaderDefault = ({ headerHeight, fontFamily, fontSize }: any) => {
             style={{ height: headerHeight, fontFamily, fontSize: '0.75rem' }}
         >
             <div className="flex-1 px-4 truncate">Atividade / Projeto</div>
-            <div className="w-24 px-2 truncate hidden sm:block">Início</div>
-            <div className="w-24 px-2 truncate hidden sm:block">Fim</div>
+            <div className="w-24 px-2 truncate hidden md:block">Início</div>
+            <div className="w-24 px-2 truncate hidden md:block">Fim</div>
         </div>
     );
 };
@@ -108,10 +108,10 @@ const TaskListTableDefault = ({ rowHeight, rowWidth, tasks, fontFamily, fontSize
                             )}
                             <span className="truncate" title={t.name}>{t.name}</span>
                         </div>
-                        <div className="w-24 px-2 text-muted-foreground truncate hidden sm:block">
+                        <div className="w-24 px-2 text-muted-foreground truncate hidden md:block">
                             {t.start.toLocaleDateString('pt-BR')}
                         </div>
-                        <div className="w-24 px-2 text-muted-foreground truncate hidden sm:block">
+                        <div className="w-24 px-2 text-muted-foreground truncate hidden md:block">
                             {t.end.toLocaleDateString('pt-BR')}
                         </div>
                     </div>
@@ -125,6 +125,23 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
     const { theme } = useTheme();
     const [viewMode, setViewMode] = React.useState<ViewMode>(ViewMode.Day);
     const [collapsedIds, setCollapsedIds] = React.useState<string[]>([]);
+    const [listWidth, setListWidth] = React.useState<string>("350px");
+
+    React.useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setListWidth("180px"); // Only show name, dates are hidden via CSS md:block
+            } else if (window.innerWidth < 1280) {
+                setListWidth("280px"); // Slightly compact
+            } else {
+                setListWidth("380px"); // Full width on large desktop to prevent text cutoff
+            }
+        };
+
+        handleResize(); // Init
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const tasks: Task[] = React.useMemo(() => {
         const uniqueProjectIds = Array.from(new Set(schedules.map((s) => s.project_id)));
@@ -281,28 +298,30 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
                 </div>
             </div>
 
-            <div className="w-full overflow-hidden rounded-md border bg-card/50 shadow-sm">
-                <Gantt
-                    tasks={tasks}
-                    viewMode={viewMode}
-                    onClick={handleTaskClick}
-                    onExpanderClick={handleExpanderClick}
-                    onDateChange={() => { }}
-                    onProgressChange={() => { }}
-                    listCellWidth="300px" // Using a fixed wider width for the custom table
-                    TaskListHeader={TaskListHeaderDefault}
-                    TaskListTable={TaskListTableDefault}
-                    columnWidth={columnWidth}
-                    rowHeight={45}
-                    barCornerRadius={4}
-                    handleWidth={8}
-                    fontFamily="inherit"
-                    fontSize="12px"
-                    arrowColor="#9ca3af" // muted-foreground equivalent
-                    todayColor={isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'}
-                    barProgressColor={isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}
-                    barBackgroundColor={isDarkMode ? '#333' : '#e5e7eb'}
-                />
+            <div className="w-full overflow-x-auto rounded-md border bg-card/50 shadow-sm scrollbar-thin">
+                <div className="min-w-[700px] lg:min-w-0">
+                    <Gantt
+                        tasks={tasks}
+                        viewMode={viewMode}
+                        onClick={handleTaskClick}
+                        onExpanderClick={handleExpanderClick}
+                        onDateChange={() => { }}
+                        onProgressChange={() => { }}
+                        listCellWidth={listWidth}
+                        TaskListHeader={TaskListHeaderDefault}
+                        TaskListTable={TaskListTableDefault}
+                        columnWidth={columnWidth}
+                        rowHeight={45}
+                        barCornerRadius={4}
+                        handleWidth={8}
+                        fontFamily="inherit"
+                        fontSize="12px"
+                        arrowColor="#9ca3af" // muted-foreground equivalent
+                        todayColor={isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'}
+                        barProgressColor={isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}
+                        barBackgroundColor={isDarkMode ? '#333' : '#e5e7eb'}
+                    />
+                </div>
             </div>
         </div>
     );

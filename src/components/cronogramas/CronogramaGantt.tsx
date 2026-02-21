@@ -6,6 +6,7 @@ import 'gantt-task-react/dist/index.css';
 import { useTheme } from 'next-themes';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 export interface ScheduleProject {
     id: string;
@@ -59,41 +60,163 @@ function getProjectColorHex(projectId: string, projectIds: string[]): string {
     return HEX_COLORS[idx >= 0 ? idx % HEX_COLORS.length : 0];
 }
 
+// Custom PT-BR Task List Header
+const TaskListHeaderDefault = ({ headerHeight, fontFamily, fontSize }: any) => {
+    return (
+        <div
+            className="flex items-center border-b border-border bg-muted/40 text-muted-foreground font-semibold"
+            style={{ height: headerHeight, fontFamily, fontSize: '0.75rem' }}
+        >
+            <div className="flex-1 px-4 truncate">Atividade / Projeto</div>
+            <div className="w-24 px-2 truncate hidden sm:block">Início</div>
+            <div className="w-24 px-2 truncate hidden sm:block">Fim</div>
+        </div>
+    );
+};
+
+// Custom PT-BR Task List Table
+const TaskListTableDefault = ({ rowHeight, rowWidth, tasks, fontFamily, fontSize, onExpanderClick }: any) => {
+    return (
+        <div style={{ fontFamily, fontSize: '0.75rem' }} className="flex flex-col">
+            {tasks.map((t: Task) => {
+                const isProject = t.type === 'project';
+                return (
+                    <div
+                        key={t.id}
+                        className={`flex items-center border-b border-border/50 transition-colors ${isProject ? 'bg-muted/10 font-semibold text-foreground' : 'hover:bg-muted/30 text-muted-foreground'
+                            }`}
+                        style={{ height: rowHeight }}
+                    >
+                        <div
+                            className="flex-1 flex items-center px-2 truncate"
+                            style={{ paddingLeft: isProject ? '0.5rem' : '1.5rem' }}
+                        >
+                            {isProject && (
+                                <button
+                                    onClick={() => onExpanderClick(t)}
+                                    className="mr-1.5 p-0.5 rounded-sm hover:bg-muted text-muted-foreground transition-all"
+                                >
+                                    {t.hideChildren ? (
+                                        <ChevronRight className="h-3.5 w-3.5" />
+                                    ) : (
+                                        <ChevronDown className="h-3.5 w-3.5" />
+                                    )}
+                                </button>
+                            )}
+                            {!isProject && (
+                                <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30 mr-2 shrink-0" />
+                            )}
+                            <span className="truncate" title={t.name}>{t.name}</span>
+                        </div>
+                        <div className="w-24 px-2 text-muted-foreground truncate hidden sm:block">
+                            {t.start.toLocaleDateString('pt-BR')}
+                        </div>
+                        <div className="w-24 px-2 text-muted-foreground truncate hidden sm:block">
+                            {t.end.toLocaleDateString('pt-BR')}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
 export function CronogramaGantt({ schedules, projectIds, onActivityClick }: CronogramaGanttProps) {
     const { theme } = useTheme();
     const [viewMode, setViewMode] = React.useState<ViewMode>(ViewMode.Day);
+    const [collapsedIds, setCollapsedIds] = React.useState<string[]>([]);
 
     const tasks: Task[] = React.useMemo(() => {
-        return schedules
-            .map((s) => {
+        const uniqueProjectIds = Array.from(new Set(schedules.map((s) => s.project_id)));
+
+        // Create virtual project parent tasks
+        const projectTasks: Task[] = uniqueProjectIds.map((projectId) => {
+            const projectSchedules = schedules.filter((s) => s.project_id === projectId);
+            const projectColor = getProjectColorHex(projectId, projectIds);
+            const projectName = projectSchedules[0]?.project?.titulo || 'Projeto Sem Nome';
+
+            let minStart = new Date(8640000000000000);
+            let maxEnd = new Date(-8640000000000000);
+            let completedCount = 0;
+
+            projectSchedules.forEach((s) => {
                 const end = new Date(s.data_fim || s.data_prazo || new Date());
-                let start = new Date(s.data_inicio || end);
+                const start = new Date(s.data_inicio || end);
+                if (start < minStart) minStart = start;
+                if (end > maxEnd) maxEnd = end;
+                if (s.status === 'Concluído') completedCount++;
+            });
 
-                if (start.getTime() === end.getTime()) {
-                    // Default to 1 day span if start and end are the same
-                    start.setDate(start.getDate() - 1);
-                }
+            if (minStart.getTime() > maxEnd.getTime()) {
+                minStart = new Date();
+                maxEnd = new Date();
+            }
 
-                const projectColor = getProjectColorHex(s.project_id, projectIds);
+            const isCollapsed = collapsedIds.includes(`project-${projectId}`);
+            const progress = projectSchedules.length > 0 ? (completedCount / projectSchedules.length) * 100 : 0;
 
-                return {
-                    id: s.id,
-                    type: 'task',
-                    name: s.atividade || 'Sem nome',
-                    start,
-                    end,
-                    progress: s.status === 'Concluído' ? 100 : 0,
-                    styles: {
-                        backgroundColor: s.atrasado ? '#ef4444' : projectColor,
-                        backgroundSelectedColor: s.atrasado ? '#dc2626' : projectColor,
-                        progressColor: s.atrasado ? '#b91c1c' : '#ffffff44',
-                    },
-                    project: s.project?.titulo || 'Projeto',
-                    isDisabled: false, // For Read-only logic, we handle via callbacks
-                } as Task;
-            })
-            .sort((a, b) => a.start.getTime() - b.start.getTime());
-    }, [schedules, projectIds]);
+            return {
+                id: `project-${projectId}`,
+                type: 'project',
+                name: projectName,
+                start: minStart,
+                end: maxEnd,
+                progress: progress,
+                hideChildren: isCollapsed,
+                styles: {
+                    backgroundColor: projectColor,
+                    backgroundSelectedColor: projectColor,
+                    progressColor: projectColor,
+                },
+                isDisabled: false,
+            } as Task;
+        });
+
+        // Create activity child tasks
+        const activityTasks: Task[] = schedules.map((s) => {
+            const end = new Date(s.data_fim || s.data_prazo || new Date());
+            let start = new Date(s.data_inicio || end);
+
+            if (start.getTime() === end.getTime()) {
+                // Default to 1 day span if start and end are the same
+                start.setDate(start.getDate() - 1);
+            }
+
+            const projectColor = getProjectColorHex(s.project_id, projectIds);
+            let progress = 0;
+            if (s.status === 'Concluído') progress = 100;
+            else if (s.status?.toLowerCase().includes('andamento') || s.fase_atividade) progress = 50;
+
+            return {
+                id: s.id,
+                type: 'task',
+                name: s.atividade || 'Sem nome',
+                start,
+                end,
+                progress: progress,
+                project: `project-${s.project_id}`,
+                styles: {
+                    backgroundColor: s.atrasado ? '#ef4444' : projectColor,
+                    backgroundSelectedColor: s.atrasado ? '#dc2626' : projectColor,
+                    progressColor: s.atrasado ? '#b91c1c' : '#ffffff44',
+                },
+                isDisabled: false, // For Read-only logic, we handle via callbacks
+            } as Task;
+        });
+
+        // Concatenate and sort
+        const allTasks = [...projectTasks, ...activityTasks].sort((a, b) => {
+            // Ensure projects come first
+            if (a.type === 'project' && b.type === 'project') return a.start.getTime() - b.start.getTime();
+            if (a.type === 'project' && b.project === a.id) return -1;
+            if (b.type === 'project' && a.project === b.id) return 1;
+
+            // Sort by start date
+            return a.start.getTime() - b.start.getTime();
+        });
+
+        return allTasks;
+    }, [schedules, projectIds, collapsedIds]);
 
     if (tasks.length === 0) {
         return (
@@ -105,61 +228,70 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
         );
     }
 
-    // Find dynamic column width based on ViewMode to look better
-    let columnWidth = 60;
-    if (viewMode === ViewMode.Month) {
-        columnWidth = 250;
-    } else if (viewMode === ViewMode.Week) {
-        columnWidth = 150;
-    }
+    const columnWidth = viewMode === ViewMode.Month ? 250 : viewMode === ViewMode.Week ? 150 : 60;
 
     const handleTaskClick = (task: Task) => {
+        if (task.type === 'project') {
+            handleExpanderClick(task);
+            return;
+        }
+
         if (onActivityClick) {
             const schedule = schedules.find((s) => s.id === task.id);
             if (schedule) onActivityClick(schedule);
         }
     };
 
+    const handleExpanderClick = (task: Task) => {
+        setCollapsedIds((prev) =>
+            prev.includes(task.id) ? prev.filter((id) => id !== task.id) : [...prev, task.id]
+        );
+    };
+
     const isDarkMode = theme === 'dark';
 
     return (
         <div className="space-y-4">
-            <div className="flex gap-2 mb-4 p-1 rounded-md bg-muted/30 w-fit border">
-                <Button
-                    variant={viewMode === ViewMode.Day ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode(ViewMode.Day)}
-                    className="h-7 text-xs"
-                >
-                    Dia
-                </Button>
-                <Button
-                    variant={viewMode === ViewMode.Week ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode(ViewMode.Week)}
-                    className="h-7 text-xs"
-                >
-                    Semana
-                </Button>
-                <Button
-                    variant={viewMode === ViewMode.Month ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode(ViewMode.Month)}
-                    className="h-7 text-xs"
-                >
-                    Mês
-                </Button>
+            <div className="flex justify-between items-center mb-4 p-1 rounded-md bg-muted/30 w-fit border">
+                <div className="flex gap-2">
+                    <Button
+                        variant={viewMode === ViewMode.Day ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode(ViewMode.Day)}
+                        className="h-7 text-xs"
+                    >
+                        Dia
+                    </Button>
+                    <Button
+                        variant={viewMode === ViewMode.Week ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode(ViewMode.Week)}
+                        className="h-7 text-xs"
+                    >
+                        Semana
+                    </Button>
+                    <Button
+                        variant={viewMode === ViewMode.Month ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode(ViewMode.Month)}
+                        className="h-7 text-xs"
+                    >
+                        Mês
+                    </Button>
+                </div>
             </div>
 
-            <div className="w-full overflow-hidden rounded-md border bg-card">
+            <div className="w-full overflow-hidden rounded-md border bg-card/50 shadow-sm">
                 <Gantt
                     tasks={tasks}
                     viewMode={viewMode}
                     onClick={handleTaskClick}
+                    onExpanderClick={handleExpanderClick}
                     onDateChange={() => { }}
                     onProgressChange={() => { }}
-                    // styling for read-only interactivity essentially
-                    listCellWidth={isDarkMode ? "" : "155px"} // Adjust width for labels
+                    listCellWidth="300px" // Using a fixed wider width for the custom table
+                    TaskListHeader={TaskListHeaderDefault}
+                    TaskListTable={TaskListTableDefault}
                     columnWidth={columnWidth}
                     rowHeight={45}
                     barCornerRadius={4}
@@ -168,7 +300,8 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
                     fontSize="12px"
                     arrowColor="#9ca3af" // muted-foreground equivalent
                     todayColor={isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'}
-                    barProgressColor="#ffffff55"
+                    barProgressColor={isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}
+                    barBackgroundColor={isDarkMode ? '#333' : '#e5e7eb'}
                 />
             </div>
         </div>

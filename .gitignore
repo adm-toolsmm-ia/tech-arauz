@@ -22,6 +22,9 @@ out/
 dist/
 build/
 
+# TypeScript
+*.tsbuildinfo
+
 # Production
 /build
 

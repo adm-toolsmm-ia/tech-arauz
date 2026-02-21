@@ -4,32 +4,36 @@ import * as React from 'react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { APIManager } from '@/components/integracoes/APIManager';
 import { LogViewer } from '@/components/integracoes/LogViewer';
-import type { EspaiderApiRow } from './page';
 
 // =============================================================================
 // Types
 // =============================================================================
 
 interface IntegracoesContentProps {
-  apis: EspaiderApiRow[];
   userRole: string;
-  tenantId: string;
 }
 
 // =============================================================================
 // Component: IntegracoesContent
 //
-// Página de Integrações simplificada com 2 componentes principais:
-// 1. APIManager: Exibe cards de APIs + opção de sincronizar
-// 2. LogViewer: Exibe histórico de logs com filtros e paginação
+// Connects APIManager ↔ LogViewer via shared state:
+// - APIManager.onViewLogs → sets datasetFilter on LogViewer
+// - APIManager.onSyncComplete → triggers LogViewer refresh via key
 // =============================================================================
 
-export function IntegracoesContent({
-  apis: initialApis,
-  userRole,
-  tenantId,
-}: IntegracoesContentProps) {
+export function IntegracoesContent({ userRole }: IntegracoesContentProps) {
   const isAdmin = userRole === 'admin';
+  const [datasetFilter, setDatasetFilter] = React.useState<string | undefined>(undefined);
+  const [logViewerKey, setLogViewerKey] = React.useState(0);
+
+  const handleViewLogs = React.useCallback((dataset?: string) => {
+    setDatasetFilter(dataset || undefined);
+  }, []);
+
+  const handleSyncComplete = React.useCallback(() => {
+    // Increment key to force LogViewer re-mount and re-fetch
+    setLogViewerKey((prev) => prev + 1);
+  }, []);
 
   return (
     <>
@@ -39,14 +43,12 @@ export function IntegracoesContent({
       />
 
       <div className="flex-1 space-y-6 p-6">
-        {/* API Manager Component */}
-        <APIManager />
+        {/* API Manager */}
+        <APIManager onViewLogs={handleViewLogs} onSyncComplete={handleSyncComplete} />
 
-        {/* Log Viewer Component - Admin Only */}
-        {isAdmin && (
-          <div className="mt-6">
-            <LogViewer />
-          </div>
+        {/* Log Viewer — visible for admin and user roles (API enforces auth) */}
+        {['admin', 'user'].includes(userRole) && (
+          <LogViewer key={logViewerKey} datasetFilter={datasetFilter} />
         )}
       </div>
     </>

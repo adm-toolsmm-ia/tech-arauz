@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronRight,
   ExternalLink,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,6 +61,7 @@ interface Filters {
   dataset: string;
   startDate: string;
   endDate: string;
+  search: string;
 }
 
 interface Pagination {
@@ -69,23 +71,29 @@ interface Pagination {
   totalPages: number;
 }
 
+interface LogViewerProps {
+  datasetFilter?: string;
+}
+
 // =============================================================================
 // Constants
 // =============================================================================
 
 const LEVEL_CONFIG = {
-  error: { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10' },
+  error: { icon: XCircle, color: 'text-destructive', bg: 'bg-destructive/10', label: 'Erro' },
   warn: {
     icon: AlertTriangle,
     color: 'text-yellow-600 dark:text-yellow-500',
     bg: 'bg-yellow-500/10',
+    label: 'Aviso',
   },
   success: {
     icon: CheckCircle2,
     color: 'text-green-600 dark:text-green-500',
     bg: 'bg-green-500/10',
+    label: 'Sucesso',
   },
-  info: { icon: Info, color: 'text-muted-foreground', bg: 'bg-muted' },
+  info: { icon: Info, color: 'text-muted-foreground', bg: 'bg-muted', label: 'Info' },
 };
 
 const DATASETS = [
@@ -111,10 +119,38 @@ const STATUS_CONFIG: Record<
 };
 
 // =============================================================================
+// Helpers
+// =============================================================================
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
+
+function getErrorMessage(status: number): string {
+  switch (status) {
+    case 401:
+      return 'Sessão expirada. Faça login novamente para visualizar os logs.';
+    case 403:
+      return 'Sem permissão para acessar logs. Contate o administrador do sistema.';
+    case 500:
+      return 'Erro no servidor ao buscar logs. Tente novamente em alguns instantes.';
+    default:
+      return `Erro inesperado (${status}). Tente novamente.`;
+  }
+}
+
+// =============================================================================
 // Component
 // =============================================================================
 
-export function LogViewer() {
+export function LogViewer({ datasetFilter }: LogViewerProps) {
   const [logs, setLogs] = React.useState<LogEntry[]>([]);
   const [summaries, setSummaries] = React.useState<SyncSummary[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -122,9 +158,10 @@ export function LogViewer() {
   const [expandedRows, setExpandedRows] = React.useState<Set<string>>(new Set());
   const [filters, setFilters] = React.useState<Filters>({
     level: '',
-    dataset: '',
+    dataset: datasetFilter || '',
     startDate: '',
     endDate: '',
+    search: '',
   });
   const [showFilters, setShowFilters] = React.useState(false);
   const [pagination, setPagination] = React.useState<Pagination>({
@@ -133,6 +170,10 @@ export function LogViewer() {
     total: 0,
     totalPages: 0,
   });
+
+  // Track search input separately for debounce
+  const [searchInput, setSearchInput] = React.useState('');
+  const searchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // =========================================================================
   // Fetch logs with filters and pagination
@@ -149,13 +190,12 @@ export function LogViewer() {
         if (filters.dataset) params.set('dataset', filters.dataset);
         if (filters.startDate) params.set('startDate', filters.startDate);
         if (filters.endDate) params.set('endDate', filters.endDate);
+        if (filters.search) params.set('search', filters.search);
 
         const res = await fetch(`/api/integracoes/logs?${params}`);
 
         if (!res.ok) {
-          const errorData = await res.json();
-          const errorMessage = errorData.error || `Erro ${res.status}`;
-          setError(errorMessage);
+          setError(getErrorMessage(res.status));
           setLogs([]);
           setPagination((prev) => ({ ...prev, page, total: 0, totalPages: 0 }));
           return;
@@ -168,7 +208,7 @@ export function LogViewer() {
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Erro desconhecido';
-        setError(`Erro ao buscar logs: ${message}`);
+        setError(`Falha na conexão: ${message}`);
         setLogs([]);
       } finally {
         setIsLoading(false);
@@ -183,50 +223,61 @@ export function LogViewer() {
   const fetchSummaries = React.useCallback(async () => {
     try {
       const res = await fetch('/api/integracoes/logs/summary');
-
-      if (!res.ok) {
-        console.warn(`[fetchSummaries] API returned ${res.status}`);
-        return;
-      }
-
+      if (!res.ok) return;
       const result = await res.json();
-      if (result.data) {
-        setSummaries(result.data);
-      }
-    } catch (err) {
-      console.warn('Failed to fetch summaries (non-critical):', err);
+      if (result.data) setSummaries(result.data);
+    } catch {
+      // Non-critical: summaries are secondary info
     }
   }, []);
 
   // =========================================================================
-  // Initial load on mount (only once)
+  // Single useEffect: fetch on mount + when filters change
   // =========================================================================
   React.useEffect(() => {
     fetchLogs(1);
     fetchSummaries();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array: run only on mount
+  }, [fetchLogs, fetchSummaries]);
 
   // =========================================================================
-  // Re-fetch when filters change (reset to page 1)
+  // Update dataset filter from parent prop
   // =========================================================================
   React.useEffect(() => {
-    fetchLogs(1);
-  }, [filters, fetchLogs]);
+    if (datasetFilter !== undefined) {
+      setFilters((prev) => ({ ...prev, dataset: datasetFilter }));
+    }
+  }, [datasetFilter]);
 
   // =========================================================================
-  // Handle pagination changes
+  // Debounced search input handler
+  // =========================================================================
+  const handleSearchChange = React.useCallback((value: string) => {
+    setSearchInput(value);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, search: value }));
+    }, 400);
+  }, []);
+
+  // Cleanup timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, []);
+
+  // =========================================================================
+  // Handle pagination
   // =========================================================================
   const handlePageChange = React.useCallback(
     (newPage: number) => {
-      setPagination((prev) => ({ ...prev, page: newPage }));
       fetchLogs(newPage);
     },
     [fetchLogs],
   );
 
   // =========================================================================
-  // Toggle row expansion for details
+  // Toggle row expansion
   // =========================================================================
   const toggleRow = (id: string) => {
     setExpandedRows((prev) => {
@@ -238,38 +289,27 @@ export function LogViewer() {
   };
 
   // =========================================================================
-  // Format date to human-readable string
-  // =========================================================================
-  const formatDate = (dateStr: string): string => {
-    return new Date(dateStr).toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  };
-
-  // =========================================================================
-  // Apply filters (reset pagination)
-  // =========================================================================
-  const applyFilters = () => {
-    setError(null);
-    setPagination((prev) => ({ ...prev, page: 1 }));
-  };
-
-  // =========================================================================
   // Clear all filters
   // =========================================================================
   const clearFilters = () => {
     setError(null);
-    setFilters({ level: '', dataset: '', startDate: '', endDate: '' });
-    setPagination((prev) => ({ ...prev, page: 1 }));
+    setSearchInput('');
+    setFilters({ level: '', dataset: '', startDate: '', endDate: '', search: '' });
   };
 
   // =========================================================================
-  // Render log entry row with expandable details
+  // Compute log level stats
+  // =========================================================================
+  const levelStats = React.useMemo(() => {
+    const stats = { error: 0, warn: 0, success: 0, info: 0 };
+    for (const log of logs) {
+      if (log.level in stats) stats[log.level]++;
+    }
+    return stats;
+  }, [logs]);
+
+  // =========================================================================
+  // Render log entry row
   // =========================================================================
   const renderLogEntry = (log: LogEntry) => {
     const config = LEVEL_CONFIG[log.level];
@@ -342,7 +382,7 @@ export function LogViewer() {
           variant="ghost"
           size="sm"
           onClick={() => {
-            // Filter by request_id
+            // Filter by this request_id
             const params = new URLSearchParams();
             params.set('requestId', summary.request_id);
             fetch(`/api/integracoes/logs?${params}`)
@@ -363,14 +403,102 @@ export function LogViewer() {
   };
 
   // =========================================================================
+  // Render pagination with page numbers
+  // =========================================================================
+  const renderPagination = () => {
+    if (pagination.totalPages <= 1 || error) return null;
+
+    const pages: (number | '...')[] = [];
+    const { page, totalPages } = pagination;
+
+    // Build range: show 1 ... p-1 p p+1 ... N
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push('...');
+      for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
+        pages.push(i);
+      }
+      if (page < totalPages - 2) pages.push('...');
+      pages.push(totalPages);
+    }
+
+    return (
+      <div className="flex items-center justify-between border-t p-3">
+        <span className="text-xs text-muted-foreground">
+          {pagination.total} registros · Página {page} de {totalPages}
+        </span>
+        <div className="flex gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1 || isLoading}
+            onClick={() => handlePageChange(page - 1)}
+          >
+            ‹
+          </Button>
+          {pages.map((p, i) =>
+            p === '...' ? (
+              <span key={`ellipsis-${i}`} className="flex items-center px-1 text-xs text-muted-foreground">
+                …
+              </span>
+            ) : (
+              <Button
+                key={p}
+                variant={p === page ? 'default' : 'outline'}
+                size="sm"
+                className="min-w-[32px]"
+                disabled={isLoading}
+                onClick={() => handlePageChange(p)}
+              >
+                {p}
+              </Button>
+            ),
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages || isLoading}
+            onClick={() => handlePageChange(page + 1)}
+          >
+            ›
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // =========================================================================
   // Render component
   // =========================================================================
-
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Histórico de Sincronizações</CardTitle>
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-base">Histórico de Sincronizações</CardTitle>
+            {/* Level stats badges */}
+            {!isLoading && logs.length > 0 && (
+              <div className="flex gap-1.5">
+                {levelStats.error > 0 && (
+                  <Badge variant="destructive" className="px-1.5 py-0 text-[10px]">
+                    {levelStats.error} erros
+                  </Badge>
+                )}
+                {levelStats.warn > 0 && (
+                  <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+                    {levelStats.warn} avisos
+                  </Badge>
+                )}
+                {levelStats.success > 0 && (
+                  <Badge variant="outline" className="border-green-500/50 px-1.5 py-0 text-[10px] text-green-600">
+                    {levelStats.success} ok
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)}>
               <Filter className="mr-1 h-4 w-4" />
@@ -379,10 +507,7 @@ export function LogViewer() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                fetchLogs(pagination.page);
-                fetchSummaries();
-              }}
+              onClick={() => fetchLogs(pagination.page)}
               disabled={isLoading}
               title="Recarregar logs"
             >
@@ -395,7 +520,7 @@ export function LogViewer() {
         <Collapsible open={showFilters}>
           <CollapsibleTrigger className="hidden" />
           <CollapsibleContent>
-            <div className="grid grid-cols-2 gap-3 pt-3 md:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 pt-3 md:grid-cols-6">
               <div>
                 <Label className="text-xs">Nível</Label>
                 <Select
@@ -409,7 +534,7 @@ export function LogViewer() {
                     <SelectItem value="">Todos</SelectItem>
                     {LEVELS.map((l) => (
                       <SelectItem key={l} value={l}>
-                        {l}
+                        {LEVEL_CONFIG[l as keyof typeof LEVEL_CONFIG].label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -452,10 +577,19 @@ export function LogViewer() {
                   onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value }))}
                 />
               </div>
-              <div className="flex items-end gap-2">
-                <Button size="sm" className="h-8" onClick={applyFilters}>
-                  Aplicar
-                </Button>
+              <div>
+                <Label className="text-xs">Buscar</Label>
+                <div className="relative">
+                  <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="mensagem..."
+                    className="h-8 pl-7"
+                    value={searchInput}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex items-end">
                 <Button size="sm" variant="ghost" className="h-8" onClick={clearFilters}>
                   Limpar
                 </Button>
@@ -474,57 +608,42 @@ export function LogViewer() {
 
           {/* Logs Tab */}
           <TabsContent value="logs" className="m-0">
-            <ScrollArea className="h-96">
+            <ScrollArea className="h-[420px]">
               {isLoading ? (
                 <div className="flex h-32 items-center justify-center text-muted-foreground">
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                   Carregando...
                 </div>
               ) : error ? (
-                <div className="flex h-32 flex-col items-center justify-center gap-2">
+                <div className="flex h-32 flex-col items-center justify-center gap-2 px-8">
                   <AlertCircle className="h-5 w-5 text-destructive" />
-                  <span className="px-4 text-center text-sm text-destructive">{error}</span>
+                  <span className="text-center text-sm text-destructive">{error}</span>
+                  <Button variant="outline" size="sm" onClick={() => fetchLogs(1)}>
+                    Tentar Novamente
+                  </Button>
                 </div>
               ) : logs.length === 0 ? (
-                <div className="flex h-32 items-center justify-center text-muted-foreground">
-                  Nenhum log encontrado
+                <div className="flex h-32 flex-col items-center justify-center gap-1 text-muted-foreground">
+                  <Info className="h-5 w-5" />
+                  <span className="text-sm">Nenhum log encontrado</span>
+                  {(filters.level || filters.dataset || filters.search) && (
+                    <Button variant="link" size="sm" onClick={clearFilters}>
+                      Limpar filtros
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="font-mono text-sm">{logs.map(renderLogEntry)}</div>
               )}
             </ScrollArea>
 
-            {/* Pagination Controls */}
-            {pagination.totalPages > 1 && !error && (
-              <div className="flex items-center justify-between border-t p-3">
-                <span className="text-xs text-muted-foreground">
-                  Página {pagination.page} de {pagination.totalPages} ({pagination.total} registros)
-                </span>
-                <div className="flex gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pagination.page <= 1 || isLoading}
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pagination.page >= pagination.totalPages || isLoading}
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                  >
-                    Próxima
-                  </Button>
-                </div>
-              </div>
-            )}
+            {/* Pagination */}
+            {renderPagination()}
           </TabsContent>
 
           {/* Summary Tab */}
           <TabsContent value="summary" className="m-0">
-            <ScrollArea className="h-96">
+            <ScrollArea className="h-[420px]">
               {summaries.length === 0 ? (
                 <div className="flex h-32 items-center justify-center text-muted-foreground">
                   Nenhuma sincronização registrada

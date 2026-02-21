@@ -41,66 +41,63 @@ Esta skill padroniza o uso do MCP Supabase para operações de banco de dados, m
 
 ## Tools Disponíveis
 
+### 🚨 REGRA DE OURO: Inspeção de Schema (MANDATORY) 🚨
+
+**NUNCA** leia arquivos em `supabase/migrations/*.sql` para entender a estrutura atual do banco de dados. Migrations são históricas, incrementais e frequentemente sobrescritas.
+Para descobrir quais tabelas, colunas ou relações existem: **SEMPRE USE O MCP** (`list_tables`, `get_table_schema`), pois ele consulta o banco real e atualizado.
+Os arquivos de migrations só devem ser lidos se o objetivo for estritamente debugar um script antigo que falhou ou criar uma nova migration baseada em padrões anteriores (e mesmo assim, com cautela e após verificar o banco vivo).
+
 ### Gestão de Schema
 
-| Tool | Descrição | Uso |
-|------|-----------|-----|
-| `list_tables` | Lista todas as tabelas | Verificar schema atual |
-| `get_table_schema` | Detalhes de uma tabela | Análise de estrutura |
-| `execute_sql` | Executa SQL arbitrário | Migrations, queries |
-| `list_extensions` | Lista extensões | Verificar features |
+| Tool               | Descrição              | Uso                    |
+| ------------------ | ---------------------- | ---------------------- |
+| `list_tables`      | Lista todas as tabelas | Verificar schema atual |
+| `get_table_schema` | Detalhes de uma tabela | Análise de estrutura   |
+| `execute_sql`      | Executa SQL arbitrário | Migrations, queries    |
+| `list_extensions`  | Lista extensões        | Verificar features     |
 
 ### Debugging
 
-| Tool | Descrição | Uso |
-|------|-----------|-----|
-| `get_logs` | Logs do projeto | Debugging, auditoria |
-| `get_config` | Configurações | Verificar settings |
+| Tool         | Descrição       | Uso                  |
+| ------------ | --------------- | -------------------- |
+| `get_logs`   | Logs do projeto | Debugging, auditoria |
+| `get_config` | Configurações   | Verificar settings   |
 
 ### Migrations
 
-| Tool | Descrição | Uso |
-|------|-----------|-----|
-| `list_migrations` | Migrations existentes | Status atual |
-| `apply_migration` | Aplicar migration | Deploy schema |
+| Tool              | Descrição             | Uso           |
+| ----------------- | --------------------- | ------------- |
+| `list_migrations` | Migrations existentes | Status atual  |
+| `apply_migration` | Aplicar migration     | Deploy schema |
 
 ## Workflows
 
-### WF-001: Aplicar Migration (Protocolo Obrigatório)
+### WF-001: Aplicar Migration (Protocolo Oficial)
+
+O CLI do Supabase é a fonte da verdade e o método **oficial e automatizado** para aplicar migrations. O MCP atua como ferramenta de validação PÓS-CHECK.
 
 ```mermaid
 flowchart TD
-    A[Iniciar] --> A1[MCP: list_tables PRÉ-CHECK]
-    A1 --> B[Ler arquivo migration]
-    B --> C[MCP: apply_migration]
-    C --> D{Sucesso?}
-    D -->|Sim| E[MCP: list_tables PÓS-CHECK]
-    D -->|Não| F[MCP: get_logs]
-    E --> G[Comparar PRÉ vs PÓS]
-    G --> G1{Tabelas novas OK?}
-    G1 -->|Sim| H[MCP: get_advisors security]
-    G1 -->|Não| F
-    H --> J[Atualizar IMPLEMENTATIONS.md com status VERIFICADO]
-    F --> K[Analisar erro]
-    K --> L[Corrigir e retry]
-    L --> C
+    A[Nova Migration SQL] --> B[npx supabase db push]
+    B --> C{Sucesso?}
+    C -->|Sim| D[MCP: list_tables PÓS-CHECK]
+    C -->|Não| E[Analisar erro no terminal]
+    E --> F[Corrigir SQL]
+    F --> B
+    D --> G[MCP: get_advisors security]
+    G --> H[Atualizar documentação e task.md]
 ```
 
 **Passos (OBRIGATÓRIOS):**
 
-1. **PRÉ-CHECK**: `list_tables` para registrar estado antes
-2. Ler conteúdo da migration em `supabase/migrations/`
-3. Executar via MCP `apply_migration` (preferir sobre `execute_sql` para rastreamento)
-4. **PÓS-CHECK**: `list_tables` para confirmar tabelas criadas
-5. **COMPARAR**: Verificar que as tabelas esperadas existem
-6. **AUDIT**: `get_advisors(security)` para checar RLS
-7. Em caso de erro, usar `get_logs` para debug
-8. **NUNCA** atualizar `IMPLEMENTATIONS.md` como "Aplicado" sem PÓS-CHECK
-9. Atualizar status em `.context/IMPLEMENTATIONS.md` com data e evidência
+1. **APLICAR VICA CLI**: Executar `npx supabase db push` (se interativo, usar `--force` ou responder 'y' via script/terminal).
+2. **PÓS-CHECK**: Use `list_tables` e `get_table_schema` do MCP para confirmar que as tabelas/colunas foram criadas na nuvem.
+3. **AUDIT**: Execute `get_advisors(security)` para assegurar que não há falhas na RLS criada pela migration.
+4. **FALLBACK MCP**: O uso da tool `apply_migration` do MCP é **desencorajado** como método primário, servindo apenas como plano B se o CLI local estiver indisponível ou quebrado.
+5. Em caso de erro, analise o retorno do próprio command-line do Supabase.
+6. **NUNCA** atualizar arquivos de log como resolvidos sem o PÓS-CHECK.
 
-> **LIÇÃO APRENDIDA (2026-02-10)**: Marcar migrations como "Aplicado" sem
-> verificação causou discrepância entre documentação e banco real.
-> O PÓS-CHECK é **obrigatório**, não opcional.
+> **PADRONIZAÇÃO (2026-02-21)**: O uso de `npx supabase db push` garante que a constraint de schema do Supabase seja gerenciada de forma consistente com a stack Supabase padrão. O MCP deve focar em consultar o banco real, não em gerenciá-lo.
 
 ### WF-002: Criar Nova Tabela
 

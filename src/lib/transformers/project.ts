@@ -115,14 +115,14 @@ export interface DBHistory {
   tenant_id: string;
   project_id: string;
   espaider_id: number;
-  tipo: string | null;
-  responsavel_para: string | null;
-  responsavel_de: string | null;
-  passo_para: string | null;
-  passo_de: string | null;
-  numero_tramite: number | null;
-  mensagem: string | null;
-  data: string | null;
+  type: string | null;
+  responsible_to: string | null;
+  responsible_from: string | null;
+  step_to: string | null;
+  step_from: string | null;
+  procedure_number: number | null;
+  message: string | null;
+  date: string | null;
   espaider_raw: Record<string, unknown> | null;
   created_at: string;
 }
@@ -132,8 +132,9 @@ export interface DBApprover {
   tenant_id: string;
   project_id: string;
   espaider_id: number;
-  tipo: string | null;
-  responsavel: string | null;
+  type: string | null;
+  responsible: string | null;
+  attention_points: string | null;
   espaider_raw: Record<string, unknown> | null;
   created_at: string;
 }
@@ -143,9 +144,9 @@ export interface DBBudget {
   tenant_id: string;
   project_id: string;
   espaider_id: number;
-  valor: number | null;
-  fornecedor: string | null;
-  data_cotacao: string | null;
+  value: number | null;
+  provider: string | null;
+  quotation_date: string | null;
   moeda: string | null;
   espaider_raw: Record<string, unknown> | null;
   created_at: string;
@@ -349,30 +350,30 @@ export function dbProjectToUI(row: DBProject): UIProject {
 export function dbHistoryToUI(row: DBHistory): UIHistory {
   return {
     id: row.id,
-    type: row.tipo || '-',
-    from: row.responsavel_de || '-',
-    to: row.responsavel_para || '-',
-    step_from: row.passo_de || '-',
-    step_to: row.passo_para || '-',
-    message: row.mensagem || '-',
-    date: row.data || '',
+    type: row.type || '-',
+    from: row.responsible_from || '-',
+    to: row.responsible_to || '-',
+    step_from: row.step_from || '-',
+    step_to: row.step_to || '-',
+    message: row.message || '-',
+    date: row.date || '',
   };
 }
 
 export function dbApproverToUI(row: DBApprover): UIApprover {
   return {
     id: row.id,
-    type: row.tipo || '-',
-    responsible: row.responsavel || '-',
+    type: row.type || '-',
+    responsible: row.responsible || '-',
   };
 }
 
 export function dbBudgetToUI(row: DBBudget): UIBudget {
   return {
     id: row.id,
-    value: row.valor || 0,
-    supplier: row.fornecedor || '-',
-    date: row.data_cotacao || '',
+    value: row.value || 0,
+    supplier: row.provider || '-',
+    date: row.quotation_date || '',
     currency: row.moeda || 'BRL',
   };
 }

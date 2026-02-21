@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import { executeSyncAll, type SyncAllResult } from '@/lib/sync/espaider-sync';
 
 /**
@@ -69,9 +70,10 @@ export async function syncEspaiderAction(): Promise<SyncAllResult> {
     };
   }
 
-  // 4. Execute sync
+  // 4. Execute sync using service client (bypasses RLS for data operations)
+  const serviceClient = createServiceClient();
   try {
-    const result = await executeSyncAll(supabase, profile.tenant_id);
+    const result = await executeSyncAll(serviceClient, profile.tenant_id);
 
     // 5. Revalidate pages so fresh data is shown
     revalidatePath('/dashboard');

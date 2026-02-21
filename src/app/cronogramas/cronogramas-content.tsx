@@ -588,7 +588,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                   priority: null,
                   category: null,
                 }}
-                schedules={schedules.filter(s => s.project_id === selectedSchedule.project.id).map(s => ({
+                schedules={schedules.filter(s => s.project_id === selectedSchedule.project?.id).map(s => ({
                   id: s.id,
                   atividade: s.atividade,
                   responsavel: s.responsavel,

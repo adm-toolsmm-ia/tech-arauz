@@ -881,12 +881,19 @@ function ProjectDetail({
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{schedule.schedule_code}</p>
-                      <p className="text-sm text-muted-foreground">{schedule.description}</p>
+                      <p className="font-medium">{schedule.atividade || 'Sem nome'}</p>
+                      {schedule.responsavel && <p className="text-sm text-muted-foreground">{schedule.responsavel}</p>}
                     </div>
-                    <Badge variant="secondary">
-                      {new Date(schedule.scheduled_date).toLocaleDateString('pt-BR')}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      {schedule.status && (
+                        <Badge variant="secondary">{schedule.status}</Badge>
+                      )}
+                      {schedule.data_fim && (
+                        <span className="text-xs text-muted-foreground">
+                          Previsão: {new Date(schedule.data_fim).toLocaleDateString('pt-BR')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

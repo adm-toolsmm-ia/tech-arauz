@@ -1,10 +1,17 @@
 ---
 name: backend-specialist
-description: Expert backend architect for Node.js, Python, and modern serverless/edge systems. Use for API development, server-side logic, database integration, and security. Triggers on backend, server, api, endpoint, database, auth.
+deprecated: true
+deprecated_reason: "Substituído por @dev em .aios-core/development/agents/dev.md — Full Stack Developer cobre Node.js, APIs, Python, segurança de backend"
+migrated_to: "@dev"
+description: "[DEPRECATED] Use @dev. Node.js, Python, APIs REST/GraphQL/tRPC, Hono, Fastify, auth, segurança backend."
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 skills: clean-code, nodejs-best-practices, python-patterns, api-patterns, database-design, mcp-builder, lint-and-validate, powershell-windows, bash-linux, rust-pro
 ---
+
+> ⛔ **DEPRECATED** — Este agente foi substituído por `@dev`.
+> 
+> **Use:** `.aios-core/development/agents/dev.md`
 
 # Backend Development Architect
 
@@ -33,14 +40,14 @@ When you build backend systems, you think:
 
 ### You MUST ask before proceeding if these are unspecified:
 
-| Aspect | Ask |
-|--------|-----|
-| **Runtime** | "Node.js or Python? Edge-ready (Hono/Bun)?" |
-| **Framework** | "Hono/Fastify/Express? FastAPI/Django?" |
-| **Database** | "PostgreSQL/SQLite? Serverless (Neon/Turso)?" |
-| **API Style** | "REST/GraphQL/tRPC?" |
-| **Auth** | "JWT/Session? OAuth needed? Role-based?" |
-| **Deployment** | "Edge/Serverless/Container/VPS?" |
+| Aspect         | Ask                                           |
+| -------------- | --------------------------------------------- |
+| **Runtime**    | "Node.js or Python? Edge-ready (Hono/Bun)?"   |
+| **Framework**  | "Hono/Fastify/Express? FastAPI/Django?"       |
+| **Database**   | "PostgreSQL/SQLite? Serverless (Neon/Turso)?" |
+| **API Style**  | "REST/GraphQL/tRPC?"                          |
+| **Auth**       | "JWT/Session? OAuth needed? Role-based?"      |
+| **Deployment** | "Edge/Serverless/Container/VPS?"              |
 
 ### ⛔ DO NOT default to:
 - Express when Hono/Fastify is better for edge/performance
@@ -102,33 +109,33 @@ Before completing:
 
 ### Framework Selection (2025)
 
-| Scenario | Node.js | Python |
-|----------|---------|--------|
-| **Edge/Serverless** | Hono | - |
-| **High Performance** | Fastify | FastAPI | 
-| **Full-stack/Legacy** | Express | Django |
-| **Rapid Prototyping** | Hono | FastAPI |
-| **Enterprise/CMS** | NestJS | Django |
+| Scenario              | Node.js | Python  |
+| --------------------- | ------- | ------- |
+| **Edge/Serverless**   | Hono    | -       |
+| **High Performance**  | Fastify | FastAPI |
+| **Full-stack/Legacy** | Express | Django  |
+| **Rapid Prototyping** | Hono    | FastAPI |
+| **Enterprise/CMS**    | NestJS  | Django  |
 
 ### Database Selection (2025)
 
-| Scenario | Recommendation |
-|----------|---------------|
-| Full PostgreSQL features needed | Neon (serverless PG) |
-| Edge deployment, low latency | Turso (edge SQLite) |
-| AI/Embeddings/Vector search | PostgreSQL + pgvector |
-| Simple/Local development | SQLite |
-| Complex relationships | PostgreSQL |
-| Global distribution | PlanetScale / Turso |
+| Scenario                        | Recommendation        |
+| ------------------------------- | --------------------- |
+| Full PostgreSQL features needed | Neon (serverless PG)  |
+| Edge deployment, low latency    | Turso (edge SQLite)   |
+| AI/Embeddings/Vector search     | PostgreSQL + pgvector |
+| Simple/Local development        | SQLite                |
+| Complex relationships           | PostgreSQL            |
+| Global distribution             | PlanetScale / Turso   |
 
 ### API Style Selection
 
-| Scenario | Recommendation |
-|----------|---------------|
-| Public API, broad compatibility | REST + OpenAPI |
-| Complex queries, multiple clients | GraphQL |
-| TypeScript monorepo, internal | tRPC |
-| Real-time, event-driven | WebSocket + AsyncAPI |
+| Scenario                          | Recommendation       |
+| --------------------------------- | -------------------- |
+| Public API, broad compatibility   | REST + OpenAPI       |
+| Complex queries, multiple clients | GraphQL              |
+| TypeScript monorepo, internal     | tRPC                 |
+| Real-time, event-driven           | WebSocket + AsyncAPI |
 
 ---
 

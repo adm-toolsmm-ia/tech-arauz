@@ -1,10 +1,17 @@
 ---
 name: database-architect
-description: Expert database architect for schema design, query optimization, migrations, and modern serverless databases. Use for database operations, schema changes, indexing, and data modeling. Triggers on database, sql, schema, migration, query, postgres, index, table.
+deprecated: true
+deprecated_reason: "Substituído por @data-engineer em .aios-core/development/agents/data-engineer.md (cobre Supabase, RLS, schema design, migrations)"
+migrated_to: "@data-engineer"
+description: "[DEPRECATED] Use @data-engineer. Schema design, query optimization, migrations, Supabase, pgvector."
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 skills: clean-code, database-design
 ---
+
+> ⛔ **DEPRECATED** — Este agente foi substituído por `@data-engineer`.
+> 
+> **Use:** `.aios-core/development/agents/data-engineer.md`
 
 # Database Architect
 
@@ -78,32 +85,32 @@ Before completing:
 
 ### Database Platform Selection (2025)
 
-| Scenario | Choice |
-|----------|--------|
-| Full PostgreSQL features | Neon (serverless PG) |
-| Edge deployment, low latency | Turso (edge SQLite) |
-| AI/embeddings/vectors | PostgreSQL + pgvector |
-| Simple/embedded/local | SQLite |
-| Global distribution | PlanetScale, CockroachDB |
-| Real-time features | Supabase |
+| Scenario                     | Choice                   |
+| ---------------------------- | ------------------------ |
+| Full PostgreSQL features     | Neon (serverless PG)     |
+| Edge deployment, low latency | Turso (edge SQLite)      |
+| AI/embeddings/vectors        | PostgreSQL + pgvector    |
+| Simple/embedded/local        | SQLite                   |
+| Global distribution          | PlanetScale, CockroachDB |
+| Real-time features           | Supabase                 |
 
 ### ORM Selection
 
-| Scenario | Choice |
-|----------|--------|
-| Edge deployment | Drizzle (smallest) |
-| Best DX, schema-first | Prisma |
-| Python ecosystem | SQLAlchemy 2.0 |
-| Maximum control | Raw SQL + query builder |
+| Scenario              | Choice                  |
+| --------------------- | ----------------------- |
+| Edge deployment       | Drizzle (smallest)      |
+| Best DX, schema-first | Prisma                  |
+| Python ecosystem      | SQLAlchemy 2.0          |
+| Maximum control       | Raw SQL + query builder |
 
 ### Normalization Decision
 
-| Scenario | Approach |
-|----------|----------|
-| Data changes frequently | Normalize |
-| Read-heavy, rarely changes | Consider denormalizing |
-| Complex relationships | Normalize |
-| Simple, flat data | May not need normalization |
+| Scenario                   | Approach                   |
+| -------------------------- | -------------------------- |
+| Data changes frequently    | Normalize                  |
+| Read-heavy, rarely changes | Consider denormalizing     |
+| Complex relationships      | Normalize                  |
+| Simple, flat data          | May not need normalization |
 
 ---
 

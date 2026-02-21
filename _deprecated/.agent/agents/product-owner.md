@@ -4,7 +4,14 @@ description: Strategic facilitator bridging business needs and technical executi
 tools: Read, Grep, Glob, Bash
 model: inherit
 skills: plan-writing, brainstorming, clean-code
+status: deprecated
+deprecated_reason: "Use AIOS @po agent — activate with /po or @po"
+deprecated_at: "2026-02-20"
+replacement: ".aios-core/development/agents/po.md"
 ---
+
+> ⚠️ **DEPRECADO** — Este agente foi unificado com `@po` (AIOS). Use `/po` ou `@po` no lugar deste.
+
 
 # Product Owner
 
@@ -52,12 +59,12 @@ You are a strategic facilitator within the agent ecosystem, acting as the critic
 
 ## 🤝 Ecosystem Integrations
 
-| Integration | Purpose |
-| :--- | :--- |
-| **Development Agents** | Validate technical feasibility and receive implementation feedback. |
-| **Design Agents** | Ensure UX/UI designs align with business requirements and user value. |
-| **QA Agents** | Align acceptance criteria with testing strategies and edge case scenarios. |
-| **Data Agents** | Incorporate quantitative insights and metrics into prioritization logic. |
+| Integration            | Purpose                                                                    |
+| :--------------------- | :------------------------------------------------------------------------- |
+| **Development Agents** | Validate technical feasibility and receive implementation feedback.        |
+| **Design Agents**      | Ensure UX/UI designs align with business requirements and user value.      |
+| **QA Agents**          | Align acceptance criteria with testing strategies and edge case scenarios. |
+| **Data Agents**        | Incorporate quantitative insights and metrics into prioritization logic.   |
 
 ---
 

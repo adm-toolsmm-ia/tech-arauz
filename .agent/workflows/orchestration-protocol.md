@@ -1,55 +1,91 @@
 ---
-description: Protocolo oficial de ciclo de vida de demandas complexas gerenciadas pelo Orchestrator (CTO).
+description: Protocolo oficial de ciclo de vida de demandas complexas gerenciadas pelo @aios-master (Orion).
 ---
 
 # 🎻 Orchestration Protocol (The CTO Workflow)
 
-> **Objective:** Ensure consistent, high-quality delivery of complex tasks through structured agent coordination and memory management.
-
-## 🔄 The Lifecycle of a Request
-
-### Phase 1: Ingestion (The Gatekeeper)
-**Actor:** `@orchestrator`
-1.  **Receive Request:** Analyze user input.
-2.  **Memory Check:** `ls .agent/memory` → `read relevant_logs`.
-    *   *Question:* "Did we solve this already? What went wrong last time?"
-3.  **Feasibility Check:** Can we do this with current tools/skills?
-
-### Phase 2: Strategy (The Architect)
-**Actor:** `@orchestrator` + `@project-planner`
-1.  **Draft Plan:** Create/Update `task.md` or `implementation_plan.md`.
-2.  **Team Assembly:** Define the "Task Force".
-    *   *Example:* "Migration Task Force" = Backend (API) + Database (Schema) + DevOps (Deploy).
-
-### Phase 3: Execution (The Conductor)
-**Actor:** `@orchestrator` managing Specialists
-1.  **Dispatch:** Send clear prompts to specialists.
-    *   *Do:* "Frontend, update the Button component using strict Typescript."
-    *   *Don't:* "Fix the button."
-2.  **Monitor:** Watch tool outputs. If an agent gets stuck, intervene.
-3.  **Synthesis:** Combine outputs into a cohesive solution.
-
-### Phase 4: Validation (The Auditor)
-**Actor:** `@orchestrator` + `@security-auditor` + `@test-engineer`
-1.  **Static Analysis:** Lint, Type Check.
-2.  **Security Review:** Inputs sanitized? Secrets protected? RLS active?
-3.  **User Acceptance:** Does it match the original request?
-
-### Phase 5: Documentation Sync (The Librarian)
-**Actor:** `@documentation-writer`
-1.  **Context Check:** Check if touched directories have `README.md`.
-2.  **Doc Update:** Update `PRD.md`, `API.md` or `ARCHITECTURE.md` if business logic changed.
-3.  **Validation:** Ensure docs match the new code reality.
-
-### Phase 6: Memory Commit (The Historian)
-**Actor:** `@orchestrator`
-1.  **Log Creation:** Write `.agent/memory/YYYY-MM-DD_{context}.md`.
-2.  **Reflect:** What did we learn? What should we update in `ARCHITECTURE.md`?
+> **Objective:** Garantir entrega consistente e de alta qualidade através de coordenação estruturada de agentes, com `@aios-master` sempre como primeiro ponto de contato.
 
 ---
 
-## 🚨 Emergency Protocols
+## 🚪 Porta de Entrada Obrigatória
 
-- **Agent Failure:** If a specialist fails 3x, stop. Re-evaluate strategy.
-- **Context Overload:** If the task is too big, break it down and ask User to proceed in steps.
-- **Architectural Conflict:** If User asks for something that violates `ARCHITECTURE.md`, warn them (Politely but Firmly).
+**TODO pedido complexo começa aqui:**
+
+```
+Você → @aios-master → analisa → monta equipe → especialistas executam → plano de ação conjunto
+```
+
+> ⚠️ **Regra:** Nenhum agente especialista é acionado diretamente sem passar pelo `@aios-master` em tarefas complexas. Para tarefas simples (ex: "corrige esse bug"), acionar o agente diretamente é permitido.
+
+---
+
+## 🔄 Ciclo de Vida de uma Demanda
+
+### Fase 1: Recepção (O Porteiro)
+**Agente:** `@aios-master`
+
+1. **Receber:** Analisar o pedido do usuário.
+2. **Verificar memória:** `ls .agent/memory/` → ler logs relevantes.
+   - *Pergunta:* "Já resolvemos isso antes? O que deu errado da última vez?"
+3. **Viabilidade:** Conseguimos fazer com as ferramentas/skills atuais?
+4. **Montar equipe:** Definir quais agentes são necessários para este pedido.
+
+### Fase 2: Estratégia (O Arquiteto)
+**Agentes:** `@aios-master` + `@architect` (se necessário)
+
+1. **Rascunho do plano:** Criar/atualizar `task.md` ou `implementation_plan.md`.
+2. **Montar Task Force:** Definir os agentes envolvidos.
+   - *Exemplo:* "Feature de relatórios" = `@pm` (PRD) + `@dev` (implementação) + `@qa` (testes) + `@devops` (deploy)
+3. **Apresentar plano ao usuário** antes de executar.
+
+### Fase 3: Execução (O Maestro)
+**Agentes:** `@aios-master` coordenando os especialistas
+
+1. **Despacho:** Enviar prompts claros para os especialistas.
+   - ✅ *Faça:* "@frontend, atualiza o componente Button com TypeScript estrito."
+   - ❌ *Não faça:* "Conserta o botão."
+2. **Monitorar:** Acompanhar outputs. Se um agente travar, intervir.
+3. **Síntese:** Combinar os resultados em uma solução coesa.
+
+### Fase 4: Validação (O Auditor)
+**Agentes:** `@aios-master` + `@security` + `@qa`
+
+1. **Análise estática:** Lint, Type Check.
+2. **Revisão de segurança:** Inputs sanitizados? Segredos protegidos? RLS ativo?
+3. **Aceite do usuário:** Atende ao pedido original?
+
+### Fase 5: Documentação (O Bibliotecário)
+**Agente:** `@pm` ou `@architect`
+
+1. **Verificar contexto:** Diretórios alterados têm `README.md`?
+2. **Atualizar docs:** `PRD.md`, `API.md` ou `ARCHITECTURE.md` se a lógica de negócio mudou.
+3. **Validação:** Docs batem com o código novo?
+
+### Fase 6: Memória (O Historiador)
+**Agente:** `@aios-master`
+
+1. **Criar log:** `.agent/memory/YYYY-MM-DD_{contexto}.md`.
+2. **Refletir:** O que aprendemos? O que deve ser atualizado em `ARCHITECTURE.md`?
+
+---
+
+## 🧩 Matriz de Montagem de Equipe
+
+| Tipo de Demanda            | Task Force Mínima                            |
+| -------------------------- | -------------------------------------------- |
+| Nova feature completa      | `@pm` + `@dev` + `@qa` + `@devops`           |
+| Feature com banco de dados | +`@data-engineer`                            |
+| Feature com UI             | +`@frontend`                                 |
+| Auditoria de segurança     | `@security` + `@qa`                          |
+| Refatoração grande         | `@architect` + `@dev` + `@qa`                |
+| Deploy / publicação        | `@devops` (único autorizado para `git push`) |
+| Onboarding de feature nova | `@pm` + `@sm` → cria story → `@dev`          |
+
+---
+
+## 🚨 Protocolos de Emergência
+
+- **Agente falha 3x:** Parar. Reavaliar estratégia com `@aios-master`.
+- **Contexto muito grande:** Dividir e pedir ao usuário para proceder em etapas.
+- **Conflito arquitetural:** Se o usuário pedir algo que viola `constitution.md`, informar educadamente mas firmemente — e não implementar.

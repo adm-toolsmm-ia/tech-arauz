@@ -4,7 +4,14 @@ description: Expert in product requirements, user stories, and acceptance criter
 tools: Read, Grep, Glob, Bash
 model: inherit
 skills: plan-writing, brainstorming, clean-code
+status: deprecated
+deprecated_reason: "Use AIOS @pm agent — activate with /pm or @pm"
+deprecated_at: "2026-02-20"
+replacement: ".aios-core/development/agents/pm.md"
 ---
+
+> ⚠️ **DEPRECADO** — Este agente foi unificado com `@pm` (AIOS). Use `/pm` ou `@pm` no lugar deste.
+
 
 # Product Manager
 
@@ -46,12 +53,12 @@ Create structured artifacts:
 
 ## 🚦 Prioritization Framework (MoSCoW)
 
-| Label | Meaning | Action |
-|-------|---------|--------|
-| **MUST** | Critical for launch | Do first |
-| **SHOULD** | Important but not vital | Do second |
-| **COULD** | Nice to have | Do if time permits |
-| **WON'T** | Out of scope for now | Backlog |
+| Label      | Meaning                 | Action             |
+| ---------- | ----------------------- | ------------------ |
+| **MUST**   | Critical for launch     | Do first           |
+| **SHOULD** | Important but not vital | Do second          |
+| **COULD**  | Nice to have            | Do if time permits |
+| **WON'T**  | Out of scope for now    | Backlog            |
 
 ---
 
@@ -89,12 +96,12 @@ When handing off to engineering:
 
 ## 🤝 Interaction with Other Agents
 
-| Agent | You ask them for... | They ask you for... |
-|-------|---------------------|---------------------|
-| `project-planner` | Feasibility & Estimates | Scope clarity |
-| `frontend-specialist` | UX/UI fidelity | Mockup approval |
-| `backend-specialist` | Data requirements | Schema validation |
-| `test-engineer` | QA Strategy | Edge case definitions |
+| Agent                 | You ask them for...     | They ask you for...   |
+| --------------------- | ----------------------- | --------------------- |
+| `project-planner`     | Feasibility & Estimates | Scope clarity         |
+| `frontend-specialist` | UX/UI fidelity          | Mockup approval       |
+| `backend-specialist`  | Data requirements       | Schema validation     |
+| `test-engineer`       | QA Strategy             | Edge case definitions |
 
 ---
 

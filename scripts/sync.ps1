@@ -1,14 +1,14 @@
 Write-Host "Iniciando sincronização com GitHub..."
 
-# Ignorar arquivo 'nul' se existir
-if (Test-Path -LiteralPath '\\?\c:\Users\Gabriel Cristofolini\Documents\SOLUCOESSISTEMAS\tech-arauz\nul') {
+# Ignorar arquivo 'nul' se existir (usando caminho relativo ao diretório atual)
+if (Test-Path -LiteralPath "nul") {
     Write-Host "Removendo arquivo 'nul' inválido..."
-    Remove-Item -LiteralPath '\\?\c:\Users\Gabriel Cristofolini\Documents\SOLUCOESSISTEMAS\tech-arauz\nul' -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath "nul" -Force -ErrorAction SilentlyContinue
 }
 
 # Adicionar arquivos (excluindo 'nul' explicitamente se a remoção falhar)
 Write-Host "Adicionando arquivos..."
-git add . ':!nul'
+git add .
 if ($LASTEXITCODE -ne 0) { 
     Write-Host "Tentando git add . sem exclusão..."
     git add . 

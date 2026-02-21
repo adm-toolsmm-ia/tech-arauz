@@ -1,145 +1,57 @@
-# CLAUDE.md - Instruções para Claude Code
+# CLAUDE.md — tech-arauz AI Engineering
 
-> **Este projeto opera com dois sistemas de AI integrados: AIOS (processo) + Antigravity (contexto).**
+> **Este projeto usa a arquitetura AIOS + Antigravity unificada.**
+> Leia os arquivos abaixo antes de qualquer ação.
+> ⚠️ **NUNCA carregue arquivos de `_deprecated/`** — backup histórico, fora de uso.
 
 ---
 
-## HIERARQUIA DOS SISTEMAS
+## 📐 Fonte de Verdade
+
+| Documento                            | Caminho                                      | O que define                                     |
+| ------------------------------------ | -------------------------------------------- | ------------------------------------------------ |
+| Constituição (6 regras inegociáveis) | `.aios-core/constitution.md`                 | Regras que NUNCA podem ser quebradas             |
+| Agentes AIOS                         | `.aios-core/development/agents/`             | Personas, comandos, permissões                   |
+| Skills técnicas                      | `.agent/skills/`                             | Receitas de especialidade (React, RLS, OWASP...) |
+| Protocolo de orquestração            | `.agent/workflows/orchestration-protocol.md` | Fluxo de 6 fases para demandas complexas         |
+| Memória histórica                    | `.agent/memory/`                             | Logs de implementações anteriores                |
+| Decisões arquiteturais               | `.ai/decision-logs-index.md`                 | ADRs (por que cada decisão foi tomada)           |
+
+---
+
+## 🤖 Fluxo Padrão de Atendimento
+
+**Todo pedido passa pelo orquestrador primeiro.**
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  AIOS (.aios-core/)           → PROCESSO & EXECUÇÃO            │
-│  Stories, PRD, quality gates, tasks DB/DevOps, checklists      │
-│  Ativação: @agente + *comando                                  │
-├─────────────────────────────────────────────────────────────────┤
-│  Antigravity (.agent/)        → PERSONAS & CONTEXTO TÉCNICO    │
-│  Skills Espaider/RLS, memória histórica, protocolo 6 fases     │
-│  Referência: .agent/agents/, .agent/skills/, .agent/workflows/ │
-└─────────────────────────────────────────────────────────────────┘
+Você → @aios-master (analisa + monta equipe) → agentes especialistas → plano de ação conjunto
 ```
 
----
+**Ativação:** `@nome-do-agente` ou `*comando`
 
-## OBRIGATÓRIO
-
-### 1. Story-Driven Development (AIOS)
-
-**Todo desenvolvimento DEVE partir de uma story** em `docs/stories/`:
-- Criar story antes de implementar (`@sm` ou manual)
-- Atualizar checkboxes conforme progresso
-- Manter File List atualizada na story
-- Commits com referência: `feat: descrição [STORY-XXX]`
-
-### 2. Usar Contexto Técnico do Antigravity
-
-**Em TODA execução**, consulte quando relevante:
-- **Skills**: `.agent/skills/` (espaider-integration, supabase-rls-patterns)
-- **Memória**: `.agent/memory/` (logs de implementações anteriores)
-- **Protocolos**: `.agent/workflows/orchestration-protocol.md` (6 fases)
-
-### 3. Criar Memory Logs (Pós-Implementação)
-
-**Após implementações significativas**, você DEVE:
-1. Criar log em `.agent/memory/YYYY-MM-DD_{task-slug}.md`
-2. Seguir template `.agent/memory/TEMPLATE.md`
-3. Documentar: contexto, decisões, arquivos alterados, lições aprendidas
-
-### 4. Decision Logging (AIOS)
-
-**Decisões arquiteturais** vão em `.ai/` no formato ADR:
-- Índice: `.ai/decision-logs-index.md`
-- ADRs existentes: ADR-001 a ADR-004
+| Agente              | Quando usar                                  |
+| ------------------- | -------------------------------------------- |
+| `@aios-master`      | Ponto de entrada padrão — orquestra a equipe |
+| `@pm`               | PRD, epics, roadmap                          |
+| `@sm`               | Stories, sprint planning                     |
+| `@architect`        | Arquitetura, ADRs                            |
+| `@data-engineer`    | Supabase, RLS, migrations, Espaider          |
+| `@dev`              | Implementação, debug, APIs                   |
+| `@frontend`         | React, Next.js, Tailwind                     |
+| `@mobile`           | App mobile (React Native, Expo, iOS/Android) |
+| `@qa`               | Testes, quality gates, E2E                   |
+| `@security`         | OWASP, RLS audit, vulnerabilidades           |
+| `@devops`           | **ÚNICO** autorizado para `git push`, CI/CD  |
+| `@po`               | Backlog, priorização                         |
+| `@analyst`          | Pesquisa, brainstorming, discovery           |
+| `@ux-design-expert` | UX, wireframes, design system                |
 
 ---
 
-## AGENTES AIOS (Sistema Principal)
-
-Ativação: `@nome-do-agente` | Comandos: `*help`, `*comando`
-
-| Agente | Persona | Quando Usar |
-|--------|---------|-------------|
-| `@aios-master` | Orchestrator | Coordenação multi-agente |
-| `@pm` | Strategist | Criar PRD, epics, roadmap |
-| `@sm` | Facilitator | Criar stories, sprint planning |
-| `@architect` | Visionary | Arquitetura, design de API |
-| `@data-engineer` | Sage | Schema DB, Supabase, RLS, migrations |
-| `@dev` | Builder | Implementação, debugging, refactoring |
-| `@qa` | Guardian | Testes, quality gates, security |
-| `@devops` | Operator | Git push (ÚNICO autorizado), CI/CD |
-| `@po` | Balancer | Backlog, priorização |
-| `@analyst` | Decoder | Pesquisa, discovery, brainstorming |
-| `@ux-design-expert` | Empathizer | UX, wireframes, design system |
-
-### Modos de Desenvolvimento (@dev)
-
-| Modo | Comando | Quando |
-|------|---------|--------|
-| YOLO | `*develop-yolo "Story X"` | Stories simples, bugs |
-| Interactive | `*develop-story "Story X"` | Stories complexas (padrão) |
-| Pre-Flight | `*develop-preflight "Story X"` | Features críticas |
-
----
-
-## AGENTES ANTIGRAVITY (Contexto Técnico)
-
-**Consultar para contexto do projeto** (não substituem AIOS para processo):
-
-| Agente | Quando Preferir ao AIOS |
-|--------|------------------------|
-| `frontend-specialist` | UI com padrões específicos do projeto |
-| `backend-specialist` | Integração Espaider (skill específica) |
-| `database-architect` | Contexto de migrations existentes |
-| `security-auditor` | RLS com padrões Supabase do projeto |
-| `debugger` | Root cause analysis (tem contexto histórico em `.agent/memory/`) |
-
-**Para matriz completa**: `.agent/workflows/agent-selection-guide.md`
-
----
-
-## MAPEAMENTO: QUAL AGENTE USAR?
-
-| Tarefa | Usar |
-|--------|------|
-| Nova feature (planejamento) | AIOS `@pm` + `@sm` |
-| Banco de dados / Migrations | AIOS `@data-engineer` + tasks `db-*` |
-| Frontend / UI | Antigravity `frontend-specialist` |
-| Integração Espaider | Antigravity `backend-specialist` |
-| Security / RLS | Ambos (AIOS `@qa` + Antigravity `security-auditor`) |
-| Git / Deploy | AIOS `@devops` |
-| Debugging | Antigravity `debugger` |
-| Testes | AIOS `@qa` |
-| Documentação | AIOS `@pm` ou `@architect` |
-
----
-
-## REFERÊNCIAS
-
-### Leitura Obrigatória
-
-| Arquivo | Propósito |
-|---------|-----------|
-| `.context/00-MASTER.md` | Regras de negócio |
-| `docs/framework/coding-standards.md` | Padrões de código |
-| `docs/framework/tech-stack.md` | Stack tecnológica |
-| `docs/framework/source-tree.md` | Mapa de pastas |
-| `.ai/decision-logs-index.md` | Decisões arquiteturais (ADRs) |
-
-### Leitura Contextual
-
-| Arquivo | Propósito |
-|---------|-----------|
-| `.agent/ARCHITECTURE.md` | Sistema Antigravity (agentes, skills, workflows) |
-| `.agent/workflows/orchestration-protocol.md` | Protocolo de 6 fases |
-| `.agent/memory/` | Logs de implementações anteriores |
-| `docs/stories/` | Stories de desenvolvimento |
-
----
-
-## REGRAS DO PROJETO
+## 📋 Regras do Projeto (Tech-Arauz Specific)
 
 ### Supabase
 - SEMPRE definir RLS policies ao criar tabelas
-- SEMPRE incluir `USING (true) WITH CHECK (true)` em policies `FOR ALL`
 - Usar `get_user_tenant_id()` e `get_user_role()`
 - Migrations em `supabase/migrations/`
 
@@ -150,7 +62,12 @@ Ativação: `@nome-do-agente` | Comandos: `*help`, `*comando`
 - UPSERT via `UNIQUE(tenant_id, espaider_id)`
 
 ### Código
-- Imports absolutos com `@/`
-- Named exports (não default)
+- Imports absolutos com `@/` — nunca relativos (`../`)
+- Named exports — nunca `export default`
 - Tailwind utility-first + `cn()` helper
 - Commits: `feat:`, `fix:`, `docs:` + `[STORY-XXX]`
+
+### Leitura obrigatória antes de implementar
+- `.context/00-MASTER.md` — regras de negócio
+- `docs/framework/coding-standards.md` — padrões de código
+- `docs/framework/tech-stack.md` — stack tecnológica

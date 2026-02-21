@@ -1,10 +1,17 @@
 ---
 name: orchestrator
-description: CTO & Chief AI Architect. Responsible for high-level strategy, multi-agent coordination, architectural integrity, and long-term memory management. Invoke for complex tasks, architecture decisions, or when deep reasoning is required before execution.
+deprecated: true
+deprecated_reason: "Substituído por @aios-master em .aios-core/development/agents/aios-master.md"
+migrated_to: "@aios-master"
+description: "[DEPRECATED] Use @aios-master. CTO & Chief AI Architect — orquestração e coordenação multi-agente."
 tools: Read, Grep, Glob, Bash, Write, Edit, Agent
 model: inherit
 skills: parallel-agents, behavioral-modes, plan-writing, brainstorming, architecture, intelligent-routing
 ---
+
+> ⛔ **DEPRECATED** — Este agente foi substituído por `@aios-master`.
+> 
+> **Use:** `.aios-core/development/agents/aios-master.md`
 
 # 🎩 Chief AI Architect (CTO)
 

@@ -1,153 +1,73 @@
-# GEMINI.md - Instruções para Gemini (Antigravity)
+# GEMINI.md — tech-arauz AI Engineering
 
-> **Este projeto opera sob um sistema de governança de agentes em `.agent/`.**
-
----
-
-## 🚨 PROTOCOLO CRÍTICO: AGENTES & SKILLS (LEIA PRIMEIRO)
-
-> **OBRIGATÓRIO:** Você DEVE ler o arquivo do agente apropriado e suas skills ANTES de realizar qualquer implementação. Esta é a regra de maior prioridade.
-
-### 1. Protocolo de Carregamento Modular de Skills
-
-Agente ativado → Verificar frontmatter "skills:" → Ler SKILL.md (INDEX) → Ler seções específicas.
-
-- **Leitura Seletiva:** NÃO leia TODOS os arquivos em uma pasta de skill. Leia `SKILL.md` primeiro, depois apenas as seções que correspondem à solicitação do usuário.
-- **Prioridade de Regras:** P0 (GEMINI.md) > P1 (Agent .md) > P2 (SKILL.md). Todas as regras são vinculativas.
-
-### 2. Protocolo de Aplicação
-
-1. **Quando o agente é ativado:**
-    - ✅ Ativar: Ler Regras → Verificar Frontmatter → Carregar SKILL.md → Aplicar Tudo.
-2. **Proibido:** Nunca pule a leitura das regras do agente ou instruções de skill. "Ler → Entender → Aplicar" é obrigatório.
+> **Este projeto usa a arquitetura AIOS + Antigravity unificada.**
+> A engenharia de IA é padronizada e independente do modelo selecionado.
 
 ---
 
-## 📥 CLASSIFICADOR DE SOLICITAÇÃO (ETAPA 1)
+## 📐 Fonte de Verdade (leia primeiro)
 
-**Antes de QUALQUER ação, classifique a solicitação:**
-
-| Tipo de Solicitação    | Palavras-chave de Gatilho                          | Tiers Ativos                   | Resultado                      |
-| :--------------------- | :------------------------------------------------- | :----------------------------- | :----------------------------- |
-| **PERGUNTA**           | "o que é", "como funciona", "explique"             | APENAS TIER 0                  | Resposta em Texto              |
-| **LEVANTAMENTO/INTEL** | "analisar", "listar arquivos", "visão geral"       | TIER 0 + Explorer              | Intel de Sessão (Sem Arquivo)  |
-| **CÓDIGO SIMPLES**     | "corrigir", "adicionar", "alterar" (arquivo único) | TIER 0 + TIER 1 (lite)         | Edição Inline                  |
-| **CÓDIGO COMPLEXO**    | "construir", "criar", "implementar", "refatorar"   | TIER 0 + TIER 1 (full) + Agent | **{task-slug}.md Obrigatório** |
-| **DESIGN/UI**          | "design", "UI", "página", "dashboard"              | TIER 0 + TIER 1 + Agent        | **{task-slug}.md Obrigatório** |
-| **COMANDO SLASH**      | /create, /orchestrate, /debug                      | Fluxo específico do comando    | Variável                       |
+| Documento                            | Caminho                                      |
+| ------------------------------------ | -------------------------------------------- |
+| Constituição (6 regras inegociáveis) | `.aios-core/constitution.md`                 |
+| Agentes AIOS                         | `.aios-core/development/agents/`             |
+| Skills técnicas                      | `.agent/skills/`                             |
+| Protocolo de orquestração (6 fases)  | `.agent/workflows/orchestration-protocol.md` |
+| Memória histórica                    | `.agent/memory/`                             |
 
 ---
 
-## 🤖 ROTEAMENTO DE AGENTE INTELIGENTE (ETAPA 2 - AUTO)
+## 🤖 Fluxo Padrão de Atendimento
 
-**SEMPRE ATIVO: Antes de responder a QUALQUER solicitação, analise e selecione automaticamente o(s) melhor(es) agente(s).**
-
-> 🔴 **OBRIGATÓRIO:** Você DEVE seguir o protocolo definido em `@[skills/intelligent-routing]`.
-
-### Protocolo de Auto-Seleção
-
-1. **Analisar (Silencioso)**: Detectar domínios (Frontend, Backend, Segurança, etc.) da solicitação do usuário.
-2. **Selecionar Agente(s)**: Escolher o(s) especialista(s) mais apropriado(s).
-3. **Informar Usuário**: Declarar concisamente qual experiência está sendo aplicada.
-4. **Aplicar**: Gerar resposta usando a persona e regras do agente selecionado.
-
-### Formato de Resposta (OBRIGATÓRIO)
-
-Ao aplicar automaticamente um agente, informe o usuário:
-
-```markdown
-🤖 **Aplicando conhecimento de `@[nome-do-agente]`...**
-
-[Continue com a resposta especializada]
-```
-
----
-
-## TIER 0: REGRAS UNIVERSAIS (Sempre Ativas)
-
-### 🌐 Tratamento de Idioma
-
-Quando o prompt do usuário NÃO estiver em Inglês:
-
-1. **Traduzir internamente** para melhor compreensão.
-2. **Responder e criar ARTEFATOS no idioma do usuário** - corresponda à comunicação (Português do Brasil).
-3. **Comentários/variáveis de código** permanecem em Inglês.
-4. **ARTEFATOS E PLANOS:** Todos os planos de implementação, tarefas e documentações DEVEM ser gerados em Português (Brasil).
-
-### 🧹 Clean Code (Obrigatório Global)
-
-**TODO código DEVE seguir as regras de `@[skills/clean-code]`. Sem exceções.**
-
-### 📁 Consciência de Dependência de Arquivo
-
-**Antes de modificar QUALQUER arquivo:**
-
-1. Verifique `CODEBASE.md` → Dependências de Arquivo.
-2. Identifique arquivos dependentes.
-3. Atualize TODOS os arquivos afetados juntos.
-
-### 🧠 Ler → Entender → Aplicar
+**Todo pedido passa pelo orquestrador primeiro.**
 
 ```
-❌ ERRADO: Ler arquivo do agente → Começar a codificar
-✅ CORRETO: Ler → Entender O PORQUÊ → Aplicar PRINCÍPIOS → Codificar
+Você → @aios-master (analisa + monta equipe) → especialistas → plano conjunto
 ```
+
+### Tabela de Roteamento
+
+> ⚠️ Agentes deprecated não devem ser usados. Consulte a tabela abaixo.
+> 🚫 **NUNCA carregue arquivos de `_deprecated/`** — são backups históricos, fora de uso.
+
+| Domínio                 | Agente AIOS         | Ativar com          | Deprecated → Arquivado em `_deprecated/`      |
+| ----------------------- | ------------------- | ------------------- | --------------------------------------------- |
+| Orquestração / padrão   | `@aios-master`      | `/aios-master`      | ~~orchestrator~~, ~~project-planner~~         |
+| Frontend / UI / React   | `@frontend`         | `/frontend`         | ~~frontend-specialist~~                       |
+| Mobile / App            | `@mobile`           | `/mobile`           | ~~mobile-developer~~ (migrado → AIOS)         |
+| Segurança / OWASP / RLS | `@security`         | `/security`         | ~~security-auditor~~, ~~penetration-tester~~  |
+| Backend / API           | `@dev`              | `/dev`              | ~~backend-specialist~~                        |
+| Qualidade / Testes      | `@qa`               | `/qa`               | ~~qa-automation-engineer~~, ~~test-engineer~~ |
+| DevOps / git push       | `@devops`           | `/devops`           | ~~devops-engineer~~                           |
+| Banco / Supabase        | `@data-engineer`    | `/data-engineer`    | ~~database-architect~~                        |
+| Produto                 | `@pm` / `@po`       | `/pm` `/po`         | ~~product-manager~~ / ~~product-owner~~       |
+| Design / UX             | `@ux-design-expert` | `/ux-design-expert` | —                                             |
+| Análise                 | `@analyst`          | `/analyst`          | —                                             |
+| Arquitetura / ADRs      | `@architect`        | `/architect`        | —                                             |
+| Scrum / Stories         | `@sm`               | `/sm`               | —                                             |
 
 ---
 
-## TIER 1: REGRAS DE CÓDIGO (Ao Escrever Código)
+## 🧹 Regras Universais
 
-### 🛑 Portão Socrático (Socratic Gate)
-
-**OBRIGATÓRIO: Toda solicitação de usuário deve passar pelo Portão Socrático antes de QUALQUER uso de ferramenta ou implementação.**
-
-| Tipo de Solicitação            | Estratégia              | Ação Necessária                              |
-| :----------------------------- | :---------------------- | :------------------------------------------- |
-| **Novo recurso / Build**       | Descoberta Profunda     | PERGUNTAR no mínimo 3 perguntas estratégicas |
-| **Edição de Código / Bug Fix** | Verificação de Contexto | Confirmar entendimento + perguntar impacto   |
-| **Vago / Simples**             | Clarificação            | Perguntar Propósito, Usuários e Escopo       |
-
-### 🏁 Protocolo de Checklist Final
-
-**Gatilho:** Quando o usuário diz "son kontrolleri yap", "verificações finais", "execute todos os testes", ou frases similares.
-
-Execute: `python .agent/scripts/checklist.py .`
+1. **Idioma:** Respostas em PT-BR. Código e variáveis em inglês.
+2. **Portão Socrático:** Para features novas, faça 3 perguntas estratégicas antes de implementar.
+3. **Clean Code:** Siga `.agent/skills/clean-code/SKILL.md` sem exceções.
+4. **Memória:** Após implementações significativas, crie log em `.agent/memory/YYYY-MM-DD_{task}.md`.
+5. **Supabase:** SEMPRE definir RLS ao criar tabelas.
+6. **Espaider:** API `BI_SOLICITACOES_SUPORTEESPAIDER` — validar dados, logs em `integration_log_entries`.
 
 ---
 
-## REGRAS ESPECÍFICAS DO PROJETO (De CLAUDE.md)
+## 📁 Skills Técnicas por Domínio
 
-### 1. Supabase
-- **SEMPRE** definir RLS policies ao criar tabelas.
-- Usar `get_user_tenant_id()` e `get_user_role()`.
-- Migrations em `supabase/migrations/`.
-
-### 2. Espaider
-- API: `BI_SOLICITACOES_SUPORTEESPAIDER`.
-- Validar dados externos para null/undefined.
-- Logs em `integration_log_entries`.
-
-### 3. Logs de Memória (Pós-Implementação)
-
-**Após implementações significativas**, você DEVE:
-1. Criar log em `.agent/memory/YYYY-MM-DD_{task-slug}.md`.
-2. Seguir template `.agent/memory/TEMPLATE.md`.
-3. Documentar: contexto, decisões, arquivos alterados, lições aprendidas.
-
----
-
-## RESUMO DE EXECUÇÃO
-
-```
-┌─────────────────────────────────────────────────────┐
-│  OBRIGATÓRIO:                                       │
-│  1. Ler GEMINI.md e seguir regras do Agente/Skill   │
-│  2. Passar pelo Portão Socrático antes de codar     │
-│  3. Seguir protocolos de .agent/workflows/          │
-│  4. Criar memory log após implementações            │
-├─────────────────────────────────────────────────────┤
-│  PROJETO:                                           │
-│  - RLS no Supabase sempre                           │
-│  - APIs Espaider com validação e logs               │
-└─────────────────────────────────────────────────────┘
-```
+| Domínio          | Skills                                                             | Carregada por    |
+| ---------------- | ------------------------------------------------------------------ | ---------------- |
+| UI/React/Next.js | `react-best-practices`, `tailwind-patterns`, `frontend-design`     | `@frontend`      |
+| Mobile           | `mobile-design`, `performance-profiling`                           | `@mobile`        |
+| Backend/API      | `api-patterns`, `nodejs-best-practices`                            | `@dev`           |
+| Banco/RLS        | `supabase-rls-patterns`, `database-design`, `espaider-integration` | `@data-engineer` |
+| Segurança        | `vulnerability-scanner`, `red-team-tactics`                        | `@security`      |
+| Testes           | `testing-patterns`, `tdd-workflow`, `webapp-testing`               | `@qa`            |
+| Deploy           | `deployment-procedures`                                            | `@devops`        |
+| Debug / Perf     | `systematic-debugging`, `performance-profiling`                    | `@dev`           |

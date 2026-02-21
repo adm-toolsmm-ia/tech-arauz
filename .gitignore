@@ -49,14 +49,13 @@ yarn-error.log*
 # Supabase
 .supabase/
 
-# Logs
-logs
+# Logs (root-level only — NOT API routes in src/)
+/logs
 *.log
 
 # Temporary files
 *.tmp
 *.temp
-# Arquivos temporários de processamento
 temp_pptx/
 
 # Credenciais sensíveis
@@ -69,8 +68,8 @@ docs/credenciais/
 # Dependencies (AIOS)
 node_modules
 
-# Build & Logs (AIOS)
-logs/
+# Build & Logs (AIOS — root-level only)
+/logs/
 
 # IDE & OS (AIOS)
 Thumbs.db

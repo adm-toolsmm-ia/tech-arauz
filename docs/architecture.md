@@ -31,7 +31,7 @@ src/
 │   │   ├── projetos/             # Listagem de projetos
 │   │   ├── cronogramas/          # View de cronogramas
 │   │   ├── integracoes/          # Admin: configuração Espaider/LangSmith
-│   │   └── admin/                # Controle de usuários, tabelas auxiliares
+│   │   └── cadastros/usuarios/   # Admin: gestão de usuários (RBAC admin-only)
 │   ├── auth/                     # Pages de auth (login, signup)
 │   └── api/                      # API routes (RPC -> Supabase)
 │

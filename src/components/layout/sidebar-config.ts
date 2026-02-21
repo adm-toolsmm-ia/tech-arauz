@@ -40,7 +40,7 @@ export const menuConfig: NavGroup[] = [
     items: [
       { title: 'Agentes AI', url: '/agentes', icon: Bot, badge: 'MVP' },
       { title: 'Integrações', url: '/integracoes', icon: Plug },
-      { title: 'Novo Usuário', url: '/cadastros/usuarios/novo', icon: UserPlus },
+      { title: 'Usuários', url: '/cadastros/usuarios', icon: UserPlus },
     ],
   },
 ];

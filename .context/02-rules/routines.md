@@ -54,6 +54,42 @@ Este documento define as **rotinas de negócio** que o sistema deve suportar. Ca
 
 ---
 
+## RT-002B: Gestão de Usuários (Admin-Only)
+
+| Atributo | Valor |
+|----------|-------|
+| **Frequência** | Sob demanda (ação do admin) |
+| **Permissão** | admin |
+| **Rota** | `/cadastros/usuarios` |
+
+### Fluxo — Criar Usuário
+1. Admin acessa página de gestão de usuários
+2. Clica em "Novo Usuário" e preenche formulário (nome, email, perfil)
+3. Sistema valida dados (Zod) e verifica permissão do admin
+4. Cria usuário no Supabase Auth com senha temporária
+5. Insere perfil na tabela `profiles` com `tenant_id` do admin
+6. Em caso de falha no perfil, executa rollback do auth
+7. Admin comunica senha temporária ao novo usuário fora do sistema
+
+### Fluxo — Editar Usuário
+1. Admin seleciona usuário na tabela e clica "Editar"
+2. Altera nome e/ou perfil de acesso
+3. Sistema valida que o usuário-alvo pertence ao mesmo tenant
+4. Atualiza dados em `auth.users` e `profiles`
+
+### Fluxo — Ativar/Desativar Usuário
+1. Admin seleciona "Desativar" ou "Reativar" no menu de ações
+2. Sistema valida tenant do usuário-alvo
+3. Alterna `ban_duration` no Auth e sincroniza `profiles.is_active`
+
+### Regras de Segurança
+- Apenas role `admin` pode executar qualquer operação
+- Validação de tenant antes de toda operação em `auth.admin`
+- Mensagens de erro genéricas para UI, detalhes apenas em logs do servidor
+- Service role usado exclusivamente após confirmação de permissão admin
+
+---
+
 ## RT-003: Auditoria de Logs
 
 | Atributo | Valor |

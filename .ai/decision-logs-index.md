@@ -19,6 +19,7 @@ Padrões técnicos descobertos e formalizados durante desenvolvimento.
 | [ADR-002](ADR-002-token-fallback.md) | Token fallback para env vars | Accepted | 2026-02-08 |
 | [ADR-003](ADR-003-upsert-pattern.md) | UPSERT via composite UNIQUE | Accepted | 2026-02-10 |
 | [ADR-004](ADR-004-uuid-pk-pattern.md) | UUID PK + espaider_id INTEGER | Accepted | 2026-02-13 |
+| [ADR-005](ADR-005-user-management-module.md) | User Management: Auth, RBAC, Onboarding | Accepted | 2026-02-21 |
 
 ---
 
@@ -61,7 +62,7 @@ Foundation ADRs (.context/)
 | RF-003 (Child entities) | Foundation: ADR-002, Runtime: ADR-003, ADR-004 | Sync & Schema |
 | RF-004 (Projects viz) | Foundation: ADR-003 | Design |
 | RF-006 (Aux tables) | Runtime: ADR-001, ADR-004 | RLS & Schema |
-| RF-007 (RBAC) | Runtime: ADR-001 | Security |
+| RF-007 (RBAC) | Runtime: ADR-001, ADR-005 | Security |
 | RF-008 (Logs) | Runtime: ADR-004 | Schema |
 
 ---

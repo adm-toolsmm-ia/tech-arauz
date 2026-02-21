@@ -126,6 +126,7 @@ const EMPTY_STATE: UserActionState = {
 export async function getTenantUsers(): Promise<{
   data: TenantUser[] | null;
   error: string | null;
+  currentUserId?: string;
 }> {
   const session = await requireAdminSession();
   if (!session) return { data: null, error: 'Sem permissão para acessar este módulo.' };
@@ -166,7 +167,7 @@ export async function getTenantUsers(): Promise<{
     };
   });
 
-  return { data: users, error: null };
+  return { data: users, error: null, currentUserId: session.userId };
 }
 
 export async function createUser(
@@ -340,6 +341,43 @@ export async function toggleUserStatus(
     return { success: true, message: `Usuário ${action} com sucesso.` };
   } catch (error) {
     console.error('[toggleUserStatus] unexpected error:', error);
+    return { success: false, message: 'Erro interno do servidor.' };
+  }
+}
+
+export async function deleteUser(userId: string): Promise<UserActionState> {
+  const session = await requireAdminSession();
+  if (!session) return { success: false, message: 'Apenas administradores podem excluir usuários.' };
+
+  if (userId === session.userId) {
+    return { success: false, message: 'Não é possível excluir a si mesmo.' };
+  }
+
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!userId || !uuidRegex.test(userId)) {
+    return { success: false, message: 'ID de usuário inválido.' };
+  }
+
+  const supabase = createServiceClient();
+
+  const belongsToTenant = await verifyTargetBelongsToTenant(supabase, userId, session.tenantId);
+  if (!belongsToTenant) {
+    return { success: false, message: 'Usuário não encontrado.' };
+  }
+
+  try {
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+
+    if (error) {
+      console.error('[deleteUser] auth error:', error.message);
+      return { success: false, message: 'Não foi possível excluir o usuário.' };
+    }
+
+    console.log('[deleteUser] success:', { targetId: userId, adminId: session.userId });
+    revalidatePath('/cadastros/usuarios');
+    return { success: true, message: 'Usuário excluído com sucesso.' };
+  } catch (error) {
+    console.error('[deleteUser] unexpected error:', error);
     return { success: false, message: 'Erro interno do servidor.' };
   }
 }

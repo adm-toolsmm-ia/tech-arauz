@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Table,
     TableBody,
@@ -10,7 +11,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit2, Shield, UserX, UserCheck, MoreHorizontal, UserPlus } from 'lucide-react';
+import { Edit2, Shield, UserX, UserCheck, MoreHorizontal, UserPlus, Trash2 } from 'lucide-react';
 import { UserFormDrawer } from './UserFormDrawer';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -21,7 +22,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { toggleUserStatus } from '../actions';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { toggleUserStatus, deleteUser } from '../actions';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { TenantUser, UserRole } from '../actions';
@@ -38,9 +47,16 @@ const ROLE_LABELS: Record<UserRole, string> = {
     viewer: 'Visualizador',
 };
 
-export function UsersTable({ users }: { users: TenantUser[] }) {
+interface UsersTableProps {
+    users: TenantUser[];
+    currentUserId?: string;
+}
+
+export function UsersTable({ users, currentUserId }: UsersTableProps) {
+    const router = useRouter();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<TenantUser | null>(null);
+    const [userToDelete, setUserToDelete] = useState<TenantUser | null>(null);
 
     const handleEdit = (user: TenantUser) => {
         setEditingUser(user);
@@ -63,6 +79,24 @@ export function UsersTable({ users }: { users: TenantUser[] }) {
             toast.error(result.message);
         }
     };
+
+    const handleConfirmDelete = async () => {
+        if (!userToDelete) return;
+        const loadingToast = toast.loading('Excluindo...');
+        const result = await deleteUser(userToDelete.id);
+        toast.dismiss(loadingToast);
+        setUserToDelete(null);
+
+        if (result.success) {
+            toast.success(result.message);
+            router.refresh();
+        } else {
+            toast.error(result.message);
+        }
+    };
+
+    const isCurrentUser = (user: TenantUser) =>
+        Boolean(currentUserId && user.id === currentUserId);
 
     return (
         <div className="space-y-4">
@@ -180,6 +214,16 @@ export function UsersTable({ users }: { users: TenantUser[] }) {
                                                         </>
                                                     )}
                                                 </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    onClick={() => setUserToDelete(user)}
+                                                    disabled={isCurrentUser(user)}
+                                                    className="text-destructive focus:text-destructive"
+                                                    aria-label={isCurrentUser(user) ? 'Não é possível excluir a si mesmo' : `Excluir ${user.full_name}`}
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Excluir Usuário
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -195,6 +239,36 @@ export function UsersTable({ users }: { users: TenantUser[] }) {
                 onOpenChange={setDrawerOpen}
                 userToEdit={editingUser}
             />
+
+            <Dialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+                <DialogContent aria-describedby="delete-user-description">
+                    <DialogHeader>
+                        <DialogTitle>Excluir usuário</DialogTitle>
+                        <DialogDescription id="delete-user-description">
+                            {userToDelete ? (
+                                <>
+                                    Tem certeza que deseja excluir <strong>{userToDelete.full_name}</strong> ({userToDelete.email})? Esta ação não pode ser desfeita.
+                                </>
+                            ) : null}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setUserToDelete(null)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleConfirmDelete}
+                            aria-label="Confirmar exclusão do usuário"
+                        >
+                            Excluir
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

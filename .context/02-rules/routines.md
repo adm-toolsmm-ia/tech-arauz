@@ -82,6 +82,14 @@ Este documento define as **rotinas de negócio** que o sistema deve suportar. Ca
 2. Sistema valida tenant do usuário-alvo
 3. Alterna `ban_duration` no Auth e sincroniza `profiles.is_active`
 
+### Fluxo — Excluir Usuário
+1. Admin seleciona "Excluir Usuário" no menu de ações
+2. Sistema exibe confirmação (dialog): "Tem certeza? Esta ação não pode ser desfeita."
+3. Admin confirma
+4. Sistema valida: não é o próprio usuário; usuário-alvo pertence ao tenant
+5. Chama `auth.admin.deleteUser(userId)`; CASCADE remove `profiles`
+6. Revalida página e exibe toast de sucesso
+
 ### Regras de Segurança
 - Apenas role `admin` pode executar qualquer operação
 - Validação de tenant antes de toda operação em `auth.admin`

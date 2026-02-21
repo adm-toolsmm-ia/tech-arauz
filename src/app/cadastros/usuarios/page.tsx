@@ -4,7 +4,7 @@ import { getTenantUsers } from './actions';
 import { AlertCircle } from 'lucide-react';
 
 export default async function UsuariosPage() {
-    const { data: users, error } = await getTenantUsers();
+    const { data: users, error, currentUserId } = await getTenantUsers();
 
     return (
         <div className="flex flex-col h-full bg-background p-6">
@@ -23,7 +23,7 @@ export default async function UsuariosPage() {
                         </div>
                     </div>
                 ) : (
-                    <UsersTable users={users || []} />
+                    <UsersTable users={users || []} currentUserId={currentUserId} />
                 )}
             </div>
         </div>

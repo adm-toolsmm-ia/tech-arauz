@@ -67,10 +67,16 @@ interface UIProject {
 
 interface UISchedule {
   id: string;
-  schedule_code: string;
-  description: string;
-  scheduled_date: string;
-  status: string;
+  atividade: string | null;
+  responsavel?: string | null;
+  data_inicio?: string | null;
+  data_fim?: string | null;
+  data_prazo?: string | null;
+  status: string | null;
+  fase_atividade?: string | null;
+  atrasado?: boolean | null;
+  setor_responsavel?: string | null;
+  item?: string | null;
 }
 
 interface UIDelivery {
@@ -577,19 +583,37 @@ export function ProjectCockpit({
                   key={schedule.id}
                   className="flex items-center justify-between rounded-lg border p-4"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{schedule.schedule_code}</p>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {schedule.description}
-                    </p>
+                  <div className="min-w-0 flex-1 pr-4">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-sm font-medium">{schedule.atividade || 'Atividade sem nome'}</p>
+                      {schedule.atrasado && (
+                        <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">Atrasado</Badge>
+                      )}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      {schedule.item && <span>Item: <span className="font-medium text-foreground/80">{schedule.item}</span></span>}
+                      {schedule.setor_responsavel && <span>Setor: <span className="font-medium text-foreground/80">{schedule.setor_responsavel}</span></span>}
+                      {schedule.responsavel && <span>Resp: <span className="font-medium text-foreground/80">{schedule.responsavel}</span></span>}
+                    </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-3">
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(schedule.scheduled_date)}
-                    </span>
-                    <Badge variant="secondary" className="text-xs">
-                      {schedule.status || 'Pendente'}
-                    </Badge>
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
+                    <div className="flex items-center gap-2">
+                      {schedule.fase_atividade && (
+                        <Badge variant="outline" className="text-[10px]">{schedule.fase_atividade}</Badge>
+                      )}
+                      <Badge variant="secondary" className="text-[10px]">
+                        {schedule.status || 'Pendente'}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {schedule.data_fim ? (
+                        <span>Previsão: {formatDate(schedule.data_fim)}</span>
+                      ) : schedule.data_prazo ? (
+                        <span>Prazo: {formatDate(schedule.data_prazo)}</span>
+                      ) : (
+                        <span>-</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

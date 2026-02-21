@@ -330,274 +330,286 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
   return (
     <TooltipProvider delayDuration={200}>
-    <div className="flex flex-col">
-      <DashboardHeader title="Cronogramas" subtitle="Visualize todos os cronogramas de projetos" />
+      <div className="flex flex-col">
+        <DashboardHeader title="Cronogramas" subtitle="Visualize todos os cronogramas de projetos" />
 
-      <div className="flex-1 space-y-6 p-6">
-        {/* KPIs */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard
-            title="Total Atividades"
-            value={totalActivities}
-            icon={CalendarDays}
-            subtitle="Em todos os projetos"
-          />
-          <KPICard
-            title="Atrasadas"
-            value={delayedCount}
-            icon={AlertTriangle}
-            className={
-              delayedCount > 0 ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500' : ''
-            }
-            subtitle={delayedCount > 0 ? 'Requerem atenção imediata' : 'Nenhuma atividade atrasada'}
-          />
-          <KPICard
-            title="Concluídas"
-            value={completedCount}
-            icon={CheckCircle2}
-            trend={
-              totalActivities > 0
-                ? {
+        <div className="flex-1 space-y-6 p-6">
+          {/* KPIs */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <KPICard
+              title="Total Atividades"
+              value={totalActivities}
+              icon={CalendarDays}
+              subtitle="Em todos os projetos"
+            />
+            <KPICard
+              title="Atrasadas"
+              value={delayedCount}
+              icon={AlertTriangle}
+              className={
+                delayedCount > 0 ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500' : ''
+              }
+              subtitle={delayedCount > 0 ? 'Requerem atenção imediata' : 'Nenhuma atividade atrasada'}
+            />
+            <KPICard
+              title="Concluídas"
+              value={completedCount}
+              icon={CheckCircle2}
+              trend={
+                totalActivities > 0
+                  ? {
                     value: `${Math.round((completedCount / totalActivities) * 100)}%`,
                     positive: true,
                   }
-                : undefined
-            }
-          />
-          <KPICard
-            title="Próximas do Prazo"
-            value={nearDeadlineCount}
-            icon={Clock}
-            subtitle="Nos próximos 7 dias"
-          />
-        </div>
-
-        {/* View Toggle + Filters Bar */}
-        <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-1 items-center gap-2">
-            <div className="relative max-w-sm flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar atividades..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="border-muted-foreground/20 bg-background/50 pl-9 transition-colors focus:border-primary/50"
-              />
-            </div>
-            <div className="mx-2 h-8 w-px bg-border" />
-            <Button
-              variant={showFilters ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className={showFilters ? 'text-primary' : 'text-muted-foreground'}
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              Filtros
-              {activeFilterCount > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="ml-1.5 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
-                >
-                  {activeFilterCount}
-                </Badge>
-              )}
-            </Button>
-            {activeFilterCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="h-8 px-2 text-muted-foreground hover:text-destructive"
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            )}
+                  : undefined
+              }
+            />
+            <KPICard
+              title="Próximas do Prazo"
+              value={nearDeadlineCount}
+              icon={Clock}
+              subtitle="Nos próximos 7 dias"
+            />
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={goToToday}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Hoje
-            </Button>
-            <div className="mx-1 h-8 w-px bg-border" />
-            <div className="flex items-center rounded-lg border bg-muted/30 p-0.5">
-              <Button
-                variant={viewMode === 'month' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('month')}
-                className="h-7 rounded-md text-xs"
-              >
-                <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
-                Mês
-              </Button>
-              <Button
-                variant={viewMode === 'week' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('week')}
-                className="h-7 rounded-md text-xs"
-              >
-                <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
-                Semana
-              </Button>
-            </div>
-          </div>
-        </div>
 
-        {/* Filter Panel (Collapsible) */}
-        {showFilters && (
-          <div className="rounded-lg border border-dashed bg-muted/30 p-4 animate-in slide-in-from-top-2">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Projeto</label>
-                <Select value={projectFilter} onValueChange={setProjectFilter}>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Todos os projetos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os projetos</SelectItem>
-                    {uniqueProjects.map(([id, name]) => (
-                      <SelectItem key={id} value={id}>
-                        {name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">
-                  Setor Responsável
-                </label>
-                <Select value={setorFilter} onValueChange={setSetorFilter}>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Todos os setores" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os setores</SelectItem>
-                    {uniqueSetores.map((setor) => (
-                      <SelectItem key={setor} value={setor}>
-                        {setor}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Status</label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Todos os status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os status</SelectItem>
-                    {uniqueStatuses.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Calendar Section */}
-        {viewMode === 'month' ? (
-          <MonthView
-            currentDate={currentDate}
-            selectedDay={selectedDay}
-            onSelectDay={setSelectedDay}
-            onNavigate={navigateMonth}
-            getSchedulesForDate={getSchedulesForDate}
-            projectIds={projectIds}
-          />
-        ) : (
-          <WeekView
-            currentDate={currentDate}
-            selectedDay={selectedDay}
-            onSelectDay={setSelectedDay}
-            onNavigate={navigateWeek}
-            getSchedulesForDate={getSchedulesForDate}
-            projectIds={projectIds}
-          />
-        )}
-
-        {/* Selected Day Activities */}
-        {selectedDay && (
-          <SelectedDayPanel
-            date={selectedDay}
-            schedules={getSchedulesForDate(selectedDay)}
-            projectIds={projectIds}
-            onActivityClick={setSelectedSchedule}
-          />
-        )}
-
-        {/* Activity List */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">
-              Todas as Atividades
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({filteredSchedules.length})
-              </span>
-            </h2>
-          </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {filteredSchedules.length === 0 ? (
-              <div className="col-span-full py-12 text-center">
-                <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <h3 className="mt-4 text-lg font-medium">Nenhuma atividade encontrada</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Ajuste os filtros ou sincronize os dados do Espaider.
-                </p>
-              </div>
-            ) : (
-              filteredSchedules.map((schedule) => (
-                <ActivityCard
-                  key={schedule.id}
-                  schedule={schedule}
-                  projectIds={projectIds}
-                  onClick={() => setSelectedSchedule(schedule)}
+          {/* View Toggle + Filters Bar */}
+          <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-1 items-center gap-2">
+              <div className="relative max-w-sm flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar atividades..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="border-muted-foreground/20 bg-background/50 pl-9 transition-colors focus:border-primary/50"
                 />
-              ))
-            )}
+              </div>
+              <div className="mx-2 h-8 w-px bg-border" />
+              <Button
+                variant={showFilters ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className={showFilters ? 'text-primary' : 'text-muted-foreground'}
+              >
+                <Filter className="mr-2 h-4 w-4" />
+                Filtros
+                {activeFilterCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="ml-1.5 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
+                  >
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
+              {activeFilterCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-8 px-2 text-muted-foreground hover:text-destructive"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToToday}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Hoje
+              </Button>
+              <div className="mx-1 h-8 w-px bg-border" />
+              <div className="flex items-center rounded-lg border bg-muted/30 p-0.5">
+                <Button
+                  variant={viewMode === 'month' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('month')}
+                  className="h-7 rounded-md text-xs"
+                >
+                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                  Mês
+                </Button>
+                <Button
+                  variant={viewMode === 'week' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('week')}
+                  className="h-7 rounded-md text-xs"
+                >
+                  <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
+                  Semana
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* SplitView for Project Cockpit */}
-        <SplitView
-          isOpen={!!selectedSchedule}
-          onClose={() => setSelectedSchedule(null)}
-          title={selectedSchedule?.project?.titulo || 'Detalhes do Projeto'}
-          subtitle={selectedSchedule?.project?.codigo || undefined}
-          width="2xl"
-        >
-          {selectedSchedule?.project && (
-            <ProjectCockpit
-              project={{
-                id: selectedSchedule.project.id,
-                espaider_code: selectedSchedule.project.codigo || '',
-                project_name: selectedSchedule.project.titulo || '',
-                status: selectedSchedule.project.status || '',
-                fase_atual: selectedSchedule.project.fase_atual,
-                end_date: null,
-                responsible: null,
-                priority: null,
-                category: null,
-              }}
-              schedules={[]}
-              deliveries={[]}
-              histories={[]}
-              approvers={[]}
-              budgets={[]}
+          {/* Filter Panel (Collapsible) */}
+          {showFilters && (
+            <div className="rounded-lg border border-dashed bg-muted/30 p-4 animate-in slide-in-from-top-2">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Projeto</label>
+                  <Select value={projectFilter} onValueChange={setProjectFilter}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Todos os projetos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os projetos</SelectItem>
+                      {uniqueProjects.map(([id, name]) => (
+                        <SelectItem key={id} value={id}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Setor Responsável
+                  </label>
+                  <Select value={setorFilter} onValueChange={setSetorFilter}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Todos os setores" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os setores</SelectItem>
+                      {uniqueSetores.map((setor) => (
+                        <SelectItem key={setor} value={setor}>
+                          {setor}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Status</label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Todos os status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os status</SelectItem>
+                      {uniqueStatuses.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Calendar Section */}
+          {viewMode === 'month' ? (
+            <MonthView
+              currentDate={currentDate}
+              selectedDay={selectedDay}
+              onSelectDay={setSelectedDay}
+              onNavigate={navigateMonth}
+              getSchedulesForDate={getSchedulesForDate}
+              projectIds={projectIds}
+            />
+          ) : (
+            <WeekView
+              currentDate={currentDate}
+              selectedDay={selectedDay}
+              onSelectDay={setSelectedDay}
+              onNavigate={navigateWeek}
+              getSchedulesForDate={getSchedulesForDate}
+              projectIds={projectIds}
             />
           )}
-        </SplitView>
+
+          {/* Selected Day Activities */}
+          {selectedDay && (
+            <SelectedDayPanel
+              date={selectedDay}
+              schedules={getSchedulesForDate(selectedDay)}
+              projectIds={projectIds}
+              onActivityClick={setSelectedSchedule}
+            />
+          )}
+
+          {/* Activity List */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">
+                Todas as Atividades
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  ({filteredSchedules.length})
+                </span>
+              </h2>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {filteredSchedules.length === 0 ? (
+                <div className="col-span-full py-12 text-center">
+                  <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                  <h3 className="mt-4 text-lg font-medium">Nenhuma atividade encontrada</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Ajuste os filtros ou sincronize os dados do Espaider.
+                  </p>
+                </div>
+              ) : (
+                filteredSchedules.map((schedule) => (
+                  <ActivityCard
+                    key={schedule.id}
+                    schedule={schedule}
+                    projectIds={projectIds}
+                    onClick={() => setSelectedSchedule(schedule)}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* SplitView for Project Cockpit */}
+          <SplitView
+            isOpen={!!selectedSchedule}
+            onClose={() => setSelectedSchedule(null)}
+            title={selectedSchedule?.project?.titulo || 'Detalhes do Projeto'}
+            subtitle={selectedSchedule?.project?.codigo || undefined}
+            width="2xl"
+          >
+            {selectedSchedule?.project && (
+              <ProjectCockpit
+                project={{
+                  id: selectedSchedule.project.id,
+                  espaider_code: selectedSchedule.project.codigo || '',
+                  project_name: selectedSchedule.project.titulo || '',
+                  status: selectedSchedule.project.status || '',
+                  fase_atual: selectedSchedule.project.fase_atual,
+                  end_date: null,
+                  responsible: null,
+                  priority: null,
+                  category: null,
+                }}
+                schedules={schedules.filter(s => s.project_id === selectedSchedule.project.id).map(s => ({
+                  id: s.id,
+                  atividade: s.atividade,
+                  responsavel: s.responsavel,
+                  data_inicio: s.data_inicio,
+                  data_fim: s.data_fim,
+                  data_prazo: s.data_prazo,
+                  status: s.status,
+                  fase_atividade: s.fase_atividade,
+                  atrasado: s.atrasado,
+                  setor_responsavel: s.setor_responsavel,
+                  item: s.item
+                }))}
+                deliveries={[]}
+                histories={[]}
+                approvers={[]}
+                budgets={[]}
+              />
+            )}
+          </SplitView>
+        </div>
       </div>
-    </div>
     </TooltipProvider>
   );
 }
@@ -687,8 +699,8 @@ function MonthView({
                       isToday && 'bg-accent font-bold',
                       isSelected && 'bg-primary/5 ring-2 ring-primary',
                       hasDelayed &&
-                        daySchedules.length > 0 &&
-                        'ring-1 ring-red-300 dark:ring-red-700',
+                      daySchedules.length > 0 &&
+                      'ring-1 ring-red-300 dark:ring-red-700',
                     )}
                   >
                     <span

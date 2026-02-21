@@ -83,10 +83,16 @@ interface Project {
   category?: string | null;
   schedules?: Array<{
     id: string;
-    schedule_code: string;
-    description: string;
-    scheduled_date: string;
-    status: string;
+    atividade: string | null;
+    responsavel?: string | null;
+    data_inicio?: string | null;
+    data_fim?: string | null;
+    data_prazo?: string | null;
+    status: string | null;
+    fase_atividade?: string | null;
+    atrasado?: boolean | null;
+    setor_responsavel?: string | null;
+    item?: string | null;
   }>;
   deliveries?: Array<{
     id: string;
@@ -480,10 +486,16 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
               }}
               schedules={(selectedProject.schedules || []).map((s) => ({
                 id: s.id,
-                schedule_code: s.schedule_code,
-                description: s.description,
-                scheduled_date: s.scheduled_date,
-                status: s.status || 'pendente',
+                atividade: s.atividade,
+                responsavel: s.responsavel,
+                data_inicio: s.data_inicio,
+                data_fim: s.data_fim,
+                data_prazo: s.data_prazo,
+                status: s.status,
+                fase_atividade: s.fase_atividade,
+                atrasado: s.atrasado,
+                setor_responsavel: s.setor_responsavel,
+                item: s.item,
               }))}
               deliveries={(selectedProject.deliveries || []).map((d) => ({
                 id: d.id,
@@ -745,10 +757,10 @@ function ProjectList({
                       {project.priority ? (
                         <span
                           className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${project.priority === 'urgente'
-                              ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                              : project.priority === 'alta'
-                                ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
-                                : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                            ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                            : project.priority === 'alta'
+                              ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
+                              : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
                             }`}
                         >
                           {project.priority}

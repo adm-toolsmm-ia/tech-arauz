@@ -233,10 +233,16 @@ export interface UIBudget {
 
 export interface UISchedule {
   id: string;
-  schedule_code: string;
-  description: string;
-  scheduled_date: string;
-  status: string;
+  atividade: string | null;
+  responsavel?: string | null;
+  data_inicio?: string | null;
+  data_fim?: string | null;
+  data_prazo?: string | null;
+  status: string | null;
+  fase_atividade?: string | null;
+  atrasado?: boolean | null;
+  setor_responsavel?: string | null;
+  item?: string | null;
 }
 
 export interface UIDelivery {
@@ -265,10 +271,16 @@ export interface UIDashboardProject {
 export function dbScheduleToUI(row: DBSchedule): UISchedule {
   return {
     id: row.id,
-    schedule_code: row.atividade,
-    description: row.responsavel ? `${row.atividade} — ${row.responsavel}` : row.atividade,
-    scheduled_date: row.data_fim || row.data_inicio || '',
-    status: row.status || 'pendente',
+    atividade: row.atividade,
+    responsavel: row.responsavel,
+    data_inicio: row.data_inicio,
+    data_fim: row.data_fim,
+    data_prazo: row.data_prazo,
+    status: row.status,
+    fase_atividade: row.fase_atividade,
+    atrasado: row.atrasado,
+    setor_responsavel: row.setor_responsavel,
+    item: row.item,
   };
 }
 

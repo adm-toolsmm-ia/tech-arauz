@@ -169,6 +169,12 @@ WITH source_data AS (
         total_policies,
         service_role_policies,
         CASE
+            -- System tables (tenants, profiles) - only need RLS + policies, no tenant_id required
+            WHEN table_name IN ('tenants', 'profiles') AND rls_enabled AND total_policies > 0 THEN '✅ PASS'
+            WHEN table_name IN ('tenants', 'profiles') AND NOT rls_enabled THEN '🔴 CRITICAL (RLS disabled)'
+            WHEN table_name IN ('tenants', 'profiles') AND total_policies = 0 THEN '🔴 CRITICAL (no policies)'
+
+            -- Data tables (all others) - need RLS + policies + tenant_isolation
             WHEN rls_enabled AND total_policies > 0 AND tenant_isolation_found THEN '✅ PASS'
             WHEN rls_enabled AND total_policies > 0 AND NOT tenant_isolation_found AND has_tenant_id_column THEN '⚠️  WARN (no isolation)'
             WHEN rls_enabled AND total_policies > 0 AND NOT tenant_isolation_found AND NOT has_tenant_id_column THEN '🔴 CRITICAL (missing tenant_id)'
@@ -184,8 +190,8 @@ SELECT * FROM source_data
 ORDER BY
     CASE audit_status
         WHEN '🔴 CRITICAL (RLS disabled)' THEN 1
-        WHEN '🔴 CRITICAL (missing tenant_id)' THEN 2
-        WHEN '🔴 CRITICAL (no policies)' THEN 3
+        WHEN '🔴 CRITICAL (no policies)' THEN 2
+        WHEN '🔴 CRITICAL (missing tenant_id)' THEN 3
         WHEN '⚠️  WARN (no isolation)' THEN 4
         WHEN '✅ PASS' THEN 5
         ELSE 6

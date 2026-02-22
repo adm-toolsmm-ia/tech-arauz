@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { X, SlidersHorizontal, Star, AlertTriangle, Clock, Zap } from 'lucide-react';
+import { X, SlidersHorizontal, Star, AlertTriangle, Clock, Zap, Calendar, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,11 @@ export interface ProjectFilterState {
   importancia_especial: boolean | null;
   prazo_vencido: boolean;
   concluidos: boolean;
+  proximos_7_dias: boolean;
+  sem_movimento: boolean;
+  com_atrasos: boolean;
+  impacto_op_alto: boolean;
+  preset?: 'meus_projetos' | 'criticos' | 'revisao_semanal';
 }
 
 export const defaultFilters: ProjectFilterState = {
@@ -49,6 +54,11 @@ export const defaultFilters: ProjectFilterState = {
   importancia_especial: null,
   prazo_vencido: false,
   concluidos: false,
+  proximos_7_dias: false,
+  sem_movimento: false,
+  com_atrasos: false,
+  impacto_op_alto: false,
+  preset: undefined,
 };
 
 interface ProjectFiltersProps {
@@ -102,9 +112,37 @@ const quickFilters: QuickFilter[] = [
   {
     id: 'concluidos',
     label: 'Concluídos',
-    icon: Clock, // Usando Clock por enquanto, ou Check se importado
+    icon: Clock,
     apply: (f) => ({ ...f, concluidos: true }),
     isActive: (f) => f.concluidos === true,
+  },
+  {
+    id: 'proximos_7_dias',
+    label: 'Próximos 7 dias',
+    icon: Calendar,
+    apply: (f) => ({ ...f, proximos_7_dias: true }),
+    isActive: (f) => f.proximos_7_dias === true,
+  },
+  {
+    id: 'sem_movimento',
+    label: 'Sem Movimento',
+    icon: Clock,
+    apply: (f) => ({ ...f, sem_movimento: true }),
+    isActive: (f) => f.sem_movimento === true,
+  },
+  {
+    id: 'com_atrasos',
+    label: 'Com Atrasos',
+    icon: AlertTriangle,
+    apply: (f) => ({ ...f, com_atrasos: true }),
+    isActive: (f) => f.com_atrasos === true,
+  },
+  {
+    id: 'impacto_op_alto',
+    label: 'Alto Impacto',
+    icon: TrendingUp,
+    apply: (f) => ({ ...f, impacto_op_alto: true }),
+    isActive: (f) => f.impacto_op_alto === true,
   },
 ];
 
@@ -123,6 +161,10 @@ function getActiveFilterCount(filters: ProjectFilterState): number {
   if (filters.importancia_especial !== null) count++;
   if (filters.prazo_vencido) count++;
   if (filters.concluidos) count++;
+  if (filters.proximos_7_dias) count++;
+  if (filters.sem_movimento) count++;
+  if (filters.com_atrasos) count++;
+  if (filters.impacto_op_alto) count++;
   return count;
 }
 
@@ -178,27 +220,62 @@ export function ProjectFilters({ filters, onFiltersChange, availableValues }: Pr
   const handleQuickFilter = (qf: QuickFilter) => {
     if (qf.isActive(filters)) {
       // Remove quick filter
-      // Se for filtro de concluídos, ao remover volta a ser false (oculta concluídos)
       if (qf.id === 'concluidos') {
         onFiltersChange({ ...filters, concluidos: false });
+      } else if (qf.id === 'proximos_7_dias') {
+        onFiltersChange({ ...filters, proximos_7_dias: false });
+      } else if (qf.id === 'sem_movimento') {
+        onFiltersChange({ ...filters, sem_movimento: false });
+      } else if (qf.id === 'com_atrasos') {
+        onFiltersChange({ ...filters, com_atrasos: false });
+      } else if (qf.id === 'impacto_op_alto') {
+        onFiltersChange({ ...filters, impacto_op_alto: false });
       } else {
-        // Para outros filtros, reset para default mas mantendo campos
         const newFilters = { ...filters };
         if (qf.id === 'alta_prioridade') newFilters.prioridade = [];
         if (qf.id === 'importancia_especial') newFilters.importancia_especial = null;
         if (qf.id === 'atrasados') newFilters.prazo_vencido = false;
-        if (qf.id === 'em_aprovacao') newFilters.status = [];
         onFiltersChange(newFilters);
       }
     } else {
-      // Aplica o filtro. Se for 'concluidos', reseta status para evitar conflito?
-      // O apply já define o estado
       onFiltersChange(qf.apply(filters));
     }
   };
 
   const handleClear = () => {
     onFiltersChange({ ...defaultFilters, search: filters.search });
+  };
+
+  const applyPreset = (preset: 'meus_projetos' | 'criticos' | 'revisao_semanal') => {
+    const baseFilters = { ...defaultFilters, search: filters.search };
+    
+    switch (preset) {
+      case 'meus_projetos':
+        onFiltersChange({
+          ...baseFilters,
+          status: ['em execução'],
+          preset: 'meus_projetos',
+        });
+        break;
+      case 'criticos':
+        onFiltersChange({
+          ...baseFilters,
+          prioridade: ['urgente', 'alta'],
+          impacto_op_alto: true,
+          proximos_7_dias: true,
+          preset: 'criticos',
+        });
+        break;
+      case 'revisao_semanal':
+        onFiltersChange({
+          ...baseFilters,
+          proximos_7_dias: true,
+          com_atrasos: true,
+          concluidos: false,
+          preset: 'revisao_semanal',
+        });
+        break;
+    }
   };
 
   return (
@@ -225,7 +302,35 @@ export function ProjectFilters({ filters, onFiltersChange, availableValues }: Pr
 
         <Separator orientation="vertical" className="mx-1 h-5" />
 
-        {/* Advanced Filter Sheet Trigger */}
+        {/* Operational Presets */}
+        <div className="flex gap-1 border-l pl-2">
+          <Button
+            variant={filters.preset === 'meus_projetos' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => applyPreset('meus_projetos')}
+            className="h-7 text-xs"
+          >
+            Meus Projetos
+          </Button>
+          <Button
+            variant={filters.preset === 'criticos' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => applyPreset('criticos')}
+            className="h-7 text-xs"
+          >
+            Críticos
+          </Button>
+          <Button
+            variant={filters.preset === 'revisao_semanal' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => applyPreset('revisao_semanal')}
+            className="h-7 text-xs"
+          >
+            Revisão Semanal
+          </Button>
+        </div>
+
+        <Separator orientation="vertical" className="mx-1 h-5" />
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="sm" className="h-7 gap-1.5 rounded-full text-xs">
@@ -449,14 +554,19 @@ export function applyProjectFilters<T extends Record<string, any>>(
     result = result.filter((p) => normalize(p.status) !== 'concluido');
   }
 
-  // Search
+  // Search (ESTENDIDO para objetivo, justificativa, mensagem_movimentacao)
   if (filters.search) {
-    const term = filters.search.toLowerCase();
-    result = result.filter(
-      (p) =>
-        (p.project_name || '').toLowerCase().includes(term) ||
-        (p.espaider_code || '').toLowerCase().includes(term),
-    );
+    const searchLower = filters.search.toLowerCase();
+    result = result.filter((p) => {
+      const fieldsToSearch = [
+        p.project_name || '',
+        p.espaider_code || '',
+        p.objetivo || '',
+        p.justificativa || '',
+        p.mensagem_movimentacao || '',
+      ];
+      return fieldsToSearch.some((field) => field.toLowerCase().includes(searchLower));
+    });
   }
 
   // Multi-select filters
@@ -503,8 +613,6 @@ export function applyProjectFilters<T extends Record<string, any>>(
   if (filters.prazo_vencido) {
     const now = new Date();
     result = result.filter((p) => {
-      // Ensure we don't flag completed/cancelled as overdue, regardless of the 'concluidos' filter state override above
-      // (Though if 'concluidos=true' we are showing completed, so they shouldn't be overdue anyway)
       const status = normalize(p.status);
       if (!p.end_date || status === 'concluido' || status === 'cancelado') return false;
       try {
@@ -513,6 +621,50 @@ export function applyProjectFilters<T extends Record<string, any>>(
         return false;
       }
     });
+  }
+
+  // NOVOS FILTROS (Fase 3)
+  // Filtro: Próximos 7 dias
+  if (filters.proximos_7_dias) {
+    const now = new Date();
+    result = result.filter((p) => {
+      const prazosCriticos = [
+        p.end_date ? new Date(p.end_date) : null,
+        p.prazo_fase ? new Date(p.prazo_fase) : null,
+        p.prazo_cronograma ? new Date(p.prazo_cronograma) : null,
+      ].filter(Boolean) as Date[];
+
+      return prazosCriticos.some((prazo) => {
+        const diasRestantes = (prazo.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+        return diasRestantes <= 7 && diasRestantes > 0;
+      });
+    });
+  }
+
+  // Filtro: Sem Movimentação (30+ dias)
+  if (filters.sem_movimento) {
+    const now = new Date();
+    result = result.filter((p) => {
+      const lastMove = p.data_movimentacao || p.last_update || p.updated_at;
+      if (!lastMove) return true;
+
+      try {
+        const diasSemMovimento = (now.getTime() - new Date(lastMove).getTime()) / (1000 * 60 * 60 * 24);
+        return diasSemMovimento > 30;
+      } catch {
+        return false;
+      }
+    });
+  }
+
+  // Filtro: Com Atrasos (schedules com atrasado = true)
+  if (filters.com_atrasos) {
+    result = result.filter((p) => p.schedules?.some((s: any) => s.atrasado === true));
+  }
+
+  // Filtro: Alto Impacto Operacional
+  if (filters.impacto_op_alto) {
+    result = result.filter((p) => (p.impacto_operacional || '').toLowerCase() === 'alto');
   }
 
   return result;

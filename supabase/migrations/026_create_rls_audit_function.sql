@@ -17,7 +17,7 @@
 -- PART 1: Create audit_rls_policy() function
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION public.audit_rls_policy(table_name TEXT)
+CREATE OR REPLACE FUNCTION public.audit_rls_policy(p_table_name TEXT)
 RETURNS TABLE (
     table_name TEXT,
     rls_enabled BOOLEAN,
@@ -38,10 +38,10 @@ DECLARE
     v_policies JSONB;
 BEGIN
     -- Check if RLS is enabled
-    SELECT (schemaname = 'public' AND tablename = table_name AND rowsecurity = true)
+    SELECT (schemaname = 'public' AND tablename = p_table_name AND rowsecurity = true)
     INTO v_rls_enabled
     FROM pg_tables
-    WHERE schemaname = 'public' AND tablename = table_name;
+    WHERE schemaname = 'public' AND tablename = p_table_name;
 
     v_rls_enabled := COALESCE(v_rls_enabled, FALSE);
 
@@ -49,15 +49,15 @@ BEGIN
     SELECT COUNT(*)
     INTO v_total_policies
     FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = table_name;
+    WHERE schemaname = 'public' AND tablename = p_table_name;
 
     -- Count service_role policies
     SELECT COUNT(*)
     INTO v_service_role_count
     FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = table_name
-      AND qual LIKE '%service_role%' OR policyname LIKE '%service%';
+      AND tablename = p_table_name
+      AND (qual LIKE '%service_role%' OR policyname LIKE '%service%');
 
     v_service_role_count := COALESCE(v_service_role_count, 0);
 
@@ -66,7 +66,7 @@ BEGIN
     INTO v_authenticated_count
     FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = table_name
+      AND tablename = p_table_name
       AND (qual LIKE '%authenticated%' OR qual LIKE '%true%' OR qual LIKE '%get_user%');
 
     v_authenticated_count := COALESCE(v_authenticated_count, 0);
@@ -75,7 +75,7 @@ BEGIN
     SELECT EXISTS (
         SELECT 1 FROM information_schema.columns
         WHERE table_schema = 'public'
-          AND table_name = table_name
+          AND table_name = p_table_name
           AND column_name = 'tenant_id'
     ) INTO v_has_tenant_id;
 
@@ -83,7 +83,7 @@ BEGIN
     SELECT EXISTS (
         SELECT 1 FROM pg_policies
         WHERE schemaname = 'public'
-          AND tablename = table_name
+          AND tablename = p_table_name
           AND qual LIKE '%tenant_id%get_user_tenant_id%'
     ) INTO v_tenant_isolation;
 
@@ -96,13 +96,13 @@ BEGIN
     ))
     INTO v_policies
     FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = table_name;
+    WHERE schemaname = 'public' AND tablename = p_table_name;
 
     v_policies := COALESCE(v_policies, '[]'::JSONB);
 
     -- Return audit results
     RETURN QUERY SELECT
-        table_name,
+        p_table_name,
         v_rls_enabled,
         v_total_policies,
         v_service_role_count,
@@ -158,22 +158,25 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================================================
 
 CREATE OR REPLACE VIEW public.rls_audit_summary AS
-SELECT
-    table_name,
-    CASE WHEN rls_enabled THEN '✅' ELSE '❌' END as rls_status,
-    total_policies,
-    service_role_policies,
-    CASE
-        WHEN rls_enabled AND total_policies > 0 AND tenant_isolation_found THEN '✅ PASS'
-        WHEN rls_enabled AND total_policies > 0 AND NOT tenant_isolation_found AND has_tenant_id_column THEN '⚠️  WARN (no isolation)'
-        WHEN rls_enabled AND total_policies > 0 AND NOT tenant_isolation_found AND NOT has_tenant_id_column THEN '🔴 CRITICAL (missing tenant_id)'
-        WHEN NOT rls_enabled THEN '🔴 CRITICAL (RLS disabled)'
-        WHEN total_policies = 0 THEN '🔴 CRITICAL (no policies)'
-        ELSE '❓ UNKNOWN'
-    END as audit_status,
-    CASE WHEN has_tenant_id_column THEN '✅' ELSE '❌' END as has_tenant_id,
-    CASE WHEN tenant_isolation_found THEN '✅' ELSE '❌' END as tenant_isolation
-FROM public.audit_all_rls_policies()
+WITH source_data AS (
+    SELECT
+        table_name,
+        CASE WHEN rls_enabled THEN '✅' ELSE '❌' END as rls_status,
+        total_policies,
+        service_role_policies,
+        CASE
+            WHEN rls_enabled AND total_policies > 0 AND tenant_isolation_found THEN '✅ PASS'
+            WHEN rls_enabled AND total_policies > 0 AND NOT tenant_isolation_found AND has_tenant_id_column THEN '⚠️  WARN (no isolation)'
+            WHEN rls_enabled AND total_policies > 0 AND NOT tenant_isolation_found AND NOT has_tenant_id_column THEN '🔴 CRITICAL (missing tenant_id)'
+            WHEN NOT rls_enabled THEN '🔴 CRITICAL (RLS disabled)'
+            WHEN total_policies = 0 THEN '🔴 CRITICAL (no policies)'
+            ELSE '❓ UNKNOWN'
+        END as audit_status,
+        CASE WHEN has_tenant_id_column THEN '✅' ELSE '❌' END as has_tenant_id,
+        CASE WHEN tenant_isolation_found THEN '✅' ELSE '❌' END as tenant_isolation
+    FROM public.audit_all_rls_policies()
+)
+SELECT * FROM source_data
 ORDER BY
     CASE audit_status
         WHEN '🔴 CRITICAL (RLS disabled)' THEN 1

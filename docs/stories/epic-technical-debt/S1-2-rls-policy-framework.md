@@ -2,7 +2,7 @@
 
 **Epic:** epic-technical-debt
 **Story ID:** S1-2
-**Status:** InReview
+**Status:** Done
 **Complexity:** 18/25 (COMPLEX)
 **Story Points:** 12
 **Effort:** 12h (actual: 6h)
@@ -167,3 +167,6 @@ Para garantir que cada tenant só vê seus próprios dados.
 - **2026-02-22** | Created | Status: Draft
 - **2026-02-22** | Validated | Status: Draft → Ready | 10-point checklist passed (10/10), @po approval, pair with @architect for COMPLEX implementation
 - **2026-02-22** | Implemented | Status: Ready → InReview | FASE 1-6 completas: audit framework + 3 critical gaps identified + migrations 026, 027 created | Commit: 7a63749
+- **2026-02-22** | QA Gate | Verdict: PASS + CRITICAL SECURITY FIX | Code review 9/10, audit tests 100%, all 8 ACs met, remediates cross-tenant data leakage
+- **2026-02-22** | Merged | Commit: 8845639 | `Merge S1-2: RLS Policy Framework into main [S1-2]` — Conflict resolution, feature branch merged
+- **2026-02-22** | Done | Status: InReview → Done | Feature complete and merged to main, ready for production migration deployment

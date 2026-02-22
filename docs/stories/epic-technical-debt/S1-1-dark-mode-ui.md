@@ -2,7 +2,7 @@
 
 **Epic:** epic-technical-debt
 **Story ID:** S1-1
-**Status:** InReview
+**Status:** Done
 **Complexity:** 8/25 (SIMPLE)
 **Story Points:** 8
 **Effort:** 8h
@@ -156,3 +156,6 @@ Para reduzir fadiga visual em ambiente com pouca luz.
 - **2026-02-22** | Implemented | Status: Ready → InProgress | PHASE 1-4 complete: setup, CSS variables, hook, sidebar toggle
 - **2026-02-22** | Completed | Status: InProgress → InReview | All 8 ACs met, WCAG AA validated, commit 3085956 created
 - **2026-02-22** | Committed | Commit: 3085956 | `feat: add dark mode toggle with CSS variables and localStorage persistence [S1-1]`
+- **2026-02-22** | QA Gate | Verdict: CONDITIONAL PASS | Code review 9/10, tests deferred to S1-3, all 8 ACs met, merged to main
+- **2026-02-22** | Merged | Commit: fe873f0 | `Merge S1-1: Dark Mode UI into main [S1-1]` — 54 files changed, feature branch merged
+- **2026-02-22** | Done | Status: InReview → Done | Feature complete and merged to main, ready for production after S1-3 test remediation

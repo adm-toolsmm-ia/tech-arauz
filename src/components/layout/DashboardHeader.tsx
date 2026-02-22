@@ -1,12 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { Moon, Sun, Bell } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { useDarkMode } from '@/components/providers/DarkModeProvider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { NotificationBell } from '@/components/notifications';
 
 interface DashboardHeaderProps {
   title: string;
@@ -33,18 +34,8 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        {/* Notifications - placeholder for future implementation */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5" />
-                <span className="sr-only">Notificações</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Notificações (em breve)</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {/* Notifications Bell */}
+        <NotificationBell />
 
         {/* Theme Toggle */}
         <TooltipProvider>

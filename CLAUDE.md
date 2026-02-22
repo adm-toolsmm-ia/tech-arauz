@@ -53,7 +53,7 @@ Você → @aios-master (analisa + monta equipe) → agentes especialistas → pl
 ### Supabase
 - SEMPRE definir RLS policies ao criar tabelas
 - Usar `get_user_tenant_id()` e `get_user_role()`
-- Migrations em `supabase/migrations/`
+- Migrations em `supabase/migrations/` (Para executar migrations, o agente DEVE usar `npx supabase db push`)
 
 ### Espaider
 - API: `BI_SOLICITACOES_SUPORTEESPAIDER`

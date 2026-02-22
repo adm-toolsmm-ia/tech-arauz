@@ -89,8 +89,8 @@ function filterCronogramasData(
       dateFilters = {
         ...filters,
         date_range: {
-          start: startDate.toISOString().split('T')[0],
-          end: endDate.toISOString().split('T')[0],
+          start: (startDate as Date).toISOString().split('T')[0],
+          end: (endDate as Date).toISOString().split('T')[0],
         },
       };
     }

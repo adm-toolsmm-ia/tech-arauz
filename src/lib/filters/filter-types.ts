@@ -102,10 +102,9 @@ export interface FilterControlProps {
 }
 
 /**
- * Filter utilities return type
+ * Filter utilities options (for applyFilters function)
  */
 export interface ApplyFiltersOptions {
-  filters: FilterState;
   search?: string;
   searchFields?: string[]; // Fields to search in
   caseSensitive?: boolean;

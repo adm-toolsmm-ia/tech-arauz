@@ -44,7 +44,7 @@ export function FilterControl({
       return definition.options();
     }
     return definition.options;
-  }, [definition.options]);
+  }, [definition]);
 
   // Filter options based on search
   const filteredOptions = React.useMemo(() => {

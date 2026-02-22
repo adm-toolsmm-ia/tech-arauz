@@ -73,10 +73,10 @@ BEGIN
 
     -- Check for tenant_id column
     SELECT EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = p_table_name
-          AND column_name = 'tenant_id'
+        SELECT 1 FROM information_schema.columns c
+        WHERE c.table_schema = 'public'
+          AND c.table_name = p_table_name
+          AND c.column_name = 'tenant_id'
     ) INTO v_has_tenant_id;
 
     -- Check for tenant isolation in policies

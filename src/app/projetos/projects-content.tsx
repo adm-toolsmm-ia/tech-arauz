@@ -9,6 +9,8 @@ import {
   TrendingUp,
   RefreshCw,
   Loader2,
+  AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
@@ -82,6 +84,8 @@ interface Project {
   end_date: string | null;
   priority: string | null;
   category?: string | null;
+  updated_at?: string | null;
+  data_movimentacao?: string | null;
   schedules?: Array<{
     id: string;
     atividade: string | null;
@@ -183,14 +187,68 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
 
 
 
-  // Calculate KPIs
-  const totalValue = projects.reduce((sum, p) => sum + (p.total_value || 0), 0);
-  const activeProjects = projects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'em execução',
-  ).length;
-  const completedProjects = projects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'concluído',
-  ).length;
+  // ===== CALCULATE KPIs (GERENCIAL) =====
+  
+  // KPI 1: Em Risco (prazo vencido OU prazo < 7 dias)
+  const atRiskProjects = React.useMemo(() => {
+    return projects.filter(p => {
+      const now = new Date();
+      const endDate = p.end_date ? new Date(p.end_date) : null;
+      const praziFase = p.prazo_fase ? new Date(p.prazo_fase) : null;
+      const prazoCronograma = p.prazo_cronograma ? new Date(p.prazo_cronograma) : null;
+      
+      // Ignorar concluídos e cancelados
+      if (['concluído', 'cancelado'].includes((p.status || '').toLowerCase())) return false;
+      
+      // Vencido ou próximo de vencer (7 dias)
+      const prazosCriticos = [endDate, praziFase, prazoCronograma].filter(Boolean);
+      return prazosCriticos.some(prazo => {
+        if (!prazo) return false;
+        const diasRestantes = (prazo.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+        return diasRestantes <= 7;
+      });
+    }).length;
+  }, [projects]);
+
+  // KPI 2: Sem Movimentação (30+ dias)
+  const withoutMovementProjects = React.useMemo(() => {
+    return projects.filter(p => {
+      const now = new Date();
+      const lastMove = p.data_movimentacao || p.last_update || p.updated_at;
+      if (!lastMove) return true; // Sem data = estagnado
+      
+      const diasSemMovimento = (now.getTime() - new Date(lastMove).getTime()) / (1000 * 60 * 60 * 24);
+      return diasSemMovimento > 30;
+    }).length;
+  }, [projects]);
+
+  // KPI 3: Alta Prioridade (Urgente + Alta)
+  const highPriorityProjects = React.useMemo(() => {
+    return projects.filter(p => 
+      ['urgente', 'alta'].includes((p.priority || '').toLowerCase())
+    ).length;
+  }, [projects]);
+
+  // KPI 4: Concluídos (últimos 30 dias)
+  const completedRecent = React.useMemo(() => {
+    return projects.filter(p => {
+      if ((p.status || '').toLowerCase() !== 'concluído') return false;
+      
+      const now = new Date();
+      const endDate = p.data_encerramento || p.updated_at;
+      if (!endDate) return false;
+      
+      const diasAtrás = (now.getTime() - new Date(endDate).getTime()) / (1000 * 60 * 60 * 24);
+      return diasAtrás <= 30;
+    }).length;
+  }, [projects]);
+
+  // KPI 5: Impacto Estratégico Alto
+  const highImpactProjects = React.useMemo(() => {
+    return projects.filter(p => 
+      (p.impacto_estrategico || '').toLowerCase() === 'alto'
+    ).length;
+  }, [projects]);
 
   // Stable sorted list of project IDs for color assignment
   const projectIds = React.useMemo(
@@ -321,34 +379,50 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
       />
 
       <div className="flex-1 space-y-6 p-6">
-        {/* KPIs */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* KPIs (Gerencial) */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <KPICard
-            title="Total de Projetos"
-            value={projects.length}
-            icon={FolderOpen}
-            trend={{ value: '+3 este mês', positive: true }}
+            title="Em Risco"
+            value={atRiskProjects}
+            icon={AlertTriangle}
+            subtitle={`${atRiskProjects} projeto(s)`}
+            active={filters.prazo_vencido === true}
+            onClick={() => setFilters(prev => ({ ...prev, prazo_vencido: !prev.prazo_vencido }))}
           />
           <KPICard
-            title="Em Andamento"
-            value={activeProjects}
+            title="Sem Movimentação"
+            value={withoutMovementProjects}
             icon={Clock}
-            subtitle="Desenvolvimento + Homologação"
+            subtitle="30+ dias"
+            active={false}
           />
           <KPICard
-            title="Concluídos"
-            value={completedProjects}
-            icon={TrendingUp}
-            trend={{
-              value: `${Math.round((completedProjects / projects.length) * 100) || 0}%`,
-              positive: true,
+            title="Alta Prioridade"
+            value={highPriorityProjects}
+            icon={AlertTriangle}
+            subtitle={`${highPriorityProjects} crítico(s)`}
+            active={filters.prioridade?.includes('urgente') || filters.prioridade?.includes('alta')}
+            onClick={() => {
+              const isActive = filters.prioridade?.includes('urgente') || filters.prioridade?.includes('alta');
+              setFilters(prev => ({ 
+                ...prev, 
+                prioridade: isActive ? [] : ['urgente', 'alta'] 
+              }));
             }}
           />
           <KPICard
-            title="Valor Total"
-            value={`R$ ${(totalValue / 1000).toFixed(0)}k`}
-            icon={DollarSign}
-            subtitle="Soma de todos os projetos"
+            title="Concluídos (30d)"
+            value={completedRecent}
+            icon={CheckCircle2}
+            subtitle="últimos 30 dias"
+            active={false}
+          />
+          <KPICard
+            title="Alto Impacto"
+            value={highImpactProjects}
+            icon={TrendingUp}
+            subtitle="portfólio crítico"
+            active={false}
           />
         </div>
 

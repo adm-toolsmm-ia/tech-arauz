@@ -36,6 +36,10 @@
   "exclude": [
     "node_modules",
     "services/ai",
-    "docs"
+    "docs",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx"
   ]
 }

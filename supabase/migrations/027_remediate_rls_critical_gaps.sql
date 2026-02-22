@@ -155,6 +155,10 @@ DROP POLICY IF EXISTS "Enable all access for service role" ON public.project_bud
 
 -- -------- PROJECT_HISTORIES --------
 
+-- Drop policies if they exist (for idempotency)
+DROP POLICY IF EXISTS "project_histories_select" ON public.project_histories;
+DROP POLICY IF EXISTS "project_histories_service_all" ON public.project_histories;
+
 CREATE POLICY "project_histories_select"
     ON public.project_histories FOR SELECT
     USING (tenant_id = public.get_user_tenant_id());
@@ -167,6 +171,10 @@ CREATE POLICY "project_histories_service_all"
 
 -- -------- PROJECT_APPROVERS --------
 
+-- Drop policies if they exist (for idempotency)
+DROP POLICY IF EXISTS "project_approvers_select" ON public.project_approvers;
+DROP POLICY IF EXISTS "project_approvers_service_all" ON public.project_approvers;
+
 CREATE POLICY "project_approvers_select"
     ON public.project_approvers FOR SELECT
     USING (tenant_id = public.get_user_tenant_id());
@@ -178,6 +186,10 @@ CREATE POLICY "project_approvers_service_all"
     WITH CHECK (true);
 
 -- -------- PROJECT_BUDGETS --------
+
+-- Drop policies if they exist (for idempotency)
+DROP POLICY IF EXISTS "project_budgets_select" ON public.project_budgets;
+DROP POLICY IF EXISTS "project_budgets_service_all" ON public.project_budgets;
 
 CREATE POLICY "project_budgets_select"
     ON public.project_budgets FOR SELECT

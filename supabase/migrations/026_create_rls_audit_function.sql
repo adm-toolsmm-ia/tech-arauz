@@ -3,8 +3,20 @@
 -- =============================================================================
 -- OBJETIVO: Criar função SQL que audita RLS policies em qualquer tabela
 -- FASE 2 da Story S1-2: RLS Policy Framework
+--
+-- Função: audit_rls_policy(table_name TEXT)
+-- RETURNS TABLE com:
+-- - RLS enabled status
+-- - Policy count
+-- - Service role access (explicit/implicit)
+-- - Authenticated user access
+-- - Tenant isolation verification
+-- =============================================================================
 
--- Create audit function
+-- ============================================================================
+-- PART 1: Create audit_rls_policy() function
+-- ============================================================================
+
 CREATE OR REPLACE FUNCTION public.audit_rls_policy(table_name TEXT)
 RETURNS TABLE (
     table_name TEXT,
@@ -49,6 +61,16 @@ BEGIN
 
     v_service_role_count := COALESCE(v_service_role_count, 0);
 
+    -- Count authenticated policies
+    SELECT COUNT(*)
+    INTO v_authenticated_count
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = table_name
+      AND (qual LIKE '%authenticated%' OR qual LIKE '%true%' OR qual LIKE '%get_user%');
+
+    v_authenticated_count := COALESCE(v_authenticated_count, 0);
+
     -- Check for tenant_id column
     SELECT EXISTS (
         SELECT 1 FROM information_schema.columns
@@ -91,14 +113,123 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create audit view
+-- ============================================================================
+-- PART 2: Create helper function to audit all tables at once
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION public.audit_all_rls_policies()
+RETURNS TABLE (
+    table_name TEXT,
+    rls_enabled BOOLEAN,
+    total_policies INT,
+    service_role_policies INT,
+    authenticated_policies INT,
+    tenant_isolation_found BOOLEAN,
+    has_tenant_id_column BOOLEAN,
+    policy_details JSONB
+) AS $$
+DECLARE
+    v_table RECORD;
+BEGIN
+    -- Iterate through all tables that should have RLS
+    FOR v_table IN (
+        SELECT unnest(ARRAY[
+            'tenants',
+            'profiles',
+            'projects',
+            'project_schedules',
+            'project_deliveries',
+            'project_requirements',
+            'espaider_apis',
+            'sync_logs',
+            'integration_log_entries',
+            'project_histories',
+            'project_approvers',
+            'project_budgets'
+        ]) AS name
+    ) LOOP
+        RETURN QUERY SELECT * FROM public.audit_rls_policy(v_table.name);
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================================
+-- PART 3: Create summary view for easy querying
+-- ============================================================================
+
 CREATE OR REPLACE VIEW public.rls_audit_summary AS
 SELECT
-    'audit_function_created'::text as status;
+    table_name,
+    CASE WHEN rls_enabled THEN '✅' ELSE '❌' END as rls_status,
+    total_policies,
+    service_role_policies,
+    CASE
+        WHEN rls_enabled AND total_policies > 0 AND tenant_isolation_found THEN '✅ PASS'
+        WHEN rls_enabled AND total_policies > 0 AND NOT tenant_isolation_found AND has_tenant_id_column THEN '⚠️  WARN (no isolation)'
+        WHEN rls_enabled AND total_policies > 0 AND NOT tenant_isolation_found AND NOT has_tenant_id_column THEN '🔴 CRITICAL (missing tenant_id)'
+        WHEN NOT rls_enabled THEN '🔴 CRITICAL (RLS disabled)'
+        WHEN total_policies = 0 THEN '🔴 CRITICAL (no policies)'
+        ELSE '❓ UNKNOWN'
+    END as audit_status,
+    CASE WHEN has_tenant_id_column THEN '✅' ELSE '❌' END as has_tenant_id,
+    CASE WHEN tenant_isolation_found THEN '✅' ELSE '❌' END as tenant_isolation
+FROM public.audit_all_rls_policies()
+ORDER BY
+    CASE audit_status
+        WHEN '🔴 CRITICAL (RLS disabled)' THEN 1
+        WHEN '🔴 CRITICAL (missing tenant_id)' THEN 2
+        WHEN '🔴 CRITICAL (no policies)' THEN 3
+        WHEN '⚠️  WARN (no isolation)' THEN 4
+        WHEN '✅ PASS' THEN 5
+        ELSE 6
+    END;
 
--- =============================================================================
--- PART 5: Test queries
--- =============================================================================
+-- ============================================================================
+-- PART 4: Test queries (run manually in Supabase SQL Editor)
+-- ============================================================================
+--
 -- TEST 1: Audit specific table
 -- SELECT * FROM public.audit_rls_policy('projects');
 -- Expected: RLS enabled, 4 policies, tenant isolation found
+--
+-- TEST 2: Audit all critical tables
+-- SELECT * FROM public.rls_audit_summary;
+-- Expected: See summary of all 12 tables with status
+--
+-- TEST 3: Find critical issues
+-- SELECT table_name, audit_status FROM public.rls_audit_summary
+-- WHERE audit_status LIKE '🔴%';
+-- Expected: List of critical issues (if any)
+--
+-- TEST 4: Check for missing tenant_id columns
+-- SELECT table_name FROM public.rls_audit_summary
+-- WHERE has_tenant_id = '❌';
+-- Expected: List tables missing tenant_id
+--
+-- ============================================================================
+
+-- ============================================================================
+-- PART 5: Documentation
+-- ============================================================================
+--
+-- USAGE:
+--
+-- 1. Audit a single table:
+--    SELECT * FROM public.audit_rls_policy('projects');
+--
+-- 2. Audit all tables at once:
+--    SELECT * FROM public.audit_all_rls_policies();
+--
+-- 3. Get summary view:
+--    SELECT * FROM public.rls_audit_summary;
+--
+-- 4. Find critical issues:
+--    SELECT * FROM public.rls_audit_summary WHERE audit_status LIKE '🔴%';
+--
+-- INTERPRETATION:
+--
+-- ✅ PASS = RLS enabled + policies exist + tenant isolation found
+-- ⚠️  WARN = RLS enabled + policies exist + NO tenant isolation + has tenant_id column
+-- 🔴 CRITICAL = Missing RLS, no policies, or no tenant_id column
+--
+-- ============================================================================

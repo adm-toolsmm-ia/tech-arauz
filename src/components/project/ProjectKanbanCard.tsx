@@ -124,7 +124,6 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
   const isDeadlineNear = isWithin7Days(project.end_date) && !isProjectOverdue;
 
   const nextDeadline = project.prazo_aprovador || project.prazo_cronograma;
-  const detalhamento = project.objetivo || project.justificativa;
 
   const normalizedStatus = normalizeSlug(project.status);
   const faseSlug = project.fase_atual
@@ -135,7 +134,7 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
     project.importancia_especial || isProjectOverdue || isDeadlineNear;
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col h-full">
       {/* Barra lateral colorida */}
       <div
         className={cn(
@@ -144,13 +143,13 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
         )}
       />
 
-      <div className="space-y-2 pl-3">
-        {/* HEADER: Título + Código */}
+      <div className="flex-1 space-y-1.5 pl-3 py-2">
+        {/* SEÇÃO 1: HEADER - Título + Código */}
         <div className="space-y-0.5">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <h4 className="flex-1 text-sm font-semibold leading-snug text-foreground/90 line-clamp-2 cursor-help">
+                <h4 className="text-sm font-semibold leading-normal text-foreground/90 cursor-help">
                   {project.project_name}
                 </h4>
               </TooltipTrigger>
@@ -164,121 +163,112 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
           </span>
         </div>
 
-        {/* ALERTAS (Especial, Atrasado, Prazo) - em linha compacta */}
+        {/* SEÇÃO 2: ALERTAS - Especial, Atrasado, Prazo */}
         {showAlerts && (
           <div className="flex items-center gap-1 flex-wrap">
             {project.importancia_especial && (
-              <Badge variant="warning" className="h-4 px-1 text-[9px]">
-                <Star className="mr-0.5 h-2.5 w-2.5 fill-current" />
+              <Badge variant="warning" className="h-5 px-1.5 text-[9px]">
+                <Star className="mr-0.5 h-3 w-3 fill-current" />
                 Especial
               </Badge>
             )}
             {isProjectOverdue && (
-              <Badge variant="destructive" className="h-4 px-1 text-[9px]">
-                <AlertTriangle className="mr-0.5 h-2.5 w-2.5" />
+              <Badge variant="destructive" className="h-5 px-1.5 text-[9px]">
+                <AlertTriangle className="mr-0.5 h-3 w-3" />
                 Atrasado
               </Badge>
             )}
             {isDeadlineNear && (
-              <Badge className="h-4 border-0 bg-amber-100 px-1 text-[9px] text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                <Clock className="mr-0.5 h-2.5 w-2.5" />
-                Prazo
+              <Badge className="h-5 border-0 bg-amber-100 px-1.5 text-[9px] text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                <Clock className="mr-0.5 h-3 w-3" />
+                Prazo crítico
               </Badge>
             )}
           </div>
         )}
 
-        {/* DADOS PRINCIPAIS: Área, Responsável, Prazo e Fase */}
-        <div className="space-y-1 border-t border-border/30 pt-1.5">
-          {/* Área (se disponível) */}
-          {project.area && (
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <Building2 className="h-3 w-3 shrink-0" />
-              <TextWithTooltip text={project.area} maxLength={20} />
-            </div>
-          )}
-
+        {/* SEÇÃO 3: RESPONSABILIDADE - Responsável + Área */}
+        <div className="space-y-1 border-t border-border/30 pt-1">
           {/* Responsável */}
-          <div className="flex items-center gap-1.5 text-[10px]">
-            <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+          <div className="flex items-start gap-1.5 text-xs">
+            <User className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
             <TextWithTooltip
               text={project.responsible}
-              maxLength={28}
-              className="text-foreground/80"
+              maxLength={40}
+              className="text-foreground/85 leading-snug"
             />
           </div>
 
-          {/* Prazo Final */}
-          <div className="flex items-center gap-1.5 text-[10px]">
-            <Calendar className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <span
-              className={cn(
-                'text-foreground/80',
-                isProjectOverdue && 'font-medium text-red-600 dark:text-red-400',
-              )}
-            >
-              {formatDateBR(project.end_date)}
-            </span>
-          </div>
-
-          {/* Fase Atual */}
-          {project.fase_atual && (
-            <div className="flex items-center gap-1.5 text-[10px]">
-              <GitBranch className="h-3 w-3 shrink-0 text-muted-foreground" />
-              <span className="text-foreground/80">
-                {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
-              </span>
+          {/* Área (se disponível) */}
+          {project.area && (
+            <div className="flex items-start gap-1.5 text-xs">
+              <Building2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+              <TextWithTooltip
+                text={project.area}
+                maxLength={40}
+                className="text-foreground/85 leading-snug"
+              />
             </div>
           )}
         </div>
 
-        {/* PRÓXIMO PRAZO (condicional, compacto) */}
-        {nextDeadline && (
-          <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
-            <Clock className="h-3 w-3 shrink-0" />
-            <span>
-              Próximo: {formatDateBR(nextDeadline)}
-            </span>
+        {/* SEÇÃO 4: PRAZOS (Destaque em Hierarquia) */}
+        <div className="space-y-1 border-t border-border/30 pt-1">
+          {/* Prazo Final (GRANDE E DESTACADO) */}
+          <div className="flex items-start gap-1.5">
+            <Calendar className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+            <div className="flex-1">
+              <span className="text-[10px] text-muted-foreground block">Prazo Final:</span>
+              <span
+                className={cn(
+                  'text-xs font-semibold',
+                  isProjectOverdue && 'text-red-600 dark:text-red-400',
+                  !isProjectOverdue && isDeadlineNear && 'text-amber-600 dark:text-amber-400',
+                  !isProjectOverdue && !isDeadlineNear && 'text-foreground/90',
+                )}
+              >
+                {formatDateBR(project.end_date)}
+              </span>
+            </div>
           </div>
-        )}
 
-        {/* DETALHAMENTO (Objetivo/Justificativa) - compacto */}
-        {detalhamento && (
-          <div className="border-t border-border/30 pt-1">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p className="line-clamp-1 text-[9px] leading-tight text-muted-foreground cursor-help">
-                    {detalhamento}
-                  </p>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-sm break-words text-[11px]">
-                  {detalhamento}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        )}
+          {/* Próximo Prazo (se disponível) */}
+          {nextDeadline && (
+            <div className="flex items-start gap-1.5 text-xs">
+              <Clock className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+              <div className="flex-1">
+                <span className="text-muted-foreground text-[9px]">Próximo:</span>
+                <span className="text-foreground/80 block text-xs">
+                  {formatDateBR(nextDeadline)}
+                </span>
+              </div>
+            </div>
+          )}
 
-        {/* COMPLEXIDADE TÉCNICA */}
-        {project.complexidade_tecnica && (
-          <div className="flex items-center gap-1.5 text-[9px]">
-            <span className="text-muted-foreground">Complexidade:</span>
-            <ImpactBadge value={project.complexidade_tecnica} />
-          </div>
-        )}
-
-        {/* RODAPÉ: Status */}
-        <div className="flex items-center justify-start border-t border-border/30 pt-1">
-          <Badge
-            className={cn(
-              'h-5 px-2 text-[10px]',
-              statusStyles[normalizedStatus] || statusStyles.projeto_futuro,
-            )}
-          >
-            {statusLabels[normalizedStatus] || project.status}
-          </Badge>
+          {/* Fase Atual (se disponível) */}
+          {project.fase_atual && (
+            <div className="flex items-start gap-1.5 text-xs">
+              <GitBranch className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+              <div className="flex-1">
+                <span className="text-foreground/85">
+                  {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* RODAPÉ: Status Badge */}
+      <div className="flex items-center justify-start border-t border-border/30 pt-1 px-3 pb-2 mt-auto">
+        <Badge
+          className={cn(
+            'h-5 px-2.5 text-[10px] font-medium',
+            statusStyles[normalizedStatus] || statusStyles.projeto_futuro,
+          )}
+        >
+          {statusLabels[normalizedStatus] || project.status}
+        </Badge>
       </div>
     </div>
   );

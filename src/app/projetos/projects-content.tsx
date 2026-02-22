@@ -17,6 +17,7 @@ import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { ViewToggle, type ViewMode } from '@/components/views/ViewToggle';
 import { KanbanBoard, type KanbanItem } from '@/components/views/KanbanBoard';
+import { ProjectListView } from '@/components/views/ProjectListView';
 import { SplitView } from '@/components/views/SplitView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -518,7 +519,13 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
             emptyMessage="Nenhum projeto encontrado. Sincronize com o Espaider para importar projetos."
           />
         ) : (
-          <ProjectList projects={filteredProjects} onItemClick={(p) => setSelectedProject(p)} />
+          <ProjectListView 
+            projects={filteredProjects} 
+            onSelectProject={(projectId) => {
+              const project = filteredProjects.find((p) => p.id === projectId);
+              if (project) setSelectedProject(project);
+            }} 
+          />
         )}
 
         {/* Split View - 360° Cockpit */}

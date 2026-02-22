@@ -49,6 +49,7 @@ interface UIProject {
   objetivo?: string | null;
   motivo_importancia_especial?: string | null;
   mensagem_movimentacao?: string | null;
+  data_movimentacao?: string | null;
   justificativa?: string | null;
   importancia_especial?: boolean | null;
   impacto_operacional?: string | null;
@@ -287,14 +288,12 @@ export function ProjectCockpit({
               <InfoField label="Área" value={project.area} />
               <InfoField label="Categoria" value={project.category} />
               <InfoField label="Prioridade" value={project.priority} />
-              {/* Status movido para cá, substituindo Pasta Consultivo */}
               <InfoField
-                label="Status"
+                label="Situação Atual"
                 value={
                   statusLabels[project.original_status || ''] || project.original_status || '-'
                 }
               />
-              <InfoField label="Situação (API)" value={project.status} />
               <InfoField label="Solução Aplicada" value={project.solucao_aplicada} />
               <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
             </div>
@@ -320,14 +319,22 @@ export function ProjectCockpit({
               <Calendar className="size-5 text-primary" />
               <h3 className="text-base font-semibold">Datas e Prazos</h3>
             </div>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-              <InfoField label="Prazo Final" value={formatDate(project.end_date)} />
-              <InfoField
-                label="Início Aprovação"
-                value={formatDate(project.data_inicio_aprovacao)}
-              />
-              <InfoField label="Encerramento" value={formatDate(project.data_encerramento)} />
-              <InfoField label="Última Movimentação" value={formatDateTime(project.last_update)} />
+            <div className="space-y-6">
+              {/* Linha 1: Prazos Críticos */}
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <InfoField label="Prazo Final" value={formatDate(project.end_date)} />
+                <InfoField label="Prazo do Aprovador" value={formatDate(project.prazo_aprovador)} />
+                <InfoField label="Prazo do Cronograma" value={formatDate(project.prazo_cronograma)} />
+              </div>
+              {/* Linha 2: Datas de Eventos */}
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <InfoField
+                  label="Início Aprovação"
+                  value={formatDate(project.data_inicio_aprovacao)}
+                />
+                <InfoField label="Encerramento" value={formatDate(project.data_encerramento)} />
+                <InfoField label="Última Movimentação" value={formatDateTime(project.last_update)} />
+              </div>
             </div>
           </section>
 
@@ -354,29 +361,44 @@ export function ProjectCockpit({
               <h3 className="text-base font-semibold">Detalhamento do Projeto</h3>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-6">
               {project.objetivo && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Objetivo</p>
-                  <p className="whitespace-pre-wrap rounded-md border bg-muted/40 p-4 text-sm leading-relaxed text-card-foreground">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold">Objetivo</p>
+                  <p className="whitespace-pre-wrap rounded-md border bg-muted/30 p-4 text-sm leading-relaxed text-card-foreground">
                     {project.objetivo}
                   </p>
                 </div>
               )}
               {project.escopo && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Escopo</p>
-                  <p className="whitespace-pre-wrap rounded-md border bg-muted/40 p-4 text-sm leading-relaxed text-card-foreground">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold">Escopo</p>
+                  <p className="whitespace-pre-wrap rounded-md border bg-muted/30 p-4 text-sm leading-relaxed text-card-foreground">
                     {project.escopo}
                   </p>
                 </div>
               )}
               {project.justificativa && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Justificativa</p>
-                  <p className="whitespace-pre-wrap rounded-md border bg-muted/40 p-4 text-sm leading-relaxed text-card-foreground">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold">Justificativa</p>
+                  <p className="whitespace-pre-wrap rounded-md border bg-muted/30 p-4 text-sm leading-relaxed text-card-foreground">
                     {project.justificativa}
                   </p>
+                </div>
+              )}
+              {project.mensagem_movimentacao && (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold">Última Movimentação</p>
+                  <div className="space-y-1">
+                    <p className="whitespace-pre-wrap rounded-md border bg-muted/30 p-4 text-sm leading-relaxed text-card-foreground">
+                      {project.mensagem_movimentacao}
+                    </p>
+                    {project.data_movimentacao && (
+                      <p className="text-xs text-muted-foreground">
+                        {formatDateTime(project.data_movimentacao)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

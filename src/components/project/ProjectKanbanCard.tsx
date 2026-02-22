@@ -283,14 +283,15 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
         {/* SEÇÃO 5: ÚLTIMA MENSAGEM DE MOVIMENTAÇÃO (se disponível) */}
         {project.mensagem_movimentacao && (
           <div className="space-y-1 border-t border-border/30 pt-1">
+            <span className="text-muted-foreground text-[9px] block">Último histórico:</span>
             <p
-              className="line-clamp-2 text-xs leading-relaxed text-muted-foreground"
+              className="line-clamp-3 text-[11px] leading-snug text-muted-foreground"
               title={project.mensagem_movimentacao}
             >
               {project.mensagem_movimentacao}
             </p>
             {project.data_movimentacao && (
-              <p className="text-[10px] text-muted-foreground/60">
+              <p className="text-[9px] text-muted-foreground/60">
                 {formatRelativeDate(project.data_movimentacao)}
               </p>
             )}

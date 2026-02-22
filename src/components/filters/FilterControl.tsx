@@ -169,10 +169,17 @@ function SelectControl({
   isLoading?: boolean;
   className?: string;
 }) {
+  const handleChange = (selectedString: string) => {
+    const option = options.find((opt) => String(opt.value) === selectedString);
+    if (option) {
+      onChange(option.value);
+    }
+  };
+
   return (
     <div className={cn('flex flex-col gap-2', className)}>
       <label className="text-sm font-medium">{definition.label}</label>
-      <Select value={String(value || '')} onValueChange={onChange} disabled={disabled || isLoading}>
+      <Select value={String(value || '')} onValueChange={handleChange} disabled={disabled || isLoading}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder={definition.placeholder || `Select ${definition.label}...`} />
         </SelectTrigger>

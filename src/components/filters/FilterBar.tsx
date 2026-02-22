@@ -155,7 +155,7 @@ export function FilterBar({
                           }
                         }}
                       >
-                        {filterDef.icon && <filterDef.icon className="h-4 w-4 mr-1" />}
+                        {filterDef.icon ? <filterDef.icon className="h-4 w-4 mr-1" /> : null}
                         {filterDef.label}
                         {Array.isArray(value) && value.length > 0 && (
                           <Badge variant="secondary" className="ml-1">
@@ -223,8 +223,7 @@ export function FilterBar({
                 onClick={() => filterState.setViewMode(mode.id)}
                 title={mode.label}
               >
-                {mode.icon && <mode.icon className="h-4 w-4" />}
-                {!mode.icon && <span className="text-xs">{mode.label}</span>}
+                {mode.icon ? <mode.icon className="h-4 w-4" /> : <span className="text-xs">{mode.label}</span>}
               </Button>
             ))}
           </div>
@@ -315,7 +314,7 @@ export function QuickFilter({
             onClick={() => onChange(isActive ? null : true)}
             className={className}
           >
-            {definition.icon && <definition.icon className="h-4 w-4 mr-1" />}
+            {definition.icon ? <definition.icon className="h-4 w-4 mr-1" /> : null}
             {definition.label}
           </Button>
         </TooltipTrigger>

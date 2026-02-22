@@ -31,6 +31,7 @@ interface UseFilterStateReturn {
   filters: FilterState;
   search: string;
   viewMode: string;
+  definitions: FilterDefinition[];
   setFilters: (filters: FilterState) => void;
   updateFilter: (filterId: string, value: any) => void;
   setSearch: (search: string) => void;
@@ -157,6 +158,7 @@ export function useFilterState(options: UseFilterStateOptions): UseFilterStateRe
     filters,
     search,
     viewMode,
+    definitions,
     setFilters,
     updateFilter,
     setSearch,

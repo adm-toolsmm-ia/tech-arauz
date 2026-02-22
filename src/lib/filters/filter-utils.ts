@@ -6,8 +6,16 @@
 import { FilterState, FilterDefinition, ApplyFiltersOptions, ActiveFilterInfo } from './filter-types';
 
 /**
+ * Get nested property value from object using dot notation (e.g., 'project.titulo')
+ */
+function getNestedValue(obj: Record<string, any>, path: string): any {
+  return path.split('.').reduce((current, key) => current?.[key], obj);
+}
+
+/**
  * Apply filters and search to a data array
  * Supports multiple filter values (AND logic within same filter, AND between filters)
+ * Supports nested properties with dot notation (e.g., 'project.titulo')
  */
 export function applyFilters<T extends Record<string, any>>(
   data: T[],
@@ -23,7 +31,7 @@ export function applyFilters<T extends Record<string, any>>(
     if (search.trim()) {
       const searchLower = caseSensitive ? search : search.toLowerCase();
       const hasMatch = searchFields.some((field) => {
-        const value = item[field];
+        const value = getNestedValue(item, field);
         if (!value) return false;
 
         const stringValue = String(value);
@@ -49,7 +57,7 @@ export function applyFilters<T extends Record<string, any>>(
         return true; // No filter applied, include item
       }
 
-      const itemValue = item[filterId];
+      const itemValue = getNestedValue(item, filterId);
       if (itemValue === null || itemValue === undefined) {
         return false; // No value to compare
       }
@@ -140,7 +148,7 @@ export function extractUniqueValues<T extends Record<string, any>>(
   const values = new Set<string | number | boolean>();
 
   data.forEach((item) => {
-    const value = item[fieldName];
+    const value = getNestedValue(item, fieldName);
     if (value !== null && value !== undefined) {
       values.add(value);
     }

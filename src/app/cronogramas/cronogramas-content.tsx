@@ -199,17 +199,12 @@ const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 // ---------- Main Component ----------
 
 export function CronogramasContent({ schedules }: CronogramasContentProps) {
-  // New unified filter system
+  // New unified filter system (manages filters, search, and view mode)
   const filterState = useCronogramasFilters(schedules as any);
 
-  const [viewMode, setViewMode] = React.useState<'day' | 'week' | 'month' | 'gantt'>('day');
+  // Local state for calendar/UI-specific features
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [projectFilter, setProjectFilter] = React.useState<string>('all');
-  const [setorFilter, setSetorFilter] = React.useState<string>('all');
-  const [statusFilter, setStatusFilter] = React.useState<string>('all');
-  const [showFilters, setShowFilters] = React.useState(false);
   const [selectedSchedule, setSelectedSchedule] = React.useState<Schedule | null>(null);
 
   // Unique project IDs for consistent coloring
@@ -245,38 +240,15 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
     return Array.from(set).sort();
   }, [schedules]);
 
-  // Filtered schedules
+  // Filtered schedules (managed by filterState)
+  // Note: filterState.filteredData applies all filters (search + structured filters)
   const filteredSchedules = React.useMemo(() => {
-    // 1. Hide schedules from completed projects AND individual completed schedules
-    let filtered = schedules.filter(s =>
+    // Apply additional filtering (hide completed schedules)
+    return filterState.filteredData.filter(s =>
       s.project?.status?.toLowerCase() !== 'concluído' &&
       s.status?.toLowerCase() !== 'concluído'
     );
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (s) =>
-          s.atividade?.toLowerCase().includes(term) ||
-          s.responsavel?.toLowerCase().includes(term) ||
-          s.project?.titulo?.toLowerCase().includes(term),
-      );
-    }
-
-    if (projectFilter !== 'all') {
-      filtered = filtered.filter((s) => s.project_id === projectFilter);
-    }
-
-    if (setorFilter !== 'all') {
-      filtered = filtered.filter((s) => s.setor_responsavel === setorFilter);
-    }
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter((s) => s.status === statusFilter);
-    }
-
-    return filtered;
-  }, [schedules, searchTerm, projectFilter, setorFilter, statusFilter]);
+  }, [filterState.filteredData]);
 
   // KPI calculations
   const totalActivities = schedules.length;
@@ -323,20 +295,6 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
     },
     [filteredSchedules],
   );
-
-  // Active filter count
-  const activeFilterCount = [
-    projectFilter !== 'all',
-    setorFilter !== 'all',
-    statusFilter !== 'all',
-  ].filter(Boolean).length;
-
-  const clearFilters = () => {
-    setProjectFilter('all');
-    setSetorFilter('all');
-    setStatusFilter('all');
-    setSearchTerm('');
-  };
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -392,158 +350,14 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             initialViewMode={filterState.viewMode}
           />
 
-          {/* Legacy View Toggle + Filters Bar (will be deprecated) */}
-          <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between flex-wrap">
-            <div className="flex flex-1 items-center gap-2">
-              <div className="relative max-w-sm flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar atividades..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="border-muted-foreground/20 bg-background/50 pl-9 transition-colors focus:border-primary/50"
-                />
-              </div>
-              <div className="mx-2 h-8 w-px bg-border" />
-              <Button
-                variant={showFilters ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className={showFilters ? 'text-primary' : 'text-muted-foreground'}
-              >
-                <Filter className="mr-2 h-4 w-4" />
-                Filtros
-                {activeFilterCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="ml-1.5 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
-                  >
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-              {activeFilterCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="h-8 px-2 text-muted-foreground hover:text-destructive"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center rounded-lg border bg-muted/30 p-0.5">
-                <Button
-                  variant={viewMode === 'day' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => {
-                    setViewMode('day');
-                    goToToday();
-                  }}
-                  className="h-7 rounded-md text-xs"
-                >
-                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
-                  Dia
-                </Button>
-                <Button
-                  variant={viewMode === 'week' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('week')}
-                  className="h-7 rounded-md text-xs"
-                >
-                  <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
-                  Semana
-                </Button>
-                <Button
-                  variant={viewMode === 'month' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('month')}
-                  className="h-7 rounded-md text-xs"
-                >
-                  <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
-                  Mês
-                </Button>
-                <Button
-                  variant={viewMode === 'gantt' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('gantt')}
-                  className="h-7 rounded-md text-xs"
-                >
-                  <FolderKanban className="mr-1.5 h-3.5 w-3.5" />
-                  Gantt
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Panel (Collapsible) */}
-          {showFilters && (
-            <div className="rounded-lg border border-dashed bg-muted/30 p-4 animate-in slide-in-from-top-2">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Projeto</label>
-                  <Select value={projectFilter} onValueChange={setProjectFilter}>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Todos os projetos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os projetos</SelectItem>
-                      {uniqueProjects.map(([id, name]) => (
-                        <SelectItem key={id} value={id}>
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Setor Responsável
-                  </label>
-                  <Select value={setorFilter} onValueChange={setSetorFilter}>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Todos os setores" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os setores</SelectItem>
-                      {uniqueSetores.map((setor) => (
-                        <SelectItem key={setor} value={setor}>
-                          {setor}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Status</label>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Todos os status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os status</SelectItem>
-                      {uniqueStatuses.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {status}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Calendar Section */}
-          {viewMode === 'gantt' ? (
+          {filterState.viewMode === 'gantt' ? (
             <CronogramaGantt
               schedules={filteredSchedules}
               projectIds={projectIds}
               onActivityClick={setSelectedSchedule}
             />
-          ) : viewMode === 'month' ? (
+          ) : filterState.viewMode === 'month' ? (
             <MonthView
               currentDate={currentDate}
               selectedDay={selectedDay}
@@ -552,7 +366,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               getSchedulesForDate={getSchedulesForDate}
               projectIds={projectIds}
             />
-          ) : viewMode === 'week' ? (
+          ) : filterState.viewMode === 'week' ? (
             <WeekView
               currentDate={currentDate}
               selectedDay={selectedDay}
@@ -577,7 +391,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           )}
 
           {/* Selected Day Activities */}
-          {selectedDay && (viewMode === 'month' || viewMode === 'week') && (
+          {selectedDay && (filterState.viewMode === 'month' || filterState.viewMode === 'week') && (
             <SelectedDayPanel
               date={selectedDay}
               schedules={getSchedulesForDate(selectedDay)}

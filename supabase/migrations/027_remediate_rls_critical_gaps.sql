@@ -70,6 +70,17 @@ ALTER COLUMN tenant_id SET NOT NULL;
 -- PART 4: Add foreign key reference to tenants
 -- ============================================================================
 
+-- Drop existing constraints if they exist (for idempotency)
+ALTER TABLE public.project_histories
+DROP CONSTRAINT IF EXISTS fk_project_histories_tenant_id;
+
+ALTER TABLE public.project_approvers
+DROP CONSTRAINT IF EXISTS fk_project_approvers_tenant_id;
+
+ALTER TABLE public.project_budgets
+DROP CONSTRAINT IF EXISTS fk_project_budgets_tenant_id;
+
+-- Add constraints
 ALTER TABLE public.project_histories
 ADD CONSTRAINT fk_project_histories_tenant_id
 FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;

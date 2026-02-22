@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Moon, Sun, Bell } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { useDarkMode } from '@/components/providers/DarkModeProvider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -14,16 +14,10 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  // Avoid hydration mismatch
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { isDark, toggle } = useDarkMode();
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    toggle();
   };
 
   return (
@@ -56,8 +50,8 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={toggleTheme} disabled={!mounted}>
-                {mounted && theme === 'dark' ? (
+              <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                {isDark ? (
                   <Sun className="h-5 w-5" />
                 ) : (
                   <Moon className="h-5 w-5" />
@@ -66,7 +60,7 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {mounted && theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+              {isDark ? 'Tema claro' : 'Tema escuro'}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

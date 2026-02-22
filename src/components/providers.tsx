@@ -1,9 +1,9 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { useState } from 'react';
 import { Toaster } from 'sonner';
+import { DarkModeProvider } from './providers/DarkModeProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -19,12 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
+    <DarkModeProvider>
       <QueryClientProvider client={queryClient}>
         {children}
         <Toaster
@@ -36,6 +31,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
           }}
         />
       </QueryClientProvider>
-    </NextThemesProvider>
+    </DarkModeProvider>
   );
 }

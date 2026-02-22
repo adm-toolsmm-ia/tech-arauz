@@ -20,6 +20,8 @@ import { KPICard } from '@/components/dashboard/KPICard';
 import { SplitView } from '@/components/views/SplitView';
 import { ProjectCockpit } from '@/components/project';
 import { CronogramaGantt } from '@/components/cronogramas/CronogramaGantt';
+import { FilterBar } from '@/components/filters/FilterBar';
+import { useCronogramasFilters } from '@/hooks/useCronogramasFilters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -197,6 +199,9 @@ const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 // ---------- Main Component ----------
 
 export function CronogramasContent({ schedules }: CronogramasContentProps) {
+  // New unified filter system
+  const filterState = useCronogramasFilters(schedules as any);
+
   const [viewMode, setViewMode] = React.useState<'day' | 'week' | 'month' | 'gantt'>('day');
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
@@ -377,7 +382,17 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             />
           </div>
 
-          {/* View Toggle + Filters Bar */}
+          {/* Unified Filter System */}
+          <FilterBar
+            moduleId="cronogramas"
+            filters={filterState.registry}
+            onFiltersChange={filterState.setFilters}
+            onSearchChange={filterState.setSearch}
+            onViewModeChange={filterState.setViewMode}
+            initialViewMode={filterState.viewMode}
+          />
+
+          {/* Legacy View Toggle + Filters Bar (will be deprecated) */}
           <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between flex-wrap">
             <div className="flex flex-1 items-center gap-2">
               <div className="relative max-w-sm flex-1">

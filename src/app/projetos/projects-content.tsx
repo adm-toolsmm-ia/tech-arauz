@@ -11,6 +11,8 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle2,
+  Star,
+  PlayCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
@@ -190,25 +192,11 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
 
   // ===== CALCULATE KPIs (GERENCIAL) =====
   
-  // KPI 1: Em Risco (prazo vencido OU prazo < 7 dias)
-  const atRiskProjects = React.useMemo(() => {
-    return projects.filter(p => {
-      const now = new Date();
-      const endDate = p.end_date ? new Date(p.end_date) : null;
-      const praziFase = p.prazo_fase ? new Date(p.prazo_fase) : null;
-      const prazoCronograma = p.prazo_cronograma ? new Date(p.prazo_cronograma) : null;
-      
-      // Ignorar concluídos e cancelados
-      if (['concluído', 'cancelado'].includes((p.status || '').toLowerCase())) return false;
-      
-      // Vencido ou próximo de vencer (7 dias)
-      const prazosCriticos = [endDate, praziFase, prazoCronograma].filter(Boolean);
-      return prazosCriticos.some(prazo => {
-        if (!prazo) return false;
-        const diasRestantes = (prazo.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-        return diasRestantes <= 7;
-      });
-    }).length;
+  // KPI 1: Em Execução (status = em execução)
+  const inExecutionProjects = React.useMemo(() => {
+    return projects.filter(
+      (p) => (p.status || '').trim().toLowerCase() === 'em execução',
+    ).length;
   }, [projects]);
 
   // KPI 2: Sem Movimentação (30+ dias)
@@ -223,11 +211,13 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
     }).length;
   }, [projects]);
 
-  // KPI 3: Alta Prioridade (Urgente + Alta)
-  const highPriorityProjects = React.useMemo(() => {
-    return projects.filter(p => 
-      ['urgente', 'alta'].includes((p.priority || '').toLowerCase())
-    ).length;
+  // KPI 3: Importância Especial (não concluídos com importancia_especial)
+  const specialImportanceProjects = React.useMemo(() => {
+    return projects.filter((p) => {
+      const statusNorm = (p.status || '').trim().toLowerCase();
+      if (statusNorm === 'concluído' || statusNorm === 'cancelado') return false;
+      return p.importancia_especial === true;
+    }).length;
   }, [projects]);
 
   // KPI 4: Concluídos (últimos 30 dias)
@@ -383,12 +373,18 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
         {/* KPIs (Gerencial) */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <KPICard
-            title="Em Risco"
-            value={atRiskProjects}
-            icon={AlertTriangle}
-            subtitle={`${atRiskProjects} projeto(s)`}
-            active={filters.prazo_vencido === true}
-            onClick={() => setFilters(prev => ({ ...prev, prazo_vencido: !prev.prazo_vencido }))}
+            title="Em Execução"
+            value={inExecutionProjects}
+            icon={PlayCircle}
+            subtitle={`${inExecutionProjects} projeto(s)`}
+            active={filters.status?.some((s) => (s || '').trim().toLowerCase() === 'em execução')}
+            onClick={() => {
+              const isActive = filters.status?.some((s) => (s || '').trim().toLowerCase() === 'em execução');
+              setFilters((prev) => ({
+                ...prev,
+                status: isActive ? [] : ['em execução'],
+              }));
+            }}
           />
           <KPICard
             title="Sem Movimentação"
@@ -398,16 +394,16 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
             active={false}
           />
           <KPICard
-            title="Alta Prioridade"
-            value={highPriorityProjects}
-            icon={AlertTriangle}
-            subtitle={`${highPriorityProjects} crítico(s)`}
-            active={filters.prioridade?.includes('urgente') || filters.prioridade?.includes('alta')}
+            title="Importância Especial"
+            value={specialImportanceProjects}
+            icon={Star}
+            subtitle={`${specialImportanceProjects} projeto(s)`}
+            active={filters.importancia_especial === true}
             onClick={() => {
-              const isActive = filters.prioridade?.includes('urgente') || filters.prioridade?.includes('alta');
-              setFilters(prev => ({ 
-                ...prev, 
-                prioridade: isActive ? [] : ['urgente', 'alta'] 
+              const isActive = filters.importancia_especial === true;
+              setFilters((prev) => ({
+                ...prev,
+                importancia_especial: isActive ? null : true,
               }));
             }}
           />

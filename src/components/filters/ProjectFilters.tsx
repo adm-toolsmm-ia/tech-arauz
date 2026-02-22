@@ -569,9 +569,13 @@ export function applyProjectFilters<T extends Record<string, any>>(
     });
   }
 
-  // Multi-select filters
+  // Multi-select filters (status: case-insensitive para "em execução" etc.)
   if (filters.status.length > 0) {
-    result = result.filter((p) => filters.status.includes(p.status));
+    const statusNorm = (s: string) => (s || '').trim().toLowerCase();
+    const filterStatuses = filters.status.map(statusNorm);
+    result = result.filter((p) =>
+      filterStatuses.includes(statusNorm(p.status)),
+    );
   }
   if (filters.fase_atual.length > 0) {
     result = result.filter((p) => p.fase_atual && filters.fase_atual.includes(p.fase_atual));

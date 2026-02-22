@@ -7,10 +7,13 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   statusStyles,
   statusLabels,
@@ -40,6 +43,46 @@ function normalizeSlug(value: string): string {
     .replace(/^_+|_+$/g, '');
 }
 
+const AlertIcons = ({ project }: { project: any }) => {
+  const isProjectOverdue = isOverdue(project.end_date, project.status);
+  const isDeadlineNear = isWithin7Days(project.end_date) && !isProjectOverdue;
+
+  return (
+    <div className="flex items-center gap-1">
+      {project.importancia_especial && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Star className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400 fill-current" />
+            </TooltipTrigger>
+            <TooltipContent side="left">Especial</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      {isProjectOverdue && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <AlertTriangle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+            </TooltipTrigger>
+            <TooltipContent side="left">Atrasado</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      {isDeadlineNear && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            </TooltipTrigger>
+            <TooltipContent side="left">Prazo próximo</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
+  );
+};
+
 export function ProjectListView({
   projects,
   onSelectProject,
@@ -63,7 +106,7 @@ export function ProjectListView({
     const sorted = [...projects];
     sorted.sort((a, b) => {
       let comparison = 0;
-      
+
       if (sortBy === 'name') {
         comparison = (a.project_name || '').localeCompare(b.project_name || '');
       } else if (sortBy === 'date') {
@@ -79,7 +122,13 @@ export function ProjectListView({
     return sorted;
   }, [projects, sortBy, sortDirection]);
 
-  const SortHeader = ({ column, label }: { column: 'name' | 'date' | 'status'; label: string }) => (
+  const SortHeader = ({
+    column,
+    label,
+  }: {
+    column: 'name' | 'date' | 'status';
+    label: string;
+  }) => (
     <button
       onClick={() => {
         if (sortBy === column) {
@@ -89,14 +138,15 @@ export function ProjectListView({
           setSortDirection('asc');
         }
       }}
-      className="flex items-center gap-1 font-semibold hover:text-primary"
+      className="flex items-center gap-1.5 font-semibold text-xs hover:text-primary transition-colors"
     >
       {label}
-      {sortBy === column && (
-        sortDirection === 'asc' ? 
-          <ChevronUp className="h-4 w-4" /> : 
-          <ChevronDown className="h-4 w-4" />
-      )}
+      {sortBy === column &&
+        (sortDirection === 'asc' ? (
+          <ChevronUp className="h-3 w-3" />
+        ) : (
+          <ChevronDown className="h-3 w-3" />
+        ))}
     </button>
   );
 
@@ -117,166 +167,282 @@ export function ProjectListView({
   }
 
   return (
-    <div className="w-full overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border/50 bg-muted/30">
-            <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground"></th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground w-16">
-              <SortHeader column="name" label="Código" />
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
-              <SortHeader column="name" label="Projeto" />
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground w-32">
-              <SortHeader column="status" label="Status" />
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground w-20">Área</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground w-24">Responsável</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground w-28">
-              <SortHeader column="date" label="Prazo" />
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground w-20">Fase</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground w-20">Alertas</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedProjects.map((project) => {
-            const isExpanded = expandedRows.has(project.id);
-            const isProjectOverdue = isOverdue(project.end_date, project.status);
-            const isDeadlineNear = isWithin7Days(project.end_date) && !isProjectOverdue;
-            const normalizedStatus = normalizeSlug(project.status);
-            const faseSlug = project.fase_atual
-              ? normalizeSlug(project.fase_atual)
-              : '';
+    <div className="w-full space-y-2">
+      {/* Desktop Table View */}
+      <div className="hidden md:block border rounded-lg overflow-hidden bg-card">
+        <div className="overflow-x-auto max-h-[600px]">
+          <table className="w-full text-xs">
+            <thead className="sticky top-0 bg-muted/50 border-b">
+              <tr>
+                <th className="px-3 py-2 text-left w-8"></th>
+                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-16 min-w-fit">
+                  Código
+                </th>
+                <th className="px-3 py-2 text-left font-semibold text-muted-foreground min-w-fit">
+                  <SortHeader column="name" label="Projeto" />
+                </th>
+                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-20 min-w-fit">
+                  <SortHeader column="status" label="Status" />
+                </th>
+                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-16 min-w-fit">
+                  Responsável
+                </th>
+                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-20 min-w-fit">
+                  <SortHeader column="date" label="Prazo" />
+                </th>
+                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-10 min-w-fit">
+                  Alertas
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {sortedProjects.map((project) => {
+                const isExpanded = expandedRows.has(project.id);
+                const isProjectOverdue = isOverdue(project.end_date, project.status);
+                const isDeadlineNear =
+                  isWithin7Days(project.end_date) && !isProjectOverdue;
+                const normalizedStatus = normalizeSlug(project.status);
+                const faseSlug = project.fase_atual
+                  ? normalizeSlug(project.fase_atual)
+                  : '';
 
-            return (
-              <React.Fragment key={project.id}>
-                <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors cursor-pointer">
-                  <td className="px-4 py-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={() => toggleExpanded(project.id)}
-                    >
-                      {isExpanded ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                    #{project.espaider_code}
-                  </td>
-                  <td
-                    className="px-4 py-3 font-medium text-foreground/90 truncate cursor-pointer hover:text-primary"
-                    onClick={() => onSelectProject?.(project.id)}
+                return (
+                  <React.Fragment key={project.id}>
+                    <tr className="hover:bg-muted/50 transition-colors">
+                      <td className="px-3 py-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => toggleExpanded(project.id)}
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="h-3.5 w-3.5" />
+                          ) : (
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
+                        #{project.espaider_code}
+                      </td>
+                      <td
+                        className="px-3 py-2 font-medium text-foreground/90 truncate cursor-pointer hover:text-primary transition-colors"
+                        onClick={() => onSelectProject?.(project.id)}
+                        title={project.project_name}
+                      >
+                        {project.project_name}
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge
+                          className={cn(
+                            'text-xs px-1.5 py-0',
+                            statusStyles[normalizedStatus] ||
+                              statusStyles.projeto_futuro,
+                          )}
+                        >
+                          {statusLabels[normalizedStatus] || project.status}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-foreground/80 truncate">
+                        {project.responsible || '-'}
+                      </td>
+                      <td
+                        className={cn(
+                          'px-3 py-2 text-xs font-medium',
+                          isProjectOverdue &&
+                            'text-red-600 dark:text-red-400',
+                          !isProjectOverdue &&
+                            isDeadlineNear &&
+                            'text-amber-600 dark:text-amber-400',
+                        )}
+                      >
+                        {formatDateBR(project.end_date)}
+                      </td>
+                      <td className="px-3 py-2">
+                        <AlertIcons project={project} />
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="bg-muted/20">
+                        <td colSpan={7} className="px-4 py-3">
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                            <div>
+                              <p className="font-semibold text-muted-foreground mb-1">
+                                Área
+                              </p>
+                              <p className="text-foreground/80">
+                                {project.area || '-'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-muted-foreground mb-1">
+                                Fase
+                              </p>
+                              <p className="text-foreground/80">
+                                {resolvePhaseLabel(faseSlug, project.fase_atual) ||
+                                  '-'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-muted-foreground mb-1">
+                                Complexidade
+                              </p>
+                              <p className="text-foreground/80">
+                                {project.complexidade_tecnica || '-'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-muted-foreground mb-1">
+                                Objetivo
+                              </p>
+                              <p className="text-foreground/80 truncate">
+                                {project.objetivo || '-'}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-2">
+        {sortedProjects.map((project) => {
+          const isExpanded = expandedRows.has(project.id);
+          const isProjectOverdue = isOverdue(project.end_date, project.status);
+          const isDeadlineNear =
+            isWithin7Days(project.end_date) && !isProjectOverdue;
+          const normalizedStatus = normalizeSlug(project.status);
+          const faseSlug = project.fase_atual
+            ? normalizeSlug(project.fase_atual)
+            : '';
+
+          return (
+            <Card
+              key={project.id}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+            >
+              <CardContent className="p-3">
+                <div
+                  className="flex items-start justify-between gap-2 mb-2"
+                  onClick={() => onSelectProject?.(project.id)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-xs text-muted-foreground">
+                      #{project.espaider_code}
+                    </p>
+                    <p className="font-semibold text-sm text-foreground truncate">
+                      {project.project_name}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 flex-shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleExpanded(project.id);
+                    }}
                   >
-                    {project.project_name}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge
-                      className={cn(
-                        'text-xs px-2 py-0.5',
-                        statusStyles[normalizedStatus] || statusStyles.projeto_futuro,
-                      )}
-                    >
-                      {statusLabels[normalizedStatus] || project.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-foreground/80 truncate">
-                    {project.area || '-'}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-foreground/80 truncate">
-                    {project.responsible || '-'}
-                  </td>
-                  <td
+                    {isExpanded ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <Badge
                     className={cn(
-                      'px-4 py-3 text-xs font-medium',
-                      isProjectOverdue && 'text-red-600 dark:text-red-400',
-                      !isProjectOverdue && isDeadlineNear && 'text-amber-600 dark:text-amber-400',
+                      'text-xs px-1.5 py-0 flex-shrink-0',
+                      statusStyles[normalizedStatus] ||
+                        statusStyles.projeto_futuro,
                     )}
                   >
-                    {formatDateBR(project.end_date)}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-foreground/80">
-                    {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      {project.importancia_especial && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Star className="h-4 w-4 text-yellow-600 dark:text-yellow-400 fill-current" />
-                            </TooltipTrigger>
-                            <TooltipContent>Especial</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                    {statusLabels[normalizedStatus] || project.status}
+                  </Badge>
+                  <AlertIcons project={project} />
+                </div>
+
+                <div className="space-y-1 text-xs mb-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Responsável:</span>
+                    <span className="text-foreground/80 font-medium">
+                      {project.responsible || '-'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Prazo:</span>
+                    <span
+                      className={cn(
+                        'font-medium',
+                        isProjectOverdue &&
+                          'text-red-600 dark:text-red-400',
+                        !isProjectOverdue &&
+                          isDeadlineNear &&
+                          'text-amber-600 dark:text-amber-400',
                       )}
-                      {isProjectOverdue && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            </TooltipTrigger>
-                            <TooltipContent>Atrasado</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                      {isDeadlineNear && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                            </TooltipTrigger>
-                            <TooltipContent>Prazo próximo</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                    </div>
-                  </td>
-                </tr>
+                    >
+                      {formatDateBR(project.end_date)}
+                    </span>
+                  </div>
+                </div>
+
                 {isExpanded && (
-                  <tr className="border-b border-border/30 bg-muted/20">
-                    <td colSpan={9} className="px-6 py-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="font-semibold text-xs text-muted-foreground mb-1">Objetivo</p>
-                          <p className="text-foreground/80">{project.objetivo || '-'}</p>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-xs text-muted-foreground mb-1">Justificativa</p>
-                          <p className="text-foreground/80">{project.justificativa || '-'}</p>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-xs text-muted-foreground mb-1">Complexidade</p>
-                          <Badge variant="outline" className="text-xs">
-                            {project.complexidade_tecnica || '-'}
-                          </Badge>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-xs text-muted-foreground mb-1">Impactos</p>
-                          <div className="flex gap-2">
-                            {project.impacto_estrategico && (
-                              <Badge variant="outline" className="text-xs">Estratégico: {project.impacto_estrategico}</Badge>
-                            )}
-                            {project.impacto_operacional && (
-                              <Badge variant="outline" className="text-xs">Operacional: {project.impacto_operacional}</Badge>
-                            )}
-                          </div>
-                        </div>
+                  <div className="border-t pt-2 space-y-2 text-xs">
+                    {project.area && (
+                      <div>
+                        <p className="font-semibold text-muted-foreground mb-0.5">
+                          Área
+                        </p>
+                        <p className="text-foreground/80">{project.area}</p>
                       </div>
-                    </td>
-                  </tr>
+                    )}
+                    {project.fase_atual && (
+                      <div>
+                        <p className="font-semibold text-muted-foreground mb-0.5">
+                          Fase
+                        </p>
+                        <p className="text-foreground/80">
+                          {resolvePhaseLabel(faseSlug, project.fase_atual)}
+                        </p>
+                      </div>
+                    )}
+                    {project.complexidade_tecnica && (
+                      <div>
+                        <p className="font-semibold text-muted-foreground mb-0.5">
+                          Complexidade
+                        </p>
+                        <Badge variant="outline" className="text-xs px-1.5 py-0">
+                          {project.complexidade_tecnica}
+                        </Badge>
+                      </div>
+                    )}
+                    {project.objetivo && (
+                      <div>
+                        <p className="font-semibold text-muted-foreground mb-0.5">
+                          Objetivo
+                        </p>
+                        <p className="text-foreground/80 line-clamp-2">
+                          {project.objetivo}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 )}
-              </React.Fragment>
-            );
-          })}
-        </tbody>
-      </table>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -203,6 +203,11 @@ npm run trace -- workflow-name
 - Batch file reads/writes when processing multiple files
 - Prefer editing existing files over creating new ones
 
+### Shell / Terminal
+- On Windows the shell is PowerShell. Do not use `&&` to chain commands; use `;` or run one command at a time. Never start a command with `&&`.
+- Prefer IDE tools (Grep, Read, Glob, etc.) over shell commands when possible.
+- Reference: SHELL-EXECUTION-STANDARD when relevant.
+
 ### Session Management
 - Track story progress throughout the session
 - Update checkboxes immediately after completing tasks

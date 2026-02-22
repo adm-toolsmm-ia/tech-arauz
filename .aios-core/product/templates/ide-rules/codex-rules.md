@@ -30,6 +30,14 @@ Este arquivo define as instrucoes do projeto para o Codex CLI.
 - Docs: `docs/`
 <!-- AIOS-MANAGED-END: codebase -->
 
+<!-- AIOS-MANAGED-START: shell -->
+## Shell / Terminal
+
+- On Windows the shell is PowerShell. Do not use `&&` to chain commands; use `;` or run one command at a time. Never start a command with `&&`.
+- Prefer IDE tools (Grep, Read, Glob, etc.) over shell commands when possible.
+- Reference: SHELL-EXECUTION-STANDARD when relevant.
+<!-- AIOS-MANAGED-END: shell -->
+
 <!-- AIOS-MANAGED-START: commands -->
 ## Common Commands
 

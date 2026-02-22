@@ -409,6 +409,8 @@ npm install -D husky lint-staged eslint prettier typescript jest @commitlint/cli
 npx husky install
 
 # 3. Add pre-commit hook
+# Note: On Windows/PowerShell use ; instead of && when running manually.
+# Husky runs scripts via sh, so the hook works cross-platform.
 npx husky add .husky/pre-commit "npx lint-staged && npm run typecheck && npm test -- --onlyChanged"
 
 # 4. Add commit-msg hook (optional)

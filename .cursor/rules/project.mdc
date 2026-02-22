@@ -124,12 +124,19 @@ import { KanbanBoard, ViewToggle, SplitView } from '@/components/views/...';
 
 ## Quality Gates (rotina padrão)
 
-Antes de concluir tarefa ou PR:
+Antes de concluir tarefa ou PR, rodar em sequência (um de cada vez ou usar `;` no PowerShell — não usar `&&`):
 
 - `npm run lint`
 - `npm run typecheck`
 - `npm test`
 - `npm run sync:ide:check` (detectar drift entre AIOS e Cursor)
+
+## Shell e comandos (Windows/PowerShell)
+
+- **Proibido**: Usar `&&` para encadear comandos; comandos que começam com `&&`.
+- **Padrão**: Encadear com `;` no PowerShell, ou um comando por vez, ou script npm.
+- **Exemplos**: Incorreto `npm run lint && npm run typecheck`; correto `npm run lint; npm run typecheck` ou dois comandos separados.
+- Referência: `.aios-core/docs/standards/SHELL-EXECUTION-STANDARD.md`.
 
 ## Commits
 

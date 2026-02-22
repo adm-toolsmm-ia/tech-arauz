@@ -33,6 +33,7 @@
 | [TASK-FORMAT-SPECIFICATION-V1.md](./TASK-FORMAT-SPECIFICATION-V1.md) | Task-First architecture format | ✅ Current | 1.0.0 |
 | [EXECUTOR-DECISION-TREE.md](./EXECUTOR-DECISION-TREE.md) | Humano/Worker/Agente/Clone routing | ✅ Current | 1.0.0 |
 | [OPEN-SOURCE-VS-SERVICE-DIFFERENCES.md](./OPEN-SOURCE-VS-SERVICE-DIFFERENCES.md) | Business model documentation | ⚠️ Needs Update | 2.0.0 |
+| [SHELL-EXECUTION-STANDARD.md](./SHELL-EXECUTION-STANDARD.md) | Shell/terminal execution (PowerShell, no &&) | ✅ Current | 1.0.0 |
 
 ### Agent Standards
 
@@ -107,6 +108,7 @@
 │   ├── STORY-TEMPLATE-V2-SPECIFICATION.md   # Story template
 │   ├── TASK-FORMAT-SPECIFICATION-V1.md      # Task format
 │   ├── EXECUTOR-DECISION-TREE.md            # Executor routing
+│   ├── SHELL-EXECUTION-STANDARD.md          # Shell/terminal execution
 │   ├── AGENT-PERSONALIZATION-STANDARD-V1.md # Agent personalities
 │   ├── AIOS-COLOR-PALETTE-V2.1.md           # Color system
 │   └── AIOS-COLOR-PALETTE-QUICK-REFERENCE.md

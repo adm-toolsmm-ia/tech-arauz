@@ -78,6 +78,12 @@ docs/
 - Ensure GitHub CLI is configured: `gh auth status`
 - Push regularly to avoid conflicts
 
+## Shell / Terminal
+
+- On Windows the shell is PowerShell. Do not use `&&` to chain commands; use `;` or run one command at a time. Never start a command with `&&`.
+- Prefer IDE tools (Grep, Read, Glob, etc.) over shell commands when possible.
+- Reference: SHELL-EXECUTION-STANDARD when relevant.
+
 ## Common Patterns
 
 ### Error Handling

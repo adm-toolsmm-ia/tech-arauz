@@ -420,7 +420,7 @@ Always include the language navigation header:
 ### Code Blocks
 
 - Always specify language for syntax highlighting
-- Use `bash` for shell commands
+- For Unix/macOS docs use `bash` for shell commands; for Windows or cross-platform use `powershell` and do not use `&&` (use `;` or one command per line). See SHELL-EXECUTION-STANDARD.
 - Use `javascript` or `typescript` for code examples
 - Use `yaml` for configuration files
 

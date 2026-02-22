@@ -631,13 +631,13 @@ $ aios task develop-story --story=1.1
 ### Local Development (Multi-Repo)
 
 ```bash
-# Clone all repos
+# Clone all repos (Unix/macOS: use &&; Windows/PowerShell: use ; or run each line separately)
 mkdir -p ~/Workspaces/AIOS && cd ~/Workspaces/AIOS
 gh repo clone SynkraAI/aios-core
 gh repo clone SynkraAI/aios-squads
 gh repo clone SynkraAI/mcp-ecosystem
 
-# Link for local development
+# Link for local development (Unix/macOS; on Windows use ; instead of &&)
 cd aios-core && npm install && npm link
 cd ../aios-squads && npm install && npm link @aios/core
 

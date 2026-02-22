@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { LogOut, Moon, Sun } from 'lucide-react';
 import { useDarkMode } from '@/hooks/useDarkMode';
-import { useCallback } from 'react';
 
 import {
   Sidebar,
@@ -20,7 +19,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { menuConfig, bottomItems } from './sidebar-config';
@@ -30,15 +28,6 @@ import type { NavItem } from './sidebar-types';
 function SidebarSimpleMenu({ item }: { item: NavItem }) {
   const pathname = usePathname();
   const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
-  const { setOpen } = useSidebar();
-
-  const handleNavigate = useCallback(() => {
-    // Auto-close sidebar on desktop (md breakpoint and up)
-    // Only close if sidebar is currently open
-    if (typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches) {
-      setOpen(false);
-    }
-  }, [setOpen]);
 
   return (
     <SidebarMenuItem>
@@ -46,7 +35,6 @@ function SidebarSimpleMenu({ item }: { item: NavItem }) {
         asChild
         isActive={isActive}
         tooltip={item.title}
-        onClick={handleNavigate}
       >
         <Link href={item.url}>
           <item.icon className="size-4" />

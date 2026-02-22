@@ -48,14 +48,15 @@ export function NotificationBell({ className }: NotificationBellProps) {
         onClick={() => setIsPanelOpen(!isPanelOpen)}
         className={cn(
           'relative inline-flex items-center justify-center p-2 rounded-md',
-          'hover:bg-sidebar-accent transition-colors',
+          'hover:bg-accent transition-colors',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary',
+          'text-foreground dark:text-sidebar-foreground',
         )}
         aria-label={`Notificações (${unreadCount} não lidas)`}
         aria-pressed={isPanelOpen}
         data-testid="notification-bell"
       >
-        <Bell className="h-5 w-5 text-sidebar-foreground" />
+        <Bell className="h-5 w-5" />
 
         {/* Badge with unread count */}
         {hasUnread && (

@@ -30,6 +30,8 @@ import { syncEspaiderAction } from '@/app/actions/sync';
 import { updateProjectStatusAction } from '@/app/actions/projects';
 import { ProjectCockpit } from '@/components/project';
 import { ProjectKanbanCard } from '@/components/project/ProjectKanbanCard';
+import { FilterBar } from '@/components/filters/FilterBar';
+import { useProjetosFilters } from '@/hooks/useProjetosFilters';
 import {
   ProjectFilters,
   type ProjectFilterState,
@@ -139,10 +141,12 @@ interface ProjectsContentProps {
 
 export function ProjectsContent({ projects: initialProjects, isLoading = false }: ProjectsContentProps) {
   const [projects, setProjects] = React.useState<Project[]>(initialProjects);
-  const [view, setView] = React.useState<ViewMode>('kanban');
-  const [filters, setFilters] = React.useState<ProjectFilterState>(defaultFilters);
   const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
   const [isSyncing, setIsSyncing] = React.useState(false);
+
+  // New filter system
+  const filterState = useProjetosFilters(projects);
+  const { filteredData: filteredProjects, viewMode, setViewMode } = filterState;
 
   // Keep projects in sync when server re-renders with new data
   React.useEffect(() => {
@@ -165,28 +169,6 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
       setIsSyncing(false);
     }
   };
-
-  // Extract unique values for filter options
-  const availableValues = React.useMemo(
-    () => ({
-      status: extractUniqueValues(projects, 'status'),
-      fase_atual: extractUniqueValues(projects, 'fase_atual'),
-      area: extractUniqueValues(projects, 'area'),
-      tipo_chamado: extractUniqueValues(projects, 'tipo_chamado'),
-      tipo_assunto: extractUniqueValues(projects, 'tipo_assunto'),
-      responsavel: extractUniqueValues(projects, 'responsible'),
-      solicitante: extractUniqueValues(projects, 'solicitante'),
-      prioridade: extractUniqueValues(projects, 'priority'),
-      complexidade_tecnica: extractUniqueValues(projects, 'complexidade_tecnica'),
-      impacto_operacional: extractUniqueValues(projects, 'impacto_operacional'),
-    }),
-    [projects],
-  );
-
-  // Filter projects
-  const filteredProjects = React.useMemo(() => {
-    return applyProjectFilters(projects, filters);
-  }, [projects, filters]);
 
 
 
@@ -377,13 +359,10 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
             value={inExecutionProjects}
             icon={PlayCircle}
             subtitle={`${inExecutionProjects} projeto(s)`}
-            active={filters.status?.some((s) => (s || '').trim().toLowerCase() === 'em execução')}
+            active={filterState.filters.status?.some((s: any) => (s || '').trim().toLowerCase() === 'em execução')}
             onClick={() => {
-              const isActive = filters.status?.some((s) => (s || '').trim().toLowerCase() === 'em execução');
-              setFilters((prev) => ({
-                ...prev,
-                status: isActive ? [] : ['em execução'],
-              }));
+              const isActive = filterState.filters.status?.some((s: any) => (s || '').trim().toLowerCase() === 'em execução');
+              filterState.updateFilter('status', isActive ? [] : ['em execução']);
             }}
           />
           <KPICard
@@ -398,13 +377,10 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
             value={specialImportanceProjects}
             icon={Star}
             subtitle={`${specialImportanceProjects} projeto(s)`}
-            active={filters.importancia_especial === true}
+            active={filterState.filters.importancia_especial === true}
             onClick={() => {
-              const isActive = filters.importancia_especial === true;
-              setFilters((prev) => ({
-                ...prev,
-                importancia_especial: isActive ? null : true,
-              }));
+              const isActive = filterState.filters.importancia_especial === true;
+              filterState.updateFilter('importancia_especial', isActive ? null : true);
             }}
           />
           <KPICard
@@ -431,8 +407,8 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Buscar projetos..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  value={filterState.search}
+                  onChange={(e) => filterState.setSearch(e.target.value)}
                   className="border-muted-foreground/20 bg-background/50 pl-9 transition-colors focus:border-primary/50"
                 />
               </div>
@@ -454,22 +430,23 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
                   {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
                 </span>
               </Button>
-              <div className="mx-2 h-8 w-px bg-border" />
-              <ViewToggle view={view} onViewChange={setView} />
             </div>
           </div>
 
-          {/* Quick & Advanced Filters */}
-          <ProjectFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            availableValues={availableValues}
+          {/* New Standardized Filter Bar */}
+          <FilterBar
+            moduleId="projetos"
+            filters={filterState.registry}
+            onFiltersChange={filterState.setFilters}
+            onSearchChange={filterState.setSearch}
+            onViewModeChange={setViewMode}
+            initialViewMode={viewMode}
           />
         </div>
 
         {/* Content */}
         {isLoading ? (
-          view === 'kanban' ? (
+          viewMode === 'kanban' ? (
             <div className="grid auto-cols-[280px] grid-flow-col gap-4 overflow-x-auto pb-4">
               {Array.from({ length: 3 }).map((_, col) => (
                 <div key={col} className="space-y-3 rounded-lg border bg-muted/20 p-3">
@@ -495,7 +472,7 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
               </CardContent>
             </Card>
           )
-        ) : view === 'kanban' ? (
+        ) : viewMode === 'kanban' ? (
           <KanbanBoard
             columns={dynamicColumns}
             items={kanbanItems}
@@ -507,7 +484,7 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
               if (!project) return null;
               return (
                 <ProjectKanbanCard
-                  project={project}
+                  project={project as Project}
                   projectIds={projectIds}
                 />
               );
@@ -519,7 +496,7 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
             projects={filteredProjects} 
             onSelectProject={(projectId) => {
               const project = filteredProjects.find((p) => p.id === projectId);
-              if (project) setSelectedProject(project);
+              if (project) setSelectedProject(project as Project);
             }} 
           />
         )}

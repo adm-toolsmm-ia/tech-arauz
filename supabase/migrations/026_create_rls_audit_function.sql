@@ -71,12 +71,16 @@ BEGIN
 
     v_authenticated_count := COALESCE(v_authenticated_count, 0);
 
-    -- Check for tenant_id column
+    -- Check for tenant_id column using pg_attribute (more reliable than information_schema)
     SELECT EXISTS (
-        SELECT 1 FROM information_schema.columns c
-        WHERE c.table_schema = 'public'
-          AND c.table_name = p_table_name
-          AND c.column_name = 'tenant_id'
+        SELECT 1
+        FROM pg_attribute pa
+        JOIN pg_class pc ON pa.attrelid = pc.oid
+        JOIN pg_namespace pn ON pc.relnamespace = pn.oid
+        WHERE pn.nspname = 'public'
+          AND pc.relname = p_table_name
+          AND pa.attname = 'tenant_id'
+          AND NOT pa.attisdropped
     ) INTO v_has_tenant_id;
 
     -- Check for tenant isolation in policies

@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LogOut } from 'lucide-react';
+import { LogOut, Moon, Sun } from 'lucide-react';
+import { useDarkMode } from '@/hooks/useDarkMode';
 
 import {
   Sidebar,
@@ -54,6 +55,7 @@ function SidebarSimpleMenu({ item }: { item: NavItem }) {
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { isDark, toggle } = useDarkMode();
 
   return (
     <Sidebar collapsible="icon">
@@ -122,6 +124,17 @@ export function AppSidebar() {
             );
           })}
           <SidebarSeparator />
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={toggle}
+              tooltip={isDark ? 'Tema Claro' : 'Tema Escuro'}
+              data-testid="dark-mode-toggle"
+              className="cursor-pointer"
+            >
+              {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+              <span>{isDark ? 'Claro' : 'Escuro'}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Sair">
               <Link href="/logout">

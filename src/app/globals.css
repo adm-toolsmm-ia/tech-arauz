@@ -1,3 +1,5 @@
+@import '@/lib/theme/dark-mode.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -160,6 +162,10 @@
 @layer base {
   * {
     @apply border-border;
+  }
+
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   body {

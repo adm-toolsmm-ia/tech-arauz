@@ -15,7 +15,6 @@ import {
   PlayCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useSidebar } from '@/components/ui/sidebar';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { ViewToggle, type ViewMode } from '@/components/views/ViewToggle';
@@ -356,17 +355,10 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
     }
   };
 
-  const sidebarContext = useSidebar();
-
   const handleItemClick = (item: KanbanItem) => {
     const project = projects.find((p) => p.id === item.id);
     if (project) {
       setSelectedProject(project);
-      // Close sidebar on desktop if it's expanded (to show more content)
-      if (!sidebarContext.isMobile && sidebarContext.state === 'expanded') {
-        // Trigger sidebar collapse
-        sidebarContext.toggleSidebar?.();
-      }
     }
   };
 

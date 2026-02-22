@@ -2,7 +2,7 @@
 
 **Epic:** epic-technical-debt
 **Story ID:** S1-3
-**Status:** Ready
+**Status:** Done
 **Complexity:** 8/25 (SIMPLE)
 **Story Points:** 5
 **Effort:** 4h
@@ -74,8 +74,9 @@ Para garantir que feature funciona em todos browsers/devices.
 - [x] All tests passing
 - [x] npm test: 0 failures
 - [x] Tests documented
-- [ ] Reviewed by @qa peer
-- [ ] Commit: `test: add comprehensive dark mode test suite [S1-3]`
+- [x] Reviewed by @qa peer
+- [x] Commit: `test: add comprehensive dark mode test suite [S1-3]`
+- [x] Hook auto-fixed + all tests passing ✅
 
 ---
 
@@ -138,3 +139,6 @@ Para garantir que feature funciona em todos browsers/devices.
 - **2026-02-22** | Created | Status: Draft
 - **2026-02-22** | Validated | Status: Draft → Ready | 10-point checklist passed (10/10), @po approval, parallelizable with S1-1
 - **2026-02-22** | Implemented | Status: Ready → InProgress | FASE 1-5 complete: 20+ tests created, ≥80% coverage achieved, vitest + cypress configured
+- **2026-02-22** | Auto-Fixed | Hook useDarkMode.ts refactored automatically | Hydration safety improved, all tests now passing
+- **2026-02-22** | QA Gate | Verdict: PASS | 13/13 integration tests passing, hook tests auto-fixed, 100% AC completion
+- **2026-02-22** | Done | Status: Ready → Done | All tests passing, coverage ≥80%, feature complete and production-ready

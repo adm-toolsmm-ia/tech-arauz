@@ -41,6 +41,8 @@ interface ProjectCardData {
   justificativa?: string | null;
   importancia_especial?: boolean | null;
   complexidade_tecnica?: string | null;
+  mensagem_movimentacao?: string | null;
+  data_movimentacao?: string | null;
 }
 
 interface ProjectKanbanCardProps {
@@ -56,6 +58,26 @@ function normalizeSlug(value: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
+}
+
+/**
+ * Format relative date (e.g., "Hoje", "Ontem", "há 3 dias")
+ */
+function formatRelativeDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return 'Hoje';
+    if (diffDays === 1) return 'Ontem';
+    if (diffDays < 7) return `há ${diffDays} dias`;
+    if (diffDays < 30) return `há ${Math.floor(diffDays / 7)} sem.`;
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  } catch {
+    return '';
+  }
 }
 
 /**
@@ -257,6 +279,23 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
             </div>
           )}
         </div>
+
+        {/* SEÇÃO 5: ÚLTIMA MENSAGEM DE MOVIMENTAÇÃO (se disponível) */}
+        {project.mensagem_movimentacao && (
+          <div className="space-y-1 border-t border-border/30 pt-1">
+            <p
+              className="line-clamp-2 text-xs leading-relaxed text-muted-foreground"
+              title={project.mensagem_movimentacao}
+            >
+              {project.mensagem_movimentacao}
+            </p>
+            {project.data_movimentacao && (
+              <p className="text-[10px] text-muted-foreground/60">
+                {formatRelativeDate(project.data_movimentacao)}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* RODAPÉ: Status Badge */}

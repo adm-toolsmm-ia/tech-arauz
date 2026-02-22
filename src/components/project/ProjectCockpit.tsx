@@ -28,10 +28,6 @@ interface UIProject {
   project_name: string;
   status: string;
   original_status?: string | null;
-  /** Status do projeto (Iniciado, Em execução, etc.) - campo principal */
-  status_original?: string | null;
-  /** Situação do fluxo da solicitação (Em aprovação, Aguardando fornecedor, etc.) - complementar */
-  situacao_original?: string | null;
   // === Novos campos (Migration 009) ===
   /** Fase atual do projeto - usado para agrupar Kanban */
   fase_atual?: string | null;
@@ -295,10 +291,10 @@ export function ProjectCockpit({
               <InfoField
                 label="Status do Projeto"
                 value={
-                  statusLabels[project.status_original || ''] || project.status_original || '-'
+                  statusLabels[project.original_status || ''] || project.original_status || '-'
                 }
               />
-              <InfoField label="Situação Atual" value={project.situacao_original} />
+              <InfoField label="Situação Atual" value={project.current_situation} />
               <InfoField label="Complexidade Técnica" value={project.complexidade_tecnica} />
             </div>
           </section>
@@ -312,6 +308,8 @@ export function ProjectCockpit({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <InfoField label="Responsável" value={project.responsible} />
               <InfoField label="Solicitante" value={project.solicitante} />
+              <InfoField label="Aprovador Atual" value={project.aprovador_atual} />
+              <InfoField label="Prazo do Aprovador" value={formatDate(project.prazo_aprovador)} />
             </div>
           </section>
 

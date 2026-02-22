@@ -356,21 +356,16 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
     }
   };
 
-  const { isMobile, state: sidebarState } = useSidebar();
+  const sidebarContext = useSidebar();
 
   const handleItemClick = (item: KanbanItem) => {
     const project = projects.find((p) => p.id === item.id);
     if (project) {
       setSelectedProject(project);
       // Close sidebar on desktop if it's expanded (to show more content)
-      if (!isMobile && sidebarState === 'expanded') {
-        // Collapse sidebar after a brief delay to let state update
-        setTimeout(() => {
-          const toggleBtn = document.querySelector('[data-sidebar-trigger]');
-          if (toggleBtn instanceof HTMLElement) {
-            toggleBtn.click();
-          }
-        }, 50);
+      if (!sidebarContext.isMobile && sidebarContext.state === 'expanded') {
+        // Trigger sidebar collapse
+        sidebarContext.toggleSidebar?.();
       }
     }
   };

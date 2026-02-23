@@ -2,6 +2,9 @@
  * FilterBar Component
  * Main filter container integrating search, quick filters, advanced filters, and view toggle
  * Standardized UI/UX for all modules
+ * 
+ * CONTROLLED COMPONENT: All state is managed by parent component
+ * This is a presentational component that only handles UI interactions
  */
 
 'use client';
@@ -10,7 +13,6 @@ import * as React from 'react';
 import { Search, Settings, X, RotateCcw } from 'lucide-react';
 import { FilterBarProps, FilterDefinition, FilterState } from '@/lib/filters/filter-types';
 import { getActiveFilterInfo, countActiveFilters } from '@/lib/filters/filter-utils';
-import { useFilterState } from '@/hooks/useFilterState';
 import { FilterControl } from './FilterControl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +20,16 @@ import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+
+interface FilterBarExtendedProps extends FilterBarProps {
+  // Extended props for controlled component behavior
+  currentFilters?: FilterState;
+  currentSearch?: string;
+  currentViewMode?: string;
+  onClearFilters?: () => void;
+  onResetFilters?: () => void;
+  onUpdateFilter?: (filterId: string, value: any) => void;
+}
 
 export function FilterBar({
   moduleId,
@@ -29,42 +41,40 @@ export function FilterBar({
   initialSearch = '',
   initialViewMode,
   className,
-}: FilterBarProps) {
+  // New controlled props
+  currentFilters,
+  currentSearch,
+  currentViewMode,
+  onClearFilters,
+  onResetFilters,
+  onUpdateFilter,
+}: FilterBarExtendedProps) {
   const [isAdvancedOpen, setIsAdvancedOpen] = React.useState(false);
-  const [searchInput, setSearchInput] = React.useState(initialSearch);
+  const [searchInput, setSearchInput] = React.useState(currentSearch ?? initialSearch ?? '');
 
-  // Use state management hook
-  const filterState = useFilterState({
-    moduleId,
-    definitions: filterRegistry.filters,
-    onFiltersChange,
-    onSearchChange: (search) => {
-      onSearchChange?.(search);
-    },
-    onViewModeChange,
-  });
-
-  // Set initial values
+  // Update search input when currentSearch prop changes
   React.useEffect(() => {
-    if (initialFilters) {
-      filterState.setFilters(initialFilters);
+    if (currentSearch !== undefined) {
+      setSearchInput(currentSearch);
     }
-  }, [initialFilters, filterState]);
-
-  React.useEffect(() => {
-    if (initialViewMode) {
-      filterState.setViewMode(initialViewMode);
-    }
-  }, [initialViewMode, filterState]);
+  }, [currentSearch]);
 
   // Handle search input with debounce
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      filterState.setSearch(searchInput);
+      onSearchChange?.(searchInput);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchInput, filterState]);
+  }, [searchInput, onSearchChange]);
+
+  // Use current values or fallback to defaults
+  const activeFilters = React.useMemo(
+    () => currentFilters ?? initialFilters ?? {},
+    [currentFilters, initialFilters]
+  );
+  const activeSearch = currentSearch ?? searchInput;
+  const activeViewMode = currentViewMode ?? initialViewMode ?? 'kanban';
 
   // Separate quick and advanced filters
   const quickFilters = filterRegistry.filters.filter((f) => f.quickFilter);
@@ -72,23 +82,41 @@ export function FilterBar({
 
   // Get active filter info for display
   const activeFilterInfo = React.useMemo(
-    () => getActiveFilterInfo(filterState.filters, filterRegistry.filters),
-    [filterState.filters, filterRegistry.filters],
+    () => getActiveFilterInfo(activeFilters, filterRegistry.filters),
+    [activeFilters, filterRegistry.filters],
   );
+
+  // Calculate active filter count
+  const activeFilterCount = countActiveFilters(activeFilters, filterRegistry.filters);
+  const hasActiveFilters = activeFilterCount > 0 || activeSearch.trim().length > 0;
 
   // Handle Cmd+K for search focus
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        const searchInput = document.querySelector('[data-filter-search]') as HTMLInputElement;
-        searchInput?.focus();
+        const searchInputElement = document.querySelector('[data-filter-search]') as HTMLInputElement;
+        searchInputElement?.focus();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  const handleClearFilter = (filterId: string) => {
+    if (onUpdateFilter) {
+      onUpdateFilter(filterId, null);
+    }
+  };
+
+  const handleResetAll = () => {
+    if (onResetFilters) {
+      onResetFilters();
+    }
+    onSearchChange?.('');
+    setSearchInput('');
+  };
 
   return (
     <div className={cn('space-y-3 border-b border-border bg-background p-4', className)}>
@@ -105,7 +133,10 @@ export function FilterBar({
           />
           {searchInput && (
             <button
-              onClick={() => setSearchInput('')}
+              onClick={() => {
+                setSearchInput('');
+                onSearchChange?.('');
+              }}
               className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
             >
               <X className="h-4 w-4" />
@@ -120,7 +151,7 @@ export function FilterBar({
         {quickFilters.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {quickFilters.map((filterDef) => {
-              const value = filterState.filters[filterDef.id];
+              const value = activeFilters[filterDef.id];
               const isActive = Array.isArray(value)
                 ? value.length > 0
                 : value !== null && value !== undefined;
@@ -134,13 +165,7 @@ export function FilterBar({
                         size="sm"
                         onClick={() => {
                           if (isActive) {
-                            filterState.clearFilters([filterDef.id]);
-                          } else {
-                            // Show popover for this filter
-                            const control = document.querySelector(
-                              `[data-filter-control="${filterDef.id}"]`,
-                            ) as HTMLElement;
-                            control?.click();
+                            handleClearFilter(filterDef.id);
                           }
                         }}
                       >
@@ -165,13 +190,13 @@ export function FilterBar({
         <div className="flex-1" />
 
         {/* Active Filter Badge */}
-        {filterState.activeFilterCount > 0 && (
+        {activeFilterCount > 0 && (
           <Badge
             variant="secondary"
             className="cursor-pointer"
             onClick={() => setIsAdvancedOpen(true)}
           >
-            {filterState.activeFilterCount} filter{filterState.activeFilterCount !== 1 ? 's' : ''}
+            {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''}
           </Badge>
         )}
 
@@ -184,11 +209,11 @@ export function FilterBar({
         )}
 
         {/* Reset Filters */}
-        {filterState.hasActiveFilters && (
+        {hasActiveFilters && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="sm" onClick={filterState.resetAllFilters}>
+                <Button variant="ghost" size="sm" onClick={handleResetAll}>
                   <RotateCcw className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
@@ -203,9 +228,9 @@ export function FilterBar({
             {filterRegistry.viewModes.map((mode) => (
               <Button
                 key={mode.id}
-                variant={filterState.viewMode === mode.id ? 'default' : 'ghost'}
+                variant={activeViewMode === mode.id ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => filterState.setViewMode(mode.id)}
+                onClick={() => onViewModeChange?.(mode.id)}
                 title={mode.label}
               >
                 {mode.icon ? (
@@ -243,8 +268,8 @@ export function FilterBar({
                     <FilterControl
                       key={filterDef.id}
                       definition={filterDef}
-                      value={filterState.filters[filterDef.id]}
-                      onChange={(newValue) => filterState.updateFilter(filterDef.id, newValue)}
+                      value={activeFilters[filterDef.id]}
+                      onChange={(newValue) => onUpdateFilter?.(filterDef.id, newValue)}
                     />
                   ))}
                 </div>
@@ -253,7 +278,15 @@ export function FilterBar({
           </div>
 
           <SheetFooter className="flex justify-between gap-2">
-            <Button variant="outline" onClick={() => filterState.clearFilters()} className="flex-1">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                onClearFilters?.();
+                onSearchChange?.('');
+                setSearchInput('');
+              }} 
+              className="flex-1"
+            >
               Limpar Tudo
             </Button>
             <Button onClick={() => setIsAdvancedOpen(false)} className="flex-1">

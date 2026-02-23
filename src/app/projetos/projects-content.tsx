@@ -142,7 +142,18 @@ export function ProjectsContent({
 
   // New filter system with URL synchronization enabled
   const filterState = useProjetosFilters(projects, { urlSync: true });
-  const { filteredData: filteredProjects, viewMode, setViewMode } = filterState;
+  const {
+    filters,
+    search,
+    filteredData: filteredProjects,
+    viewMode,
+    setViewMode,
+    setFilters,
+    setSearch,
+    clearFilters,
+    resetAllFilters,
+    registry: filterRegistry,
+  } = filterState;
 
   // Keep projects in sync when server re-renders with new data
   React.useEffect(() => {
@@ -428,11 +439,19 @@ export function ProjectsContent({
           {/* New Standardized Filter Bar */}
           <FilterBar
             moduleId="projetos"
-            filters={filterState.registry}
-            onFiltersChange={filterState.setFilters}
-            onSearchChange={filterState.setSearch}
+            filters={filterRegistry}
+            onFiltersChange={setFilters}
+            onSearchChange={setSearch}
             onViewModeChange={setViewMode}
             initialViewMode={viewMode}
+            currentFilters={filters}
+            currentSearch={search}
+            currentViewMode={viewMode}
+            onUpdateFilter={(filterId: string, value: any) => {
+              setFilters({ ...filters, [filterId]: value });
+            }}
+            onClearFilters={() => clearFilters()}
+            onResetFilters={() => resetAllFilters()}
           />
         </div>
 

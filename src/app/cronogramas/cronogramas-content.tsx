@@ -288,9 +288,9 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               trend={
                 totalActivities > 0
                   ? {
-                      value: `${Math.round((completedCount / totalActivities) * 100)}%`,
-                      positive: true,
-                    }
+                    value: `${Math.round((completedCount / totalActivities) * 100)}%`,
+                    positive: true,
+                  }
                   : undefined
               }
             />
@@ -435,9 +435,9 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           <SplitView
             isOpen={!!selectedSchedule}
             onClose={() => setSelectedSchedule(null)}
-            title={selectedSchedule?.project?.titulo || 'Detalhes do Projeto'}
+            title={selectedSchedule?.project?.titulo || 'Visão 360'}
             subtitle={selectedSchedule?.project?.codigo || undefined}
-            width="2xl"
+            width="wide"
           >
             {selectedSchedule?.project && (
               <ProjectCockpit
@@ -565,15 +565,15 @@ function MonthView({
                       isToday && 'bg-accent font-bold',
                       isSelected && 'bg-primary/5 ring-2 ring-primary',
                       hasDelayed &&
-                        daySchedules.length > 0 &&
-                        'ring-1 ring-red-300 dark:ring-red-700',
+                      daySchedules.length > 0 &&
+                      'ring-1 ring-red-300 dark:ring-red-700',
                     )}
                   >
                     <span
                       className={cn(
                         'mt-0.5 text-xs leading-none',
                         isToday &&
-                          'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
+                        'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
                         !isToday && date.getMonth() !== month && 'text-muted-foreground/50',
                       )}
                     >

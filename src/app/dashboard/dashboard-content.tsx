@@ -499,9 +499,13 @@ export function DashboardContent({
         <SplitView
           isOpen={!!selectedProject}
           onClose={() => setSelectedProject(null)}
-          title={selectedProject.project_name}
-          subtitle={selectedProject.espaider_code}
-          width="2xl"
+          title={selectedProject.project_name || 'Visão 360'}
+          subtitle={
+            selectedProject
+              ? `${selectedProject.espaider_code}${selectedProject.pasta_consultivo ? ` • ${selectedProject.pasta_consultivo}` : ''}`
+              : undefined
+          }
+          width="wide"
         >
           <ProjectCockpit
             project={selectedProject}

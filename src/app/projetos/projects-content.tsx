@@ -140,8 +140,8 @@ export function ProjectsContent({
   const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
   const [isSyncing, setIsSyncing] = React.useState(false);
 
-  // New filter system
-  const filterState = useProjetosFilters(projects);
+  // New filter system with URL synchronization enabled
+  const filterState = useProjetosFilters(projects, { urlSync: true });
   const { filteredData: filteredProjects, viewMode, setViewMode } = filterState;
 
   // Keep projects in sync when server re-renders with new data

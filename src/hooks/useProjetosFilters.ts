@@ -12,6 +12,7 @@ import {
 } from '@/lib/filters/filters-projetos';
 import { applyFilters, buildFilterOptions } from '@/lib/filters/filter-utils';
 import { useModuleFilters } from '@/hooks/useFilterState';
+import { useFilterUrlSync } from '@/hooks/useFilterUrlSync';
 import { FilterState } from '@/lib/filters/filter-types';
 
 /**
@@ -83,8 +84,17 @@ function filterProjetosData(
 
 /**
  * Hook for managing Projetos filters with data
+ *
+ * @param projects Array of project data to filter
+ * @param options Configuration options
+ * @param options.urlSync Enable URL synchronization (default: false)
  */
-export function useProjetosFilters(projects: ProjetosData[]) {
+export function useProjetosFilters(
+  projects: ProjetosData[],
+  options?: { urlSync?: boolean }
+) {
+  const { urlSync = false } = options || {};
+
   // Create registry copy (to avoid mutation)
   const filterRegistry = useMemo(() => {
     const registry = JSON.parse(JSON.stringify(PROJETOS_FILTER_REGISTRY));
@@ -137,10 +147,18 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     filterProjetosData,
     {
       persistence: {
-        enabled: true,
+        enabled: !urlSync, // Disable localStorage if URL sync is enabled
         storageKey: 'projetos-filters',
       },
     },
+  );
+
+  // Enable URL synchronization if requested
+  useFilterUrlSync(
+    filterState.filters,
+    filterRegistry.filters,
+    filterState.setFilters,
+    { enabled: urlSync }
   );
 
   return {

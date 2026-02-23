@@ -141,6 +141,20 @@ export function DashboardContent({
     (p) => (p.status || '').trim().toLowerCase() === 'concluído',
   ).length;
 
+  const inHomologationCount = projects.filter((p) => {
+    if (!isConsideredActive(p.status)) return false;
+    const fase = (p.fase_atual || '').toLowerCase();
+    const aprovador = (p.aprovador_atual || '').toLowerCase();
+    return fase.includes('homolog') || aprovador.includes('homolog');
+  }).length;
+
+  const inProductionCount = projects.filter((p) => {
+    if (!isConsideredActive(p.status)) return false;
+    const fase = (p.fase_atual || '').toLowerCase();
+    const aprovador = (p.aprovador_atual || '').toLowerCase();
+    return fase.includes('prod') || aprovador.includes('prod');
+  }).length;
+
   const overdueProjectsInfo = React.useMemo(() => {
     let count = 0;
     let maxDays = 0;
@@ -208,7 +222,7 @@ export function DashboardContent({
     if (!activeFilter) return [];
     switch (activeFilter.type) {
       case 'all':
-        return projects;
+        return projects.filter((p) => isConsideredActive(p.status));
       case 'active':
         return projects.filter((p) => (p.status || '').trim().toLowerCase() === 'em execução');
       case 'completed':
@@ -282,7 +296,7 @@ export function DashboardContent({
                 title="Em Execução"
                 value={activeProjects}
                 icon={Clock}
-                subtitle={`${chartProjects.filter((p) => p.status === 'em_desenvolvimento').length} em desenvolvimento`}
+                subtitle={`${inHomologationCount} homologação • ${inProductionCount} produção`}
                 onClick={() => handleKPIClick({ type: 'active', label: 'Projetos Ativos' })}
                 active={activeFilter?.type === 'active'}
               />

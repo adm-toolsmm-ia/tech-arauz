@@ -115,6 +115,5 @@ export function buildWorkloadData(
             responsible,
             count,
         }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10); // Show top 10 responsible
+        .sort((a, b) => b.count - a.count);
 }

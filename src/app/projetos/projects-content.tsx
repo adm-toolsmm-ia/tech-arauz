@@ -522,7 +522,7 @@ export function ProjectsContent({
             onItemClick={handleItemClick}
             onStatusChange={handleStatusChange}
             renderItemContent={(item) => {
-              const project = filteredProjects.find((p) => p.id === item.id);
+              const project = filteredData.find((p) => p.id === item.id);
               if (!project) return null;
               return <ProjectKanbanCard project={project as Project} projectIds={projectIds} />;
             }}
@@ -530,9 +530,9 @@ export function ProjectsContent({
           />
         ) : (
           <ProjectListView
-            projects={filteredProjects}
+            projects={filteredData}
             onSelectProject={(projectId) => {
-              const project = filteredProjects.find((p) => p.id === projectId);
+              const project = filteredData.find((p) => p.id === projectId);
               if (project) setSelectedProject(project as Project);
             }}
           />

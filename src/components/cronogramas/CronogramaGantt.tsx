@@ -9,33 +9,10 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-export interface ScheduleProject {
-  id: string;
-  titulo: string | null;
-  codigo: string | null;
-  status: string | null;
-  fase_atual: string | null;
-}
+import { CronogramaData } from '@/hooks/useCronogramasFilters';
 
-export interface Schedule {
-  id: string;
-  project_id: string;
-  atividade: string | null;
-  responsavel: string | null;
-  data_inicio: string | null;
-  data_fim: string | null;
-  status: string | null;
-  fase_atividade: string | null;
-  atrasado: boolean | null;
-  setor_responsavel: string | null;
-  item: string | null;
-  detalhamento: string | null;
-  data_prazo: string | null;
-  data_novo_prazo: string | null;
-  data_alerta_prazo: string | null;
-  prazo_confirmado: boolean | null;
-  project: ScheduleProject | null;
-}
+/** Use CronogramaData as the single source of truth */
+export type Schedule = CronogramaData;
 
 interface CronogramaGanttProps {
   schedules: Schedule[];

@@ -35,37 +35,12 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { FilterBar } from '@/components/filters/FilterBar';
-import { useCronogramasFilters } from '@/hooks/useCronogramasFilters';
+import { useCronogramasFilters, CronogramaData } from '@/hooks/useCronogramasFilters';
 
 // ---------- Types ----------
 
-interface ScheduleProject {
-  id: string;
-  titulo: string | null;
-  codigo: string | null;
-  status: string | null;
-  fase_atual: string | null;
-}
-
-interface Schedule {
-  id: string;
-  project_id: string;
-  atividade: string | null;
-  responsavel: string | null;
-  data_inicio: string | null;
-  data_fim: string | null;
-  status: string | null;
-  fase_atividade: string | null;
-  atrasado: boolean | null;
-  setor_responsavel: string | null;
-  item: string | null;
-  detalhamento: string | null;
-  data_prazo: string | null;
-  data_novo_prazo: string | null;
-  data_alerta_prazo: string | null;
-  prazo_confirmado: boolean | null;
-  project: ScheduleProject | null;
-}
+/** Use CronogramaData as the single source of truth for schedule types */
+type Schedule = CronogramaData;
 
 interface CronogramasContentProps {
   schedules: Schedule[];
@@ -257,7 +232,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
     return schedules.filter(
       (s) =>
         s.project?.status?.toLowerCase() !== 'concluído' && s.status?.toLowerCase() !== 'concluído',
-    ) as unknown as Schedule[];
+    );
   }, [schedules]);
 
   // KPI calculations
@@ -301,7 +276,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
         if (start) return isSameDay(date, start);
         if (end) return isSameDay(date, end);
         return false;
-      }) as unknown as Schedule[];
+      });
     },
     [filteredSchedules],
   );
@@ -424,7 +399,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           {/* Calendar Section */}
           {viewMode === 'gantt' ? (
             <CronogramaGantt
-              schedules={filteredSchedules as Schedule[]}
+              schedules={filteredSchedules}
               projectIds={projectIds}
               onActivityClick={setSelectedSchedule}
             />

@@ -286,6 +286,19 @@ export function ProjectsContent({
     }).length;
   }, [projects]);
 
+  // KPI 6: Sem Movimentação
+  const withoutMovementCount = React.useMemo(() => {
+    const now = new Date();
+    return projects.filter((p) => {
+      if ((p.status || '').trim().toLowerCase() !== 'em execução') return false;
+      const lastMove = p.updated_at || p.data_movimentacao || p.last_update;
+      if (!lastMove) return true; // Sem data = estagnado
+      const diffTime = now.getTime() - new Date(lastMove).getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 7;
+    }).length;
+  }, [projects]);
+
   const handleKpiClick = (filterName: string) => {
     setActiveKpiFilter(prev => prev === filterName ? null : filterName);
   };
@@ -316,6 +329,14 @@ export function ProjectsContent({
           const diffTime = now.getTime() - new Date(lastMove).getTime();
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           return diffDays >= 0 && diffDays <= 7;
+        }
+        case 'sem_movimentacao': {
+          if ((p.status || '').trim().toLowerCase() !== 'em execução') return false;
+          const lastMove = p.updated_at || p.data_movimentacao || p.last_update;
+          if (!lastMove) return true;
+          const diffTime = now.getTime() - new Date(lastMove).getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          return diffDays > 7;
         }
         default:
           return true;
@@ -450,7 +471,7 @@ export function ProjectsContent({
 
       <div className="flex-1 space-y-6 p-6">
         {/* KPIs (Gerencial) */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
           <KPICard
             title="Em Execução"
             value={inExecutionProjects}
@@ -487,9 +508,17 @@ export function ProjectsContent({
             title="Projetos Recentes"
             value={recentProjectsCount}
             icon={CheckCircle2}
-            subtitle="Movimentados em 7 dias"
+            subtitle="Movimentados em ≤ 7 dias"
             active={activeKpiFilter === 'recentes'}
             onClick={() => handleKpiClick('recentes')}
+          />
+          <KPICard
+            title="S/ Movimentação"
+            value={withoutMovementCount}
+            icon={FolderOpen}
+            subtitle="Em exec > 7 dias s/ mover"
+            active={activeKpiFilter === 'sem_movimentacao'}
+            onClick={() => handleKpiClick('sem_movimentacao')}
           />
         </div>
 

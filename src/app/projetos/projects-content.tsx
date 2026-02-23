@@ -127,6 +127,39 @@ interface ProjectsContentProps {
   isLoading?: boolean;
 }
 
+function isConsideredActive(statusStr: string | null | undefined) {
+  const s = (statusStr || '').trim().toLowerCase();
+  return s !== 'cancelado' && s !== 'concluído';
+}
+
+function getOverdueData(project: Project, referenceDate = new Date()): { isOverdue: boolean; maxDays: number } {
+  const status = (project.status || '').trim().toLowerCase();
+  if (status === 'concluído' || status === 'cancelado') return { isOverdue: false, maxDays: 0 };
+
+  const datesToCheck = [project.end_date, project.prazo_cronograma, project.prazo_aprovador]
+    .filter(Boolean)
+    .map((d) => new Date(d as string));
+
+  if (datesToCheck.length === 0) return { isOverdue: false, maxDays: 0 };
+
+  const refMidnight = new Date(referenceDate);
+  refMidnight.setHours(0, 0, 0, 0);
+
+  let maxDays = 0;
+  let isOverdue = false;
+
+  datesToCheck.forEach((d) => {
+    if (d < refMidnight) {
+      isOverdue = true;
+      const diffTime = Math.abs(refMidnight.getTime() - d.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > maxDays) maxDays = diffDays;
+    }
+  });
+
+  return { isOverdue, maxDays };
+}
+
 export function ProjectsContent({
   projects: initialProjects,
   isLoading = false,
@@ -134,6 +167,7 @@ export function ProjectsContent({
   const [projects, setProjects] = React.useState<Project[]>(initialProjects);
   const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
   const [isSyncing, setIsSyncing] = React.useState(false);
+  const [activeKpiFilter, setActiveKpiFilter] = React.useState<string | null>(null);
 
   // Simple state for view mode (Kanban/Lista)
   const [viewMode, setViewMode] = React.useState<ViewMode>('kanban');
@@ -184,53 +218,109 @@ export function ProjectsContent({
     return projects.filter((p) => (p.status || '').trim().toLowerCase() === 'em execução').length;
   }, [projects]);
 
-  // KPI 2: Sem Movimentação (30+ dias)
-  const withoutMovementProjects = React.useMemo(() => {
-    return projects.filter((p) => {
-      const now = new Date();
-      const lastMove = p.data_movimentacao || p.last_update || p.updated_at;
-      if (!lastMove) return true; // Sem data = estagnado
+  const inHomologationCount = React.useMemo(() => projects.filter((p) => {
+    if (!isConsideredActive(p.status)) return false;
+    const fase = (p.fase_atual || '').toLowerCase();
+    const aprovador = (p.aprovador_atual || '').toLowerCase();
+    return fase.includes('homolog') || aprovador.includes('homolog');
+  }).length, [projects]);
 
-      const diasSemMovimento =
-        (now.getTime() - new Date(lastMove).getTime()) / (1000 * 60 * 60 * 24);
-      return diasSemMovimento > 30;
+  const inProductionCount = React.useMemo(() => projects.filter((p) => {
+    if (!isConsideredActive(p.status)) return false;
+    const fase = (p.fase_atual || '').toLowerCase();
+    const aprovador = (p.aprovador_atual || '').toLowerCase();
+    return fase.includes('prod') || aprovador.includes('prod');
+  }).length, [projects]);
+
+  // KPI 2: Atrasados
+  const overdueProjectsInfo = React.useMemo(() => {
+    let count = 0;
+    let maxDays = 0;
+    const now = new Date();
+    projects.forEach((p) => {
+      const { isOverdue, maxDays: pMaxDays } = getOverdueData(p, now);
+      if (isOverdue) {
+        count++;
+        if (pMaxDays > maxDays) maxDays = pMaxDays;
+      }
+    });
+    return { count, maxDays };
+  }, [projects]);
+
+  // KPI 3: Alta Prioridade
+  const highPriorityCount = React.useMemo(() => projects.filter((p) => {
+    if (!isConsideredActive(p.status)) return false;
+    const prio = (p.priority || '').toLowerCase();
+    const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
+    const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
+    return (
+      prio === 'urgente' || prio === 'alta' || p.importancia_especial || isEstrategicoAlto || isOperacionalAlto
+    );
+  }).length, [projects]);
+
+  // KPI 4: Importância Especial
+  const specialCount = React.useMemo(() => projects.filter((p) => p.importancia_especial && isConsideredActive(p.status)).length, [projects]);
+  const specialCompletedCount = React.useMemo(() => projects.filter((p) => p.importancia_especial && (p.status || '').trim().toLowerCase() === 'concluído').length, [projects]);
+
+  // KPI 5: Projetos Recentes
+  const recentProjectsCount = React.useMemo(() => {
+    const now = new Date();
+    return projects.filter((p) => {
+      const s = (p.status || '').trim().toLowerCase();
+      if (s !== 'iniciado' && s !== 'em execução' && s !== 'concluído') return false;
+
+      const lastMove = p.updated_at || p.data_movimentacao || p.last_update;
+      if (!lastMove) return false;
+
+      const diffTime = now.getTime() - new Date(lastMove).getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 7;
     }).length;
   }, [projects]);
 
-  // KPI 3: Importância Especial (não concluídos com importancia_especial)
-  const specialImportanceProjects = React.useMemo(() => {
-    return projects.filter((p) => {
-      const statusNorm = (p.status || '').trim().toLowerCase();
-      if (statusNorm === 'concluído' || statusNorm === 'cancelado') return false;
-      return p.importancia_especial === true;
-    }).length;
-  }, [projects]);
+  const handleKpiClick = (filterName: string) => {
+    setActiveKpiFilter(prev => prev === filterName ? null : filterName);
+  };
 
-  // KPI 4: Concluídos (últimos 30 dias)
-  const completedRecent = React.useMemo(() => {
-    return projects.filter((p) => {
-      if ((p.status || '').toLowerCase() !== 'concluído') return false;
-
-      const now = new Date();
-      const endDate = p.data_encerramento || p.updated_at;
-      if (!endDate) return false;
-
-      const diasAtrás = (now.getTime() - new Date(endDate).getTime()) / (1000 * 60 * 60 * 24);
-      return diasAtrás <= 30;
-    }).length;
-  }, [projects]);
-
-  // KPI 5: Impacto Estratégico Alto
-  const highImpactProjects = React.useMemo(() => {
-    return projects.filter((p) => (p.impacto_estrategico || '').toLowerCase() === 'alto').length;
-  }, [projects]);
+  const finalFilteredData = React.useMemo(() => {
+    if (!activeKpiFilter) return filteredData;
+    const now = new Date();
+    return filteredData.filter((p) => {
+      switch (activeKpiFilter) {
+        case 'em_execucao':
+          return (p.status || '').trim().toLowerCase() === 'em execução';
+        case 'atrasados':
+          return getOverdueData(p, now).isOverdue;
+        case 'alta_prioridade': {
+          if (!isConsideredActive(p.status)) return false;
+          const prio = (p.priority || '').toLowerCase();
+          const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
+          const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
+          return (prio === 'urgente' || prio === 'alta' || p.importancia_especial || isEstrategicoAlto || isOperacionalAlto);
+        }
+        case 'importancia_especial':
+          return p.importancia_especial && isConsideredActive(p.status);
+        case 'recentes': {
+          const s = (p.status || '').trim().toLowerCase();
+          if (s !== 'iniciado' && s !== 'em execução' && s !== 'concluído') return false;
+          const lastMove = p.updated_at || p.data_movimentacao || p.last_update;
+          if (!lastMove) return false;
+          const diffTime = now.getTime() - new Date(lastMove).getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          return diffDays >= 0 && diffDays <= 7;
+        }
+        default:
+          return true;
+      }
+    });
+  }, [filteredData, activeKpiFilter]);
 
   // Stable sorted list of project IDs for color assignment
   const projectIds = React.useMemo(() => projects.map((p) => p.id).sort(), [projects]);
 
   // Transform to Kanban items
   // IMPORTANTE: Usa fase_atual para agrupamento, não status!
-  const kanbanItems: KanbanItem[] = filteredData.map((p) => ({
+  const kanbanItems: KanbanItem[] = finalFilteredData.map((p) => ({
     id: p.id,
     title: p.project_name,
     subtitle: p.espaider_code,
@@ -357,36 +447,41 @@ export function ProjectsContent({
             title="Em Execução"
             value={inExecutionProjects}
             icon={PlayCircle}
-            subtitle={`${inExecutionProjects} projeto(s)`}
-            active={false}
+            subtitle={`${inHomologationCount} homologação • ${inProductionCount} produção`}
+            active={activeKpiFilter === 'em_execucao'}
+            onClick={() => handleKpiClick('em_execucao')}
           />
           <KPICard
-            title="Sem Movimentação"
-            value={withoutMovementProjects}
+            title="Atrasados"
+            value={overdueProjectsInfo.count}
             icon={Clock}
-            subtitle="30+ dias"
-            active={false}
+            subtitle={`Maior atraso: ${overdueProjectsInfo.maxDays} dias`}
+            active={activeKpiFilter === 'atrasados'}
+            onClick={() => handleKpiClick('atrasados')}
+          />
+          <KPICard
+            title="Alta Prioridade"
+            value={highPriorityCount}
+            icon={TrendingUp}
+            subtitle="Urgente + Alta + Estratégico"
+            active={activeKpiFilter === 'alta_prioridade'}
+            onClick={() => handleKpiClick('alta_prioridade')}
           />
           <KPICard
             title="Importância Especial"
-            value={specialImportanceProjects}
+            value={specialCount}
             icon={Star}
-            subtitle={`${specialImportanceProjects} projeto(s)`}
-            active={false}
+            subtitle={`${specialCompletedCount} já concluídos`}
+            active={activeKpiFilter === 'importancia_especial'}
+            onClick={() => handleKpiClick('importancia_especial')}
           />
           <KPICard
-            title="Concluídos (30d)"
-            value={completedRecent}
+            title="Projetos Recentes"
+            value={recentProjectsCount}
             icon={CheckCircle2}
-            subtitle="últimos 30 dias"
-            active={false}
-          />
-          <KPICard
-            title="Alto Impacto"
-            value={highImpactProjects}
-            icon={TrendingUp}
-            subtitle="portfólio crítico"
-            active={false}
+            subtitle="Movimentados em 7 dias"
+            active={activeKpiFilter === 'recentes'}
+            onClick={() => handleKpiClick('recentes')}
           />
         </div>
 
@@ -480,9 +575,9 @@ export function ProjectsContent({
           />
         ) : (
           <ProjectListView
-            projects={filteredData}
+            projects={finalFilteredData}
             onSelectProject={(projectId) => {
-              const project = filteredData.find((p) => p.id === projectId);
+              const project = finalFilteredData.find((p) => p.id === projectId);
               if (project) setSelectedProject(project as Project);
             }}
           />
@@ -814,13 +909,12 @@ function ProjectList({
                     <td className="px-3 py-3">
                       {project.priority ? (
                         <span
-                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${
-                            project.priority === 'urgente'
-                              ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                              : project.priority === 'alta'
-                                ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
-                                : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
-                          }`}
+                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${project.priority === 'urgente'
+                            ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                            : project.priority === 'alta'
+                              ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
+                              : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                            }`}
                         >
                           {project.priority}
                         </span>
@@ -1050,9 +1144,8 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status] || statusStyles.projeto_futuro
-      }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
+        }`}
     >
       {statusLabels[status] || status}
     </span>

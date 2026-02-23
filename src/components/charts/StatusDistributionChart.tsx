@@ -134,7 +134,7 @@ export function buildDistributionData(projects: Array<{ status: string; fase_atu
   ];
 
   return Object.entries(counts)
-    .sort((a, b) => b.count - a.count)
+    .sort((a, b) => b[1] - a[1])
     .map(([fase, count], index) => ({
       status: fase, // Keeping 'status' key for component compatibility
       label: fase,

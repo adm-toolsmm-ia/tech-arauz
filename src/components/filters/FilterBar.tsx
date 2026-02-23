@@ -138,6 +138,8 @@ export function FilterBar({
                 onSearchChange?.('');
               }}
               className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+              title="Limpar busca"
+              aria-label="Limpar busca"
             >
               <X className="h-4 w-4" />
             </button>

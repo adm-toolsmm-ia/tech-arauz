@@ -132,7 +132,15 @@ function isConsideredActive(statusStr: string | null | undefined) {
   return s !== 'cancelado' && s !== 'concluído';
 }
 
-function getOverdueData(project: Project, referenceDate = new Date()): { isOverdue: boolean; maxDays: number } {
+function getOverdueData(
+  project: {
+    status?: string | null;
+    end_date?: string | null;
+    prazo_cronograma?: string | null;
+    prazo_aprovador?: string | null;
+  },
+  referenceDate = new Date()
+): { isOverdue: boolean; maxDays: number } {
   const status = (project.status || '').trim().toLowerCase();
   if (status === 'concluído' || status === 'cancelado') return { isOverdue: false, maxDays: 0 };
 

@@ -26,12 +26,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { syncEspaiderAction } from '@/app/actions/sync';
 import { updateProjectStatusAction } from '@/app/actions/projects';
 import { ProjectCockpit } from '@/components/project';
 import { ProjectKanbanCard } from '@/components/project/ProjectKanbanCard';
-import { FilterBar } from '@/components/filters/FilterBar';
-import { useProjetosFilters } from '@/hooks/useProjetosFilters';
 import {
   phaseLabels,
   phaseColors,
@@ -140,22 +139,11 @@ export function ProjectsContent({
   const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
   const [isSyncing, setIsSyncing] = React.useState(false);
 
-  // New filter system with URL synchronization enabled
-  const filterState = useProjetosFilters(projects, { urlSync: true });
-  const {
-    filters,
-    search,
-    filteredData: filteredProjects,
-    viewMode,
-    setViewMode,
-    setFilters,
-    setSearch,
-    clearFilters,
-    resetAllFilters,
-    registry: filterRegistry,
-  } = filterState;
+  // Simple state for view mode (Kanban/Lista)
+  const [viewMode, setViewMode] = React.useState<ViewMode>('kanban');
 
-  // Keep projects in sync when server re-renders with new data
+  // Use all projects (no filtering for now - filters will be re-implemented later)
+  const filteredProjects = projects;
   React.useEffect(() => {
     setProjects(initialProjects);
   }, [initialProjects]);
@@ -358,15 +346,7 @@ export function ProjectsContent({
             value={inExecutionProjects}
             icon={PlayCircle}
             subtitle={`${inExecutionProjects} projeto(s)`}
-            active={filterState.filters.status?.some(
-              (s: any) => (s || '').trim().toLowerCase() === 'em execução',
-            )}
-            onClick={() => {
-              const isActive = filterState.filters.status?.some(
-                (s: any) => (s || '').trim().toLowerCase() === 'em execução',
-              );
-              filterState.updateFilter('status', isActive ? [] : ['em execução']);
-            }}
+            active={false}
           />
           <KPICard
             title="Sem Movimentação"
@@ -380,11 +360,7 @@ export function ProjectsContent({
             value={specialImportanceProjects}
             icon={Star}
             subtitle={`${specialImportanceProjects} projeto(s)`}
-            active={filterState.filters.importancia_especial === true}
-            onClick={() => {
-              const isActive = filterState.filters.importancia_especial === true;
-              filterState.updateFilter('importancia_especial', isActive ? null : true);
-            }}
+            active={false}
           />
           <KPICard
             title="Concluídos (30d)"
@@ -409,9 +385,8 @@ export function ProjectsContent({
               <div className="relative max-w-sm flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar projetos..."
-                  value={filterState.search}
-                  onChange={(e) => filterState.setSearch(e.target.value)}
+                  placeholder="Buscar projetos... (Desabilitado - filtros serão reimplementados)"
+                  disabled={true}
                   className="border-muted-foreground/20 bg-background/50 pl-9 transition-colors focus:border-primary/50"
                 />
               </div>
@@ -436,23 +411,39 @@ export function ProjectsContent({
             </div>
           </div>
 
-          {/* New Standardized Filter Bar */}
-          <FilterBar
-            moduleId="projetos"
-            filters={filterRegistry}
-            onFiltersChange={setFilters}
-            onSearchChange={setSearch}
-            onViewModeChange={setViewMode}
-            initialViewMode={viewMode}
-            currentFilters={filters}
-            currentSearch={search}
-            currentViewMode={viewMode}
-            onUpdateFilter={(filterId: string, value: any) => {
-              setFilters({ ...filters, [filterId]: value });
-            }}
-            onClearFilters={() => clearFilters()}
-            onResetFilters={() => resetAllFilters()}
-          />
+          {/* View Mode Toggle - SIMPLE VERSION (No Filters) */}
+          <div className="flex items-center gap-2 border-b border-border bg-background p-4">
+            <div className="flex-1" />
+            {/* View Mode Toggle */}
+            <div className="flex gap-1 border-l border-border pl-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('kanban')}
+                    title="Kanban View"
+                  >
+                    <FolderOpen className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Kanban View</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    title="List View"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>List View</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
         </div>
 
         {/* Content */}

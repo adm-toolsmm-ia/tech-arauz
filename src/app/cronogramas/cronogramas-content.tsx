@@ -242,12 +242,12 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
   // Filtered schedules (managed by filterState)
   // Note: filterState.filteredData applies all filters (search + structured filters)
-  const filteredSchedules = React.useMemo(() => {
+  const filteredSchedules: Schedule[] = React.useMemo(() => {
     // Apply additional filtering (hide completed schedules)
-    return filterState.filteredData.filter(s =>
+    return (filterState.filteredData.filter(s =>
       s.project?.status?.toLowerCase() !== 'concluído' &&
       s.status?.toLowerCase() !== 'concluído'
-    );
+    ) as unknown) as Schedule[];
   }, [filterState.filteredData]);
 
   // KPI calculations

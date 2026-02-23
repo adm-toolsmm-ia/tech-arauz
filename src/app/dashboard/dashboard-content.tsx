@@ -67,6 +67,7 @@ type FilterType =
   | 'high_priority'
   | 'special'
   | 'by_status'
+  | 'by_phase'
   | 'by_area';
 
 interface ActiveFilter {
@@ -243,6 +244,8 @@ export function DashboardContent({
         return projects.filter((p) => p.importancia_especial && isConsideredActive(p.status));
       case 'by_status':
         return projects.filter((p) => p.status === activeFilter.value);
+      case 'by_phase':
+        return projects.filter((p) => isConsideredActive(p.status) && (p.fase_atual || 'Sem fase') === activeFilter.value);
       case 'by_area':
         return projects.filter((p) => p.area === activeFilter.value);
       default:
@@ -264,6 +267,10 @@ export function DashboardContent({
   const handleChartStatusClick = (status: string) => {
     const label = statusLabels[status] || status;
     handleKPIClick({ type: 'by_status', label: `Status: ${label}`, value: status });
+  };
+
+  const handleChartPhaseClick = (fase: string) => {
+    handleKPIClick({ type: 'by_phase', label: `Fase: ${fase}`, value: fase });
   };
 
   const handleProjectClick = (project: UIProject) => {
@@ -397,8 +404,8 @@ export function DashboardContent({
             />
             <StatusDistributionChart
               data={distributionData}
-              onSegmentClick={handleChartStatusClick}
-              activeStatus={activeFilter?.type === 'by_status' ? activeFilter.value : null}
+              onSegmentClick={handleChartPhaseClick}
+              activeStatus={activeFilter?.type === 'by_phase' ? activeFilter.value : null}
             />
             <ResponsibleWorkloadChart data={trendData} />
           </div>

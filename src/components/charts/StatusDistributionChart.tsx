@@ -13,7 +13,7 @@ interface DistributionData {
 
 interface StatusDistributionChartProps {
   data: DistributionData[];
-  onSegmentClick?: (status: string) => void;
+  onSegmentClick?: (fase: string) => void;
   activeStatus?: string | null;
 }
 
@@ -68,7 +68,7 @@ export function StatusDistributionChart({
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">Distribuição por Status</CardTitle>
+        <CardTitle className="text-base font-medium">Distribuição por Fase</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[280px]">
@@ -110,37 +110,36 @@ export function StatusDistributionChart({
 }
 
 // Helper to build distribution data
-export function buildDistributionData(projects: Array<{ status: string }>): DistributionData[] {
+export function buildDistributionData(projects: Array<{ status: string; fase_atual?: string | null }>): DistributionData[] {
   const counts: Record<string, number> = {};
+  let totalActive = 0;
+
   projects.forEach((p) => {
-    const status = p.status || 'Sem status';
-    counts[status] = (counts[status] || 0) + 1;
+    const status = (p.status || '').trim().toLowerCase();
+    // Considerar somente projetos com status de ativo
+    if (status !== 'cancelado' && status !== 'concluído') {
+      const fase = p.fase_atual || 'Sem fase';
+      counts[fase] = (counts[fase] || 0) + 1;
+      totalActive++;
+    }
   });
 
-  const total = projects.length || 1;
+  const total = totalActive || 1;
 
-  // Helper to find color
-  const getColor = (status: string) => {
-    // Try exact match
-    if (statusColors[status]) return statusColors[status];
-    // Try slug match
-    const slug = status
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '');
-    if (statusColors[slug]) return statusColors[slug];
-    return '#6b7280'; // Fallback gray
-  };
+  // Since phases are dynamic, we use a predefined palette
+  const defaultColors = [
+    '#3b82f6', '#f59e0b', '#a855f7', '#06b6d4',
+    '#22c55e', '#ef4444', '#6b7280', '#eab308',
+    '#ec4899', '#14b8a6', '#8b5cf6', '#f97316'
+  ];
 
   return Object.entries(counts)
-    .map(([status, count]) => ({
-      status,
-      label: status,
+    .sort((a, b) => b.count - a.count)
+    .map(([fase, count], index) => ({
+      status: fase, // Keeping 'status' key for component compatibility
+      label: fase,
       count,
-      color: getColor(status),
+      color: defaultColors[index % defaultColors.length],
       percentage: (count / total) * 100,
-    }))
-    .sort((a, b) => b.count - a.count);
+    }));
 }

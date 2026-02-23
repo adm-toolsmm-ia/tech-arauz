@@ -148,9 +148,18 @@ Adaptação da paleta Turquoise do protótipo para identidade Azul Corporativa:
 - MainLayout
 
 ### Fase 3: Componentes de Dashboard
-- KPICard
-- QuickActions
-- FilterBar
+
+- **KPICard** - Cards de métricas
+- **FilterBar** - Barra de filtros unificada (controlled component)
+  - **Arquitetura**: Componente presentation que delegahooks hooks de estado ao módulo parent
+  - **Quick Filters**: Popover com aplicação direta (Opção A - implementada em 1.2)
+  - **Advanced Filters**: Sheet lateral com formulário completo
+  - **View Mode**: Toggle entre Kanban/Lista
+  - **Search**: Barra de busca integrada
+  - **Persistência**: Via `useFilterState` com localStorage (chave: `filters-{moduleId}`)
+  - **URL Sync**: Via `useFilterUrlSync` para compartilhamento (futuro)
+  - **Design**: shadcn/ui (Select, Popover, Sheet, Input, Badge, Switch)
+- **QuickActions** - FAB de ações rápidas
 
 ### Fase 4: Componentes de Visualização
 - SplitView
@@ -160,6 +169,44 @@ Adaptação da paleta Turquoise do protótipo para identidade Azul Corporativa:
 ### Fase 5: Página de Projetos
 - Integração de todos os componentes
 - Visão 360° de projetos
+
+---
+
+## Estratégia de Persistência de Filtros (v1.0)
+
+### localStorage vs URL Query Parameters
+
+#### localStorage (Padrão em v1.0)
+- **Uso**: Persistência de preferências do usuário por sessão
+- **Chave**: `filters-{moduleId}` (ex: `filters-projetos`)
+- **Escopo**: Por módulo e por navegador
+- **Vida útil**: Session atual + próximas sessões
+- **Vantagem**: Sem poluição de URL, estado implícito
+- **Limitação**: Não compartilhável entre abas/usuários
+
+**Implementação**:
+```typescript
+persistence: { 
+  enabled: true, 
+  storageKey: 'filters-projetos' 
+}
+```
+
+#### URL Query Parameters (v1.1+)
+- **Uso**: Sincronização entre abas, compartilhamento de filtros
+- **Exemplo**: `?status=active&priority=high&view=kanban`
+- **Hook**: `useFilterUrlSync` (em desenvolvimento)
+- **Vantagem**: Compartilhável, bookmark-able, histórico
+- **Limitação**: URL fica poluída com muitos filtros
+
+**Implementação Futura**:
+```typescript
+// Quando URL Sync for implementada
+const { filters } = useFilterUrlSync({
+  definitions,
+  debounceMs: 500,
+});
+```
 
 ---
 

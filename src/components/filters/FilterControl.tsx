@@ -12,6 +12,8 @@ import { FilterControlProps, FilterDefinition, FilterOption } from '@/lib/filter
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -327,18 +329,16 @@ function CheckboxControl({
   className?: string;
 }) {
   return (
-    <div className={cn('flex items-center gap-3', className)}>
-      <input
-        type="checkbox"
+    <div className={cn('flex items-center justify-between gap-3', className)}>
+      <Label htmlFor={definition.id} className="cursor-pointer text-sm font-medium">
+        {definition.label}
+      </Label>
+      <Switch
         id={definition.id}
         checked={value}
-        onChange={(e) => onChange(e.target.checked)}
+        onCheckedChange={onChange}
         disabled={disabled}
-        className="h-4 w-4 rounded border-gray-300"
       />
-      <label htmlFor={definition.id} className="cursor-pointer text-sm font-medium">
-        {definition.label}
-      </label>
     </div>
   );
 }
@@ -361,23 +361,25 @@ function DateRangeControl({
       <label className="text-sm font-medium">{definition.label}</label>
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Calendar className="absolute left-2 top-2.5 h-4 w-4 opacity-50" />
+          <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
           <input
             type="date"
             value={value.start || ''}
             onChange={(e) => onChange({ ...value, start: e.target.value })}
             disabled={disabled}
-            className="w-full rounded-md border py-2 pl-8 pr-3 text-sm"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Start date"
           />
         </div>
         <div className="relative flex-1">
-          <Calendar className="absolute left-2 top-2.5 h-4 w-4 opacity-50" />
+          <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
           <input
             type="date"
             value={value.end || ''}
             onChange={(e) => onChange({ ...value, end: e.target.value })}
             disabled={disabled}
-            className="w-full rounded-md border py-2 pl-8 pr-3 text-sm"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="End date"
           />
         </div>
       </div>

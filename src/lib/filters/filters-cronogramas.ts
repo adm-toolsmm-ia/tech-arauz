@@ -1,188 +1,119 @@
 /**
- * Cronogramas Module Filter Definitions
- * Defines all available filters for the Cronogramas (Schedules) module
+ * Filter Definitions - Cronogramas Module
+ * Configuração centralizada de filtros para o módulo de Cronogramas
+ *
+ * Fase 2: Refatoração - Seguindo contexto consolidado em 07-filter-data-context.md
  */
 
-import { FilterRegistry, ViewMode } from '@/lib/filters/filter-types';
-import { Calendar, CheckCircle2, AlertTriangle, User, FolderKanban, Clock } from 'lucide-react';
+import { Building2, CheckCircle2, Users, Calendar, List } from 'lucide-react';
+import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
- * View modes for Cronogramas
+ * Filter Definitions para Cronogramas
+ * Quick Filters (4): project_id, status, responsavel, data_fim
+ * Advanced Filters (6): + data_inicio, created_at
+ * Search Fields: atividade, responsavel
  */
-export const CRONOGRAMAS_VIEW_MODES: ViewMode[] = [
+export const filterDefinitionsCronogramas: FilterDefinition[] = [
+  // QUICK FILTERS
   {
-    id: 'day',
-    label: 'Dia',
-    icon: Calendar,
-    default: true,
+    id: 'project_id',
+    label: 'Projeto',
+    type: 'select',
+    options: [], // Dinâmico - populado via useCronogramasFilters
+    quickFilter: true,
+    icon: Building2,
+    description: 'Filtrar cronogramas por projeto',
+    searchable: true,
   },
+
   {
-    id: 'week',
-    label: 'Semana',
-    icon: Clock,
-  },
-  {
-    id: 'month',
-    label: 'Mês',
-    icon: Calendar,
-  },
-  {
-    id: 'gantt',
-    label: 'Gantt',
+    id: 'status',
+    label: 'Status',
+    type: 'multi-select',
+    options: [
+      { label: 'Pendente', value: 'Pendente' },
+      { label: 'Em Progresso', value: 'Em Progresso' },
+      { label: 'Concluída', value: 'Concluída' },
+      { label: 'Atrasada', value: 'Atrasada' },
+      { label: 'Cancelada', value: 'Cancelada' },
+    ],
+    quickFilter: true,
     icon: CheckCircle2,
+    description: 'Filtrar cronogramas por status',
+    multi: true,
+    sortOptions: true,
+  },
+
+  {
+    id: 'responsavel',
+    label: 'Responsável',
+    type: 'multi-select',
+    options: [], // Dinâmico
+    quickFilter: true,
+    icon: Users,
+    description: 'Filtrar cronogramas por responsável',
+    multi: true,
+    searchable: true,
+  },
+
+  {
+    id: 'data_fim',
+    label: 'Prazo',
+    type: 'date-range',
+    quickFilter: true,
+    icon: Calendar,
+    description: 'Filtrar por intervalo de prazo',
+    group: 'dates',
+  },
+
+  // ADVANCED FILTERS
+  {
+    id: 'data_inicio',
+    label: 'Data de Início',
+    type: 'date-range',
+    description: 'Filtrar por data de início',
+    group: 'dates',
+  },
+
+  {
+    id: 'created_at',
+    label: 'Data de Criação',
+    type: 'date-range',
+    description: 'Filtrar por período de criação',
+    group: 'dates',
   },
 ];
 
 /**
- * Cronogramas filter registry with all available filters
+ * Filter Registry para o módulo Cronogramas
  */
-export const CRONOGRAMAS_FILTER_REGISTRY: FilterRegistry = {
+export const filterRegistryCronogramas: FilterRegistry = {
   moduleId: 'cronogramas',
-  searchable: true,
-  viewModes: CRONOGRAMAS_VIEW_MODES,
-  filters: [
-    // ===== QUICK FILTERS (Top Bar) =====
+  filters: filterDefinitionsCronogramas,
+  viewModes: [
     {
-      id: 'status',
-      label: 'Status',
-      type: 'multi-select',
-      group: 'Status',
-      quickFilter: true,
-      quickFilterLimit: 4,
-      icon: CheckCircle2,
-      description: 'Filter by activity status',
-      options: [
-        { value: 'Planejado', label: 'Planejado', badge: 'Plan' },
-        { value: 'Em progresso', label: 'Em progresso', badge: 'Active' },
-        { value: 'Concluído', label: 'Concluído', badge: 'Done' },
-        { value: 'Atrasado', label: 'Atrasado', badge: 'Late' },
-      ],
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'period',
-      label: 'Período',
-      type: 'multi-select',
-      group: 'Datas',
-      quickFilter: true,
-      quickFilterLimit: 3,
-      icon: Calendar,
-      description: 'Quick date period selection',
-      options: [
-        { value: 'this_week', label: 'Esta Semana' },
-        { value: 'this_month', label: 'Este Mês' },
-        { value: 'next_30_days', label: 'Próximos 30 Dias' },
-        { value: 'overdue', label: 'Atrasado' },
-      ],
-      defaultValue: [],
-      searchable: false,
-      clearable: true,
-    },
-
-    {
-      id: 'responsavel',
-      label: 'Responsável',
-      type: 'multi-select',
-      group: 'Pessoas',
-      quickFilter: true,
-      quickFilterLimit: 5,
-      icon: User,
-      description: 'Filter by responsible person',
-      options: () => [], // Will be populated dynamically from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-    },
-
-    // ===== ADVANCED FILTERS (Sheet) =====
-    {
-      id: 'date_range',
-      label: 'Intervalo de Datas',
-      type: 'date-range',
-      group: 'Datas',
-      quickFilter: false,
-      placeholder: 'Select date range',
-      defaultValue: { start: '', end: '' },
-      clearable: true,
-    },
-
-    {
-      id: 'atividade',
-      label: 'Atividade',
-      type: 'multi-select',
-      group: 'Execução',
-      quickFilter: false,
-      options: () => [], // Dynamic from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'setor_responsavel',
-      label: 'Setor Responsável',
-      type: 'multi-select',
-      group: 'Organização',
-      quickFilter: false,
-      options: () => [], // Dynamic from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'project_id',
-      label: 'Projeto',
-      type: 'multi-select',
-      group: 'Relacionamento',
-      quickFilter: false,
-      options: () => [], // Dynamic from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'fase_atividade',
-      label: 'Fase da Atividade',
-      type: 'multi-select',
-      group: 'Execução',
-      quickFilter: false,
-      options: () => [], // Dynamic from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'atrasado',
-      label: 'Apenas Atrasados',
-      type: 'checkbox',
-      group: 'Status',
-      quickFilter: false,
-      defaultValue: false,
+      id: 'list',
+      label: 'Lista',
+      icon: List,
     },
   ],
 };
 
 /**
- * Helper function to update dynamic filter options
+ * Campos de busca (search)
  */
-export function updateCronogramasFilterOptions(
-  registry: FilterRegistry,
-  fieldName: string,
-  options: Array<{ value: any; label: string }>,
-) {
-  const filterIndex = registry.filters.findIndex((f) => f.id === fieldName);
-  if (filterIndex !== -1 && registry.filters[filterIndex].options) {
-    registry.filters[filterIndex].options = options;
-  }
-}
+export const searchFieldsCronogramas = ['atividade', 'responsavel'];
+
+/**
+ * Valores estáticos de Status
+ */
+export const scheduleStatusValues = [
+  'Pendente',
+  'Em Progresso',
+  'Concluída',
+  'Atrasada',
+  'Cancelada',
+] as const;
+
+export type ScheduleStatus = (typeof scheduleStatusValues)[number];

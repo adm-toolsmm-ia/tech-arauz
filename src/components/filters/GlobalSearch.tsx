@@ -1,6 +1,10 @@
 /**
  * GlobalSearch Component
  * Global search bar with real-time results and keyboard shortcuts
+ *
+ * @deprecated This component is part of the legacy filter architecture.
+ * Use FilterBar from '@/components/filters/FilterBar' instead for new implementations.
+ * GlobalSearch will be removed in a future version. Do NOT use in new code.
  */
 
 'use client';

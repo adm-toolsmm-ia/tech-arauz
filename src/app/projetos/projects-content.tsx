@@ -39,6 +39,8 @@ import {
   resolvePhaseLabel,
 } from '@/lib/constants/phase-labels';
 import { SkeletonKanbanCard, SkeletonTableRow } from '@/components/ui/skeletons';
+import { FilterBar } from '@/components/filters/FilterBar';
+import { useProjetosFilters } from '@/hooks/useProjetosFilters';
 
 interface Project {
   id: string;
@@ -142,8 +144,24 @@ export function ProjectsContent({
   // Simple state for view mode (Kanban/Lista)
   const [viewMode, setViewMode] = React.useState<ViewMode>('kanban');
 
-  // Use all projects (no filtering for now - filters will be re-implemented later)
-  const filteredProjects = projects;
+  // ✨ NEW: Hook para gerenciar filtros com dados filtrados
+  const {
+    filters,
+    search,
+    viewMode: filterViewMode,
+    filteredData,
+    updateFilter,
+    setSearch,
+    setViewMode: setFilterViewMode,
+    registry,
+  } = useProjetosFilters(projects);
+
+  // Usar filter view mode se disponível, caso contrário usar old viewMode
+  const activeViewMode = filterViewMode || viewMode;
+  const handleViewModeChange = (mode: string) => {
+    setFilterViewMode(mode);
+    setViewMode(mode as ViewMode);
+  };
   React.useEffect(() => {
     setProjects(initialProjects);
   }, [initialProjects]);
@@ -218,7 +236,7 @@ export function ProjectsContent({
 
   // Transform to Kanban items
   // IMPORTANTE: Usa fase_atual para agrupamento, não status!
-  const kanbanItems: KanbanItem[] = filteredProjects.map((p) => ({
+  const kanbanItems: KanbanItem[] = filteredData.map((p) => ({
     id: p.id,
     title: p.project_name,
     subtitle: p.espaider_code,
@@ -337,6 +355,20 @@ export function ProjectsContent({
         title="Gestão de Projetos"
         subtitle="Visualize e gerencie todos os projetos do Espaider"
       />
+
+      {/* ✨ NEW: FilterBar com quick filters e busca */}
+      <div className="px-6 pt-6">
+        <FilterBar
+          moduleId="projetos"
+          filters={registry}
+          currentFilters={filters}
+          currentSearch={search}
+          currentViewMode={activeViewMode}
+          onUpdateFilter={updateFilter}
+          onSearchChange={setSearch}
+          onViewModeChange={handleViewModeChange}
+        />
+      </div>
 
       <div className="flex-1 space-y-6 p-6">
         {/* KPIs (Gerencial) */}

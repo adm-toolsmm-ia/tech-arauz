@@ -255,7 +255,7 @@ export function restoreFilters(key: string, definitions: FilterDefinition[]): Fi
     const validated: FilterState = {};
 
     definitions.forEach((def) => {
-      if (key in filters) {
+      if (def.id in filters) {
         validated[def.id] = filters[def.id];
       } else {
         validated[def.id] = def.defaultValue ?? (def.multi ? [] : null);

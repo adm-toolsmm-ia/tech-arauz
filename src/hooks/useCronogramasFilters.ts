@@ -1,21 +1,27 @@
 /**
  * useCronogramasFilters Hook
  * Module-specific filter management for Cronogramas
+ *
+ * Modernizado para usar:
+ * - filterDefinitionsCronogramas (Fase 2)
+ * - useFilterState (state management com persistência)
+ * - applyFilters (lógica de filtro centralizada)
  */
 
 'use client';
 
 import { useMemo } from 'react';
 import {
-  CRONOGRAMAS_FILTER_REGISTRY,
-  updateCronogramasFilterOptions,
+  filterDefinitionsCronogramas,
+  filterRegistryCronogramas,
+  searchFieldsCronogramas,
 } from '@/lib/filters/filters-cronogramas';
 import { applyFilters, buildFilterOptions } from '@/lib/filters/filter-utils';
-import { useModuleFilters } from '@/hooks/useFilterState';
+import { useFilterState } from '@/hooks/useFilterState';
 import { FilterState } from '@/lib/filters/filter-types';
 
 /**
- * Schedule data interface (from cronogramas-content.tsx)
+ * Schedule data interface
  */
 export interface CronogramaData {
   id: string;
@@ -34,6 +40,8 @@ export interface CronogramaData {
   data_novo_prazo: string | null;
   data_alerta_prazo: string | null;
   prazo_confirmado: boolean | null;
+  created_at?: string | null;
+  updated_at?: string | null;
   project?: {
     id: string;
     titulo: string | null;
@@ -44,140 +52,107 @@ export interface CronogramaData {
 }
 
 /**
- * Apply Cronogramas-specific filters to data
- */
-function filterCronogramasData(
-  schedules: CronogramaData[],
-  filters: FilterState,
-  search: string,
-): CronogramaData[] {
-  // Handle period quick filters (convert to date range)
-  let dateFilters = filters;
-  if (filters.period && Array.isArray(filters.period)) {
-    const today = new Date();
-    let startDate: Date | null = null;
-    let endDate: Date | null = null;
-
-    filters.period.forEach((period: string) => {
-      const periodStart = new Date(today);
-      const periodEnd = new Date(today);
-
-      switch (period) {
-        case 'this_week':
-          periodStart.setDate(today.getDate() - today.getDay());
-          periodEnd.setDate(today.getDate() - today.getDay() + 6);
-          break;
-        case 'this_month':
-          periodStart.setDate(1);
-          periodEnd.setMonth(periodEnd.getMonth() + 1);
-          periodEnd.setDate(0);
-          break;
-        case 'next_30_days':
-          periodEnd.setDate(today.getDate() + 30);
-          break;
-        case 'overdue':
-          periodEnd.setTime(today.getTime());
-          periodStart.setFullYear(2000); // Far past
-          break;
-      }
-
-      if (!startDate || periodStart < startDate) startDate = periodStart;
-      if (!endDate || periodEnd > endDate) endDate = periodEnd;
-    });
-
-    if (startDate && endDate) {
-      dateFilters = {
-        ...filters,
-        date_range: {
-          start: (startDate as Date).toISOString().split('T')[0],
-          end: (endDate as Date).toISOString().split('T')[0],
-        },
-      };
-    }
-  }
-
-  return applyFilters(schedules, dateFilters, {
-    search,
-    searchFields: ['atividade', 'item', 'detalhamento', 'responsavel', 'project.titulo'],
-    matchMode: 'partial',
-    caseSensitive: false,
-  });
-}
-
-/**
  * Hook for managing Cronogramas filters with data
  */
 export function useCronogramasFilters(schedules: CronogramaData[]) {
-  // Create registry copy (to avoid mutation)
-  const filterRegistry = useMemo(() => {
-    const registry = JSON.parse(JSON.stringify(CRONOGRAMAS_FILTER_REGISTRY));
+  // Update filter definitions with dynamic options from actual data
+  const definitions = useMemo(() => {
+    return filterDefinitionsCronogramas.map((def) => {
+      // Update project_id options from data
+      if (def.id === 'project_id') {
+        const projectOptions = Array.from(
+          new Map(
+            schedules.map((s) => [
+              s.project_id,
+              {
+                value: s.project_id,
+                label: s.project?.titulo || s.project_id,
+              },
+            ])
+          ).values()
+        );
+        return {
+          ...def,
+          options: projectOptions,
+        };
+      }
 
-    // Build dynamic filter options from actual data
-    updateCronogramasFilterOptions(
-      registry,
-      'responsavel',
-      buildFilterOptions(schedules, 'responsavel', (v) => v || 'Sem Responsável'),
-    );
+      // Update responsavel options from data
+      if (def.id === 'responsavel') {
+        return {
+          ...def,
+          options: buildFilterOptions(
+            schedules,
+            'responsavel',
+            (v) => v || 'Sem Responsável'
+          ),
+        };
+      }
 
-    updateCronogramasFilterOptions(
-      registry,
-      'atividade',
-      buildFilterOptions(schedules, 'atividade', (v) => v || 'Sem Atividade'),
-    );
-
-    updateCronogramasFilterOptions(
-      registry,
-      'setor_responsavel',
-      buildFilterOptions(schedules, 'setor_responsavel', (v) => v || 'Sem Setor'),
-    );
-
-    updateCronogramasFilterOptions(
-      registry,
-      'project_id',
-      buildFilterOptions(schedules, 'project_id', (v) => {
-        const schedule = schedules.find((s) => s.project_id === v);
-        return schedule?.project?.titulo || String(v);
-      }),
-    );
-
-    updateCronogramasFilterOptions(
-      registry,
-      'fase_atividade',
-      buildFilterOptions(schedules, 'fase_atividade', (v) => v || 'Sem Fase'),
-    );
-
-    return registry;
+      return def;
+    });
   }, [schedules]);
 
-  // Use module-specific filter hook
-  const filterState = useModuleFilters(
-    'cronogramas',
-    filterRegistry.filters,
-    schedules,
-    filterCronogramasData,
-    {
-      persistence: {
-        enabled: true,
-        storageKey: 'cronogramas-filters',
-      },
+  // Use centralized filter state management
+  const filterState = useFilterState({
+    moduleId: 'cronogramas',
+    definitions,
+    persistence: {
+      enabled: true,
+      storageKey: 'filters-cronogramas',
     },
-  );
+  });
+
+  // Apply filters to schedules
+  const filteredData = useMemo(() => {
+    return applyFilters(schedules, filterState.filters, {
+      search: filterState.search,
+      searchFields: searchFieldsCronogramas,
+      matchMode: 'partial',
+      caseSensitive: false,
+    });
+  }, [schedules, filterState.filters, filterState.search]);
 
   return {
-    ...filterState,
-    registry: filterRegistry,
+    // State
+    filters: filterState.filters,
+    search: filterState.search,
+    viewMode: filterState.viewMode,
+    definitions: filterState.definitions,
+    filteredData,
+
+    // Actions
+    updateFilter: filterState.updateFilter,
+    setSearch: filterState.setSearch,
+    setViewMode: filterState.setViewMode,
+    setFilters: filterState.setFilters,
+    resetAllFilters: filterState.resetAllFilters,
+    clearFilters: filterState.clearFilters,
+
+    // Metadata
+    activeFilterCount: filterState.activeFilterCount,
+    hasActiveFilters: filterState.hasActiveFilters,
+    isFiltersEmpty: filterState.isFiltersEmpty,
+
+    // Registry (para usar em FilterBar)
+    registry: filterRegistryCronogramas,
   };
 }
 
 /**
- * Hook to get just the filtered schedules without full state
+ * Hook to get just the filtered schedules without full state (para uso avançado)
  */
 export function useCronogramasFilteredList(
   schedules: CronogramaData[],
   filters: FilterState,
-  search: string,
+  search: string
 ) {
   return useMemo(() => {
-    return filterCronogramasData(schedules, filters, search);
+    return applyFilters(schedules, filters, {
+      search,
+      searchFields: searchFieldsCronogramas,
+      matchMode: 'partial',
+      caseSensitive: false,
+    });
   }, [schedules, filters, search]);
 }

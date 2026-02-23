@@ -1,233 +1,145 @@
 /**
- * Projetos Module Filter Definitions
- * Defines all available filters for the Projetos module
+ * Filter Definitions - Projetos Module
+ * Configuração centralizada de filtros para o módulo de Projetos
+ *
+ * Fase 2: Refatoração - Seguindo contexto consolidado em 07-filter-data-context.md
  */
 
-import { FilterRegistry, ViewMode } from '@/lib/filters/filter-types';
-import {
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  TrendingUp,
-  User,
-  Zap,
-  FolderOpen,
-} from 'lucide-react';
+import { CheckCircle2, AlertCircle, Users, Calendar, LayoutGrid, List } from 'lucide-react';
+import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
- * View modes for Projetos
+ * Filter Definitions para Projetos
+ * Quick Filters (4): status, prioridade, responsavel, prazo_final
+ * Advanced Filters (6): + categoria, created_at
+ * Search Fields: titulo, codigo, categoria
  */
-export const PROJETOS_VIEW_MODES: ViewMode[] = [
+export const filterDefinitionsProjetos: FilterDefinition[] = [
+  // QUICK FILTERS
   {
-    id: 'kanban',
-    label: 'Kanban',
-    icon: FolderOpen,
-    default: true,
-  },
-  {
-    id: 'list',
-    label: 'Lista',
+    id: 'status',
+    label: 'Status',
+    type: 'multi-select',
+    options: [
+      { label: 'Novo', value: 'Novo' },
+      { label: 'Em Análise', value: 'Em Análise' },
+      { label: 'Em Desenvolvimento', value: 'Em Desenvolvimento' },
+      { label: 'Em Homologação', value: 'Em Homologação' },
+      { label: 'Concluído', value: 'Concluído' },
+      { label: 'Cancelado', value: 'Cancelado' },
+      { label: 'Suspenso', value: 'Suspenso' },
+    ],
+    quickFilter: true,
     icon: CheckCircle2,
+    description: 'Filtrar projetos por status',
+    multi: true,
+    sortOptions: true,
+  },
+
+  {
+    id: 'prioridade',
+    label: 'Prioridade',
+    type: 'multi-select',
+    options: [
+      { label: 'Baixa', value: 'Baixa' },
+      { label: 'Normal', value: 'Normal' },
+      { label: 'Alta', value: 'Alta' },
+    ],
+    quickFilter: true,
+    icon: AlertCircle,
+    description: 'Filtrar por nível de prioridade',
+    multi: true,
+  },
+
+  {
+    id: 'responsavel',
+    label: 'Responsável',
+    type: 'multi-select',
+    options: [], // Dinâmico - populado via useProjetosFilters
+    quickFilter: true,
+    icon: Users,
+    description: 'Filtrar projetos por responsável',
+    multi: true,
+    searchable: true,
+  },
+
+  {
+    id: 'prazo_final',
+    label: 'Prazo Final',
+    type: 'date-range',
+    quickFilter: true,
+    icon: Calendar,
+    description: 'Filtrar por intervalo de prazo',
+    group: 'dates',
+  },
+
+  // ADVANCED FILTERS
+  {
+    id: 'categoria',
+    label: 'Categoria',
+    type: 'multi-select',
+    options: [], // Dinâmico
+    icon: undefined,
+    description: 'Filtrar por categoria do projeto',
+    multi: true,
+    searchable: true,
+    group: 'classification',
+  },
+
+  {
+    id: 'created_at',
+    label: 'Data de Criação',
+    type: 'date-range',
+    description: 'Filtrar por período de criação',
+    group: 'dates',
   },
 ];
 
 /**
- * Projetos filter registry with all available filters
+ * Filter Registry para o módulo Projetos
+ * Exportar como FilterRegistry para uso em FilterBar
  */
-export const PROJETOS_FILTER_REGISTRY: FilterRegistry = {
+export const filterRegistryProjetos: FilterRegistry = {
   moduleId: 'projetos',
-  searchable: true,
-  viewModes: PROJETOS_VIEW_MODES,
-  filters: [
-    // ===== QUICK FILTERS (Top Bar) =====
+  filters: filterDefinitionsProjetos,
+  viewModes: [
     {
-      id: 'status',
-      label: 'Status',
-      type: 'multi-select',
-      group: 'Status',
-      quickFilter: true,
-      quickFilterLimit: 4,
-      icon: AlertTriangle,
-      description: 'Filter by project status',
-      options: [
-        { value: 'Iniciado', label: 'Iniciado', badge: 'Start' },
-        { value: 'Em execução', label: 'Em execução', badge: 'Active' },
-        { value: 'Concluído', label: 'Concluído', badge: 'Done' },
-        { value: 'Cancelado', label: 'Cancelado', badge: 'Cancel' },
-      ],
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
+      id: 'kanban',
+      label: 'Kanban',
+      icon: LayoutGrid,
     },
-
     {
-      id: 'priority',
-      label: 'Prioridade',
-      type: 'multi-select',
-      group: 'Prioridade',
-      quickFilter: true,
-      quickFilterLimit: 3,
-      icon: Zap,
-      description: 'Filter by priority level',
-      options: [
-        { value: 'Crítica', label: 'Crítica' },
-        { value: 'Alta', label: 'Alta' },
-        { value: 'Média', label: 'Média' },
-        { value: 'Baixa', label: 'Baixa' },
-      ],
-      defaultValue: [],
-      searchable: false,
-      clearable: true,
-    },
-
-    {
-      id: 'responsible',
-      label: 'Responsável',
-      type: 'multi-select',
-      group: 'Pessoas',
-      quickFilter: true,
-      quickFilterLimit: 5,
-      icon: User,
-      description: 'Filter by project owner',
-      options: () => [], // Will be populated dynamically from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-    },
-
-    // ===== ADVANCED FILTERS (Sheet) =====
-    {
-      id: 'fase_atual',
-      label: 'Fase Atual',
-      type: 'multi-select',
-      group: 'Execução',
-      quickFilter: false,
-      options: () => [], // Dynamic from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'area',
-      label: 'Área',
-      type: 'multi-select',
-      group: 'Organização',
-      quickFilter: false,
-      options: () => [], // Dynamic from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'tipo_chamado',
-      label: 'Tipo de Chamado',
-      type: 'multi-select',
-      group: 'Classificação',
-      quickFilter: false,
-      options: () => [], // Dynamic from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'tipo_assunto',
-      label: 'Tipo de Assunto',
-      type: 'multi-select',
-      group: 'Classificação',
-      quickFilter: false,
-      options: () => [], // Dynamic from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'solicitante',
-      label: 'Solicitante',
-      type: 'multi-select',
-      group: 'Pessoas',
-      quickFilter: false,
-      options: () => [], // Dynamic from data
-      defaultValue: [],
-      searchable: true,
-      clearable: true,
-      sortOptions: true,
-    },
-
-    {
-      id: 'complexidade_tecnica',
-      label: 'Complexidade Técnica',
-      type: 'multi-select',
-      group: 'Avaliação',
-      quickFilter: false,
-      options: [
-        { value: 'Baixa', label: 'Baixa' },
-        { value: 'Média', label: 'Média' },
-        { value: 'Alta', label: 'Alta' },
-        { value: 'Crítica', label: 'Crítica' },
-      ],
-      defaultValue: [],
-      searchable: false,
-      clearable: true,
-    },
-
-    {
-      id: 'impacto_operacional',
-      label: 'Impacto Operacional',
-      type: 'multi-select',
-      group: 'Avaliação',
-      quickFilter: false,
-      options: [
-        { value: 'Nenhum', label: 'Nenhum' },
-        { value: 'Baixo', label: 'Baixo' },
-        { value: 'Médio', label: 'Médio' },
-        { value: 'Alto', label: 'Alto' },
-      ],
-      defaultValue: [],
-      searchable: false,
-      clearable: true,
-    },
-
-    {
-      id: 'date_range',
-      label: 'Período',
-      type: 'date-range',
-      group: 'Datas',
-      quickFilter: false,
-      placeholder: 'Select date range',
-      defaultValue: { start: '', end: '' },
-      clearable: true,
-    },
-
-    {
-      id: 'importancia_especial',
-      label: 'Importância Especial',
-      type: 'checkbox',
-      group: 'Classificação',
-      quickFilter: false,
-      defaultValue: false,
+      id: 'list',
+      label: 'Lista',
+      icon: List,
     },
   ],
 };
 
 /**
- * Helper function to update dynamic filter options
+ * Campos de busca (search)
+ * Usados por useModuleFilters para filtrar com searchFields
  */
-export function updateProjetosFilterOptions(
-  registry: FilterRegistry,
-  fieldName: string,
-  options: Array<{ value: any; label: string }>,
-) {
-  const filterIndex = registry.filters.findIndex((f) => f.id === fieldName);
-  if (filterIndex !== -1 && registry.filters[filterIndex].options) {
-    registry.filters[filterIndex].options = options;
-  }
-}
+export const searchFieldsProjetos = ['titulo', 'codigo', 'categoria'];
+
+/**
+ * Valores estáticos de Status (para referência)
+ */
+export const projectStatusValues = [
+  'Novo',
+  'Em Análise',
+  'Em Desenvolvimento',
+  'Em Homologação',
+  'Concluído',
+  'Cancelado',
+  'Suspenso',
+] as const;
+
+export type ProjectStatus = (typeof projectStatusValues)[number];
+
+/**
+ * Valores estáticos de Prioridade
+ */
+export const projectPriorityValues = ['Baixa', 'Normal', 'Alta'] as const;
+
+export type ProjectPriority = (typeof projectPriorityValues)[number];

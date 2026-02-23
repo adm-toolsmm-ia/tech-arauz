@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 interface FilterBarExtendedProps extends FilterBarProps {
@@ -29,6 +30,101 @@ interface FilterBarExtendedProps extends FilterBarProps {
   onClearFilters?: () => void;
   onResetFilters?: () => void;
   onUpdateFilter?: (filterId: string, value: any) => void;
+}
+
+/**
+ * QuickFilterButton: Standalone component for quick filter interaction
+ * Handles popover for inactive filters and clear button for active ones
+ */
+function QuickFilterButton({
+  filterDef,
+  value,
+  activeFilters,
+  onUpdateFilter,
+  onClearFilter,
+}: {
+  filterDef: FilterDefinition;
+  value: any;
+  activeFilters: FilterState;
+  onUpdateFilter?: (filterId: string, value: any) => void;
+  onClearFilter: (filterId: string) => void;
+}) {
+  const isActive = Array.isArray(value)
+    ? value.length > 0
+    : value !== null && value !== undefined;
+
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
+
+  // Get options for this filter (handle dynamic functions)
+  const options = React.useMemo(() => {
+    if (!filterDef.options) return [];
+    if (typeof filterDef.options === 'function') {
+      return filterDef.options();
+    }
+    return filterDef.options;
+  }, [filterDef]);
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {!isActive && options.length > 0 ? (
+            // When inactive and has options: show popover
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  {filterDef.icon ? <filterDef.icon className="mr-1 h-4 w-4" /> : null}
+                  {filterDef.label}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-2" align="start">
+                <div className="space-y-2">
+                  {options.map((opt) => (
+                    <button
+                      key={String(opt.value)}
+                      onClick={() => {
+                        if (filterDef.multi) {
+                          onUpdateFilter?.(filterDef.id, [opt.value]);
+                        } else {
+                          onUpdateFilter?.(filterDef.id, opt.value);
+                        }
+                        setIsPopoverOpen(false);
+                      }}
+                      className="block w-full text-left rounded px-2 py-1 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          ) : (
+            // When active: show clear button
+            <Button
+              variant={isActive ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                if (isActive) {
+                  onClearFilter(filterDef.id);
+                }
+              }}
+            >
+              {filterDef.icon ? <filterDef.icon className="mr-1 h-4 w-4" /> : null}
+              {filterDef.label}
+              {Array.isArray(value) && value.length > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {value.length}
+                </Badge>
+              )}
+            </Button>
+          )}
+        </TooltipTrigger>
+        <TooltipContent>
+          {isActive ? 'Click to clear' : filterDef.description || filterDef.label}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
 }
 
 export function FilterBar({
@@ -152,39 +248,16 @@ export function FilterBar({
         {/* Quick Filter Buttons */}
         {quickFilters.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {quickFilters.map((filterDef) => {
-              const value = activeFilters[filterDef.id];
-              const isActive = Array.isArray(value)
-                ? value.length > 0
-                : value !== null && value !== undefined;
-
-              return (
-                <TooltipProvider key={filterDef.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant={isActive ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => {
-                          if (isActive) {
-                            handleClearFilter(filterDef.id);
-                          }
-                        }}
-                      >
-                        {filterDef.icon ? <filterDef.icon className="mr-1 h-4 w-4" /> : null}
-                        {filterDef.label}
-                        {Array.isArray(value) && value.length > 0 && (
-                          <Badge variant="secondary" className="ml-1">
-                            {value.length}
-                          </Badge>
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{filterDef.description || filterDef.label}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              );
-            })}
+            {quickFilters.map((filterDef) => (
+              <QuickFilterButton
+                key={filterDef.id}
+                filterDef={filterDef}
+                value={activeFilters[filterDef.id]}
+                activeFilters={activeFilters}
+                onUpdateFilter={onUpdateFilter}
+                onClearFilter={handleClearFilter}
+              />
+            ))}
           </div>
         )}
 

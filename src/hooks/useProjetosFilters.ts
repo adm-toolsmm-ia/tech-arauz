@@ -1,22 +1,27 @@
 /**
  * useProjetosFilters Hook
  * Module-specific filter management for Projetos
+ *
+ * Modernizado para usar:
+ * - filterDefinitionsProjetos (Fase 2)
+ * - useFilterState (state management com persistência)
+ * - applyFilters (lógica de filtro centralizada)
  */
 
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
-  PROJETOS_FILTER_REGISTRY,
-  updateProjetosFilterOptions,
+  filterDefinitionsProjetos,
+  filterRegistryProjetos,
+  searchFieldsProjetos,
 } from '@/lib/filters/filters-projetos';
 import { applyFilters, buildFilterOptions } from '@/lib/filters/filter-utils';
-import { useModuleFilters } from '@/hooks/useFilterState';
-import { useFilterUrlSync } from '@/hooks/useFilterUrlSync';
+import { useFilterState } from '@/hooks/useFilterState';
 import { FilterState } from '@/lib/filters/filter-types';
 
 /**
- * Project data interface (from projects-content.tsx)
+ * Project data interface
  */
 export interface ProjetosData {
   id: string;
@@ -67,115 +72,102 @@ export interface ProjetosData {
 }
 
 /**
- * Apply Projetos-specific filters to data
- */
-function filterProjetosData(
-  projects: ProjetosData[],
-  filters: FilterState,
-  search: string,
-): ProjetosData[] {
-  return applyFilters(projects, filters, {
-    search,
-    searchFields: ['project_name', 'espaider_code', 'objetivo', 'solicitante'],
-    matchMode: 'partial',
-    caseSensitive: false,
-  });
-}
-
-/**
  * Hook for managing Projetos filters with data
  *
  * @param projects Array of project data to filter
- * @param options Configuration options
- * @param options.urlSync Enable URL synchronization (default: false)
  */
-export function useProjetosFilters(
-  projects: ProjetosData[],
-  options?: { urlSync?: boolean }
-) {
-  const { urlSync = false } = options || {};
+export function useProjetosFilters(projects: ProjetosData[]) {
+  // Update filter definitions with dynamic options from actual data
+  const definitions = useMemo(() => {
+    return filterDefinitionsProjetos.map((def) => {
+      // Update responsavel options from data
+      if (def.id === 'responsavel') {
+        return {
+          ...def,
+          options: buildFilterOptions(
+            projects,
+            'responsible',
+            (v) => v || 'Sem Responsável'
+          ),
+        };
+      }
 
-  // Create registry copy (to avoid mutation)
-  const filterRegistry = useMemo(() => {
-    const registry = JSON.parse(JSON.stringify(PROJETOS_FILTER_REGISTRY));
+      // Update categoria options from data
+      if (def.id === 'categoria') {
+        return {
+          ...def,
+          options: buildFilterOptions(
+            projects,
+            'category',
+            (v) => v || 'Sem Categoria'
+          ),
+        };
+      }
 
-    // Build dynamic filter options from actual data
-    updateProjetosFilterOptions(
-      registry,
-      'responsible',
-      buildFilterOptions(projects, 'responsible', (v) => v || 'Sem Responsável'),
-    );
-
-    updateProjetosFilterOptions(
-      registry,
-      'fase_atual',
-      buildFilterOptions(projects, 'fase_atual', (v) => v || 'Sem Fase'),
-    );
-
-    updateProjetosFilterOptions(
-      registry,
-      'area',
-      buildFilterOptions(projects, 'area', (v) => v || 'Sem Área'),
-    );
-
-    updateProjetosFilterOptions(
-      registry,
-      'tipo_chamado',
-      buildFilterOptions(projects, 'tipo_chamado', (v) => v || 'Não Especificado'),
-    );
-
-    updateProjetosFilterOptions(
-      registry,
-      'tipo_assunto',
-      buildFilterOptions(projects, 'tipo_assunto', (v) => v || 'Não Especificado'),
-    );
-
-    updateProjetosFilterOptions(
-      registry,
-      'solicitante',
-      buildFilterOptions(projects, 'solicitante', (v) => v || 'Não Especificado'),
-    );
-
-    return registry;
+      return def;
+    });
   }, [projects]);
 
-  // Use module-specific filter hook
-  const filterState = useModuleFilters(
-    'projetos',
-    filterRegistry.filters,
-    projects,
-    filterProjetosData,
-    {
-      persistence: {
-        enabled: !urlSync, // Disable localStorage if URL sync is enabled
-        storageKey: 'projetos-filters',
-      },
+  // Use centralized filter state management
+  const filterState = useFilterState({
+    moduleId: 'projetos',
+    definitions,
+    persistence: {
+      enabled: true,
+      storageKey: 'filters-projetos',
     },
-  );
+  });
 
-  // Enable URL synchronization if requested
-  useFilterUrlSync(
-    filterState.filters,
-    filterRegistry.filters,
-    filterState.setFilters,
-    { enabled: urlSync }
-  );
+  // Apply filters to projects
+  const filteredData = useMemo(() => {
+    return applyFilters(projects, filterState.filters, {
+      search: filterState.search,
+      searchFields: searchFieldsProjetos,
+      matchMode: 'partial',
+      caseSensitive: false,
+    });
+  }, [projects, filterState.filters, filterState.search]);
 
   return {
-    ...filterState,
-    registry: filterRegistry,
+    // State
+    filters: filterState.filters,
+    search: filterState.search,
+    viewMode: filterState.viewMode,
+    definitions: filterState.definitions,
+    filteredData,
+
+    // Actions
+    updateFilter: filterState.updateFilter,
+    setSearch: filterState.setSearch,
+    setViewMode: filterState.setViewMode,
+    setFilters: filterState.setFilters,
+    resetAllFilters: filterState.resetAllFilters,
+    clearFilters: filterState.clearFilters,
+
+    // Metadata
+    activeFilterCount: filterState.activeFilterCount,
+    hasActiveFilters: filterState.hasActiveFilters,
+    isFiltersEmpty: filterState.isFiltersEmpty,
+
+    // Registry (para usar em FilterBar)
+    registry: filterRegistryProjetos,
   };
 }
 
 /**
- * Hook to get just the filtered projects without full state
+ * Hook to get just the filtered projects without full state (para uso avançado)
  */
 export function useProjetosFilteredList(
   projects: ProjetosData[],
   filters: FilterState,
-  search: string,
+  search: string
 ) {
   return useMemo(() => {
-    return filterProjetosData(projects, filters, search);
+    return applyFilters(projects, filters, {
+      search,
+      searchFields: searchFieldsProjetos,
+      matchMode: 'partial',
+      caseSensitive: false,
+    });
   }, [projects, filters, search]);
 }

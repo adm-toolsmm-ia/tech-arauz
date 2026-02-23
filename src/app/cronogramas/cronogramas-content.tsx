@@ -34,6 +34,8 @@ import {
 } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { FilterBar } from '@/components/filters/FilterBar';
+import { useCronogramasFilters } from '@/hooks/useCronogramasFilters';
 
 // ---------- Types ----------
 
@@ -200,8 +202,18 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   // Simple state for view mode (Gantt/Month/Week)
   const [viewMode, setViewMode] = React.useState('gantt');
 
-  // Use all schedules (no filtering for now - filters will be re-implemented later)
-  const filteredSchedules = schedules;
+  // ✨ NEW: Hook para gerenciar filtros com dados filtrados
+  const {
+    filters,
+    search,
+    filteredData,
+    updateFilter,
+    setSearch,
+    registry,
+  } = useCronogramasFilters(schedules);
+
+  // Use filtered schedules from hook
+  const filteredSchedules = filteredData;
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
   const [selectedSchedule, setSelectedSchedule] = React.useState<Schedule | null>(null);
@@ -301,6 +313,18 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           title="Cronogramas"
           subtitle="Visualize todos os cronogramas de projetos"
         />
+
+        {/* ✨ NEW: FilterBar com quick filters e busca */}
+        <div className="px-6 pt-6">
+          <FilterBar
+            moduleId="cronogramas"
+            filters={registry}
+            currentFilters={filters}
+            currentSearch={search}
+            onUpdateFilter={updateFilter}
+            onSearchChange={setSearch}
+          />
+        </div>
 
         <div className="min-w-0 max-w-full flex-1 space-y-6 overflow-x-hidden p-6">
           {/* KPIs */}

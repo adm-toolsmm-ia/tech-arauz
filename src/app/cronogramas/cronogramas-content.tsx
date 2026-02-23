@@ -20,8 +20,6 @@ import { KPICard } from '@/components/dashboard/KPICard';
 import { SplitView } from '@/components/views/SplitView';
 import { ProjectCockpit } from '@/components/project';
 import { CronogramaGantt } from '@/components/cronogramas/CronogramaGantt';
-import { FilterBar } from '@/components/filters/FilterBar';
-import { useCronogramasFilters } from '@/hooks/useCronogramasFilters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -199,10 +197,11 @@ const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 // ---------- Main Component ----------
 
 export function CronogramasContent({ schedules }: CronogramasContentProps) {
-  // New unified filter system (manages filters, search, and view mode)
-  const filterState = useCronogramasFilters(schedules as any);
+  // Simple state for view mode (Gantt/Month/Week)
+  const [viewMode, setViewMode] = React.useState('gantt');
 
-  // Local state for calendar/UI-specific features
+  // Use all schedules (no filtering for now - filters will be re-implemented later)
+  const filteredSchedules = schedules;
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
   const [selectedSchedule, setSelectedSchedule] = React.useState<Schedule | null>(null);
@@ -240,15 +239,14 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
     return Array.from(set).sort();
   }, [schedules]);
 
-  // Filtered schedules (managed by filterState)
-  // Note: filterState.filteredData applies all filters (search + structured filters)
-  const filteredSchedules: Schedule[] = React.useMemo(() => {
+  // Filtered schedules (no filtering for now - filters will be re-implemented later)
+  const filteredSchedulesList: Schedule[] = React.useMemo(() => {
     // Apply additional filtering (hide completed schedules)
-    return filterState.filteredData.filter(
+    return schedules.filter(
       (s) =>
         s.project?.status?.toLowerCase() !== 'concluído' && s.status?.toLowerCase() !== 'concluído',
     ) as unknown as Schedule[];
-  }, [filterState.filteredData]);
+  }, [schedules]);
 
   // KPI calculations
   const totalActivities = schedules.length;
@@ -345,24 +343,61 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             />
           </div>
 
-          {/* Unified Filter System */}
-          <FilterBar
-            moduleId="cronogramas"
-            filters={filterState.registry}
-            onFiltersChange={filterState.setFilters}
-            onSearchChange={filterState.setSearch}
-            onViewModeChange={filterState.setViewMode}
-            initialViewMode={filterState.viewMode}
-          />
+          {/* View Mode Toggle - SIMPLE VERSION (No Filters) */}
+          <div className="flex items-center gap-2 border-b border-border bg-background p-4">
+            <div className="flex-1" />
+            {/* View Mode Toggle */}
+            <div className="flex gap-1 border-l border-border pl-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={viewMode === 'gantt' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('gantt')}
+                    title="Gantt View"
+                  >
+                    <FolderKanban className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Gantt View</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={viewMode === 'month' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('month')}
+                    title="Month View"
+                  >
+                    <CalendarDays className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Month View</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={viewMode === 'week' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('week')}
+                    title="Week View"
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Week View</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
 
           {/* Calendar Section */}
-          {filterState.viewMode === 'gantt' ? (
+          {viewMode === 'gantt' ? (
             <CronogramaGantt
               schedules={filteredSchedules as Schedule[]}
               projectIds={projectIds}
               onActivityClick={setSelectedSchedule}
             />
-          ) : filterState.viewMode === 'month' ? (
+          ) : viewMode === 'month' ? (
             <MonthView
               currentDate={currentDate}
               selectedDay={selectedDay}
@@ -371,7 +406,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               getSchedulesForDate={getSchedulesForDate}
               projectIds={projectIds}
             />
-          ) : filterState.viewMode === 'week' ? (
+          ) : viewMode === 'week' ? (
             <WeekView
               currentDate={currentDate}
               selectedDay={selectedDay}
@@ -396,7 +431,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           )}
 
           {/* Selected Day Activities */}
-          {selectedDay && (filterState.viewMode === 'month' || filterState.viewMode === 'week') && (
+          {selectedDay && (viewMode === 'month' || viewMode === 'week') && (
             <SelectedDayPanel
               date={selectedDay}
               schedules={getSchedulesForDate(selectedDay)}

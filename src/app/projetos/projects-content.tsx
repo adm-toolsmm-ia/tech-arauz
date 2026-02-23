@@ -356,19 +356,27 @@ export function ProjectsContent({
         subtitle="Visualize e gerencie todos os projetos do Espaider"
       />
 
-      {/* ✨ NEW: FilterBar com quick filters e busca */}
-      <div className="px-6 pt-6">
-        <FilterBar
-          moduleId="projetos"
-          filters={registry}
-          currentFilters={filters}
-          currentSearch={search}
-          currentViewMode={activeViewMode}
-          onUpdateFilter={updateFilter}
-          onSearchChange={setSearch}
-          onViewModeChange={handleViewModeChange}
-        />
-      </div>
+        {/* ✨ NEW: FilterBar com quick filters e busca */}
+        <div className="px-6 pt-6">
+          <FilterBar
+            moduleId="projetos"
+            filters={registry}
+            onFiltersChange={(newFilters) => {
+              // Update individual filter when filters object changes
+              // Note: This is a simplified implementation - for full control use onUpdateFilter
+              Object.entries(newFilters).forEach(([key, value]) => {
+                if (filters[key] !== value) {
+                  updateFilter(key, value);
+                }
+              });
+            }}
+            onSearchChange={setSearch}
+            onViewModeChange={handleViewModeChange}
+            initialFilters={filters}
+            initialSearch={search}
+            initialViewMode={activeViewMode}
+          />
+        </div>
 
       <div className="flex-1 space-y-6 p-6">
         {/* KPIs (Gerencial) */}

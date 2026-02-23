@@ -319,10 +319,17 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           <FilterBar
             moduleId="cronogramas"
             filters={registry}
-            currentFilters={filters}
-            currentSearch={search}
-            onUpdateFilter={updateFilter}
+            onFiltersChange={(newFilters) => {
+              // Update individual filter when filters object changes
+              Object.entries(newFilters).forEach(([key, value]) => {
+                if (filters[key] !== value) {
+                  updateFilter(key, value);
+                }
+              });
+            }}
             onSearchChange={setSearch}
+            initialFilters={filters}
+            initialSearch={search}
           />
         </div>
 

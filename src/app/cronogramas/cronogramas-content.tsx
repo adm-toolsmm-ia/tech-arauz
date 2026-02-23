@@ -182,16 +182,16 @@ const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 // ---------- Main Component ----------
 
 export function CronogramasContent({ schedules }: CronogramasContentProps) {
-  // Simple state for view mode (Gantt/Month/Week)
-  const [viewMode, setViewMode] = React.useState('gantt');
-
-  // ✨ NEW: Hook para gerenciar filtros com dados filtrados
+  // ✨ NEW: Hook para gerenciar filtros com dados filtrados (INCLUI viewMode)
   const {
     filters,
     search,
+    viewMode,       // ✅ Do hook (com persistência)
     filteredData,
     updateFilter,
     setSearch,
+    setViewMode,    // ✅ Do hook
+    resetAllFilters,  // ✅ Para onResetFilters
     registry,
   } = useCronogramasFilters(schedules);
 
@@ -337,26 +337,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           subtitle="Visualize todos os cronogramas de projetos"
         />
 
-        {/* ✨ NEW: FilterBar com quick filters e busca */}
-        <div className="px-6 pt-6">
-          <FilterBar
-            moduleId="cronogramas"
-            filters={registry}
-            onFiltersChange={(newFilters) => {
-              // Update individual filter when filters object changes
-              Object.entries(newFilters).forEach(([key, value]) => {
-                if (filters[key] !== value) {
-                  updateFilter(key, value);
-                }
-              });
-            }}
-            onSearchChange={setSearch}
-            initialFilters={filters}
-            initialSearch={search}
-          />
-        </div>
-
-        <div className="min-w-0 max-w-full flex-1 space-y-6 overflow-x-hidden p-6">
+        <div className="flex-1 space-y-6 p-6">
           {/* KPIs */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <KPICard
@@ -409,50 +390,43 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             />
           </div>
 
-          {/* View Mode Toggle - SIMPLE VERSION (No Filters) */}
-          <div className="flex items-center gap-2 border-b border-border bg-background p-4">
-            <div className="flex-1" />
-            {/* View Mode Toggle */}
-            <div className="flex gap-1 border-l border-border pl-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={viewMode === 'gantt' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('gantt')}
-                    title="Gantt View"
-                  >
-                    <FolderKanban className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Gantt View</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={viewMode === 'month' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('month')}
-                    title="Month View"
-                  >
-                    <CalendarDays className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Month View</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={viewMode === 'week' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('week')}
-                    title="Week View"
-                  >
-                    <CalendarIcon className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Week View</TooltipContent>
-              </Tooltip>
+          {/* ✨ NEW: FilterBar com quick filters, search e viewMode integrados */}
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <FilterBar
+                moduleId="cronogramas"
+                filters={registry}
+
+                // Filter callbacks
+                onFiltersChange={(newFilters) => {
+                  Object.entries(newFilters).forEach(([key, value]) => {
+                    if (filters[key] !== value) {
+                      updateFilter(key, value);
+                    }
+                  });
+                }}
+                onUpdateFilter={updateFilter}
+                onResetFilters={() => {
+                  resetAllFilters();
+                  setSearch('');
+                }}
+
+                // Search callbacks
+                onSearchChange={setSearch}
+
+                // ViewMode callbacks ✅ INTEGRADO
+                onViewModeChange={setViewMode}
+
+                // Initial state
+                initialFilters={filters}
+                initialSearch={search}
+                initialViewMode={viewMode}
+
+                // Controlled state
+                currentFilters={filters}
+                currentSearch={search}
+                currentViewMode={viewMode}
+              />
             </div>
           </div>
 

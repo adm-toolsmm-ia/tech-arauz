@@ -7,6 +7,7 @@
  */
 
 import { Building2, CheckCircle2, Users, Calendar, List, CalendarDays, LayoutTemplate, BarChartHorizontal, AlertCircle, Clock, AlertTriangle } from 'lucide-react';
+// NOTE: Calendar icon é usado 2x (filters + viewModes), ambos importantes para UX
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
@@ -143,24 +144,19 @@ export const filterRegistryCronogramas: FilterRegistry = {
   filters: filterDefinitionsCronogramas,
   viewModes: [
     {
-      id: 'agenda',
-      label: 'Agenda',
-      icon: CalendarDays,
-    },
-    {
-      id: 'kanban',
-      label: 'Kanban',
-      icon: LayoutTemplate,
-    },
-    {
       id: 'gantt',
       label: 'Gantt',
       icon: BarChartHorizontal,
     },
     {
-      id: 'lista',
-      label: 'Lista',
-      icon: List,
+      id: 'month',
+      label: 'Mês',
+      icon: CalendarDays,
+    },
+    {
+      id: 'week',
+      label: 'Semana',
+      icon: Calendar,
     },
   ],
 };

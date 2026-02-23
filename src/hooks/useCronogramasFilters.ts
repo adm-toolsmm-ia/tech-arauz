@@ -160,6 +160,8 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
   }, [schedules]);
 
   // Use centralized filter state management
+  // NOTE: viewMode será 'kanban' por padrão do hook, mas cronogramas-content
+  // deve inicializar com 'gantt'. Vêr cronogramas-content.tsx para override.
   const filterState = useFilterState({
     moduleId: 'cronogramas',
     definitions,
@@ -215,14 +217,14 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     // State
     filters: filterState.filters,
     search: filterState.search,
-    viewMode: filterState.viewMode,
+    viewMode: filterState.viewMode,        // ✅ ViewMode do hook (persistido)
     definitions: filterState.definitions,
     filteredData,
 
     // Actions
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,
-    setViewMode: filterState.setViewMode,
+    setViewMode: filterState.setViewMode,  // ✅ SetViewMode do hook
     setFilters: filterState.setFilters,
     resetAllFilters: filterState.resetAllFilters,
     clearFilters: filterState.clearFilters,

@@ -321,7 +321,7 @@ export async function syncProjects(
       );
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Projetos', `Falha ao buscar dados: ${msg}`));
     errors++;
   }
@@ -475,7 +475,7 @@ export async function syncDeliveries(
       }
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Entregas', `Falha ao buscar dados: ${msg}`));
     errors++;
   }
@@ -609,7 +609,7 @@ export async function syncSchedules(
       }
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Cronogramas', `Falha ao buscar dados: ${msg}`));
     errors++;
   }
@@ -737,7 +737,7 @@ export async function syncRequirements(
       }
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Requisitos', `Falha ao buscar dados: ${msg}`));
     errors++;
   }
@@ -902,7 +902,7 @@ export async function executeSyncAll(
         results.push(childResult);
         await logSyncResult(supabase, tenantId, dataset, childResult);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+        const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
         logs.push(createLog('error', dataset, `Falha ao buscar ${urlFilho.Descricao}: ${msg}`));
         results.push({
           dataset,
@@ -915,7 +915,7 @@ export async function executeSyncAll(
       }
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Geral', `Falha ao buscar ListaURLFilhos: ${msg}`));
   }
 
@@ -1042,7 +1042,7 @@ async function syncDeliveriesFromRegistros(
       }
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Entregas', `Falha no processamento: ${msg}`));
     errors++;
   }
@@ -1143,7 +1143,7 @@ async function syncSchedulesFromRegistros(
       }
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Cronogramas', `Falha no processamento: ${msg}`));
     errors++;
   }
@@ -1238,7 +1238,7 @@ async function syncRequirementsFromRegistros(
       }
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Requisitos', `Falha no processamento: ${msg}`));
     errors++;
   }
@@ -1498,7 +1498,7 @@ async function syncHistoriesFromRegistros(
       );
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(
       createLog('error', 'Historicos', `Falha no processamento: ${msg}`, {
         stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
@@ -1633,7 +1633,7 @@ async function syncBudgetsFromRegistros(
       logs.push(createLog('warn', 'Orcamentos', 'Nenhum registro a inserir após filtros'));
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(
       createLog('error', 'Orcamentos', `Falha no processamento: ${msg}`, {
         stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
@@ -1784,7 +1784,7 @@ async function syncApproversFromRegistros(
       logs.push(createLog('warn', 'Aprovadores', 'Nenhum registro a inserir após filtros'));
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+    const msg = err instanceof Error ? err.message : ((err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(
       createLog('error', 'Aprovadores', `Falha no processamento: ${msg}`, {
         stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,

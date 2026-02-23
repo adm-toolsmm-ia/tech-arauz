@@ -143,6 +143,25 @@ function isWithin7Days(dateStr: string | null): boolean {
   }
 }
 
+// ✨ NEW HELPERS (From Round 6 Logic)
+function isConsideredActive(statusStr: string | null | undefined) {
+  const s = (statusStr || '').trim().toLowerCase();
+  return s !== 'cancelado' && s !== 'concluído';
+}
+
+function hasValidDeadline(s: Schedule) {
+  return !!(s.data_fim || s.data_prazo);
+}
+
+function isOverdue(s: Schedule, refDate: Date = new Date()) {
+  const dateStr = s.data_prazo || s.data_fim;
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const refMidnight = new Date(refDate);
+  refMidnight.setHours(0, 0, 0, 0);
+  return d < refMidnight;
+}
+
 const MONTH_NAMES = [
   'Janeiro',
   'Fevereiro',
@@ -182,19 +201,95 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
   const [selectedSchedule, setSelectedSchedule] = React.useState<Schedule | null>(null);
 
+  // Dashboard KPI Toggle State
+  const [activeKpiFilter, setActiveKpiFilter] = React.useState<string | null>(null);
+
   // Unique project IDs for consistent coloring
   const projectIds = React.useMemo(() => {
     const ids = Array.from(new Set(schedules.map((s) => s.project_id)));
     return ids.sort();
   }, [schedules]);
 
-  // KPI calculations
-  const totalActivities = schedules.length;
-  const delayedCount = schedules.filter((s) => s.atrasado === true).length;
-  const completedCount = schedules.filter((s) => s.status?.toLowerCase().includes('conclu')).length;
-  const nearDeadlineCount = schedules.filter((s) =>
-    isWithin7Days(s.data_prazo || s.data_fim),
-  ).length;
+  // ✨ ROUND 6 KPI CALCULATIONS
+  const pendingSchedulesCount = React.useMemo(() => {
+    return schedules.filter(s =>
+      isConsideredActive(s.project?.status) &&
+      isConsideredActive(s.status) &&
+      hasValidDeadline(s)
+    ).length;
+  }, [schedules]);
+
+  const inExecutionSchedulesCount = React.useMemo(() => {
+    return schedules.filter(s =>
+      (s.project?.status || '').trim().toLowerCase() === 'em execução' &&
+      isConsideredActive(s.status) &&
+      hasValidDeadline(s)
+    ).length;
+  }, [schedules]);
+
+  const overdueSchedulesInfo = React.useMemo(() => {
+    let count = 0;
+    let maxDays = 0;
+    const now = new Date();
+    const refMidnight = new Date(now);
+    refMidnight.setHours(0, 0, 0, 0);
+
+    schedules.forEach(s => {
+      if (isConsideredActive(s.project?.status) && isConsideredActive(s.status) &&
+        hasValidDeadline(s) && isOverdue(s, now)) {
+        count++;
+        const d = new Date(s.data_prazo || s.data_fim as string);
+        const diffTime = Math.abs(refMidnight.getTime() - d.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays > maxDays) maxDays = diffDays;
+      }
+    });
+    return { count, maxDays };
+  }, [schedules]);
+
+  const nearDeadlineCountUpdated = React.useMemo(() => {
+    return schedules.filter(s =>
+      isConsideredActive(s.project?.status) &&
+      isConsideredActive(s.status) &&
+      hasValidDeadline(s) &&
+      isWithin7Days(s.data_prazo || s.data_fim)
+    ).length;
+  }, [schedules]);
+
+  const missingDeadlineCount = React.useMemo(() => {
+    return schedules.filter(s =>
+      isConsideredActive(s.project?.status) &&
+      isConsideredActive(s.status) &&
+      !hasValidDeadline(s)
+    ).length;
+  }, [schedules]);
+
+  // The active Filter Interceptor
+  const handleKpiClick = (filterName: string) => {
+    setActiveKpiFilter(prev => prev === filterName ? null : filterName);
+  };
+
+  const finalFilteredSchedules = React.useMemo(() => {
+    if (!activeKpiFilter) return filteredData;
+    const now = new Date();
+
+    return filteredData.filter((s) => {
+      switch (activeKpiFilter) {
+        case 'pendentes':
+          return isConsideredActive(s.project?.status) && isConsideredActive(s.status) && hasValidDeadline(s);
+        case 'em_execucao':
+          return (s.project?.status || '').trim().toLowerCase() === 'em execução' && isConsideredActive(s.status) && hasValidDeadline(s);
+        case 'atrasados':
+          return isConsideredActive(s.project?.status) && isConsideredActive(s.status) && hasValidDeadline(s) && isOverdue(s, now);
+        case 'proximos_vencer':
+          return isConsideredActive(s.project?.status) && isConsideredActive(s.status) && hasValidDeadline(s) && isWithin7Days(s.data_prazo || s.data_fim);
+        case 'sem_prazo':
+          return isConsideredActive(s.project?.status) && isConsideredActive(s.status) && !hasValidDeadline(s);
+        default:
+          return true;
+      }
+    });
+  }, [filteredData, activeKpiFilter]);
 
   // Navigation
   const navigateMonth = (direction: number) => {
@@ -219,7 +314,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   // Get schedules for a specific date
   const getSchedulesForDate = React.useCallback(
     (date: Date): Schedule[] => {
-      return filteredSchedules.filter((s) => {
+      return finalFilteredSchedules.filter((s) => {
         const start = s.data_inicio ? new Date(s.data_inicio) : null;
         const end = s.data_fim ? new Date(s.data_fim) : null;
 
@@ -231,7 +326,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
         return false;
       });
     },
-    [filteredSchedules],
+    [finalFilteredSchedules],
   );
 
   return (
@@ -263,42 +358,54 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
         <div className="min-w-0 max-w-full flex-1 space-y-6 overflow-x-hidden p-6">
           {/* KPIs */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <KPICard
-              title="Total Atividades"
-              value={totalActivities}
+              title="Atividades Pendentes"
+              value={pendingSchedulesCount}
               icon={CalendarDays}
-              subtitle="Em todos os projetos"
+              subtitle="Vinculados a proj. ativos"
+              active={activeKpiFilter === 'pendentes'}
+              onClick={() => handleKpiClick('pendentes')}
+            />
+            <KPICard
+              title="Em Execução"
+              value={inExecutionSchedulesCount}
+              icon={Clock}
+              subtitle="Operação ativa em campo"
+              active={activeKpiFilter === 'em_execucao'}
+              onClick={() => handleKpiClick('em_execucao')}
             />
             <KPICard
               title="Atrasadas"
-              value={delayedCount}
+              value={overdueSchedulesInfo.count}
               icon={AlertTriangle}
               className={
-                delayedCount > 0 ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500' : ''
+                overdueSchedulesInfo.count > 0 ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500' : ''
               }
               subtitle={
-                delayedCount > 0 ? 'Requerem atenção imediata' : 'Nenhuma atividade atrasada'
+                overdueSchedulesInfo.count > 0 ? `Maior atraso: ${overdueSchedulesInfo.maxDays} dias` : 'Nenhuma atividade atrasada'
               }
-            />
-            <KPICard
-              title="Concluídas"
-              value={completedCount}
-              icon={CheckCircle2}
-              trend={
-                totalActivities > 0
-                  ? {
-                    value: `${Math.round((completedCount / totalActivities) * 100)}%`,
-                    positive: true,
-                  }
-                  : undefined
-              }
+              active={activeKpiFilter === 'atrasados'}
+              onClick={() => handleKpiClick('atrasados')}
             />
             <KPICard
               title="Próximas do Prazo"
-              value={nearDeadlineCount}
-              icon={Clock}
-              subtitle="Nos próximos 7 dias"
+              value={nearDeadlineCountUpdated}
+              icon={CheckCircle2}
+              subtitle="Vencimentos em ≤ 7 dias"
+              active={activeKpiFilter === 'proximos_vencer'}
+              onClick={() => handleKpiClick('proximos_vencer')}
+            />
+            <KPICard
+              title="Data Ausente"
+              value={missingDeadlineCount}
+              icon={AlertTriangle}
+              className={
+                missingDeadlineCount > 0 ? '[&_[class*=bg-primary]]:bg-amber-500/10 [&_svg]:text-amber-500' : ''
+              }
+              subtitle="Necessitam preencher prazo"
+              active={activeKpiFilter === 'sem_prazo'}
+              onClick={() => handleKpiClick('sem_prazo')}
             />
           </div>
 

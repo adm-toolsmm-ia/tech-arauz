@@ -1,30 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import {
-  Star,
-  AlertTriangle,
-  Clock,
-  Building2,
-  User,
-  Calendar,
-  GitBranch,
-} from 'lucide-react';
-import {
-  statusStyles,
-  statusLabels,
-  resolvePhaseLabel,
-} from '@/lib/constants/phase-labels';
-import {
-  PROJECT_BAR_COLORS,
-  getProjectColorIndex,
-} from '@/lib/constants/project-colors';
+import { Star, AlertTriangle, Clock, Building2, User, Calendar, GitBranch } from 'lucide-react';
+import { statusStyles, statusLabels, resolvePhaseLabel } from '@/lib/constants/phase-labels';
+import { PROJECT_BAR_COLORS, getProjectColorIndex } from '@/lib/constants/project-colors';
 import { isOverdue, isWithin7Days, formatDateBR } from '@/lib/utils/date-helpers';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProjectCardData {
   id: string;
@@ -125,8 +105,7 @@ function ImpactBadge({ value }: { value: string }) {
       variant="outline"
       className={cn(
         'h-5 px-2 text-[10px]',
-        lower === 'alta' &&
-          'border-red-300 text-red-700 dark:border-red-800 dark:text-red-300',
+        lower === 'alta' && 'border-red-300 text-red-700 dark:border-red-800 dark:text-red-300',
         (lower === 'media' || lower === 'médio') &&
           'border-amber-300 text-amber-700 dark:border-amber-800 dark:text-amber-300',
         lower === 'baixa' &&
@@ -148,30 +127,22 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
   const nextDeadline = project.prazo_aprovador || project.prazo_cronograma;
 
   const normalizedStatus = normalizeSlug(project.status);
-  const faseSlug = project.fase_atual
-    ? normalizeSlug(project.fase_atual)
-    : '';
+  const faseSlug = project.fase_atual ? normalizeSlug(project.fase_atual) : '';
 
-  const showAlerts =
-    project.importancia_especial || isProjectOverdue || isDeadlineNear;
+  const showAlerts = project.importancia_especial || isProjectOverdue || isDeadlineNear;
 
   return (
-    <div className="relative flex flex-col h-full">
+    <div className="relative flex h-full flex-col">
       {/* Barra lateral colorida */}
-      <div
-        className={cn(
-          'absolute left-0 top-0 bottom-0 w-1 rounded-l-lg',
-          barColor,
-        )}
-      />
+      <div className={cn('absolute bottom-0 left-0 top-0 w-1 rounded-l-lg', barColor)} />
 
-      <div className="flex-1 space-y-1.5 pl-3 py-2">
+      <div className="flex-1 space-y-1.5 py-2 pl-3">
         {/* SEÇÃO 1: HEADER - Título + Código */}
         <div className="space-y-0.5">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <h4 className="text-sm font-semibold leading-normal text-foreground/90 cursor-help">
+                <h4 className="cursor-help text-sm font-semibold leading-normal text-foreground/90">
                   {project.project_name}
                 </h4>
               </TooltipTrigger>
@@ -187,7 +158,7 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
 
         {/* SEÇÃO 2: ALERTAS - Especial, Atrasado, Prazo */}
         {showAlerts && (
-          <div className="flex items-center gap-1 flex-wrap">
+          <div className="flex flex-wrap items-center gap-1">
             {project.importancia_especial && (
               <Badge variant="warning" className="h-5 px-1.5 text-[9px]">
                 <Star className="mr-0.5 h-3 w-3 fill-current" />
@@ -213,22 +184,22 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
         <div className="space-y-1 border-t border-border/30 pt-1">
           {/* Responsável */}
           <div className="flex items-start gap-1.5 text-xs">
-            <User className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+            <User className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <TextWithTooltip
               text={project.responsible}
               maxLength={40}
-              className="text-foreground/85 leading-snug"
+              className="leading-snug text-foreground/85"
             />
           </div>
 
           {/* Área (se disponível) */}
           {project.area && (
             <div className="flex items-start gap-1.5 text-xs">
-              <Building2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+              <Building2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <TextWithTooltip
                 text={project.area}
                 maxLength={40}
-                className="text-foreground/85 leading-snug"
+                className="leading-snug text-foreground/85"
               />
             </div>
           )}
@@ -238,9 +209,9 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
         <div className="space-y-1 border-t border-border/30 pt-1">
           {/* Prazo Final (GRANDE E DESTACADO) */}
           <div className="flex items-start gap-1.5">
-            <Calendar className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+            <Calendar className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <div className="flex-1">
-              <span className="text-[10px] text-muted-foreground block">Prazo Final:</span>
+              <span className="block text-[10px] text-muted-foreground">Prazo Final:</span>
               <span
                 className={cn(
                   'text-xs font-semibold',
@@ -257,10 +228,10 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
           {/* Próximo Prazo (se disponível) */}
           {nextDeadline && (
             <div className="flex items-start gap-1.5 text-xs">
-              <Clock className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+              <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <div className="flex-1">
-                <span className="text-muted-foreground text-[9px]">Próximo:</span>
-                <span className="text-foreground/80 block text-xs">
+                <span className="text-[9px] text-muted-foreground">Próximo:</span>
+                <span className="block text-xs text-foreground/80">
                   {formatDateBR(nextDeadline)}
                 </span>
               </div>
@@ -270,7 +241,7 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
           {/* Fase Atual (se disponível) */}
           {project.fase_atual && (
             <div className="flex items-start gap-1.5 text-xs">
-              <GitBranch className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
+              <GitBranch className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <div className="flex-1">
                 <span className="text-foreground/85">
                   {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
@@ -283,7 +254,7 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
         {/* SEÇÃO 5: ÚLTIMA MENSAGEM DE MOVIMENTAÇÃO (se disponível) */}
         {project.mensagem_movimentacao && (
           <div className="space-y-1 border-t border-border/30 pt-1">
-            <span className="text-muted-foreground text-[9px] block">Último histórico:</span>
+            <span className="block text-[9px] text-muted-foreground">Último histórico:</span>
             <p
               className="line-clamp-3 text-[11px] leading-snug text-muted-foreground"
               title={project.mensagem_movimentacao}
@@ -300,7 +271,7 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
       </div>
 
       {/* RODAPÉ: Status Badge */}
-      <div className="flex items-center justify-start border-t border-border/30 pt-1 px-3 pb-2 mt-auto">
+      <div className="mt-auto flex items-center justify-start border-t border-border/30 px-3 pb-2 pt-1">
         <Badge
           className={cn(
             'h-5 px-2.5 text-[10px] font-medium',

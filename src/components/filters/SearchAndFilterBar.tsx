@@ -24,15 +24,15 @@ export function SearchAndFilterBar({
   return (
     <div
       className={cn(
-        'flex items-center gap-4 flex-wrap',
-        'p-4 bg-background/50 rounded-lg border border-border',
+        'flex flex-wrap items-center gap-4',
+        'rounded-lg border border-border bg-background/50 p-4',
         className,
       )}
       role="region"
       aria-label="Barra de busca e filtros"
     >
       {/* Global Search */}
-      <div className="flex-1 min-w-[250px]">
+      <div className="min-w-[250px] flex-1">
         <GlobalSearch onSearch={onSearch} />
       </div>
 

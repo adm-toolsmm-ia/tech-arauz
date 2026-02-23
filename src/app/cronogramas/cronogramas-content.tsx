@@ -244,10 +244,10 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   // Note: filterState.filteredData applies all filters (search + structured filters)
   const filteredSchedules: Schedule[] = React.useMemo(() => {
     // Apply additional filtering (hide completed schedules)
-    return (filterState.filteredData.filter(s =>
-      s.project?.status?.toLowerCase() !== 'concluído' &&
-      s.status?.toLowerCase() !== 'concluído'
-    ) as unknown) as Schedule[];
+    return filterState.filteredData.filter(
+      (s) =>
+        s.project?.status?.toLowerCase() !== 'concluído' && s.status?.toLowerCase() !== 'concluído',
+    ) as unknown as Schedule[];
   }, [filterState.filteredData]);
 
   // KPI calculations
@@ -281,7 +281,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   // Get schedules for a specific date
   const getSchedulesForDate = React.useCallback(
     (date: Date): Schedule[] => {
-      return (filteredSchedules.filter((s) => {
+      return filteredSchedules.filter((s) => {
         const start = s.data_inicio ? new Date(s.data_inicio) : null;
         const end = s.data_fim ? new Date(s.data_fim) : null;
 
@@ -291,17 +291,20 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
         if (start) return isSameDay(date, start);
         if (end) return isSameDay(date, end);
         return false;
-      }) as unknown) as Schedule[];
+      }) as unknown as Schedule[];
     },
     [filteredSchedules],
   );
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex flex-col min-w-0 w-full max-w-full overflow-hidden">
-        <DashboardHeader title="Cronogramas" subtitle="Visualize todos os cronogramas de projetos" />
+      <div className="flex w-full min-w-0 max-w-full flex-col overflow-hidden">
+        <DashboardHeader
+          title="Cronogramas"
+          subtitle="Visualize todos os cronogramas de projetos"
+        />
 
-        <div className="flex-1 space-y-6 p-6 min-w-0 max-w-full overflow-x-hidden">
+        <div className="min-w-0 max-w-full flex-1 space-y-6 overflow-x-hidden p-6">
           {/* KPIs */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <KPICard
@@ -317,7 +320,9 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               className={
                 delayedCount > 0 ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500' : ''
               }
-              subtitle={delayedCount > 0 ? 'Requerem atenção imediata' : 'Nenhuma atividade atrasada'}
+              subtitle={
+                delayedCount > 0 ? 'Requerem atenção imediata' : 'Nenhuma atividade atrasada'
+              }
             />
             <KPICard
               title="Concluídas"
@@ -326,9 +331,9 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               trend={
                 totalActivities > 0
                   ? {
-                    value: `${Math.round((completedCount / totalActivities) * 100)}%`,
-                    positive: true,
-                  }
+                      value: `${Math.round((completedCount / totalActivities) * 100)}%`,
+                      positive: true,
+                    }
                   : undefined
               }
             />
@@ -453,19 +458,21 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                   priority: null,
                   category: null,
                 }}
-                schedules={schedules.filter(s => s.project_id === selectedSchedule.project?.id).map(s => ({
-                  id: s.id,
-                  atividade: s.atividade,
-                  responsavel: s.responsavel,
-                  data_inicio: s.data_inicio,
-                  data_fim: s.data_fim,
-                  data_prazo: s.data_prazo,
-                  status: s.status,
-                  fase_atividade: s.fase_atividade,
-                  atrasado: s.atrasado,
-                  setor_responsavel: s.setor_responsavel,
-                  item: s.item
-                }))}
+                schedules={schedules
+                  .filter((s) => s.project_id === selectedSchedule.project?.id)
+                  .map((s) => ({
+                    id: s.id,
+                    atividade: s.atividade,
+                    responsavel: s.responsavel,
+                    data_inicio: s.data_inicio,
+                    data_fim: s.data_fim,
+                    data_prazo: s.data_prazo,
+                    status: s.status,
+                    fase_atividade: s.fase_atividade,
+                    atrasado: s.atrasado,
+                    setor_responsavel: s.setor_responsavel,
+                    item: s.item,
+                  }))}
                 deliveries={[]}
                 histories={[]}
                 approvers={[]}
@@ -564,14 +571,15 @@ function MonthView({
                       isToday && 'bg-accent font-bold',
                       isSelected && 'bg-primary/5 ring-2 ring-primary',
                       hasDelayed &&
-                      daySchedules.length > 0 &&
-                      'ring-1 ring-red-300 dark:ring-red-700',
+                        daySchedules.length > 0 &&
+                        'ring-1 ring-red-300 dark:ring-red-700',
                     )}
                   >
                     <span
                       className={cn(
                         'mt-0.5 text-xs leading-none',
-                        isToday && 'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
+                        isToday &&
+                          'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
                         !isToday && date.getMonth() !== month && 'text-muted-foreground/50',
                       )}
                     >
@@ -593,7 +601,9 @@ function MonthView({
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-[200px]">
                                 <p className="text-xs font-medium">{s.atividade || 'Sem nome'}</p>
-                                <p className="text-[10px] text-muted-foreground">{s.project?.titulo || 'Projeto'}</p>
+                                <p className="text-[10px] text-muted-foreground">
+                                  {s.project?.titulo || 'Projeto'}
+                                </p>
                               </TooltipContent>
                             </Tooltip>
                           );
@@ -625,10 +635,10 @@ function MonthView({
                             if (!acc.has(projectName)) acc.set(projectName, []);
                             acc.get(projectName)!.push(s);
                             return acc;
-                          }, new Map<string, Schedule[]>())
+                          }, new Map<string, Schedule[]>()),
                         ).map(([projectName, projSchedules]) => (
                           <div key={projectName} className="space-y-1.5">
-                            <h4 className="text-[11px] font-bold uppercase text-foreground/80 line-clamp-1 border-b pb-1">
+                            <h4 className="line-clamp-1 border-b pb-1 text-[11px] font-bold uppercase text-foreground/80">
                               {projectName}
                             </h4>
                             {projSchedules.map((s) => {
@@ -774,9 +784,13 @@ function WeekView({
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-[240px]">
                           <p className="text-xs font-medium">{s.atividade || 'Sem nome'}</p>
-                          <p className="text-[10px] text-muted-foreground">{s.project?.titulo || 'Projeto'}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {s.project?.titulo || 'Projeto'}
+                          </p>
                           {s.responsavel && (
-                            <p className="text-[10px] text-muted-foreground">Resp: {s.responsavel}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              Resp: {s.responsavel}
+                            </p>
                           )}
                         </TooltipContent>
                       </Tooltip>
@@ -815,31 +829,47 @@ function DayView({
   const schedules = getSchedulesForDate(currentDate);
 
   return (
-    <Card className="shadow-soft w-full min-h-[400px]">
-      <CardContent className="p-4 sm:p-6 h-full flex flex-col">
+    <Card className="min-h-[400px] w-full shadow-soft">
+      <CardContent className="flex h-full flex-col p-4 sm:p-6">
         {/* Header with navigation */}
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="outline" size="icon" onClick={() => onNavigate(-1)} className="h-8 w-8 hover:bg-accent/60">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => onNavigate(-1)}
+            className="h-8 w-8 hover:bg-accent/60"
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="flex flex-col items-center">
             <h3 className="text-xl font-bold tracking-tight">
-              {currentDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+              {currentDate.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+              })}
             </h3>
-            <span className="text-sm font-medium text-muted-foreground capitalize">
+            <span className="text-sm font-medium capitalize text-muted-foreground">
               {currentDate.toLocaleDateString('pt-BR', { weekday: 'long' })}
             </span>
           </div>
-          <Button variant="outline" size="icon" onClick={() => onNavigate(1)} className="h-8 w-8 hover:bg-accent/60">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => onNavigate(1)}
+            className="h-8 w-8 hover:bg-accent/60"
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin">
+        <div className="scrollbar-thin flex-1 overflow-y-auto pr-2">
           {schedules.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-[200px] text-center">
-              <CalendarDays className="h-10 w-10 text-muted-foreground/30 mb-2" />
-              <p className="text-muted-foreground font-medium">Nenhuma pauta ou atividade para este dia.</p>
+            <div className="flex h-[200px] flex-col items-center justify-center text-center">
+              <CalendarDays className="mb-2 h-10 w-10 text-muted-foreground/30" />
+              <p className="font-medium text-muted-foreground">
+                Nenhuma pauta ou atividade para este dia.
+              </p>
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

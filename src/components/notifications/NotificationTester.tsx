@@ -16,7 +16,12 @@ export function NotificationTester() {
 
   const handleAddMockNotification = () => {
     const mockNotif = generateMockNotification();
-    addNotification(mockNotif.projectId, mockNotif.projectName, mockNotif.alertType, mockNotif.message);
+    addNotification(
+      mockNotif.projectId,
+      mockNotif.projectName,
+      mockNotif.alertType,
+      mockNotif.message,
+    );
   };
 
   const handleAddSpecificNotification = (alertType: string) => {
@@ -37,15 +42,10 @@ export function NotificationTester() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 p-4 bg-primary/10 border border-primary rounded-lg shadow-lg z-40 max-w-xs">
-      <p className="text-xs font-semibold mb-2 text-primary">Notification Tester (Dev Only)</p>
+    <div className="fixed bottom-4 right-4 z-40 max-w-xs rounded-lg border border-primary bg-primary/10 p-4 shadow-lg">
+      <p className="mb-2 text-xs font-semibold text-primary">Notification Tester (Dev Only)</p>
       <div className="space-y-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleAddMockNotification}
-          className="w-full"
-        >
+        <Button size="sm" variant="outline" onClick={handleAddMockNotification} className="w-full">
           Add Random
         </Button>
         <div className="grid grid-cols-2 gap-1">

@@ -19,11 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 export function FilterControl({
@@ -51,9 +47,7 @@ export function FilterControl({
     if (!search || !definition.searchable) return options;
 
     const searchLower = search.toLowerCase();
-    return options.filter((opt) =>
-      String(opt.label).toLowerCase().includes(searchLower),
-    );
+    return options.filter((opt) => String(opt.label).toLowerCase().includes(searchLower));
   }, [options, search, definition.searchable]);
 
   // Sort options if needed
@@ -179,7 +173,11 @@ function SelectControl({
   return (
     <div className={cn('flex flex-col gap-2', className)}>
       <label className="text-sm font-medium">{definition.label}</label>
-      <Select value={String(value || '')} onValueChange={handleChange} disabled={disabled || isLoading}>
+      <Select
+        value={String(value || '')}
+        onValueChange={handleChange}
+        disabled={disabled || isLoading}
+      >
         <SelectTrigger className="w-full">
           <SelectValue placeholder={definition.placeholder || `Select ${definition.label}...`} />
         </SelectTrigger>
@@ -268,17 +266,17 @@ function MultiSelectControl({
             />
           )}
 
-          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+          <div className="max-h-[300px] space-y-2 overflow-y-auto">
             {options.map((opt) => (
-              <label key={String(opt.value)} className="flex items-center gap-2 cursor-pointer">
+              <label key={String(opt.value)} className="flex cursor-pointer items-center gap-2">
                 <input
                   type="checkbox"
                   checked={value.includes(opt.value)}
                   onChange={() => handleToggle(opt.value)}
                   disabled={opt.disabled}
-                  className="w-4 h-4 rounded border-gray-300"
+                  className="h-4 w-4 rounded border-gray-300"
                 />
-                <span className="text-sm flex-1">{opt.label}</span>
+                <span className="flex-1 text-sm">{opt.label}</span>
                 {opt.badge && <Badge variant="secondary">{opt.badge}</Badge>}
               </label>
             ))}
@@ -286,12 +284,7 @@ function MultiSelectControl({
 
           {selectedLabels.length > 0 && (
             <div className="mt-3 flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onChange([])}
-                className="flex-1"
-              >
+              <Button variant="outline" size="sm" onClick={() => onChange([])} className="flex-1">
                 Clear
               </Button>
             </div>
@@ -306,10 +299,7 @@ function MultiSelectControl({
             <Badge key={idx} variant="secondary" className="gap-1">
               {selectedLabels[idx]}
               {definition.clearable && (
-                <button
-                  onClick={() => handleClear(v)}
-                  className="ml-1 hover:opacity-70"
-                >
+                <button onClick={() => handleClear(v)} className="ml-1 hover:opacity-70">
                   <X className="h-3 w-3" />
                 </button>
               )}
@@ -344,9 +334,9 @@ function CheckboxControl({
         checked={value}
         onChange={(e) => onChange(e.target.checked)}
         disabled={disabled}
-        className="w-4 h-4 rounded border-gray-300"
+        className="h-4 w-4 rounded border-gray-300"
       />
-      <label htmlFor={definition.id} className="text-sm font-medium cursor-pointer">
+      <label htmlFor={definition.id} className="cursor-pointer text-sm font-medium">
         {definition.label}
       </label>
     </div>
@@ -370,24 +360,24 @@ function DateRangeControl({
     <div className={cn('flex flex-col gap-2', className)}>
       <label className="text-sm font-medium">{definition.label}</label>
       <div className="flex gap-2">
-        <div className="flex-1 relative">
+        <div className="relative flex-1">
           <Calendar className="absolute left-2 top-2.5 h-4 w-4 opacity-50" />
           <input
             type="date"
             value={value.start || ''}
             onChange={(e) => onChange({ ...value, start: e.target.value })}
             disabled={disabled}
-            className="w-full pl-8 pr-3 py-2 border rounded-md text-sm"
+            className="w-full rounded-md border py-2 pl-8 pr-3 text-sm"
           />
         </div>
-        <div className="flex-1 relative">
+        <div className="relative flex-1">
           <Calendar className="absolute left-2 top-2.5 h-4 w-4 opacity-50" />
           <input
             type="date"
             value={value.end || ''}
             onChange={(e) => onChange({ ...value, end: e.target.value })}
             disabled={disabled}
-            className="w-full pl-8 pr-3 py-2 border rounded-md text-sm"
+            className="w-full rounded-md border py-2 pl-8 pr-3 text-sm"
           />
         </div>
       </div>

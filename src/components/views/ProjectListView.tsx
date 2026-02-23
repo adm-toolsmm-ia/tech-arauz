@@ -1,31 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import {
-  AlertTriangle,
-  Star,
-  Clock,
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  EyeOff,
-} from 'lucide-react';
+import { AlertTriangle, Star, Clock, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  statusStyles,
-  statusLabels,
-  resolvePhaseLabel,
-} from '@/lib/constants/phase-labels';
+import { statusStyles, statusLabels, resolvePhaseLabel } from '@/lib/constants/phase-labels';
 import { isOverdue, isWithin7Days, formatDateBR } from '@/lib/utils/date-helpers';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProjectListViewProps {
   projects: any[];
@@ -53,7 +36,7 @@ const AlertIcons = ({ project }: { project: any }) => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Star className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400 fill-current" />
+              <Star className="h-3.5 w-3.5 fill-current text-yellow-600 dark:text-yellow-400" />
             </TooltipTrigger>
             <TooltipContent side="left">Especial</TooltipContent>
           </Tooltip>
@@ -122,13 +105,7 @@ export function ProjectListView({
     return sorted;
   }, [projects, sortBy, sortDirection]);
 
-  const SortHeader = ({
-    column,
-    label,
-  }: {
-    column: 'name' | 'date' | 'status';
-    label: string;
-  }) => (
+  const SortHeader = ({ column, label }: { column: 'name' | 'date' | 'status'; label: string }) => (
     <button
       onClick={() => {
         if (sortBy === column) {
@@ -138,7 +115,7 @@ export function ProjectListView({
           setSortDirection('asc');
         }
       }}
-      className="flex items-center gap-1.5 font-semibold text-xs hover:text-primary transition-colors"
+      className="flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-primary"
     >
       {label}
       {sortBy === column &&
@@ -169,28 +146,28 @@ export function ProjectListView({
   return (
     <div className="w-full space-y-2">
       {/* Desktop Table View */}
-      <div className="hidden md:block border rounded-lg overflow-hidden bg-card">
-        <div className="overflow-x-auto max-h-[600px]">
+      <div className="hidden overflow-hidden rounded-lg border bg-card md:block">
+        <div className="max-h-[600px] overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="sticky top-0 bg-muted/50 border-b">
+            <thead className="sticky top-0 border-b bg-muted/50">
               <tr>
-                <th className="px-3 py-2 text-left w-8"></th>
-                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-16 min-w-fit">
+                <th className="w-8 px-3 py-2 text-left"></th>
+                <th className="w-16 min-w-fit px-3 py-2 text-left font-semibold text-muted-foreground">
                   Código
                 </th>
-                <th className="px-3 py-2 text-left font-semibold text-muted-foreground min-w-fit">
+                <th className="min-w-fit px-3 py-2 text-left font-semibold text-muted-foreground">
                   <SortHeader column="name" label="Projeto" />
                 </th>
-                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-20 min-w-fit">
+                <th className="w-20 min-w-fit px-3 py-2 text-left font-semibold text-muted-foreground">
                   <SortHeader column="status" label="Status" />
                 </th>
-                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-16 min-w-fit">
+                <th className="w-16 min-w-fit px-3 py-2 text-left font-semibold text-muted-foreground">
                   Responsável
                 </th>
-                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-20 min-w-fit">
+                <th className="w-20 min-w-fit px-3 py-2 text-left font-semibold text-muted-foreground">
                   <SortHeader column="date" label="Prazo" />
                 </th>
-                <th className="px-3 py-2 text-left font-semibold text-muted-foreground w-10 min-w-fit">
+                <th className="w-10 min-w-fit px-3 py-2 text-left font-semibold text-muted-foreground">
                   Alertas
                 </th>
               </tr>
@@ -199,16 +176,13 @@ export function ProjectListView({
               {sortedProjects.map((project) => {
                 const isExpanded = expandedRows.has(project.id);
                 const isProjectOverdue = isOverdue(project.end_date, project.status);
-                const isDeadlineNear =
-                  isWithin7Days(project.end_date) && !isProjectOverdue;
+                const isDeadlineNear = isWithin7Days(project.end_date) && !isProjectOverdue;
                 const normalizedStatus = normalizeSlug(project.status);
-                const faseSlug = project.fase_atual
-                  ? normalizeSlug(project.fase_atual)
-                  : '';
+                const faseSlug = project.fase_atual ? normalizeSlug(project.fase_atual) : '';
 
                 return (
                   <React.Fragment key={project.id}>
-                    <tr className="hover:bg-muted/50 transition-colors">
+                    <tr className="transition-colors hover:bg-muted/50">
                       <td className="px-3 py-2">
                         <Button
                           variant="ghost"
@@ -227,7 +201,7 @@ export function ProjectListView({
                         #{project.espaider_code}
                       </td>
                       <td
-                        className="px-3 py-2 font-medium text-foreground/90 truncate cursor-pointer hover:text-primary transition-colors"
+                        className="cursor-pointer truncate px-3 py-2 font-medium text-foreground/90 transition-colors hover:text-primary"
                         onClick={() => onSelectProject?.(project.id)}
                         title={project.project_name}
                       >
@@ -236,22 +210,20 @@ export function ProjectListView({
                       <td className="px-3 py-2">
                         <Badge
                           className={cn(
-                            'text-xs px-1.5 py-0',
-                            statusStyles[normalizedStatus] ||
-                              statusStyles.projeto_futuro,
+                            'px-1.5 py-0 text-xs',
+                            statusStyles[normalizedStatus] || statusStyles.projeto_futuro,
                           )}
                         >
                           {statusLabels[normalizedStatus] || project.status}
                         </Badge>
                       </td>
-                      <td className="px-3 py-2 text-xs text-foreground/80 truncate">
+                      <td className="truncate px-3 py-2 text-xs text-foreground/80">
                         {project.responsible || '-'}
                       </td>
                       <td
                         className={cn(
                           'px-3 py-2 text-xs font-medium',
-                          isProjectOverdue &&
-                            'text-red-600 dark:text-red-400',
+                          isProjectOverdue && 'text-red-600 dark:text-red-400',
                           !isProjectOverdue &&
                             isDeadlineNear &&
                             'text-amber-600 dark:text-amber-400',
@@ -266,26 +238,19 @@ export function ProjectListView({
                     {isExpanded && (
                       <tr className="bg-muted/20">
                         <td colSpan={7} className="px-4 py-3">
-                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                          <div className="grid grid-cols-2 gap-3 text-xs lg:grid-cols-4">
                             <div>
-                              <p className="font-semibold text-muted-foreground mb-1">
-                                Área
-                              </p>
+                              <p className="mb-1 font-semibold text-muted-foreground">Área</p>
+                              <p className="text-foreground/80">{project.area || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="mb-1 font-semibold text-muted-foreground">Fase</p>
                               <p className="text-foreground/80">
-                                {project.area || '-'}
+                                {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
                               </p>
                             </div>
                             <div>
-                              <p className="font-semibold text-muted-foreground mb-1">
-                                Fase
-                              </p>
-                              <p className="text-foreground/80">
-                                {resolvePhaseLabel(faseSlug, project.fase_atual) ||
-                                  '-'}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="font-semibold text-muted-foreground mb-1">
+                              <p className="mb-1 font-semibold text-muted-foreground">
                                 Complexidade
                               </p>
                               <p className="text-foreground/80">
@@ -293,10 +258,8 @@ export function ProjectListView({
                               </p>
                             </div>
                             <div>
-                              <p className="font-semibold text-muted-foreground mb-1">
-                                Objetivo
-                              </p>
-                              <p className="text-foreground/80 truncate">
+                              <p className="mb-1 font-semibold text-muted-foreground">Objetivo</p>
+                              <p className="truncate text-foreground/80">
                                 {project.objetivo || '-'}
                               </p>
                             </div>
@@ -313,39 +276,33 @@ export function ProjectListView({
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden space-y-2">
+      <div className="space-y-2 md:hidden">
         {sortedProjects.map((project) => {
           const isExpanded = expandedRows.has(project.id);
           const isProjectOverdue = isOverdue(project.end_date, project.status);
-          const isDeadlineNear =
-            isWithin7Days(project.end_date) && !isProjectOverdue;
+          const isDeadlineNear = isWithin7Days(project.end_date) && !isProjectOverdue;
           const normalizedStatus = normalizeSlug(project.status);
-          const faseSlug = project.fase_atual
-            ? normalizeSlug(project.fase_atual)
-            : '';
+          const faseSlug = project.fase_atual ? normalizeSlug(project.fase_atual) : '';
 
           return (
-            <Card
-              key={project.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
-            >
+            <Card key={project.id} className="cursor-pointer transition-shadow hover:shadow-md">
               <CardContent className="p-3">
                 <div
-                  className="flex items-start justify-between gap-2 mb-2"
+                  className="mb-2 flex items-start justify-between gap-2"
                   onClick={() => onSelectProject?.(project.id)}
                 >
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="font-mono text-xs text-muted-foreground">
                       #{project.espaider_code}
                     </p>
-                    <p className="font-semibold text-sm text-foreground truncate">
+                    <p className="truncate text-sm font-semibold text-foreground">
                       {project.project_name}
                     </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 w-6 p-0 flex-shrink-0"
+                    className="h-6 w-6 flex-shrink-0 p-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleExpanded(project.id);
@@ -359,12 +316,11 @@ export function ProjectListView({
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="mb-2 flex items-center justify-between gap-2">
                   <Badge
                     className={cn(
-                      'text-xs px-1.5 py-0 flex-shrink-0',
-                      statusStyles[normalizedStatus] ||
-                        statusStyles.projeto_futuro,
+                      'flex-shrink-0 px-1.5 py-0 text-xs',
+                      statusStyles[normalizedStatus] || statusStyles.projeto_futuro,
                     )}
                   >
                     {statusLabels[normalizedStatus] || project.status}
@@ -372,10 +328,10 @@ export function ProjectListView({
                   <AlertIcons project={project} />
                 </div>
 
-                <div className="space-y-1 text-xs mb-2">
+                <div className="mb-2 space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Responsável:</span>
-                    <span className="text-foreground/80 font-medium">
+                    <span className="font-medium text-foreground/80">
                       {project.responsible || '-'}
                     </span>
                   </div>
@@ -384,11 +340,8 @@ export function ProjectListView({
                     <span
                       className={cn(
                         'font-medium',
-                        isProjectOverdue &&
-                          'text-red-600 dark:text-red-400',
-                        !isProjectOverdue &&
-                          isDeadlineNear &&
-                          'text-amber-600 dark:text-amber-400',
+                        isProjectOverdue && 'text-red-600 dark:text-red-400',
+                        !isProjectOverdue && isDeadlineNear && 'text-amber-600 dark:text-amber-400',
                       )}
                     >
                       {formatDateBR(project.end_date)}
@@ -397,20 +350,16 @@ export function ProjectListView({
                 </div>
 
                 {isExpanded && (
-                  <div className="border-t pt-2 space-y-2 text-xs">
+                  <div className="space-y-2 border-t pt-2 text-xs">
                     {project.area && (
                       <div>
-                        <p className="font-semibold text-muted-foreground mb-0.5">
-                          Área
-                        </p>
+                        <p className="mb-0.5 font-semibold text-muted-foreground">Área</p>
                         <p className="text-foreground/80">{project.area}</p>
                       </div>
                     )}
                     {project.fase_atual && (
                       <div>
-                        <p className="font-semibold text-muted-foreground mb-0.5">
-                          Fase
-                        </p>
+                        <p className="mb-0.5 font-semibold text-muted-foreground">Fase</p>
                         <p className="text-foreground/80">
                           {resolvePhaseLabel(faseSlug, project.fase_atual)}
                         </p>
@@ -418,22 +367,16 @@ export function ProjectListView({
                     )}
                     {project.complexidade_tecnica && (
                       <div>
-                        <p className="font-semibold text-muted-foreground mb-0.5">
-                          Complexidade
-                        </p>
-                        <Badge variant="outline" className="text-xs px-1.5 py-0">
+                        <p className="mb-0.5 font-semibold text-muted-foreground">Complexidade</p>
+                        <Badge variant="outline" className="px-1.5 py-0 text-xs">
                           {project.complexidade_tecnica}
                         </Badge>
                       </div>
                     )}
                     {project.objetivo && (
                       <div>
-                        <p className="font-semibold text-muted-foreground mb-0.5">
-                          Objetivo
-                        </p>
-                        <p className="text-foreground/80 line-clamp-2">
-                          {project.objetivo}
-                        </p>
+                        <p className="mb-0.5 font-semibold text-muted-foreground">Objetivo</p>
+                        <p className="line-clamp-2 text-foreground/80">{project.objetivo}</p>
                       </div>
                     )}
                   </div>

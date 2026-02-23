@@ -47,9 +47,9 @@ export function NotificationBell({ className }: NotificationBellProps) {
         ref={buttonRef}
         onClick={() => setIsPanelOpen(!isPanelOpen)}
         className={cn(
-          'relative inline-flex items-center justify-center p-2 rounded-md',
-          'hover:bg-accent transition-colors',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary',
+          'relative inline-flex items-center justify-center rounded-md p-2',
+          'transition-colors hover:bg-accent',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
           'text-foreground dark:text-sidebar-foreground',
         )}
         aria-label={`Notificações (${unreadCount} não lidas)`}
@@ -62,8 +62,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
         {hasUnread && (
           <span
             className={cn(
-              'absolute top-0 right-0 flex items-center justify-center',
-              'h-5 w-5 rounded-full bg-red-500 text-white text-[10px] font-semibold',
+              'absolute right-0 top-0 flex items-center justify-center',
+              'h-5 w-5 rounded-full bg-red-500 text-[10px] font-semibold text-white',
             )}
             aria-label={`${unreadCount} notificações não lidas`}
           >
@@ -76,7 +76,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
       {isPanelOpen && (
         <div
           ref={panelRef}
-          className="fixed right-0 top-0 h-screen w-[280px] md:w-[320px] bg-sidebar shadow-lg z-50 border-l border-sidebar-border animate-in slide-in-from-right-full duration-300"
+          className="fixed right-0 top-0 z-50 h-screen w-[280px] border-l border-sidebar-border bg-sidebar shadow-lg duration-300 animate-in slide-in-from-right-full md:w-[320px]"
         >
           <NotificationPanel onClose={() => setIsPanelOpen(false)} />
         </div>

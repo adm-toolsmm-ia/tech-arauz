@@ -33,7 +33,7 @@ function SkeletonKanbanCard({ className }: { className?: string }) {
         </div>
 
         {/* Metadados essenciais */}
-        <div className="border-t border-border/30 pt-2 space-y-1">
+        <div className="space-y-1 border-t border-border/30 pt-2">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="h-3 w-20" />
           <Skeleton className="h-3 w-28" />
@@ -55,15 +55,33 @@ function SkeletonTableRow({ className }: { className?: string }) {
         <Skeleton className="mb-1 h-4 w-32" />
         <Skeleton className="h-3 w-20" />
       </td>
-      <td className="px-3 py-3"><Skeleton className="h-3 w-16" /></td>
-      <td className="px-3 py-3"><Skeleton className="h-3 w-20" /></td>
-      <td className="px-3 py-3"><Skeleton className="h-3 w-24" /></td>
-      <td className="px-3 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
-      <td className="px-3 py-3"><Skeleton className="h-3 w-16" /></td>
-      <td className="px-3 py-3"><Skeleton className="h-5 w-12 rounded-full" /></td>
-      <td className="px-3 py-3"><Skeleton className="h-5 w-12 rounded-full" /></td>
-      <td className="px-3 py-3"><Skeleton className="h-3 w-28" /></td>
-      <td className="px-3 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+      <td className="px-3 py-3">
+        <Skeleton className="h-3 w-16" />
+      </td>
+      <td className="px-3 py-3">
+        <Skeleton className="h-3 w-20" />
+      </td>
+      <td className="px-3 py-3">
+        <Skeleton className="h-3 w-24" />
+      </td>
+      <td className="px-3 py-3">
+        <Skeleton className="h-5 w-14 rounded-full" />
+      </td>
+      <td className="px-3 py-3">
+        <Skeleton className="h-3 w-16" />
+      </td>
+      <td className="px-3 py-3">
+        <Skeleton className="h-5 w-12 rounded-full" />
+      </td>
+      <td className="px-3 py-3">
+        <Skeleton className="h-5 w-12 rounded-full" />
+      </td>
+      <td className="px-3 py-3">
+        <Skeleton className="h-3 w-28" />
+      </td>
+      <td className="px-3 py-3">
+        <Skeleton className="h-5 w-16 rounded-full" />
+      </td>
     </tr>
   );
 }

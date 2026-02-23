@@ -33,10 +33,7 @@ export async function GET() {
 
     if (profileError || !profile) {
       console.error('[GET /api/integracoes] Profile error:', profileError?.message);
-      return NextResponse.json(
-        { error: 'Erro ao carregar perfil do usuário.' },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: 'Erro ao carregar perfil do usuário.' }, { status: 500 });
     }
 
     if (!['admin', 'user'].includes(profile.role)) {
@@ -61,10 +58,7 @@ export async function GET() {
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     console.error('[GET /api/integracoes] Unexpected error:', error.message);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor.' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
   }
 }
 

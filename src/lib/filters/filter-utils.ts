@@ -3,7 +3,12 @@
  * Common functions for filter application, persistence, and manipulation
  */
 
-import { FilterState, FilterDefinition, ApplyFiltersOptions, ActiveFilterInfo } from './filter-types';
+import {
+  FilterState,
+  FilterDefinition,
+  ApplyFiltersOptions,
+  ActiveFilterInfo,
+} from './filter-types';
 
 /**
  * Get nested property value from object using dot notation (e.g., 'project.titulo')
@@ -24,7 +29,12 @@ export function applyFilters<T extends Record<string, any>>(
 ): T[] {
   if (!data || data.length === 0) return [];
 
-  const { search = '', searchFields = [], caseSensitive = false, matchMode = 'partial' } = options || {};
+  const {
+    search = '',
+    searchFields = [],
+    caseSensitive = false,
+    matchMode = 'partial',
+  } = options || {};
 
   return data.filter((item) => {
     // Apply text search
@@ -262,10 +272,7 @@ export function restoreFilters(key: string, definitions: FilterDefinition[]): Fi
 /**
  * Merge filter changes (shallow merge)
  */
-export function mergeFilters(
-  current: FilterState,
-  changes: Partial<FilterState>,
-): FilterState {
+export function mergeFilters(current: FilterState, changes: Partial<FilterState>): FilterState {
   return { ...current, ...changes };
 }
 
@@ -298,7 +305,10 @@ export function filtersToQuery(filters: FilterState): URLSearchParams {
 /**
  * Parse filters from URL query string
  */
-export function queryToFilters(params: URLSearchParams, definitions: FilterDefinition[]): FilterState {
+export function queryToFilters(
+  params: URLSearchParams,
+  definitions: FilterDefinition[],
+): FilterState {
   const filters: FilterState = {};
 
   definitions.forEach((def) => {
@@ -320,10 +330,7 @@ export function queryToFilters(params: URLSearchParams, definitions: FilterDefin
 /**
  * Count active filters (non-empty, non-default)
  */
-export function countActiveFilters(
-  filters: FilterState,
-  definitions: FilterDefinition[],
-): number {
+export function countActiveFilters(filters: FilterState, definitions: FilterDefinition[]): number {
   return Object.entries(filters).filter(([filterId, value]) => {
     const def = definitions.find((d) => d.id === filterId);
     if (!def) return false;

@@ -4,14 +4,7 @@
  */
 
 import { FilterRegistry, ViewMode } from '@/lib/filters/filter-types';
-import {
-  Calendar,
-  CheckCircle2,
-  AlertTriangle,
-  User,
-  FolderKanban,
-  Clock,
-} from 'lucide-react';
+import { Calendar, CheckCircle2, AlertTriangle, User, FolderKanban, Clock } from 'lucide-react';
 
 /**
  * View modes for Cronogramas

@@ -47,7 +47,10 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDays}d atrás`;
 }
 
-const SYNC_STATUS_CONFIG: Record<string, { icon: typeof CheckCircle2; color: string; label: string }> = {
+const SYNC_STATUS_CONFIG: Record<
+  string,
+  { icon: typeof CheckCircle2; color: string; label: string }
+> = {
   success: { icon: CheckCircle2, color: 'text-green-600', label: 'Sucesso' },
   partial: { icon: AlertCircle, color: 'text-yellow-600', label: 'Parcial' },
   failed: { icon: XCircle, color: 'text-destructive', label: 'Falhou' },
@@ -62,7 +65,10 @@ export function APIManager({ onViewLogs, onSyncComplete }: APIManagerProps) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [isSyncing, setIsSyncing] = React.useState(false);
-  const [syncMessage, setSyncMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [syncMessage, setSyncMessage] = React.useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   // =========================================================================
   // Fetch APIs on mount
@@ -191,10 +197,11 @@ export function APIManager({ onViewLogs, onSyncComplete }: APIManagerProps) {
         {/* Sync feedback inline */}
         {syncMessage && (
           <div
-            className={`mt-2 rounded-md px-3 py-2 text-sm ${syncMessage.type === 'success'
+            className={`mt-2 rounded-md px-3 py-2 text-sm ${
+              syncMessage.type === 'success'
                 ? 'bg-green-500/10 text-green-700 dark:text-green-400'
                 : 'bg-destructive/10 text-destructive'
-              }`}
+            }`}
           >
             {syncMessage.type === 'success' ? (
               <CheckCircle2 className="mr-1.5 inline h-4 w-4" />

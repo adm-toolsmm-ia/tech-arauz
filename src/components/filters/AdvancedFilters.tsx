@@ -106,16 +106,13 @@ export function AdvancedFilters({
         <Button
           variant="outline"
           size="sm"
-          className={cn(
-            'gap-2',
-            activeCount > 0 && 'border-primary bg-primary/5 text-primary',
-          )}
+          className={cn('gap-2', activeCount > 0 && 'border-primary bg-primary/5 text-primary')}
           aria-label={`Filtros avançados${activeCount > 0 ? ` (${activeCount} ativos)` : ''}`}
         >
           <Sliders className="h-4 w-4" />
           <span>Filtros</span>
           {activeCount > 0 && (
-            <span className="ml-auto inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+            <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
               {activeCount}
             </span>
           )}
@@ -144,7 +141,10 @@ export function AdvancedFilters({
                     aria-label={`Filtrar por status: ${status}`}
                     className="h-4 w-4 rounded border-input"
                   />
-                  <label htmlFor={`status-${status}`} className="font-normal cursor-pointer text-sm">
+                  <label
+                    htmlFor={`status-${status}`}
+                    className="cursor-pointer text-sm font-normal"
+                  >
                     {status}
                   </label>
                 </div>
@@ -166,7 +166,10 @@ export function AdvancedFilters({
                     aria-label={`Filtrar por prioridade: ${priority}`}
                     className="h-4 w-4 rounded border-input"
                   />
-                  <label htmlFor={`priority-${priority}`} className="font-normal cursor-pointer text-sm">
+                  <label
+                    htmlFor={`priority-${priority}`}
+                    className="cursor-pointer text-sm font-normal"
+                  >
                     {priority}
                   </label>
                 </div>
@@ -188,7 +191,7 @@ export function AdvancedFilters({
                     aria-label={`Filtrar por responsável: ${owner}`}
                     className="h-4 w-4 rounded border-input"
                   />
-                  <label htmlFor={`owner-${owner}`} className="font-normal cursor-pointer text-sm">
+                  <label htmlFor={`owner-${owner}`} className="cursor-pointer text-sm font-normal">
                     {owner}
                   </label>
                 </div>
@@ -198,7 +201,7 @@ export function AdvancedFilters({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 justify-end border-t pt-4">
+        <div className="flex justify-end gap-2 border-t pt-4">
           <Button
             variant="outline"
             onClick={handleReset}

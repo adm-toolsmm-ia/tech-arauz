@@ -111,9 +111,7 @@ function DefaultCardContent({ item }: { item: KanbanItem }) {
 
         <div className="mt-1 flex items-center justify-between">
           {item.value ? (
-            <div className="text-xs font-medium text-success dark:text-success">
-              {item.value}
-            </div>
+            <div className="text-xs font-medium text-success dark:text-success">{item.value}</div>
           ) : (
             <div />
           )}
@@ -175,10 +173,10 @@ function DraggableCard({
         'group relative rounded-lg border border-border/40 bg-card shadow-sm transition-all duration-200',
         'hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md',
         'cursor-grab active:cursor-grabbing',
-        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         'touch-none',
         isDragging && 'scale-95 opacity-40 shadow-none grayscale',
-        isSelected && 'ring-2 ring-primary ring-offset-1 border-primary/30',
+        isSelected && 'border-primary/30 ring-2 ring-primary ring-offset-1',
       )}
       {...listeners}
       {...attributes}
@@ -211,7 +209,7 @@ function DragOverlayCard({
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
 }) {
   return (
-    <div className="rotate-2 cursor-grabbing rounded-lg border border-primary/30 bg-card p-3 shadow-xl ring-2 ring-primary/10 w-72">
+    <div className="w-72 rotate-2 cursor-grabbing rounded-lg border border-primary/30 bg-card p-3 shadow-xl ring-2 ring-primary/10">
       {renderItemContent ? renderItemContent(item) : <DefaultCardContent item={item} />}
     </div>
   );
@@ -418,7 +416,7 @@ export function KanbanBoard({
       </div>
       <div
         className={cn(
-          'grid items-start gap-4 auto-rows-max',
+          'grid auto-rows-max items-start gap-4',
           columns.length === 1 && 'grid-cols-1',
           columns.length === 2 && 'grid-cols-1 md:grid-cols-2',
           columns.length === 3 && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',

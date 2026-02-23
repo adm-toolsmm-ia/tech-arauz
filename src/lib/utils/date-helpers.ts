@@ -3,7 +3,10 @@
  * Used by ProjectKanbanCard, Cronograma, and Dashboard components.
  */
 
-export function isOverdue(dateStr: string | null | undefined, status: string | null | undefined): boolean {
+export function isOverdue(
+  dateStr: string | null | undefined,
+  status: string | null | undefined,
+): boolean {
   if (!dateStr) return false;
   const normalised = (status || '').toLowerCase();
   if (normalised.includes('conclu') || normalised.includes('cancelado')) return false;

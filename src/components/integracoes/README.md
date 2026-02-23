@@ -32,6 +32,7 @@ Exibe logs de sincronização com filtros, busca e paginação.
 | `datasetFilter` | `string?` | Filtro pré-selecionado por dataset |
 
 **Features:**
+
 - Filtros: Nível, Dataset, Data Início/Fim, Busca textual (debounce 400ms)
 - Paginação numérica (1 2 ... N)
 - Erros contextuais (401 → login, 403 → permissão, 500 → servidor)
@@ -52,6 +53,7 @@ Exibe logs de sincronização com filtros, busca e paginação.
 ## RLS (Row Level Security)
 
 Migration `025_consolidate_integration_rls.sql`:
+
 - `integration_logs_tenant_select` → SELECT com tenant isolation
 - `integration_logs_service_all` → ALL para service role (sync)
 - `sync_logs_tenant_select` → SELECT com tenant isolation

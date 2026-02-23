@@ -42,17 +42,11 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                {isDark ? (
-                  <Sun className="h-5 w-5" />
-                ) : (
-                  <Moon className="h-5 w-5" />
-                )}
+                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 <span className="sr-only">Alternar tema</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              {isDark ? 'Tema claro' : 'Tema escuro'}
-            </TooltipContent>
+            <TooltipContent>{isDark ? 'Tema claro' : 'Tema escuro'}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>

@@ -440,7 +440,10 @@ export function LogViewer({ datasetFilter }: LogViewerProps) {
           </Button>
           {pages.map((p, i) =>
             p === '...' ? (
-              <span key={`ellipsis-${i}`} className="flex items-center px-1 text-xs text-muted-foreground">
+              <span
+                key={`ellipsis-${i}`}
+                className="flex items-center px-1 text-xs text-muted-foreground"
+              >
                 …
               </span>
             ) : (
@@ -492,7 +495,10 @@ export function LogViewer({ datasetFilter }: LogViewerProps) {
                   </Badge>
                 )}
                 {levelStats.success > 0 && (
-                  <Badge variant="outline" className="border-green-500/50 px-1.5 py-0 text-[10px] text-green-600">
+                  <Badge
+                    variant="outline"
+                    className="border-green-500/50 px-1.5 py-0 text-[10px] text-green-600"
+                  >
                     {levelStats.success} ok
                   </Badge>
                 )}

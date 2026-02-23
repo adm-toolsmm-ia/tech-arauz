@@ -109,9 +109,7 @@ export function generateNotificationsFromProject(project: ProjectData): Notifica
 /**
  * Deduplicate notifications (remove duplicates by alert type per project)
  */
-export function deduplicateNotifications(
-  notifications: Notification[],
-): Notification[] {
+export function deduplicateNotifications(notifications: Notification[]): Notification[] {
   const seen = new Map<string, boolean>();
   return notifications.filter((notif) => {
     const key = `${notif.projectId}_${notif.alertType}`;

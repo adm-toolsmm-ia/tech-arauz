@@ -139,7 +139,10 @@ interface ProjectsContentProps {
   isLoading?: boolean;
 }
 
-export function ProjectsContent({ projects: initialProjects, isLoading = false }: ProjectsContentProps) {
+export function ProjectsContent({
+  projects: initialProjects,
+  isLoading = false,
+}: ProjectsContentProps) {
   const [projects, setProjects] = React.useState<Project[]>(initialProjects);
   const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
   const [isSyncing, setIsSyncing] = React.useState(false);
@@ -170,25 +173,22 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
     }
   };
 
-
-
   // ===== CALCULATE KPIs (GERENCIAL) =====
-  
+
   // KPI 1: Em Execução (status = em execução)
   const inExecutionProjects = React.useMemo(() => {
-    return projects.filter(
-      (p) => (p.status || '').trim().toLowerCase() === 'em execução',
-    ).length;
+    return projects.filter((p) => (p.status || '').trim().toLowerCase() === 'em execução').length;
   }, [projects]);
 
   // KPI 2: Sem Movimentação (30+ dias)
   const withoutMovementProjects = React.useMemo(() => {
-    return projects.filter(p => {
+    return projects.filter((p) => {
       const now = new Date();
       const lastMove = p.data_movimentacao || p.last_update || p.updated_at;
       if (!lastMove) return true; // Sem data = estagnado
-      
-      const diasSemMovimento = (now.getTime() - new Date(lastMove).getTime()) / (1000 * 60 * 60 * 24);
+
+      const diasSemMovimento =
+        (now.getTime() - new Date(lastMove).getTime()) / (1000 * 60 * 60 * 24);
       return diasSemMovimento > 30;
     }).length;
   }, [projects]);
@@ -204,13 +204,13 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
 
   // KPI 4: Concluídos (últimos 30 dias)
   const completedRecent = React.useMemo(() => {
-    return projects.filter(p => {
+    return projects.filter((p) => {
       if ((p.status || '').toLowerCase() !== 'concluído') return false;
-      
+
       const now = new Date();
       const endDate = p.data_encerramento || p.updated_at;
       if (!endDate) return false;
-      
+
       const diasAtrás = (now.getTime() - new Date(endDate).getTime()) / (1000 * 60 * 60 * 24);
       return diasAtrás <= 30;
     }).length;
@@ -218,16 +218,11 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
 
   // KPI 5: Impacto Estratégico Alto
   const highImpactProjects = React.useMemo(() => {
-    return projects.filter(p => 
-      (p.impacto_estrategico || '').toLowerCase() === 'alto'
-    ).length;
+    return projects.filter((p) => (p.impacto_estrategico || '').toLowerCase() === 'alto').length;
   }, [projects]);
 
   // Stable sorted list of project IDs for color assignment
-  const projectIds = React.useMemo(
-    () => projects.map((p) => p.id).sort(),
-    [projects],
-  );
+  const projectIds = React.useMemo(() => projects.map((p) => p.id).sort(), [projects]);
 
   // Transform to Kanban items
   // IMPORTANTE: Usa fase_atual para agrupamento, não status!
@@ -359,9 +354,13 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
             value={inExecutionProjects}
             icon={PlayCircle}
             subtitle={`${inExecutionProjects} projeto(s)`}
-            active={filterState.filters.status?.some((s: any) => (s || '').trim().toLowerCase() === 'em execução')}
+            active={filterState.filters.status?.some(
+              (s: any) => (s || '').trim().toLowerCase() === 'em execução',
+            )}
             onClick={() => {
-              const isActive = filterState.filters.status?.some((s: any) => (s || '').trim().toLowerCase() === 'em execução');
+              const isActive = filterState.filters.status?.some(
+                (s: any) => (s || '').trim().toLowerCase() === 'em execução',
+              );
               filterState.updateFilter('status', isActive ? [] : ['em execução']);
             }}
           />
@@ -482,22 +481,17 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
             renderItemContent={(item) => {
               const project = filteredProjects.find((p) => p.id === item.id);
               if (!project) return null;
-              return (
-                <ProjectKanbanCard
-                  project={project as Project}
-                  projectIds={projectIds}
-                />
-              );
+              return <ProjectKanbanCard project={project as Project} projectIds={projectIds} />;
             }}
             emptyMessage="Nenhum projeto encontrado. Sincronize com o Espaider para importar projetos."
           />
         ) : (
-          <ProjectListView 
-            projects={filteredProjects} 
+          <ProjectListView
+            projects={filteredProjects}
             onSelectProject={(projectId) => {
               const project = filteredProjects.find((p) => p.id === projectId);
               if (project) setSelectedProject(project as Project);
-            }} 
+            }}
           />
         )}
 
@@ -827,12 +821,13 @@ function ProjectList({
                     <td className="px-3 py-3">
                       {project.priority ? (
                         <span
-                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${project.priority === 'urgente'
-                            ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                            : project.priority === 'alta'
-                              ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
-                              : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
-                            }`}
+                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${
+                            project.priority === 'urgente'
+                              ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                              : project.priority === 'alta'
+                                ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
+                                : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                          }`}
                         >
                           {project.priority}
                         </span>
@@ -953,12 +948,12 @@ function ProjectDetail({
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{schedule.atividade || 'Sem nome'}</p>
-                      {schedule.responsavel && <p className="text-sm text-muted-foreground">{schedule.responsavel}</p>}
+                      {schedule.responsavel && (
+                        <p className="text-sm text-muted-foreground">{schedule.responsavel}</p>
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      {schedule.status && (
-                        <Badge variant="secondary">{schedule.status}</Badge>
-                      )}
+                      {schedule.status && <Badge variant="secondary">{schedule.status}</Badge>}
                       {schedule.data_fim && (
                         <span className="text-xs text-muted-foreground">
                           Previsão: {new Date(schedule.data_fim).toLocaleDateString('pt-BR')}
@@ -1062,8 +1057,9 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
-        }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        statusStyles[status] || statusStyles.projeto_futuro
+      }`}
     >
       {statusLabels[status] || status}
     </span>

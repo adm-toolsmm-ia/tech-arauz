@@ -15,19 +15,8 @@ import { FilterControl } from './FilterControl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from '@/components/ui/sheet';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 export function FilterBar({
@@ -102,7 +91,7 @@ export function FilterBar({
   }, []);
 
   return (
-    <div className={cn('space-y-3 p-4 border-b border-border bg-background', className)}>
+    <div className={cn('space-y-3 border-b border-border bg-background p-4', className)}>
       {/* Search Bar */}
       {filterRegistry.searchable !== false && (
         <div className="relative">
@@ -129,7 +118,7 @@ export function FilterBar({
       <div className="flex flex-wrap items-center gap-2">
         {/* Quick Filter Buttons */}
         {quickFilters.length > 0 && (
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-2">
             {quickFilters.map((filterDef) => {
               const value = filterState.filters[filterDef.id];
               const isActive = Array.isArray(value)
@@ -155,7 +144,7 @@ export function FilterBar({
                           }
                         }}
                       >
-                        {filterDef.icon ? <filterDef.icon className="h-4 w-4 mr-1" /> : null}
+                        {filterDef.icon ? <filterDef.icon className="mr-1 h-4 w-4" /> : null}
                         {filterDef.label}
                         {Array.isArray(value) && value.length > 0 && (
                           <Badge variant="secondary" className="ml-1">
@@ -177,19 +166,19 @@ export function FilterBar({
 
         {/* Active Filter Badge */}
         {filterState.activeFilterCount > 0 && (
-          <Badge variant="secondary" className="cursor-pointer" onClick={() => setIsAdvancedOpen(true)}>
+          <Badge
+            variant="secondary"
+            className="cursor-pointer"
+            onClick={() => setIsAdvancedOpen(true)}
+          >
             {filterState.activeFilterCount} filter{filterState.activeFilterCount !== 1 ? 's' : ''}
           </Badge>
         )}
 
         {/* Advanced Filters Button */}
         {advancedFilters.length > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAdvancedOpen(true)}
-          >
-            <Settings className="h-4 w-4 mr-1" />
+          <Button variant="outline" size="sm" onClick={() => setIsAdvancedOpen(true)}>
+            <Settings className="mr-1 h-4 w-4" />
             Filters
           </Button>
         )}
@@ -199,11 +188,7 @@ export function FilterBar({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={filterState.resetAllFilters}
-                >
+                <Button variant="ghost" size="sm" onClick={filterState.resetAllFilters}>
                   <RotateCcw className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
@@ -223,7 +208,11 @@ export function FilterBar({
                 onClick={() => filterState.setViewMode(mode.id)}
                 title={mode.label}
               >
-                {mode.icon ? <mode.icon className="h-4 w-4" /> : <span className="text-xs">{mode.label}</span>}
+                {mode.icon ? (
+                  <mode.icon className="h-4 w-4" />
+                ) : (
+                  <span className="text-xs">{mode.label}</span>
+                )}
               </Button>
             ))}
           </div>
@@ -236,15 +225,13 @@ export function FilterBar({
           <SheetHeader>
             <SheetTitle>Filtros Avançados</SheetTitle>
             {activeFilterInfo.count > 0 && (
-              <p className="text-xs text-muted-foreground mt-2">{activeFilterInfo.summary}</p>
+              <p className="mt-2 text-xs text-muted-foreground">{activeFilterInfo.summary}</p>
             )}
           </SheetHeader>
 
           {/* Group filters by category */}
-          <div className="space-y-6 my-6">
-            {Array.from(
-              new Set(advancedFilters.map((f) => f.group || 'Outros')),
-            ).map((group) => {
+          <div className="my-6 space-y-6">
+            {Array.from(new Set(advancedFilters.map((f) => f.group || 'Outros'))).map((group) => {
               const groupFilters = advancedFilters.filter((f) => (f.group || 'Outros') === group);
 
               return (
@@ -265,18 +252,11 @@ export function FilterBar({
             })}
           </div>
 
-          <SheetFooter className="flex gap-2 justify-between">
-            <Button
-              variant="outline"
-              onClick={() => filterState.clearFilters()}
-              className="flex-1"
-            >
+          <SheetFooter className="flex justify-between gap-2">
+            <Button variant="outline" onClick={() => filterState.clearFilters()} className="flex-1">
               Limpar Tudo
             </Button>
-            <Button
-              onClick={() => setIsAdvancedOpen(false)}
-              className="flex-1"
-            >
+            <Button onClick={() => setIsAdvancedOpen(false)} className="flex-1">
               Aplicar
             </Button>
           </SheetFooter>
@@ -300,9 +280,7 @@ export function QuickFilter({
   onChange: (value: any) => void;
   className?: string;
 }) {
-  const isActive = Array.isArray(value)
-    ? value.length > 0
-    : value !== null && value !== undefined;
+  const isActive = Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined;
 
   return (
     <TooltipProvider>
@@ -314,7 +292,7 @@ export function QuickFilter({
             onClick={() => onChange(isActive ? null : true)}
             className={className}
           >
-            {definition.icon ? <definition.icon className="h-4 w-4 mr-1" /> : null}
+            {definition.icon ? <definition.icon className="mr-1 h-4 w-4" /> : null}
             {definition.label}
           </Button>
         </TooltipTrigger>

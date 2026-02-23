@@ -31,7 +31,10 @@ export function usePagination({
 }: UsePaginationProps): PaginationState {
   const [page, setPageState] = useState(1);
 
-  const totalPages = useMemo(() => Math.ceil(totalItems / itemsPerPage), [totalItems, itemsPerPage]);
+  const totalPages = useMemo(
+    () => Math.ceil(totalItems / itemsPerPage),
+    [totalItems, itemsPerPage],
+  );
 
   const startIndex = useMemo(() => (page - 1) * itemsPerPage, [page, itemsPerPage]);
   const endIndex = useMemo(() => startIndex + itemsPerPage, [startIndex, itemsPerPage]);

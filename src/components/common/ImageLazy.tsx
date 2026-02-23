@@ -75,9 +75,7 @@ export function ImageLazy({
         />
       )}
 
-      {!isLoaded && (
-        <div className="absolute inset-0 bg-muted animate-pulse" />
-      )}
+      {!isLoaded && <div className="absolute inset-0 animate-pulse bg-muted" />}
     </div>
   );
 }

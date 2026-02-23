@@ -31,11 +31,7 @@ function SidebarSimpleMenu({ item }: { item: NavItem }) {
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton
-        asChild
-        isActive={isActive}
-        tooltip={item.title}
-      >
+      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
         <Link href={item.url}>
           <item.icon className="size-4" />
           <span>{item.title}</span>

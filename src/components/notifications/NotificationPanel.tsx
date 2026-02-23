@@ -50,7 +50,7 @@ function NotificationItem({
   return (
     <div
       className={cn(
-        'border-b border-sidebar-border p-3 cursor-pointer transition-all',
+        'cursor-pointer border-b border-sidebar-border p-3 transition-all',
         isRead ? 'opacity-60 hover:opacity-80' : 'hover:bg-sidebar-accent/50',
       )}
       role="button"
@@ -71,20 +71,18 @@ function NotificationItem({
       }}
       data-testid={`notification-item-${notification.id}`}
     >
-      <div className="flex gap-2 items-start">
+      <div className="flex items-start gap-2">
         {/* Icon */}
-        <span className="text-lg mt-0.5 flex-shrink-0">{alertCfg.icon}</span>
+        <span className="mt-0.5 flex-shrink-0 text-lg">{alertCfg.icon}</span>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h4 className="font-semibold text-sm text-foreground truncate">
+              <h4 className="truncate text-sm font-semibold text-foreground">
                 {notification.projectName}
               </h4>
-              <p className={cn('text-xs mt-0.5', alertCfg.color)}>
-                {notification.alertType}
-              </p>
+              <p className={cn('mt-0.5 text-xs', alertCfg.color)}>{notification.alertType}</p>
             </div>
 
             {/* Remove button */}
@@ -93,7 +91,7 @@ function NotificationItem({
                 e.stopPropagation();
                 onRemove(notification.id);
               }}
-              className="text-muted-foreground hover:text-foreground flex-shrink-0 p-0.5"
+              className="flex-shrink-0 p-0.5 text-muted-foreground hover:text-foreground"
               aria-label={`Remover notificação de ${notification.projectName}`}
             >
               <X className="h-3.5 w-3.5" />
@@ -101,18 +99,16 @@ function NotificationItem({
           </div>
 
           {/* Message */}
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-            {notification.message}
-          </p>
+          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{notification.message}</p>
 
           {/* Timestamp */}
-          <p className="text-xs text-muted-foreground/60 mt-1">
+          <p className="mt-1 text-xs text-muted-foreground/60">
             {formatTimeAgo(notification.createdAt)}
           </p>
         </div>
 
         {/* Unread indicator */}
-        {!isRead && <div className="h-2 w-2 rounded-full bg-red-500 mt-1.5 flex-shrink-0" />}
+        {!isRead && <div className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-red-500" />}
       </div>
     </div>
   );
@@ -128,13 +124,13 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-sidebar-border p-4 flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-sidebar-border p-4">
         <h2 className="font-semibold text-foreground">Notificações</h2>
         <button
           onClick={onClose}
-          className="text-muted-foreground hover:text-foreground transition-colors p-1"
+          className="p-1 text-muted-foreground transition-colors hover:text-foreground"
           aria-label="Fechar painel de notificações"
         >
           <X className="h-4 w-4" />
@@ -144,7 +140,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
       {/* Notifications List */}
       <ScrollArea className="flex-1">
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 gap-2 text-muted-foreground">
+          <div className="flex h-64 flex-col items-center justify-center gap-2 text-muted-foreground">
             <span className="text-3xl">✨</span>
             <p className="text-sm font-medium">Nenhuma notificação</p>
             <p className="text-xs">Você está em dia com tudo!</p>
@@ -171,7 +167,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
             variant="ghost"
             size="sm"
             onClick={clearAll}
-            className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
             aria-label="Limpar todas as notificações"
           >
             <Trash2 className="h-4 w-4" />

@@ -140,8 +140,7 @@ export function useFilterState(options: UseFilterStateOptions): UseFilterStateRe
   const isFiltersEmpty = useMemo(
     () =>
       Object.values(filters).every(
-        (value) =>
-          !value || (Array.isArray(value) && value.length === 0),
+        (value) => !value || (Array.isArray(value) && value.length === 0),
       ) && !search.trim(),
     [filters, search],
   );

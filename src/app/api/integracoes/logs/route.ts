@@ -31,13 +31,16 @@ export async function GET(req: NextRequest) {
   try {
     // STEP 1: Check authentication
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       console.error('[GET /api/integracoes/logs] Auth error:', authError?.message);
       return NextResponse.json(
         { error: 'Não autenticado. Faça login para continuar.' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -50,28 +53,22 @@ export async function GET(req: NextRequest) {
 
     if (profileError) {
       console.error('[GET /api/integracoes/logs] Profile lookup error:', profileError.message);
-      return NextResponse.json(
-        { error: 'Erro ao carregar perfil do usuário.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Erro ao carregar perfil do usuário.' }, { status: 500 });
     }
 
     if (!profile) {
       console.error('[GET /api/integracoes/logs] Profile not found for user:', user.id);
-      return NextResponse.json(
-        { error: 'Perfil não encontrado.' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Perfil não encontrado.' }, { status: 404 });
     }
 
     // STEP 3: Check authorization (admin/user only)
     if (!['admin', 'user'].includes(profile.role)) {
       console.warn(
-        `[GET /api/integracoes/logs] Unauthorized: user ${user.id} has role ${profile.role}`
+        `[GET /api/integracoes/logs] Unauthorized: user ${user.id} has role ${profile.role}`,
       );
       return NextResponse.json(
         { error: `Sem permissão. Sua role (${profile.role}) não permite acesso a logs.` },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -129,7 +126,7 @@ export async function GET(req: NextRequest) {
       console.error('[GET /api/integracoes/logs] Query error:', error.message);
       return NextResponse.json(
         { error: 'Erro ao buscar logs. Tente novamente mais tarde.' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -156,7 +153,7 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json(
       { error: 'Erro interno do servidor. Contate o administrador.' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

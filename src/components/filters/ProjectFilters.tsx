@@ -1,7 +1,16 @@
 'use client';
 
 import * as React from 'react';
-import { X, SlidersHorizontal, Star, AlertTriangle, Clock, Zap, Calendar, TrendingUp } from 'lucide-react';
+import {
+  X,
+  SlidersHorizontal,
+  Star,
+  AlertTriangle,
+  Clock,
+  Zap,
+  Calendar,
+  TrendingUp,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -248,7 +257,7 @@ export function ProjectFilters({ filters, onFiltersChange, availableValues }: Pr
 
   const applyPreset = (preset: 'meus_projetos' | 'criticos' | 'revisao_semanal') => {
     const baseFilters = { ...defaultFilters, search: filters.search };
-    
+
     switch (preset) {
       case 'meus_projetos':
         onFiltersChange({
@@ -573,9 +582,7 @@ export function applyProjectFilters<T extends Record<string, any>>(
   if (filters.status.length > 0) {
     const statusNorm = (s: string) => (s || '').trim().toLowerCase();
     const filterStatuses = filters.status.map(statusNorm);
-    result = result.filter((p) =>
-      filterStatuses.includes(statusNorm(p.status)),
-    );
+    result = result.filter((p) => filterStatuses.includes(statusNorm(p.status)));
   }
   if (filters.fase_atual.length > 0) {
     result = result.filter((p) => p.fase_atual && filters.fase_atual.includes(p.fase_atual));
@@ -653,7 +660,8 @@ export function applyProjectFilters<T extends Record<string, any>>(
       if (!lastMove) return true;
 
       try {
-        const diasSemMovimento = (now.getTime() - new Date(lastMove).getTime()) / (1000 * 60 * 60 * 24);
+        const diasSemMovimento =
+          (now.getTime() - new Date(lastMove).getTime()) / (1000 * 60 * 60 * 24);
         return diasSemMovimento > 30;
       } catch {
         return false;

@@ -123,8 +123,6 @@ interface ProjectCockpitProps {
   isSyncing?: boolean;
 }
 
-
-
 function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div className="space-y-1">
@@ -324,7 +322,10 @@ export function ProjectCockpit({
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <InfoField label="Prazo Final" value={formatDate(project.end_date)} />
                 <InfoField label="Prazo do Aprovador" value={formatDate(project.prazo_aprovador)} />
-                <InfoField label="Prazo do Cronograma" value={formatDate(project.prazo_cronograma)} />
+                <InfoField
+                  label="Prazo do Cronograma"
+                  value={formatDate(project.prazo_cronograma)}
+                />
               </div>
               {/* Linha 2: Datas de Eventos */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -333,7 +334,10 @@ export function ProjectCockpit({
                   value={formatDate(project.data_inicio_aprovacao)}
                 />
                 <InfoField label="Encerramento" value={formatDate(project.data_encerramento)} />
-                <InfoField label="Última Movimentação" value={formatDateTime(project.last_update)} />
+                <InfoField
+                  label="Última Movimentação"
+                  value={formatDateTime(project.last_update)}
+                />
               </div>
             </div>
           </section>
@@ -607,21 +611,46 @@ export function ProjectCockpit({
                 >
                   <div className="min-w-0 flex-1 pr-4">
                     <div className="flex items-center gap-2">
-                      <p className="truncate text-sm font-medium">{schedule.atividade || 'Atividade sem nome'}</p>
+                      <p className="truncate text-sm font-medium">
+                        {schedule.atividade || 'Atividade sem nome'}
+                      </p>
                       {schedule.atrasado && (
-                        <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">Atrasado</Badge>
+                        <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+                          Atrasado
+                        </Badge>
                       )}
                     </div>
                     <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                      {schedule.item && <span>Item: <span className="font-medium text-foreground/80">{schedule.item}</span></span>}
-                      {schedule.setor_responsavel && <span>Setor: <span className="font-medium text-foreground/80">{schedule.setor_responsavel}</span></span>}
-                      {schedule.responsavel && <span>Resp: <span className="font-medium text-foreground/80">{schedule.responsavel}</span></span>}
+                      {schedule.item && (
+                        <span>
+                          Item:{' '}
+                          <span className="font-medium text-foreground/80">{schedule.item}</span>
+                        </span>
+                      )}
+                      {schedule.setor_responsavel && (
+                        <span>
+                          Setor:{' '}
+                          <span className="font-medium text-foreground/80">
+                            {schedule.setor_responsavel}
+                          </span>
+                        </span>
+                      )}
+                      {schedule.responsavel && (
+                        <span>
+                          Resp:{' '}
+                          <span className="font-medium text-foreground/80">
+                            {schedule.responsavel}
+                          </span>
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1.5">
                     <div className="flex items-center gap-2">
                       {schedule.fase_atividade && (
-                        <Badge variant="outline" className="text-[10px]">{schedule.fase_atividade}</Badge>
+                        <Badge variant="outline" className="text-[10px]">
+                          {schedule.fase_atividade}
+                        </Badge>
                       )}
                       <Badge variant="secondary" className="text-[10px]">
                         {schedule.status || 'Pendente'}

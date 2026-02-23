@@ -21,7 +21,7 @@
   --dm-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   /* Dark mode - Dark backgrounds with light text */
   --dm-bg-primary: 220 13% 10%;
   --dm-bg-secondary: 220 13% 12%;

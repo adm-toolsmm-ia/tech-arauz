@@ -81,7 +81,7 @@ export function SplitView({
         aria-modal="true"
         aria-labelledby="split-view-title"
         className={cn(
-          'animate-slide-in-right fixed inset-y-0 right-0 z-50 w-full border-l bg-background shadow-lg flex flex-col',
+          'animate-slide-in-right fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l bg-background shadow-lg',
           widthClasses[width],
           className,
         )}

@@ -72,7 +72,7 @@ export function GlobalSearch({
     <div className={cn('relative w-full max-w-sm', className)}>
       <div className="relative">
         {/* Search Icon */}
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
         {/* Input */}
         <Input
@@ -114,8 +114,9 @@ export function GlobalSearch({
       </div>
 
       {/* Help Text */}
-      <p id="search-help" className="text-xs text-muted-foreground mt-1">
-        💡 Digite para buscar. Use <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">Cmd+K</kbd> para focar.
+      <p id="search-help" className="mt-1 text-xs text-muted-foreground">
+        💡 Digite para buscar. Use{' '}
+        <kbd className="rounded bg-muted px-1.5 py-0.5 text-xs">Cmd+K</kbd> para focar.
       </p>
     </div>
   );

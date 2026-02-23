@@ -47,14 +47,8 @@ interface AdminSession {
 // ---------------------------------------------------------------------------
 
 const createUserSchema = z.object({
-  fullName: z
-    .string()
-    .min(3, 'Nome deve ter pelo menos 3 caracteres')
-    .max(255, 'Nome muito longo'),
-  email: z
-    .string()
-    .email('Email inválido')
-    .max(255, 'Email muito longo'),
+  fullName: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(255, 'Nome muito longo'),
+  email: z.string().email('Email inválido').max(255, 'Email muito longo'),
   role: z.enum(['admin', 'user', 'viewer'], {
     errorMap: () => ({ message: 'Perfil de acesso inválido' }),
   }),
@@ -62,10 +56,7 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   id: z.string().uuid('ID inválido'),
-  fullName: z
-    .string()
-    .min(3, 'Nome deve ter pelo menos 3 caracteres')
-    .max(255, 'Nome muito longo'),
+  fullName: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(255, 'Nome muito longo'),
   role: z.enum(['admin', 'user', 'viewer'], {
     errorMap: () => ({ message: 'Perfil de acesso inválido' }),
   }),
@@ -153,9 +144,7 @@ export async function getTenantUsers(): Promise<{
   }
 
   const authMap = new Map(
-    authResponse.users
-      .filter((u) => profileIds.includes(u.id))
-      .map((u) => [u.id, u]),
+    authResponse.users.filter((u) => profileIds.includes(u.id)).map((u) => [u.id, u]),
   );
 
   const users: TenantUser[] = profiles.map((profile) => {
@@ -206,7 +195,10 @@ export async function createUser(
 
     if (authError) {
       console.error('[createUser] auth error:', authError.message);
-      return { success: false, message: 'Não foi possível criar o usuário. Verifique se o email já está em uso.' };
+      return {
+        success: false,
+        message: 'Não foi possível criar o usuário. Verifique se o email já está em uso.',
+      };
     }
     if (!authData.user) {
       return { success: false, message: 'Erro inesperado ao criar usuário.' };
@@ -224,14 +216,26 @@ export async function createUser(
       console.error('[createUser] profile insert error:', profileError.message);
       const { error: rollbackError } = await supabase.auth.admin.deleteUser(authData.user.id);
       if (rollbackError) {
-        console.error('[createUser] CRITICAL: rollback failed for auth user:', authData.user.id, rollbackError.message);
+        console.error(
+          '[createUser] CRITICAL: rollback failed for auth user:',
+          authData.user.id,
+          rollbackError.message,
+        );
       }
       return { success: false, message: 'Erro ao criar perfil do usuário.' };
     }
 
-    console.log('[createUser] success:', { targetEmail: email, adminId: session.userId, tenantId: session.tenantId });
+    console.log('[createUser] success:', {
+      targetEmail: email,
+      adminId: session.userId,
+      tenantId: session.tenantId,
+    });
     revalidatePath('/cadastros/usuarios');
-    return { success: true, message: 'Usuário criado com sucesso!', temporaryPassword: tempPassword };
+    return {
+      success: true,
+      message: 'Usuário criado com sucesso!',
+      temporaryPassword: tempPassword,
+    };
   } catch (error) {
     console.error('[createUser] unexpected error:', error);
     return { success: false, message: 'Erro interno do servidor.' };
@@ -348,7 +352,8 @@ export async function toggleUserStatus(
 
 export async function deleteUser(userId: string): Promise<UserActionState> {
   const session = await requireAdminSession();
-  if (!session) return { success: false, message: 'Apenas administradores podem excluir usuários.' };
+  if (!session)
+    return { success: false, message: 'Apenas administradores podem excluir usuários.' };
 
   if (userId === session.userId) {
     return { success: false, message: 'Não é possível excluir a si mesmo.' };

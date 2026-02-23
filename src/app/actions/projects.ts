@@ -13,7 +13,105 @@ export interface UpdateNotesResult {
   message: string;
 }
 
+export interface FetchProjectsWithFiltersResult {
+  success: boolean;
+  data?: Array<Record<string, unknown>>;
+  message: string;
+}
+
 const NOTES_HTML_MAX_LENGTH = 100_000;
+
+/**
+ * Server Action: Fetch projects with optional server-side filtering.
+ * Useful for large datasets where client-side filtering would be slow.
+ *
+ * Supports filtering by:
+ * - status (array of values)
+ * - priority (array of values)
+ * - search (project name or espaider code, partial match)
+ */
+export async function fetchProjectsWithFiltersAction(
+  filters?: {
+    status?: string[];
+    priority?: string[];
+    search?: string;
+  },
+): Promise<FetchProjectsWithFiltersResult> {
+  const supabase = await createClient();
+
+  // Auth check
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return {
+      success: false,
+      message: 'Usuário não autenticado. Faça login novamente.',
+    };
+  }
+
+  // Get tenant_id from profile
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile) {
+    return {
+      success: false,
+      message: 'Perfil não encontrado. Contate o administrador.',
+    };
+  }
+
+  // Start building query
+  let query = supabase
+    .from('projects')
+    .select(`
+      *,
+      schedules:project_schedules(*),
+      deliveries:project_deliveries(*),
+      histories:project_histories(*),
+      approvers:project_approvers(*),
+      budgets:project_budgets(*)
+    `)
+    .eq('tenant_id', profile.tenant_id)
+    .order('created_at', { ascending: false });
+
+  // Apply status filter
+  if (filters?.status && filters.status.length > 0) {
+    query = query.in('status', filters.status);
+  }
+
+  // Apply priority filter
+  if (filters?.priority && filters.priority.length > 0) {
+    query = query.in('priority', filters.priority);
+  }
+
+  // Apply search filter (partial match on name or espaider_code)
+  if (filters?.search && filters.search.trim().length > 0) {
+    const searchTerm = `%${filters.search}%`;
+    query = query.or(`project_name.ilike.${searchTerm},espaider_code.ilike.${searchTerm}`);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('[fetchProjectsWithFiltersAction] error:', error);
+    return {
+      success: false,
+      message: `Erro ao buscar projetos: ${error.message}`,
+    };
+  }
+
+  return {
+    success: true,
+    data: data || [],
+    message: `${data?.length || 0} projetos encontrados.`,
+  };
+}
 
 /**
  * Server Action: update a project's status (e.g. from Kanban drag-and-drop).

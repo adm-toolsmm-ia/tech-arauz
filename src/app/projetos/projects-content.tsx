@@ -33,13 +33,6 @@ import { ProjectKanbanCard } from '@/components/project/ProjectKanbanCard';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { useProjetosFilters } from '@/hooks/useProjetosFilters';
 import {
-  ProjectFilters,
-  type ProjectFilterState,
-  defaultFilters,
-  extractUniqueValues,
-  applyProjectFilters,
-} from '@/components/filters/ProjectFilters';
-import {
   phaseLabels,
   phaseColors,
   phaseOrder,

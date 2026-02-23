@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 import {
-  Search,
-  Filter,
   Calendar as CalendarIcon,
   CalendarDays,
   AlertTriangle,
@@ -11,7 +9,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  X,
   User,
   FolderKanban,
 } from 'lucide-react';
@@ -21,17 +18,9 @@ import { SplitView } from '@/components/views/SplitView';
 import { ProjectCockpit } from '@/components/project';
 import { CronogramaGantt } from '@/components/cronogramas/CronogramaGantt';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { FilterBar } from '@/components/filters/FilterBar';
@@ -197,42 +186,6 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   const projectIds = React.useMemo(() => {
     const ids = Array.from(new Set(schedules.map((s) => s.project_id)));
     return ids.sort();
-  }, [schedules]);
-
-  // Extract unique values for filters
-  const uniqueProjects = React.useMemo(() => {
-    const map = new Map<string, string>();
-    schedules.forEach((s) => {
-      if (s.project?.id && s.project?.titulo) {
-        map.set(s.project.id, s.project.titulo);
-      }
-    });
-    return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]));
-  }, [schedules]);
-
-  const uniqueSetores = React.useMemo(() => {
-    const set = new Set<string>();
-    schedules.forEach((s) => {
-      if (s.setor_responsavel) set.add(s.setor_responsavel);
-    });
-    return Array.from(set).sort();
-  }, [schedules]);
-
-  const uniqueStatuses = React.useMemo(() => {
-    const set = new Set<string>();
-    schedules.forEach((s) => {
-      if (s.status) set.add(s.status);
-    });
-    return Array.from(set).sort();
-  }, [schedules]);
-
-  // Filtered schedules (no filtering for now - filters will be re-implemented later)
-  const filteredSchedulesList: Schedule[] = React.useMemo(() => {
-    // Apply additional filtering (hide completed schedules)
-    return schedules.filter(
-      (s) =>
-        s.project?.status?.toLowerCase() !== 'concluído' && s.status?.toLowerCase() !== 'concluído',
-    );
   }, [schedules]);
 
   // KPI calculations

@@ -2,15 +2,13 @@
  * useProjetosFilters Hook
  * Module-specific filter management for Projetos
  *
- * Modernizado para usar:
- * - filterDefinitionsProjetos (Fase 2)
- * - useFilterState (state management com persistência)
- * - applyFilters (lógica de filtro centralizada)
+ * IMPORTANTE: Os campos de filtro usam nomes UI (após transformação),
+ * NÃO nomes do banco de dados.
  */
 
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   filterDefinitionsProjetos,
   filterRegistryProjetos,
@@ -19,9 +17,10 @@ import {
 import { applyFilters, buildFilterOptions } from '@/lib/filters/filter-utils';
 import { useFilterState } from '@/hooks/useFilterState';
 import { FilterState } from '@/lib/filters/filter-types';
+import { phaseLabels } from '@/lib/constants/phase-labels';
 
 /**
- * Project data interface
+ * Project data interface (campos UI após transformação)
  */
 export interface ProjetosData {
   id: string;
@@ -72,16 +71,58 @@ export interface ProjetosData {
 }
 
 /**
+ * Normaliza fase para slug (mesmo padrão usado no Kanban)
+ */
+function normalizeFaseSlug(fase: string | null | undefined): string {
+  if (!fase) return '';
+  return fase
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+/**
  * Hook for managing Projetos filters with data
- *
- * @param projects Array of project data to filter
  */
 export function useProjetosFilters(projects: ProjetosData[]) {
   // Update filter definitions with dynamic options from actual data
   const definitions = useMemo(() => {
     return filterDefinitionsProjetos.map((def) => {
-      // Update responsavel options from data
-      if (def.id === 'responsavel') {
+      // fase_atual: opções dinâmicas baseadas nos dados reais + phaseLabels
+      if (def.id === 'fase_atual') {
+        const faseMap = new Map<string, string>();
+        projects.forEach((p) => {
+          if (p.fase_atual) {
+            const slug = normalizeFaseSlug(p.fase_atual);
+            const label = phaseLabels[slug] || p.fase_atual;
+            faseMap.set(slug, label);
+          }
+        });
+        return {
+          ...def,
+          options: Array.from(faseMap.entries())
+            .map(([value, label]) => ({ value, label }))
+            .sort((a, b) => a.label.localeCompare(b.label, 'pt-BR')),
+        };
+      }
+
+      // status: opções dinâmicas dos dados reais
+      if (def.id === 'status') {
+        return {
+          ...def,
+          options: buildFilterOptions(
+            projects,
+            'status',
+            (v) => v || 'Sem Status'
+          ),
+        };
+      }
+
+      // responsible: opções dinâmicas dos dados reais
+      if (def.id === 'responsible') {
         return {
           ...def,
           options: buildFilterOptions(
@@ -92,8 +133,32 @@ export function useProjetosFilters(projects: ProjetosData[]) {
         };
       }
 
-      // Update categoria options from data
-      if (def.id === 'categoria') {
+      // area: opções dinâmicas dos dados reais
+      if (def.id === 'area') {
+        return {
+          ...def,
+          options: buildFilterOptions(
+            projects,
+            'area',
+            (v) => v || 'Sem Área'
+          ),
+        };
+      }
+
+      // priority: opções dinâmicas dos dados reais
+      if (def.id === 'priority') {
+        return {
+          ...def,
+          options: buildFilterOptions(
+            projects,
+            'priority',
+            (v) => v || 'Sem Prioridade'
+          ),
+        };
+      }
+
+      // category: opções dinâmicas dos dados reais
+      if (def.id === 'category') {
         return {
           ...def,
           options: buildFilterOptions(
@@ -118,9 +183,25 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     },
   });
 
-  // Apply filters to projects
+  // Custom filter logic para fase_atual (precisa normalizar o slug antes de comparar)
   const filteredData = useMemo(() => {
-    return applyFilters(projects, filterState.filters, {
+    const faseFilter = filterState.filters.fase_atual;
+    const hasFaseFilter = Array.isArray(faseFilter) && faseFilter.length > 0;
+
+    // Primeiro aplicar filtro de fase separadamente (porque usa slug normalizado)
+    let data = projects;
+    if (hasFaseFilter) {
+      data = data.filter((p) => {
+        const slug = normalizeFaseSlug(p.fase_atual);
+        return faseFilter.includes(slug);
+      });
+    }
+
+    // Depois aplicar demais filtros (excluindo fase_atual que já foi aplicado)
+    const otherFilters = { ...filterState.filters };
+    delete otherFilters.fase_atual;
+
+    return applyFilters(data, otherFilters, {
       search: filterState.search,
       searchFields: searchFieldsProjetos,
       matchMode: 'partial',
@@ -152,22 +233,4 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     // Registry (para usar em FilterBar)
     registry: filterRegistryProjetos,
   };
-}
-
-/**
- * Hook to get just the filtered projects without full state (para uso avançado)
- */
-export function useProjetosFilteredList(
-  projects: ProjetosData[],
-  filters: FilterState,
-  search: string
-) {
-  return useMemo(() => {
-    return applyFilters(projects, filters, {
-      search,
-      searchFields: searchFieldsProjetos,
-      matchMode: 'partial',
-      caseSensitive: false,
-    });
-  }, [projects, filters, search]);
 }

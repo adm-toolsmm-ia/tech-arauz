@@ -2,7 +2,8 @@
  * Filter Definitions - Cronogramas Module
  * Configuração centralizada de filtros para o módulo de Cronogramas
  *
- * Fase 2: Refatoração - Seguindo contexto consolidado em 07-filter-data-context.md
+ * NOTA: Cronogramas usam dados diretos do banco (sem transformer),
+ * então os IDs dos filtros correspondem aos nomes das colunas do banco.
  */
 
 import { Building2, CheckCircle2, Users, Calendar, List } from 'lucide-react';
@@ -10,9 +11,9 @@ import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
  * Filter Definitions para Cronogramas
- * Quick Filters (4): project_id, status, responsavel, data_fim
- * Advanced Filters (6): + data_inicio, created_at
- * Search Fields: atividade, responsavel
+ * Quick Filters (3): project_id, status, responsavel
+ * Advanced Filters: setor_responsavel, data_fim, data_inicio
+ * Search Fields: atividade, responsavel, project.titulo
  */
 export const filterDefinitionsCronogramas: FilterDefinition[] = [
   // QUICK FILTERS
@@ -31,13 +32,7 @@ export const filterDefinitionsCronogramas: FilterDefinition[] = [
     id: 'status',
     label: 'Status',
     type: 'multi-select',
-    options: [
-      { label: 'Pendente', value: 'Pendente' },
-      { label: 'Em Progresso', value: 'Em Progresso' },
-      { label: 'Concluída', value: 'Concluída' },
-      { label: 'Atrasada', value: 'Atrasada' },
-      { label: 'Cancelada', value: 'Cancelada' },
-    ],
+    options: [], // Dinâmico - populado via useCronogramasFilters com dados reais
     quickFilter: true,
     icon: CheckCircle2,
     description: 'Filtrar cronogramas por status',
@@ -57,30 +52,32 @@ export const filterDefinitionsCronogramas: FilterDefinition[] = [
     searchable: true,
   },
 
+  // ADVANCED FILTERS
+  {
+    id: 'setor_responsavel',
+    label: 'Setor',
+    type: 'multi-select',
+    options: [], // Dinâmico
+    description: 'Filtrar por setor responsável',
+    multi: true,
+    searchable: true,
+    group: 'classification',
+  },
+
   {
     id: 'data_fim',
     label: 'Prazo',
     type: 'date-range',
-    quickFilter: true,
     icon: Calendar,
     description: 'Filtrar por intervalo de prazo',
     group: 'dates',
   },
 
-  // ADVANCED FILTERS
   {
     id: 'data_inicio',
     label: 'Data de Início',
     type: 'date-range',
     description: 'Filtrar por data de início',
-    group: 'dates',
-  },
-
-  {
-    id: 'created_at',
-    label: 'Data de Criação',
-    type: 'date-range',
-    description: 'Filtrar por período de criação',
     group: 'dates',
   },
 ];
@@ -102,18 +99,6 @@ export const filterRegistryCronogramas: FilterRegistry = {
 
 /**
  * Campos de busca (search)
+ * Suporta dot notation para campos aninhados (ex: project.titulo)
  */
-export const searchFieldsCronogramas = ['atividade', 'responsavel'];
-
-/**
- * Valores estáticos de Status
- */
-export const scheduleStatusValues = [
-  'Pendente',
-  'Em Progresso',
-  'Concluída',
-  'Atrasada',
-  'Cancelada',
-] as const;
-
-export type ScheduleStatus = (typeof scheduleStatusValues)[number];
+export const searchFieldsCronogramas = ['atividade', 'responsavel', 'project.titulo'];

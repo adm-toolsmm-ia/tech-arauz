@@ -2,14 +2,11 @@
 
 import * as React from 'react';
 import {
-  Search,
   FolderOpen,
   Clock,
-  DollarSign,
   TrendingUp,
   RefreshCw,
   Loader2,
-  AlertTriangle,
   CheckCircle2,
   Star,
   PlayCircle,
@@ -17,16 +14,14 @@ import {
 import { toast } from 'sonner';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
-import { ViewToggle, type ViewMode } from '@/components/views/ViewToggle';
+import { type ViewMode } from '@/components/views/ViewToggle';
 import { KanbanBoard, type KanbanItem } from '@/components/views/KanbanBoard';
 import { ProjectListView } from '@/components/views/ProjectListView';
 import { SplitView } from '@/components/views/SplitView';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { syncEspaiderAction } from '@/app/actions/sync';
 import { updateProjectStatusAction } from '@/app/actions/projects';
 import { ProjectCockpit } from '@/components/project';
@@ -36,7 +31,6 @@ import {
   phaseColors,
   phaseOrder,
   bannedPhases,
-  resolvePhaseLabel,
 } from '@/lib/constants/phase-labels';
 import { SkeletonKanbanCard, SkeletonTableRow } from '@/components/ui/skeletons';
 import { FilterBar } from '@/components/filters/FilterBar';
@@ -356,28 +350,6 @@ export function ProjectsContent({
         subtitle="Visualize e gerencie todos os projetos do Espaider"
       />
 
-        {/* ✨ NEW: FilterBar com quick filters e busca */}
-        <div className="px-6 pt-6">
-          <FilterBar
-            moduleId="projetos"
-            filters={registry}
-            onFiltersChange={(newFilters) => {
-              // Update individual filter when filters object changes
-              // Note: This is a simplified implementation - for full control use onUpdateFilter
-              Object.entries(newFilters).forEach(([key, value]) => {
-                if (filters[key] !== value) {
-                  updateFilter(key, value);
-                }
-              });
-            }}
-            onSearchChange={setSearch}
-            onViewModeChange={handleViewModeChange}
-            initialFilters={filters}
-            initialSearch={search}
-            initialViewMode={activeViewMode}
-          />
-        </div>
-
       <div className="flex-1 space-y-6 p-6">
         {/* KPIs (Gerencial) */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -418,72 +390,50 @@ export function ProjectsContent({
           />
         </div>
 
-        {/* Filters Bar */}
-        <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-1 items-center gap-2">
-              <div className="relative max-w-sm flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar projetos... (Desabilitado - filtros serão reimplementados)"
-                  disabled={true}
-                  className="border-muted-foreground/20 bg-background/50 pl-9 transition-colors focus:border-primary/50"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSync}
-                disabled={isSyncing}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                {isSyncing ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                <span className="sr-only sm:not-sr-only">
-                  {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
-                </span>
-              </Button>
-            </div>
+        {/* FilterBar: busca + quick filters + view mode + sync */}
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <FilterBar
+              moduleId="projetos"
+              filters={registry}
+              onFiltersChange={(newFilters) => {
+                Object.entries(newFilters).forEach(([key, value]) => {
+                  if (filters[key] !== value) {
+                    updateFilter(key, value);
+                  }
+                });
+              }}
+              onSearchChange={setSearch}
+              onViewModeChange={handleViewModeChange}
+              initialFilters={filters}
+              initialSearch={search}
+              initialViewMode={activeViewMode}
+              currentFilters={filters}
+              currentSearch={search}
+              currentViewMode={activeViewMode}
+              onUpdateFilter={updateFilter}
+              onResetFilters={() => {
+                setSearch('');
+                // resetAllFilters is called internally
+              }}
+            />
           </div>
-
-          {/* View Mode Toggle - SIMPLE VERSION (No Filters) */}
-          <div className="flex items-center gap-2 border-b border-border bg-background p-4">
-            <div className="flex-1" />
-            {/* View Mode Toggle */}
-            <div className="flex gap-1 border-l border-border pl-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('kanban')}
-                    title="Kanban View"
-                  >
-                    <FolderOpen className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Kanban View</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    title="List View"
-                  >
-                    <CheckCircle2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>List View</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="mt-4 shrink-0 text-muted-foreground hover:text-foreground"
+          >
+            {isSyncing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            <span className="sr-only sm:not-sr-only">
+              {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
+            </span>
+          </Button>
         </div>
 
         {/* Content */}

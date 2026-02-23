@@ -77,6 +77,18 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
         };
       }
 
+      // Update status options from data
+      if (def.id === 'status') {
+        return {
+          ...def,
+          options: buildFilterOptions(
+            schedules,
+            'status',
+            (v) => v || 'Sem Status'
+          ),
+        };
+      }
+
       // Update responsavel options from data
       if (def.id === 'responsavel') {
         return {
@@ -85,6 +97,18 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
             schedules,
             'responsavel',
             (v) => v || 'Sem Responsável'
+          ),
+        };
+      }
+
+      // Update setor_responsavel options from data
+      if (def.id === 'setor_responsavel') {
+        return {
+          ...def,
+          options: buildFilterOptions(
+            schedules,
+            'setor_responsavel',
+            (v) => v || 'Sem Setor'
           ),
         };
       }

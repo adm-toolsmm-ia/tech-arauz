@@ -2,33 +2,39 @@
  * Filter Definitions - Projetos Module
  * Configuração centralizada de filtros para o módulo de Projetos
  *
- * Fase 2: Refatoração - Seguindo contexto consolidado em 07-filter-data-context.md
+ * IMPORTANTE: Os IDs dos filtros DEVEM corresponder aos nomes dos campos UI
+ * (após transformação em project.ts), NÃO aos nomes do banco de dados.
+ * Ex: 'responsible' (UI) e não 'responsavel' (DB)
  */
 
-import { CheckCircle2, AlertCircle, Users, Calendar, LayoutGrid, List } from 'lucide-react';
+import { CheckCircle2, Users, Calendar, LayoutGrid, List, Layers, Building2 } from 'lucide-react';
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
  * Filter Definitions para Projetos
- * Quick Filters (4): status, prioridade, responsavel, prazo_final
- * Advanced Filters (6): + categoria, created_at
- * Search Fields: titulo, codigo, categoria
+ * Quick Filters (4): fase_atual, status, responsible, area
+ * Advanced Filters: priority, category, end_date
+ * Search Fields: project_name, espaider_code, area, responsible
  */
 export const filterDefinitionsProjetos: FilterDefinition[] = [
   // QUICK FILTERS
   {
+    id: 'fase_atual',
+    label: 'Fase',
+    type: 'multi-select',
+    options: [], // Dinâmico - populado via useProjetosFilters com phaseLabels
+    quickFilter: true,
+    icon: Layers,
+    description: 'Filtrar por fase do projeto (Kanban)',
+    multi: true,
+    searchable: true,
+  },
+
+  {
     id: 'status',
     label: 'Status',
     type: 'multi-select',
-    options: [
-      { label: 'Novo', value: 'Novo' },
-      { label: 'Em Análise', value: 'Em Análise' },
-      { label: 'Em Desenvolvimento', value: 'Em Desenvolvimento' },
-      { label: 'Em Homologação', value: 'Em Homologação' },
-      { label: 'Concluído', value: 'Concluído' },
-      { label: 'Cancelado', value: 'Cancelado' },
-      { label: 'Suspenso', value: 'Suspenso' },
-    ],
+    options: [], // Dinâmico - populado via useProjetosFilters com dados reais
     quickFilter: true,
     icon: CheckCircle2,
     description: 'Filtrar projetos por status',
@@ -37,22 +43,7 @@ export const filterDefinitionsProjetos: FilterDefinition[] = [
   },
 
   {
-    id: 'prioridade',
-    label: 'Prioridade',
-    type: 'multi-select',
-    options: [
-      { label: 'Baixa', value: 'Baixa' },
-      { label: 'Normal', value: 'Normal' },
-      { label: 'Alta', value: 'Alta' },
-    ],
-    quickFilter: true,
-    icon: AlertCircle,
-    description: 'Filtrar por nível de prioridade',
-    multi: true,
-  },
-
-  {
-    id: 'responsavel',
+    id: 'responsible',
     label: 'Responsável',
     type: 'multi-select',
     options: [], // Dinâmico - populado via useProjetosFilters
@@ -64,22 +55,33 @@ export const filterDefinitionsProjetos: FilterDefinition[] = [
   },
 
   {
-    id: 'prazo_final',
-    label: 'Prazo Final',
-    type: 'date-range',
+    id: 'area',
+    label: 'Área',
+    type: 'multi-select',
+    options: [], // Dinâmico - populado via useProjetosFilters
     quickFilter: true,
-    icon: Calendar,
-    description: 'Filtrar por intervalo de prazo',
-    group: 'dates',
+    icon: Building2,
+    description: 'Filtrar por área de atuação',
+    multi: true,
+    searchable: true,
   },
 
   // ADVANCED FILTERS
   {
-    id: 'categoria',
+    id: 'priority',
+    label: 'Prioridade',
+    type: 'multi-select',
+    options: [], // Dinâmico - populado via useProjetosFilters
+    description: 'Filtrar por nível de prioridade',
+    multi: true,
+    group: 'classification',
+  },
+
+  {
+    id: 'category',
     label: 'Categoria',
     type: 'multi-select',
     options: [], // Dinâmico
-    icon: undefined,
     description: 'Filtrar por categoria do projeto',
     multi: true,
     searchable: true,
@@ -87,17 +89,17 @@ export const filterDefinitionsProjetos: FilterDefinition[] = [
   },
 
   {
-    id: 'created_at',
-    label: 'Data de Criação',
+    id: 'end_date',
+    label: 'Prazo Final',
     type: 'date-range',
-    description: 'Filtrar por período de criação',
+    icon: Calendar,
+    description: 'Filtrar por intervalo de prazo',
     group: 'dates',
   },
 ];
 
 /**
  * Filter Registry para o módulo Projetos
- * Exportar como FilterRegistry para uso em FilterBar
  */
 export const filterRegistryProjetos: FilterRegistry = {
   moduleId: 'projetos',
@@ -118,28 +120,6 @@ export const filterRegistryProjetos: FilterRegistry = {
 
 /**
  * Campos de busca (search)
- * Usados por useModuleFilters para filtrar com searchFields
+ * IMPORTANTE: Usar nomes UI (após transformação), NÃO nomes DB
  */
-export const searchFieldsProjetos = ['titulo', 'codigo', 'categoria'];
-
-/**
- * Valores estáticos de Status (para referência)
- */
-export const projectStatusValues = [
-  'Novo',
-  'Em Análise',
-  'Em Desenvolvimento',
-  'Em Homologação',
-  'Concluído',
-  'Cancelado',
-  'Suspenso',
-] as const;
-
-export type ProjectStatus = (typeof projectStatusValues)[number];
-
-/**
- * Valores estáticos de Prioridade
- */
-export const projectPriorityValues = ['Baixa', 'Normal', 'Alta'] as const;
-
-export type ProjectPriority = (typeof projectPriorityValues)[number];
+export const searchFieldsProjetos = ['project_name', 'espaider_code', 'area', 'responsible'];

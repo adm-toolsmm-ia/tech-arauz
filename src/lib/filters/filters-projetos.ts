@@ -7,7 +7,7 @@
  * Ex: 'responsible' (UI) e não 'responsavel' (DB)
  */
 
-import { CheckCircle2, Users, Calendar, LayoutGrid, List, Layers, Building2 } from 'lucide-react';
+import { CheckCircle2, Users, Calendar, LayoutGrid, List, Layers, Building2, Star, TrendingUp, Clock, AlertCircle } from 'lucide-react';
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
@@ -64,6 +64,59 @@ export const filterDefinitionsProjetos: FilterDefinition[] = [
     description: 'Filtrar por área de atuação',
     multi: true,
     searchable: true,
+  },
+
+  // NOVOS QUICK FILTERS (Essenciais para Gestão)
+
+  {
+    id: 'importancia_especial',
+    label: 'Importância Especial',
+    type: 'select',
+    options: [
+      { value: 'true', label: 'Sim' },
+      { value: 'false', label: 'Não' },
+    ],
+    quickFilter: true,
+    icon: Star,
+    description: 'Projetos marcados como importância especial',
+  },
+
+  {
+    id: 'impacto_estrategico',
+    label: 'Impacto Estratégico',
+    type: 'multi-select',
+    options: [], // Dinâmico - populado via useProjetosFilters
+    quickFilter: true,
+    icon: TrendingUp,
+    description: 'Nível de impacto estratégico (Alto/Médio/Baixo)',
+    multi: true,
+    sortOptions: true,
+  },
+
+  {
+    id: 'sem_movimentacao',
+    label: 'Sem Movimentação',
+    type: 'select',
+    options: [
+      { value: 'true', label: 'Estagnados (> 7 dias)' },
+      { value: 'false', label: 'Ativos (≤ 7 dias)' },
+    ],
+    quickFilter: true,
+    icon: Clock,
+    description: 'Projetos em execução sem movimentação > 7 dias',
+  },
+
+  {
+    id: 'atrasado',
+    label: 'Atrasados',
+    type: 'select',
+    options: [
+      { value: 'true', label: 'Atrasados' },
+      { value: 'false', label: 'No Prazo' },
+    ],
+    quickFilter: true,
+    icon: AlertCircle,
+    description: 'Projetos com prazo vencido',
   },
 
   // ADVANCED FILTERS

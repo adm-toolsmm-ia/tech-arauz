@@ -189,6 +189,7 @@ export function ProjectsContent({
     updateFilter,
     setSearch,
     setViewMode: setFilterViewMode,
+    resetAllFilters,
     registry,
   } = useProjetosFilters(projects);
 
@@ -545,8 +546,8 @@ export function ProjectsContent({
               currentViewMode={activeViewMode}
               onUpdateFilter={updateFilter}
               onResetFilters={() => {
+                resetAllFilters();
                 setSearch('');
-                // resetAllFilters is called internally
               }}
             />
           </div>

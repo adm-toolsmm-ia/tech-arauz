@@ -280,8 +280,8 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
   // Get schedules for a specific date
   const getSchedulesForDate = React.useCallback(
-    (date: Date) => {
-      return filteredSchedules.filter((s) => {
+    (date: Date): Schedule[] => {
+      return (filteredSchedules.filter((s) => {
         const start = s.data_inicio ? new Date(s.data_inicio) : null;
         const end = s.data_fim ? new Date(s.data_fim) : null;
 
@@ -291,7 +291,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
         if (start) return isSameDay(date, start);
         if (end) return isSameDay(date, end);
         return false;
-      });
+      }) as unknown) as Schedule[];
     },
     [filteredSchedules],
   );
@@ -353,7 +353,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           {/* Calendar Section */}
           {filterState.viewMode === 'gantt' ? (
             <CronogramaGantt
-              schedules={filteredSchedules}
+              schedules={filteredSchedules as Schedule[]}
               projectIds={projectIds}
               onActivityClick={setSelectedSchedule}
             />

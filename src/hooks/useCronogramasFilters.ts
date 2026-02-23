@@ -42,6 +42,9 @@ export interface CronogramaData {
   prazo_confirmado: boolean | null;
   created_at?: string | null;
   updated_at?: string | null;
+  // Computed fields
+  proximo_vencer?: boolean;  // Computed: prazo vencendo em ≤ 7 dias
+  sem_prazo?: boolean;       // Computed: sem data_prazo e sem data_fim
   project?: {
     id: string;
     titulo: string | null;
@@ -113,7 +116,46 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
         };
       }
 
+      // Update fase_atividade options from data
+      if (def.id === 'fase_atividade') {
+        return {
+          ...def,
+          options: buildFilterOptions(
+            schedules,
+            'fase_atividade',
+            (v) => v || 'Sem Fase'
+          ),
+        };
+      }
+
       return def;
+    });
+  }, [schedules]);
+
+  // Pre-compute computed fields (proximo_vencer, sem_prazo)
+  const schedulesWithComputed = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    const in7Days = new Date(today);
+    in7Days.setDate(in7Days.getDate() + 7);
+
+    return schedules.map((s) => {
+      // Próximo vencer: prazo vencendo em ≤ 7 dias (não atrasado e não concluído)
+      let proximo_vencer = false;
+      const status = (s.status || '').trim().toLowerCase();
+      if (status !== 'concluído' && status !== 'cancelado') {
+        const deadlineStr = s.data_prazo || s.data_novo_prazo || s.data_fim;
+        if (deadlineStr) {
+          const deadline = new Date(deadlineStr);
+          proximo_vencer = deadline >= today && deadline <= in7Days;
+        }
+      }
+
+      // Sem prazo: sem data_prazo e sem data_fim
+      const sem_prazo = !s.data_prazo && !s.data_fim;
+
+      return { ...s, proximo_vencer, sem_prazo };
     });
   }, [schedules]);
 
@@ -127,15 +169,47 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     },
   });
 
-  // Apply filters to schedules
+  // Custom filter logic para campos boolean (atrasado, proximo_vencer, sem_prazo) + fase_atividade
   const filteredData = useMemo(() => {
-    return applyFilters(schedules, filterState.filters, {
+    let data = schedulesWithComputed;
+
+    // 1. Aplicar filtro de atrasado
+    const atrasadoFilter = filterState.filters.atrasado;
+    if (atrasadoFilter === 'true') {
+      data = data.filter((s) => s.atrasado === true);
+    } else if (atrasadoFilter === 'false') {
+      data = data.filter((s) => !s.atrasado);
+    }
+
+    // 2. Aplicar filtro de próximo vencer
+    const proximoVencerFilter = filterState.filters.proximo_vencer;
+    if (proximoVencerFilter === 'true') {
+      data = data.filter((s) => s.proximo_vencer === true);
+    } else if (proximoVencerFilter === 'false') {
+      data = data.filter((s) => !s.proximo_vencer);
+    }
+
+    // 3. Aplicar filtro de sem prazo
+    const semPrazoFilter = filterState.filters.sem_prazo;
+    if (semPrazoFilter === 'true') {
+      data = data.filter((s) => s.sem_prazo === true);
+    } else if (semPrazoFilter === 'false') {
+      data = data.filter((s) => !s.sem_prazo);
+    }
+
+    // 4. Aplicar demais filtros (excluindo os já aplicados)
+    const otherFilters = { ...filterState.filters };
+    delete otherFilters.atrasado;
+    delete otherFilters.proximo_vencer;
+    delete otherFilters.sem_prazo;
+
+    return applyFilters(data, otherFilters, {
       search: filterState.search,
       searchFields: searchFieldsCronogramas,
       matchMode: 'partial',
       caseSensitive: false,
     });
-  }, [schedules, filterState.filters, filterState.search]);
+  }, [schedulesWithComputed, filterState.filters, filterState.search]);
 
   return {
     // State
@@ -158,8 +232,11 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     hasActiveFilters: filterState.hasActiveFilters,
     isFiltersEmpty: filterState.isFiltersEmpty,
 
-    // Registry (para usar em FilterBar)
-    registry: filterRegistryCronogramas,
+    // Registry (para usar em FilterBar) - com definitions dinâmicas
+    registry: {
+      ...filterRegistryCronogramas,
+      filters: definitions,  // ✅ Definitions com options dinâmicas
+    },
   };
 }
 

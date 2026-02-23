@@ -6,7 +6,7 @@
  * então os IDs dos filtros correspondem aos nomes das colunas do banco.
  */
 
-import { Building2, CheckCircle2, Users, Calendar, List } from 'lucide-react';
+import { Building2, CheckCircle2, Users, Calendar, List, CalendarDays, LayoutTemplate, BarChartHorizontal, AlertCircle, Clock, AlertTriangle } from 'lucide-react';
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
@@ -52,6 +52,59 @@ export const filterDefinitionsCronogramas: FilterDefinition[] = [
     searchable: true,
   },
 
+  // NOVOS QUICK FILTERS (Essenciais para Gestão de Cronogramas)
+
+  {
+    id: 'atrasado',
+    label: 'Atrasadas',
+    type: 'select',
+    options: [
+      { value: 'true', label: 'Atrasadas' },
+      { value: 'false', label: 'No Prazo' },
+    ],
+    quickFilter: true,
+    icon: AlertTriangle,
+    description: 'Atividades com prazo vencido',
+  },
+
+  {
+    id: 'proximo_vencer',
+    label: 'Próximas do Prazo',
+    type: 'select',
+    options: [
+      { value: 'true', label: 'Vencendo em ≤ 7 dias' },
+      { value: 'false', label: 'Prazo > 7 dias' },
+    ],
+    quickFilter: true,
+    icon: Clock,
+    description: 'Atividades próximas de vencerem',
+  },
+
+  {
+    id: 'sem_prazo',
+    label: 'Data Ausente',
+    type: 'select',
+    options: [
+      { value: 'true', label: 'Sem prazo/data' },
+      { value: 'false', label: 'Com prazo/data' },
+    ],
+    quickFilter: true,
+    icon: AlertCircle,
+    description: 'Atividades sem prazo ou data de conclusão',
+  },
+
+  {
+    id: 'fase_atividade',
+    label: 'Fase',
+    type: 'multi-select',
+    options: [], // Dinâmico
+    quickFilter: true,
+    icon: LayoutTemplate,
+    description: 'Filtrar por fase/estágio da atividade',
+    multi: true,
+    searchable: true,
+  },
+
   // ADVANCED FILTERS
   {
     id: 'setor_responsavel',
@@ -90,7 +143,22 @@ export const filterRegistryCronogramas: FilterRegistry = {
   filters: filterDefinitionsCronogramas,
   viewModes: [
     {
-      id: 'list',
+      id: 'agenda',
+      label: 'Agenda',
+      icon: CalendarDays,
+    },
+    {
+      id: 'kanban',
+      label: 'Kanban',
+      icon: LayoutTemplate,
+    },
+    {
+      id: 'gantt',
+      label: 'Gantt',
+      icon: BarChartHorizontal,
+    },
+    {
+      id: 'lista',
       label: 'Lista',
       icon: List,
     },

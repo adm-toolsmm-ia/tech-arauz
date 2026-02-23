@@ -2,22 +2,23 @@
  * NotificationBell Component Tests
  */
 
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NotificationBell } from '../NotificationBell';
 import { useNotifications } from '@/hooks/useNotifications';
 
 // Mock the useNotifications hook
-jest.mock('@/hooks/useNotifications', () => ({
-  useNotifications: jest.fn(),
+vi.mock('@/hooks/useNotifications', () => ({
+  useNotifications: vi.fn(),
 }));
 
 describe('NotificationBell', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders bell icon', () => {
-    (useNotifications as jest.Mock).mockReturnValue({
+    (useNotifications as ReturnType<typeof vi.fn>).mockReturnValue({
       notifications: [],
       unreadCount: 0,
       hasUnread: false,
@@ -29,7 +30,7 @@ describe('NotificationBell', () => {
   });
 
   it('shows badge when there are unread notifications', () => {
-    (useNotifications as jest.Mock).mockReturnValue({
+    (useNotifications as ReturnType<typeof vi.fn>).mockReturnValue({
       notifications: [],
       unreadCount: 3,
       hasUnread: true,
@@ -41,7 +42,7 @@ describe('NotificationBell', () => {
   });
 
   it('shows 9+ when unread count is greater than 9', () => {
-    (useNotifications as jest.Mock).mockReturnValue({
+    (useNotifications as ReturnType<typeof vi.fn>).mockReturnValue({
       notifications: [],
       unreadCount: 15,
       hasUnread: true,
@@ -53,7 +54,7 @@ describe('NotificationBell', () => {
   });
 
   it('toggles panel on button click', () => {
-    (useNotifications as jest.Mock).mockReturnValue({
+    (useNotifications as ReturnType<typeof vi.fn>).mockReturnValue({
       notifications: [],
       unreadCount: 0,
       hasUnread: false,
@@ -75,7 +76,7 @@ describe('NotificationBell', () => {
   });
 
   it('has correct aria labels', () => {
-    (useNotifications as jest.Mock).mockReturnValue({
+    (useNotifications as ReturnType<typeof vi.fn>).mockReturnValue({
       notifications: [],
       unreadCount: 5,
       hasUnread: true,

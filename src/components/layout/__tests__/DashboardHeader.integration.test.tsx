@@ -2,7 +2,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DashboardHeader } from '../DashboardHeader';
 
-// Mock next-themes with control
+// Mock DarkModeProvider and useDarkMode hook
+let mockDarkMode = false;
+const mockToggle = vi.fn(() => {
+  mockDarkMode = !mockDarkMode;
+});
+
+vi.mock('@/components/providers/DarkModeProvider', () => ({
+  useDarkMode: () => ({
+    isDark: mockDarkMode,
+    toggle: mockToggle,
+    setDark: vi.fn((isDark: boolean) => {
+      mockDarkMode = isDark;
+    }),
+  }),
+  DarkModeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+// Mock next-themes as fallback
 let mockTheme = 'light';
 const mockSetTheme = vi.fn((theme: string) => {
   mockTheme = theme;
@@ -76,6 +93,7 @@ describe('DashboardHeader - Dark Mode Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockTheme = 'light';
+    mockDarkMode = false;
   });
 
   describe('AC-2: Toggle button rendering', () => {

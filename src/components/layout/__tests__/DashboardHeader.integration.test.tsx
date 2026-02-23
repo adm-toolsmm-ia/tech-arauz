@@ -1,39 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { DashboardHeader } from '../DashboardHeader';
 
-// Mock DarkModeProvider and useDarkMode hook
-let mockDarkMode = false;
+let mockIsDark = false;
 const mockToggle = vi.fn(() => {
-  mockDarkMode = !mockDarkMode;
+  mockIsDark = !mockIsDark;
 });
 
 vi.mock('@/components/providers/DarkModeProvider', () => ({
   useDarkMode: () => ({
-    isDark: mockDarkMode,
+    isDark: mockIsDark,
     toggle: mockToggle,
     setDark: vi.fn((isDark: boolean) => {
-      mockDarkMode = isDark;
+      mockIsDark = isDark;
     }),
   }),
   DarkModeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-// Mock next-themes as fallback
-let mockTheme = 'light';
-const mockSetTheme = vi.fn((theme: string) => {
-  mockTheme = theme;
-});
-
-vi.mock('next-themes', () => ({
-  useTheme: () => ({
-    theme: mockTheme,
-    setTheme: mockSetTheme,
-    resolvedTheme: mockTheme,
-  }),
-}));
-
-// Mock sidebar trigger
 vi.mock('@/components/ui/sidebar', () => ({
   SidebarTrigger: ({ className }: { className?: string }) => (
     <button className={className} data-testid="sidebar-trigger">
@@ -42,14 +26,12 @@ vi.mock('@/components/ui/sidebar', () => ({
   ),
 }));
 
-// Mock separator
 vi.mock('@/components/ui/separator', () => ({
   Separator: ({ orientation, className }: { orientation?: string; className?: string }) => (
     <div data-testid="separator" data-orientation={orientation} className={className} />
   ),
 }));
 
-// Mock button
 vi.mock('@/components/ui/button', () => ({
   Button: ({
     children,
@@ -70,7 +52,6 @@ vi.mock('@/components/ui/button', () => ({
   ),
 }));
 
-// Mock tooltip
 vi.mock('@/components/ui/tooltip', () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   TooltipTrigger: ({ children, asChild }: { children?: React.ReactNode; asChild?: boolean }) => (
@@ -82,18 +63,19 @@ vi.mock('@/components/ui/tooltip', () => ({
   TooltipProvider: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }));
 
-// Mock lucide icons
 vi.mock('lucide-react', () => ({
   Moon: () => <span data-testid="moon-icon">Moon</span>,
   Sun: () => <span data-testid="sun-icon">Sun</span>,
-  Bell: () => <span data-testid="bell-icon">Bell</span>,
+}));
+
+vi.mock('@/components/notifications', () => ({
+  NotificationBell: () => <div data-testid="notification-bell">Bell</div>,
 }));
 
 describe('DashboardHeader - Dark Mode Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockTheme = 'light';
-    mockDarkMode = false;
+    mockIsDark = false;
   });
 
   describe('AC-2: Toggle button rendering', () => {
@@ -114,71 +96,62 @@ describe('DashboardHeader - Dark Mode Integration', () => {
 
   describe('AC-2: Display correct icon', () => {
     it('should display moon icon in light mode', () => {
-      mockTheme = 'light';
+      mockIsDark = false;
       render(<DashboardHeader title="Test Page" />);
 
       expect(screen.getByTestId('moon-icon')).toBeInTheDocument();
     });
 
     it('should display sun icon in dark mode', () => {
-      mockTheme = 'dark';
+      mockIsDark = true;
       render(<DashboardHeader title="Test Page" />);
 
-      // Need to wait for component to mount
-      waitFor(() => {
-        expect(screen.getByTestId('sun-icon')).toBeInTheDocument();
-      });
+      expect(screen.getByTestId('sun-icon')).toBeInTheDocument();
     });
   });
 
   describe('AC-3: Apply dark class on click', () => {
-    it('should call setTheme when toggle button is clicked', () => {
-      mockTheme = 'light';
-
+    it('should call toggle when toggle button is clicked', () => {
+      mockIsDark = false;
       render(<DashboardHeader title="Test Page" />);
 
       const toggleButton = screen.getByRole('button', { name: /alternar tema/i });
-
       fireEvent.click(toggleButton);
 
-      expect(mockSetTheme).toHaveBeenCalled();
+      expect(mockToggle).toHaveBeenCalled();
     });
 
-    it('should toggle to dark mode when in light mode', async () => {
-      mockTheme = 'light';
-
+    it('should toggle to dark mode when in light mode', () => {
+      mockIsDark = false;
       render(<DashboardHeader title="Test Page" />);
 
       const toggleButton = screen.getByRole('button', { name: /alternar tema/i });
-
       fireEvent.click(toggleButton);
 
-      expect(mockSetTheme).toHaveBeenCalledWith('dark');
+      expect(mockToggle).toHaveBeenCalled();
     });
 
     it('should toggle to light mode when in dark mode', () => {
-      mockTheme = 'dark';
-
+      mockIsDark = true;
       render(<DashboardHeader title="Test Page" />);
 
       const toggleButton = screen.getByRole('button', { name: /alternar tema/i });
-
       fireEvent.click(toggleButton);
 
-      expect(mockSetTheme).toHaveBeenCalledWith('light');
+      expect(mockToggle).toHaveBeenCalled();
     });
   });
 
   describe('AC-6: Documentation via tooltips', () => {
     it('should show correct tooltip text for light mode', () => {
-      mockTheme = 'light';
+      mockIsDark = false;
       render(<DashboardHeader title="Test Page" />);
 
       expect(screen.getByText('Tema escuro')).toBeInTheDocument();
     });
 
     it('should show correct tooltip text for dark mode', () => {
-      mockTheme = 'dark';
+      mockIsDark = true;
       render(<DashboardHeader title="Test Page" />);
 
       expect(screen.getByText('Tema claro')).toBeInTheDocument();
@@ -189,7 +162,6 @@ describe('DashboardHeader - Dark Mode Integration', () => {
     it('should have accessible button for toggle', () => {
       render(<DashboardHeader title="Test Page" />);
 
-      // Button is accessible via role and name
       const toggleButton = screen.getByRole('button', { name: /alternar tema/i });
       expect(toggleButton).toBeInTheDocument();
     });
@@ -213,7 +185,7 @@ describe('DashboardHeader - Dark Mode Integration', () => {
     it('should display notifications button', () => {
       render(<DashboardHeader title="Test Page" />);
 
-      expect(screen.getByTestId('bell-icon')).toBeInTheDocument();
+      expect(screen.getByTestId('notification-bell')).toBeInTheDocument();
     });
   });
 });

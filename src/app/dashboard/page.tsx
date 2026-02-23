@@ -47,6 +47,9 @@ export default async function DashboardPage() {
     data_encerramento: p.data_encerramento || '',
     prioridade: p.prioridade || '',
     importancia_especial: p.importancia_especial || false,
+    impacto_estrategico: p.impacto_estrategico || '',
+    impacto_operacional: p.impacto_operacional || '',
+    responsible: p.responsavel || '',
   }));
 
   return (

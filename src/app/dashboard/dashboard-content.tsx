@@ -25,8 +25,8 @@ import { ProjectCockpit } from '@/components/project/ProjectCockpit';
 import {
   ProjectPipelineChart,
   buildPipelineData,
-  ProjectTrendChart,
-  buildTrendData,
+  ResponsibleWorkloadChart,
+  buildWorkloadData,
   StatusDistributionChart,
   buildDistributionData,
 } from '@/components/charts';
@@ -54,6 +54,9 @@ interface ChartProject {
   data_encerramento: string;
   prioridade: string;
   importancia_especial: boolean;
+  impacto_estrategico: string;
+  impacto_operacional: string;
+  responsible: string;
 }
 
 type FilterType =
@@ -80,14 +83,32 @@ interface DashboardContentProps {
   isLoading?: boolean;
 }
 
-function isOverdue(project: UIProject): boolean {
+function getOverdueData(project: UIProject, referenceDate = new Date()): { isOverdue: boolean; maxDays: number } {
   const status = (project.status || '').trim().toLowerCase();
-  if (!project.end_date || status === 'concluído' || status === 'cancelado') return false;
-  try {
-    return new Date(project.end_date) < new Date();
-  } catch {
-    return false;
-  }
+  if (status === 'concluído' || status === 'cancelado') return { isOverdue: false, maxDays: 0 };
+
+  const datesToCheck = [project.end_date, project.prazo_cronograma, project.prazo_aprovador]
+    .filter(Boolean)
+    .map((d) => new Date(d as string));
+
+  if (datesToCheck.length === 0) return { isOverdue: false, maxDays: 0 };
+
+  const refMidnight = new Date(referenceDate);
+  refMidnight.setHours(0, 0, 0, 0);
+
+  let maxDays = 0;
+  let isOverdue = false;
+
+  datesToCheck.forEach((d) => {
+    if (d < refMidnight) {
+      isOverdue = true;
+      const diffTime = Math.abs(refMidnight.getTime() - d.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > maxDays) maxDays = diffDays;
+    }
+  });
+
+  return { isOverdue, maxDays };
 }
 
 export function DashboardContent({
@@ -102,7 +123,15 @@ export function DashboardContent({
   const filteredListRef = React.useRef<HTMLDivElement>(null);
 
   // ─── KPI Calculations (manager-focused) ───
+  const now = React.useMemo(() => new Date(), []);
+
+  const isConsideredActive = (statusStr: string) => {
+    const s = (statusStr || '').trim().toLowerCase();
+    return s !== 'cancelado' && s !== 'concluído';
+  };
+
   const totalProjects = chartProjects.length;
+  const coreActiveCount = chartProjects.filter((p) => isConsideredActive(p.status)).length;
 
   const activeProjects = chartProjects.filter(
     (p) => (p.status || '').trim().toLowerCase() === 'em execução',
@@ -112,24 +141,33 @@ export function DashboardContent({
     (p) => (p.status || '').trim().toLowerCase() === 'concluído',
   ).length;
 
-  const overdueProjects = chartProjects.filter((p) => {
-    const status = (p.status || '').trim().toLowerCase();
-    if (!p.prazo_final || status === 'concluído' || status === 'cancelado') return false;
-    try {
-      return new Date(p.prazo_final) < new Date();
-    } catch {
-      return false;
-    }
+  const overdueProjectsInfo = React.useMemo(() => {
+    let count = 0;
+    let maxDays = 0;
+    projects.forEach((p) => {
+      const { isOverdue, maxDays: pMaxDays } = getOverdueData(p, now);
+      if (isOverdue) {
+        count++;
+        if (pMaxDays > maxDays) maxDays = pMaxDays;
+      }
+    });
+    return { count, maxDays };
+  }, [projects, now]);
+
+  const highPriorityCount = chartProjects.filter((p) => {
+    if (!isConsideredActive(p.status)) return false;
+    const prio = (p.prioridade || '').toLowerCase();
+    const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
+    const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
+    return (
+      prio === 'urgente' || prio === 'alta' || p.importancia_especial || isEstrategicoAlto || isOperacionalAlto
+    );
   }).length;
 
-  const highPriorityCount = chartProjects.filter(
-    (p) => p.prioridade === 'urgente' || p.prioridade === 'alta',
-  ).length;
-
-  const specialCount = chartProjects.filter((p) => p.importancia_especial).length;
+  const specialCount = chartProjects.filter((p) => p.importancia_especial && isConsideredActive(p.status)).length;
+  const specialCompletedCount = chartProjects.filter((p) => p.importancia_especial && (p.status || '').trim().toLowerCase() === 'concluído').length;
 
   // Completion rate this month
-  const now = new Date();
   const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonthKey = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
@@ -159,7 +197,7 @@ export function DashboardContent({
 
   // ─── Chart Data ───
   const pipelineData = React.useMemo(() => buildPipelineData(chartProjects), [chartProjects]);
-  const trendData = React.useMemo(() => buildTrendData(chartProjects), [chartProjects]);
+  const trendData = React.useMemo(() => buildWorkloadData(projects as any), [projects]);
   const distributionData = React.useMemo(
     () => buildDistributionData(chartProjects),
     [chartProjects],
@@ -176,11 +214,19 @@ export function DashboardContent({
       case 'completed':
         return projects.filter((p) => (p.status || '').trim().toLowerCase() === 'concluído');
       case 'overdue':
-        return projects.filter(isOverdue);
+        return projects.filter((p) => getOverdueData(p, now).isOverdue);
       case 'high_priority':
-        return projects.filter((p) => p.priority === 'urgente' || p.priority === 'alta');
+        return projects.filter((p) => {
+          if (!isConsideredActive(p.status)) return false;
+          const prio = (p.priority || '').toLowerCase();
+          const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
+          const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
+          return (
+            prio === 'urgente' || prio === 'alta' || p.importancia_especial || isEstrategicoAlto || isOperacionalAlto
+          );
+        });
       case 'special':
-        return projects.filter((p) => p.importancia_especial);
+        return projects.filter((p) => p.importancia_especial && isConsideredActive(p.status));
       case 'by_status':
         return projects.filter((p) => p.status === activeFilter.value);
       case 'by_area':
@@ -188,7 +234,7 @@ export function DashboardContent({
       default:
         return [];
     }
-  }, [activeFilter, projects]);
+  }, [activeFilter, projects, now]);
 
   const handleKPIClick = (filter: ActiveFilter) => {
     if (activeFilter?.type === filter.type && activeFilter?.value === filter.value) {
@@ -228,12 +274,12 @@ export function DashboardContent({
                 title="Total de Projetos"
                 value={totalProjects}
                 icon={FolderOpen}
-                subtitle={`${activeProjects} ativos`}
+                subtitle={`${coreActiveCount} ativos`}
                 onClick={() => handleKPIClick({ type: 'all', label: 'Todos os Projetos' })}
                 active={activeFilter?.type === 'all'}
               />
               <KPICard
-                title="Em Andamento"
+                title="Em Execução"
                 value={activeProjects}
                 icon={Clock}
                 subtitle={`${chartProjects.filter((p) => p.status === 'em_desenvolvimento').length} em desenvolvimento`}
@@ -247,9 +293,9 @@ export function DashboardContent({
                 trend={
                   completedThisMonth > 0
                     ? {
-                        value: `${completedThisMonth} este mês`,
-                        positive: completedThisMonth >= completedLastMonth,
-                      }
+                      value: `${completedThisMonth} este mês`,
+                      positive: completedThisMonth >= completedLastMonth,
+                    }
                     : undefined
                 }
                 subtitle={completedThisMonth === 0 ? 'Nenhum este mês' : undefined}
@@ -258,10 +304,10 @@ export function DashboardContent({
               />
               <KPICard
                 title="Atrasados"
-                value={overdueProjects}
+                value={overdueProjectsInfo.count}
                 icon={AlertTriangle}
-                subtitle={overdueProjects > 0 ? 'Requer atenção imediata' : 'Todos no prazo'}
-                className={overdueProjects > 0 ? 'border-destructive/30' : undefined}
+                subtitle={overdueProjectsInfo.count > 0 ? `${overdueProjectsInfo.maxDays} dias (maior atraso)` : 'Todos no prazo'}
+                className={overdueProjectsInfo.count > 0 ? 'border-destructive/30' : undefined}
                 onClick={() => handleKPIClick({ type: 'overdue', label: 'Projetos Atrasados' })}
                 active={activeFilter?.type === 'overdue'}
               />
@@ -287,7 +333,7 @@ export function DashboardContent({
                 title="Importância Especial"
                 value={specialCount}
                 icon={Star}
-                subtitle="Projetos estratégicos"
+                subtitle={`${specialCompletedCount} concluídos`}
                 onClick={() => handleKPIClick({ type: 'special', label: 'Importância Especial' })}
                 active={activeFilter?.type === 'special'}
               />
@@ -302,20 +348,20 @@ export function DashboardContent({
                 trend={
                   completedThisMonth > completedLastMonth
                     ? {
-                        value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
-                        positive: true,
-                      }
+                      value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
+                      positive: true,
+                    }
                     : completedLastMonth > completedThisMonth
                       ? {
-                          value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
-                          positive: false,
-                        }
+                        value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
+                        positive: false,
+                      }
                       : undefined
                 }
               />
               <KPICard
-                title="Projetos por Área"
-                value={Object.keys(areaCounts).length}
+                title="Top 3 Áreas"
+                value={topAreas.length > 0 ? topAreas.length : 0}
                 icon={Building2}
                 subtitle={
                   topAreas.length > 0
@@ -340,7 +386,7 @@ export function DashboardContent({
               onSegmentClick={handleChartStatusClick}
               activeStatus={activeFilter?.type === 'by_status' ? activeFilter.value : null}
             />
-            <ProjectTrendChart data={trendData} />
+            <ResponsibleWorkloadChart data={trendData} />
           </div>
         )}
 
@@ -379,7 +425,7 @@ export function DashboardContent({
                 ) : (
                   <div className="space-y-2">
                     {filteredProjects.map((project) => {
-                      const overdue = isOverdue(project);
+                      const { isOverdue } = getOverdueData(project, now);
                       return (
                         <div
                           key={project.id}
@@ -415,7 +461,7 @@ export function DashboardContent({
                               {project.end_date && (
                                 <>
                                   <span>·</span>
-                                  <span className={overdue ? 'font-medium text-destructive' : ''}>
+                                  <span className={isOverdue ? 'font-medium text-destructive' : ''}>
                                     Prazo: {new Date(project.end_date).toLocaleDateString('pt-BR')}
                                   </span>
                                 </>
@@ -453,41 +499,59 @@ export function DashboardContent({
               </div>
             ) : (
               <div className="space-y-2">
-                {projects.slice(0, 8).map((project) => (
-                  <div
-                    key={project.id}
-                    onClick={() => handleProjectClick(project)}
-                    className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
-                  >
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-medium">{project.project_name}</p>
-                        {project.importancia_especial && (
-                          <Star className="size-3 flex-shrink-0 text-amber-500" />
-                        )}
+                {projects
+                  .filter((p) => {
+                    const s = (p.status || '').trim().toLowerCase();
+                    if (s !== 'iniciado' && s !== 'em execução' && s !== 'concluído') return false;
+
+                    const lastMove = p.last_update;
+                    if (!lastMove) return false;
+
+                    const diffTime = now.getTime() - new Date(lastMove).getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    return diffDays >= 0 && diffDays <= 7;
+                  })
+                  .sort((a, b) => {
+                    const d1 = new Date(b.last_update || 0).getTime();
+                    const d2 = new Date(a.last_update || 0).getTime();
+                    return d1 - d2;
+                  })
+                  .slice(0, 8)
+                  .map((project) => (
+                    <div
+                      key={project.id}
+                      onClick={() => handleProjectClick(project)}
+                      className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                    >
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="truncate text-sm font-medium">{project.project_name}</p>
+                          {project.importancia_especial && (
+                            <Star className="size-3 flex-shrink-0 text-amber-500" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{project.espaider_code}</span>
+                          {project.area && (
+                            <>
+                              <span>·</span>
+                              <span>{project.area}</span>
+                            </>
+                          )}
+                          {project.responsible && (
+                            <>
+                              <span>·</span>
+                              <span>{project.responsible}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{project.espaider_code}</span>
-                        {project.area && (
-                          <>
-                            <span>·</span>
-                            <span>{project.area}</span>
-                          </>
-                        )}
-                        {project.responsible && (
-                          <>
-                            <span>·</span>
-                            <span>{project.responsible}</span>
-                          </>
-                        )}
+                      <div className="ml-4 flex flex-shrink-0 items-center gap-3">
+                        <StatusBadge status={project.status} />
+                        <ArrowRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                       </div>
                     </div>
-                    <div className="ml-4 flex flex-shrink-0 items-center gap-3">
-                      <StatusBadge status={project.status} />
-                      <ArrowRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </CardContent>
@@ -524,9 +588,8 @@ export function DashboardContent({
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status] || statusStyles.projeto_futuro
-      }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
+        }`}
     >
       {statusLabels[status] || status}
     </span>
@@ -536,9 +599,8 @@ function StatusBadge({ status }: { status: string }) {
 function PriorityBadge({ priority }: { priority: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
-        priorityStyles[priority] || 'bg-gray-100 text-gray-700'
-      }`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${priorityStyles[priority] || 'bg-gray-100 text-gray-700'
+        }`}
     >
       {priorityLabels[priority] || priority}
     </span>

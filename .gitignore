@@ -79,6 +79,6 @@ Thumbs.db
 *.swp
 
 # AIOS Local (AIOS)
-.aios-core/local/
+.aios-core/
 .claude/settings.local.json
 .aios/install-log.txt

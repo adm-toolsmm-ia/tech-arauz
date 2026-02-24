@@ -1,7 +1,7 @@
 # Story 3: Fix Sync Historicos, Aprovadores e Orcamentos
 
 **ID**: STORY-003
-**Status**: Done
+**Status**: Ready
 **Sprint**: 1
 **Priority**: High
 **Points**: 8
@@ -44,3 +44,4 @@ As a system administrator, I want the Espaider sync to correctly import historie
 
 - 2026-02-13: Investigacao e primeira tentativa (migrations 016-018) -- falhou
 - 2026-02-13: Correcao final por Claude Code com 3 agentes paralelos (migrations 019-020 + fix sync functions)
+- 2026-02-24: Validado por @po (Pax) — Score 9.8/10 — GO (EXCELENTE qualidade tecnica). Status Draft → Ready

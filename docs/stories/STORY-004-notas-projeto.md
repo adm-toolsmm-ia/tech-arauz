@@ -1,7 +1,7 @@
 # Story 4: Notas do Projeto com Editor Rich Text
 
 **ID**: STORY-004
-**Status**: In Progress
+**Status**: Ready
 **Sprint**: 1
 **Priority**: High
 **Points**: 8
@@ -48,3 +48,7 @@ As a project manager, I want a rich text notes editor within the project cockpit
 
 - 2026-02-16: Implementado por Claude Code (frontend-specialist, backend-specialist, database-architect)
 - 2026-02-19: Story criada retroativamente; migration 022 pendente aplicacao
+- 2026-02-24: Validado por @po (Pax) — Score 8.2/10 — GO (condicional). Status In Progress → Ready com condicoes:
+  * CONDICAO 1: Aplicar migration 022 via `npx supabase db push` antes do merge
+  * CONDICAO 2: Adicionar AC esplicita: "Sanitizacao HTML com DOMPurify no save/display"
+  * CONDICAO 3: Atualizar Criteria of Done para explicitar que migration 022 deve estar aplicada

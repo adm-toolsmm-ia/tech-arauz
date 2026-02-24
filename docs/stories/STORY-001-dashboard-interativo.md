@@ -1,7 +1,7 @@
 # Story 1: Dashboard Interativo com KPIs e Drill-Down
 
 **ID**: STORY-001
-**Status**: Done
+**Status**: Ready
 **Sprint**: 1
 **Priority**: High
 **Points**: 13
@@ -45,3 +45,4 @@ As a project manager, I want an interactive dashboard with clickable KPIs, chart
 ## Change Log
 
 - 2026-02-13: Implementado por Claude Code (8 melhorias UI/UX - fase P3 Dashboard Interativo)
+- 2026-02-24: Validado por @po (Pax) — Score 9.2/10 — GO (sem condições). Status Draft → Ready

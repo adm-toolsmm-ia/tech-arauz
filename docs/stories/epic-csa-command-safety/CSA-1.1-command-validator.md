@@ -2,7 +2,7 @@
 
 **ID**: CSA-1.1
 **Epic**: CSA-001 (Command Safety Architecture for DevOps)
-**Status**: Draft
+**Status**: InProgress
 **Priority**: HIGH
 **Complexity**: MEDIUM
 **Points**: 13
@@ -19,48 +19,48 @@ As a @dev, I want a reusable `command-validator.js` utility that validates and n
 ## ✅ Acceptance Criteria
 
 ### Core Functionality
-- [ ] Utility exports `validateCommand(command, args, options)` function
-- [ ] Validates command structure: command must be string, args must be array
-- [ ] Returns object: `{ isValid: boolean, errors: [], warnings: [], normalizedCommand: string, normalizedArgs: string[] }`
-- [ ] Detects paths with unescaped spaces and suggests corrections
-- [ ] Verifies required environment variables are defined
-- [ ] Normalizes commands: lowercase, trim whitespace, deduplicate spaces
-- [ ] Detects null/undefined arguments and flags them
+- [x] Utility exports `validateCommand(command, args, options)` function
+- [x] Validates command structure: command must be string, args must be array
+- [x] Returns object: `{ isValid: boolean, errors: [], warnings: [], normalizedCommand: string, normalizedArgs: string[] }`
+- [x] Detects paths with unescaped spaces and suggests corrections
+- [x] Verifies required environment variables are defined
+- [x] Normalizes commands: lowercase, trim whitespace, deduplicate spaces
+- [x] Detects null/undefined arguments and flags them
 
 ### Path Safety
-- [ ] Function `validatePath(path)` detects spaces in paths
-- [ ] Suggests escaping: `path with spaces` → `'path with spaces'` or `path\ with\ spaces`
-- [ ] Validates paths don't use dangerous patterns: `~/*`, `../../../`, `/etc/passwd`
-- [ ] Checks for relative paths in destructive operations (rm, mv, etc.)
+- [x] Function `validatePath(path)` detects spaces in paths
+- [x] Suggests escaping: `path with spaces` → `'path with spaces'` or `path\ with\ spaces`
+- [x] Validates paths don't use dangerous patterns: `~/*`, `../../../`, `/etc/passwd`
+- [x] Checks for relative paths in destructive operations (rm, mv, etc.)
 
 ### Environment Variables
-- [ ] Function `checkEnvVars(envVarNames)` validates all required vars exist
-- [ ] Returns array of missing vars: `{ missing: [], defined: [] }`
-- [ ] Handles defaults: if var not defined but has default, use default
+- [x] Function `checkEnvVars(envVarNames)` validates all required vars exist
+- [x] Returns array of missing vars: `{ missing: [], defined: [] }`
+- [x] Handles defaults: if var not defined but has default, use default
 
 ### Command Normalization
-- [ ] Converts command to lowercase (for consistency)
-- [ ] Removes leading/trailing whitespace
-- [ ] Removes duplicate spaces between args
-- [ ] Normalizes quotes: `"arg"` and `'arg'` both valid
+- [x] Converts command to lowercase (for consistency)
+- [x] Removes leading/trailing whitespace
+- [x] Removes duplicate spaces between args
+- [x] Normalizes quotes: `"arg"` and `'arg'` both valid
 
 ### Integration Points
-- [ ] Works with git commands (git, git-push, git-commit, etc.)
-- [ ] Works with GitHub CLI (gh, gh pr, gh issue, etc.)
-- [ ] Works with npm/yarn commands
-- [ ] Works with bash/shell commands
-- [ ] Extensible: easy to add new command types
+- [x] Works with git commands (git, git-push, git-commit, etc.)
+- [x] Works with GitHub CLI (gh, gh pr, gh issue, etc.)
+- [x] Works with npm/yarn commands
+- [x] Works with bash/shell commands
+- [x] Extensible: easy to add new command types
 
 ### Testing
-- [ ] Unit tests file: `tests/validators/command-validator.test.js`
-- [ ] 90%+ code coverage
-- [ ] Tests for happy path (valid commands)
-- [ ] Tests for error cases (invalid structure, missing vars, bad paths)
-- [ ] Tests for normalization (whitespace, quotes, case)
-- [ ] Performance test: validation < 10ms per command
+- [x] Unit tests file: `tests/validators/command-validator.test.js`
+- [x] 90%+ code coverage
+- [x] Tests for happy path (valid commands)
+- [x] Tests for error cases (invalid structure, missing vars, bad paths)
+- [x] Tests for normalization (whitespace, quotes, case)
+- [x] Performance test: validation < 10ms per command
 
 ### Documentation
-- [ ] JSDoc comments on all functions
+- [x] JSDoc comments on all functions
 - [ ] README.md in `src/lib/validators/` with usage examples
 - [ ] Examples showing: valid commands, invalid commands, error handling
 - [ ] Integration guide: how to use in other modules
@@ -141,9 +141,9 @@ exec(result.normalizedCommand, result.normalizedArgs);
 
 | File | Status | Purpose |
 |------|--------|---------|
-| `src/lib/validators/command-validator.js` | NEW | Core validation logic |
-| `src/lib/validators/README.md` | NEW | Usage documentation |
-| `tests/validators/command-validator.test.js` | NEW | Unit tests |
+| `src/lib/validators/command-validator.js` | COMPLETE | Core validation logic |
+| `src/lib/validators/README.md` | PENDING | Usage documentation |
+| `tests/validators/command-validator.test.js` | COMPLETE | Unit tests (90%+ coverage) |
 
 ---
 

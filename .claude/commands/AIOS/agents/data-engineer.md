@@ -491,3 +491,5 @@ Type `*help` to see all commands.
 - **@architect (Aria)** - Provides system architecture
 
 ---
+---
+*AIOS Agent - Synced from .aios-core/development/agents/data-engineer.md*

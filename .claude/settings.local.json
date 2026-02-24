@@ -25,7 +25,28 @@
       "Bash(chmod -R 777 /)"
     ]
   },
-  "hooks": {},
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\\\Users\\\\Gabriel Cristofolini\\\\Documents\\\\SOLUCOESSISTEMAS\\\\tech-arauz\\\\.claude\\\\hooks\\\\precompact-session-digest.cjs\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\\\Users\\\\Gabriel Cristofolini\\\\Documents\\\\SOLUCOESSISTEMAS\\\\tech-arauz\\\\.claude\\\\hooks\\\\synapse-engine.cjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "outputStyle": "default",
   "sandbox": {
     "enabled": false

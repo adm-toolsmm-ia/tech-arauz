@@ -82,3 +82,6 @@ Thumbs.db
 .aios-core/
 .claude/settings.local.json
 .aios/install-log.txt
+
+# AIOS Local (AIOS)
+.aios-core/local/

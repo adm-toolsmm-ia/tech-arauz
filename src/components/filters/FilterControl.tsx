@@ -333,12 +333,7 @@ function CheckboxControl({
       <Label htmlFor={definition.id} className="cursor-pointer text-sm font-medium">
         {definition.label}
       </Label>
-      <Switch
-        id={definition.id}
-        checked={value}
-        onCheckedChange={onChange}
-        disabled={disabled}
-      />
+      <Switch id={definition.id} checked={value} onCheckedChange={onChange} disabled={disabled} />
     </div>
   );
 }
@@ -361,7 +356,7 @@ function DateRangeControl({
       <label className="text-sm font-medium">{definition.label}</label>
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Calendar className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             type="date"
             value={value.start || ''}
@@ -372,7 +367,7 @@ function DateRangeControl({
           />
         </div>
         <div className="relative flex-1">
-          <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Calendar className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             type="date"
             value={value.end || ''}

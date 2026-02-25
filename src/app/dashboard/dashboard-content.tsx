@@ -84,7 +84,10 @@ interface DashboardContentProps {
   isLoading?: boolean;
 }
 
-function getOverdueData(project: UIProject, referenceDate = new Date()): { isOverdue: boolean; maxDays: number } {
+function getOverdueData(
+  project: UIProject,
+  referenceDate = new Date(),
+): { isOverdue: boolean; maxDays: number } {
   const status = (project.status || '').trim().toLowerCase();
   if (status === 'concluído' || status === 'cancelado') return { isOverdue: false, maxDays: 0 };
 
@@ -175,12 +178,20 @@ export function DashboardContent({
     const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
     const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
     return (
-      prio === 'urgente' || prio === 'alta' || p.importancia_especial || isEstrategicoAlto || isOperacionalAlto
+      prio === 'urgente' ||
+      prio === 'alta' ||
+      p.importancia_especial ||
+      isEstrategicoAlto ||
+      isOperacionalAlto
     );
   }).length;
 
-  const specialCount = chartProjects.filter((p) => p.importancia_especial && isConsideredActive(p.status)).length;
-  const specialCompletedCount = chartProjects.filter((p) => p.importancia_especial && (p.status || '').trim().toLowerCase() === 'concluído').length;
+  const specialCount = chartProjects.filter(
+    (p) => p.importancia_especial && isConsideredActive(p.status),
+  ).length;
+  const specialCompletedCount = chartProjects.filter(
+    (p) => p.importancia_especial && (p.status || '').trim().toLowerCase() === 'concluído',
+  ).length;
 
   // Completion rate this month
   const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -237,7 +248,11 @@ export function DashboardContent({
           const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
           const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
           return (
-            prio === 'urgente' || prio === 'alta' || p.importancia_especial || isEstrategicoAlto || isOperacionalAlto
+            prio === 'urgente' ||
+            prio === 'alta' ||
+            p.importancia_especial ||
+            isEstrategicoAlto ||
+            isOperacionalAlto
           );
         });
       case 'special':
@@ -245,7 +260,10 @@ export function DashboardContent({
       case 'by_status':
         return projects.filter((p) => p.status === activeFilter.value);
       case 'by_phase':
-        return projects.filter((p) => isConsideredActive(p.status) && (p.fase_atual || 'Sem fase') === activeFilter.value);
+        return projects.filter(
+          (p) =>
+            isConsideredActive(p.status) && (p.fase_atual || 'Sem fase') === activeFilter.value,
+        );
       case 'by_area':
         return projects.filter((p) => p.area === activeFilter.value);
       default:
@@ -314,9 +332,9 @@ export function DashboardContent({
                 trend={
                   completedThisMonth > 0
                     ? {
-                      value: `${completedThisMonth} este mês`,
-                      positive: completedThisMonth >= completedLastMonth,
-                    }
+                        value: `${completedThisMonth} este mês`,
+                        positive: completedThisMonth >= completedLastMonth,
+                      }
                     : undefined
                 }
                 subtitle={completedThisMonth === 0 ? 'Nenhum este mês' : undefined}
@@ -327,7 +345,11 @@ export function DashboardContent({
                 title="Atrasados"
                 value={overdueProjectsInfo.count}
                 icon={AlertTriangle}
-                subtitle={overdueProjectsInfo.count > 0 ? `${overdueProjectsInfo.maxDays} dias (maior atraso)` : 'Todos no prazo'}
+                subtitle={
+                  overdueProjectsInfo.count > 0
+                    ? `${overdueProjectsInfo.maxDays} dias (maior atraso)`
+                    : 'Todos no prazo'
+                }
                 className={overdueProjectsInfo.count > 0 ? 'border-destructive/30' : undefined}
                 onClick={() => handleKPIClick({ type: 'overdue', label: 'Projetos Atrasados' })}
                 active={activeFilter?.type === 'overdue'}
@@ -369,14 +391,14 @@ export function DashboardContent({
                 trend={
                   completedThisMonth > completedLastMonth
                     ? {
-                      value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
-                      positive: true,
-                    }
+                        value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
+                        positive: true,
+                      }
                     : completedLastMonth > completedThisMonth
                       ? {
-                        value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
-                        positive: false,
-                      }
+                          value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
+                          positive: false,
+                        }
                       : undefined
                 }
               />
@@ -609,8 +631,9 @@ export function DashboardContent({
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
-        }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        statusStyles[status] || statusStyles.projeto_futuro
+      }`}
     >
       {statusLabels[status] || status}
     </span>
@@ -620,8 +643,9 @@ function StatusBadge({ status }: { status: string }) {
 function PriorityBadge({ priority }: { priority: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${priorityStyles[priority] || 'bg-gray-100 text-gray-700'
-        }`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+        priorityStyles[priority] || 'bg-gray-100 text-gray-700'
+      }`}
     >
       {priorityLabels[priority] || priority}
     </span>

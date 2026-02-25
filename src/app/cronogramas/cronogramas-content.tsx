@@ -186,12 +186,12 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   const {
     filters,
     search,
-    viewMode,       // ✅ Do hook (com persistência)
+    viewMode, // ✅ Do hook (com persistência)
     filteredData,
     updateFilter,
     setSearch,
-    setViewMode,    // ✅ Do hook
-    resetAllFilters,  // ✅ Para onResetFilters
+    setViewMode, // ✅ Do hook
+    resetAllFilters, // ✅ Para onResetFilters
     registry,
   } = useCronogramasFilters(schedules);
 
@@ -212,18 +212,20 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
   // ✨ ROUND 6 KPI CALCULATIONS
   const pendingSchedulesCount = React.useMemo(() => {
-    return schedules.filter(s =>
-      isConsideredActive(s.project?.status) &&
-      isConsideredActive(s.status) &&
-      hasValidDeadline(s)
+    return schedules.filter(
+      (s) =>
+        isConsideredActive(s.project?.status) &&
+        isConsideredActive(s.status) &&
+        hasValidDeadline(s),
     ).length;
   }, [schedules]);
 
   const inExecutionSchedulesCount = React.useMemo(() => {
-    return schedules.filter(s =>
-      (s.project?.status || '').trim().toLowerCase() === 'em execução' &&
-      isConsideredActive(s.status) &&
-      hasValidDeadline(s)
+    return schedules.filter(
+      (s) =>
+        (s.project?.status || '').trim().toLowerCase() === 'em execução' &&
+        isConsideredActive(s.status) &&
+        hasValidDeadline(s),
     ).length;
   }, [schedules]);
 
@@ -234,11 +236,15 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
     const refMidnight = new Date(now);
     refMidnight.setHours(0, 0, 0, 0);
 
-    schedules.forEach(s => {
-      if (isConsideredActive(s.project?.status) && isConsideredActive(s.status) &&
-        hasValidDeadline(s) && isOverdue(s, now)) {
+    schedules.forEach((s) => {
+      if (
+        isConsideredActive(s.project?.status) &&
+        isConsideredActive(s.status) &&
+        hasValidDeadline(s) &&
+        isOverdue(s, now)
+      ) {
         count++;
-        const d = new Date(s.data_prazo || s.data_fim as string);
+        const d = new Date(s.data_prazo || (s.data_fim as string));
         const diffTime = Math.abs(refMidnight.getTime() - d.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         if (diffDays > maxDays) maxDays = diffDays;
@@ -248,25 +254,27 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   }, [schedules]);
 
   const nearDeadlineCountUpdated = React.useMemo(() => {
-    return schedules.filter(s =>
-      isConsideredActive(s.project?.status) &&
-      isConsideredActive(s.status) &&
-      hasValidDeadline(s) &&
-      isWithin7Days(s.data_prazo || s.data_fim)
+    return schedules.filter(
+      (s) =>
+        isConsideredActive(s.project?.status) &&
+        isConsideredActive(s.status) &&
+        hasValidDeadline(s) &&
+        isWithin7Days(s.data_prazo || s.data_fim),
     ).length;
   }, [schedules]);
 
   const missingDeadlineCount = React.useMemo(() => {
-    return schedules.filter(s =>
-      isConsideredActive(s.project?.status) &&
-      isConsideredActive(s.status) &&
-      !hasValidDeadline(s)
+    return schedules.filter(
+      (s) =>
+        isConsideredActive(s.project?.status) &&
+        isConsideredActive(s.status) &&
+        !hasValidDeadline(s),
     ).length;
   }, [schedules]);
 
   // The active Filter Interceptor
   const handleKpiClick = (filterName: string) => {
-    setActiveKpiFilter(prev => prev === filterName ? null : filterName);
+    setActiveKpiFilter((prev) => (prev === filterName ? null : filterName));
   };
 
   const finalFilteredSchedules = React.useMemo(() => {
@@ -276,15 +284,37 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
     return filteredData.filter((s) => {
       switch (activeKpiFilter) {
         case 'pendentes':
-          return isConsideredActive(s.project?.status) && isConsideredActive(s.status) && hasValidDeadline(s);
+          return (
+            isConsideredActive(s.project?.status) &&
+            isConsideredActive(s.status) &&
+            hasValidDeadline(s)
+          );
         case 'em_execucao':
-          return (s.project?.status || '').trim().toLowerCase() === 'em execução' && isConsideredActive(s.status) && hasValidDeadline(s);
+          return (
+            (s.project?.status || '').trim().toLowerCase() === 'em execução' &&
+            isConsideredActive(s.status) &&
+            hasValidDeadline(s)
+          );
         case 'atrasados':
-          return isConsideredActive(s.project?.status) && isConsideredActive(s.status) && hasValidDeadline(s) && isOverdue(s, now);
+          return (
+            isConsideredActive(s.project?.status) &&
+            isConsideredActive(s.status) &&
+            hasValidDeadline(s) &&
+            isOverdue(s, now)
+          );
         case 'proximos_vencer':
-          return isConsideredActive(s.project?.status) && isConsideredActive(s.status) && hasValidDeadline(s) && isWithin7Days(s.data_prazo || s.data_fim);
+          return (
+            isConsideredActive(s.project?.status) &&
+            isConsideredActive(s.status) &&
+            hasValidDeadline(s) &&
+            isWithin7Days(s.data_prazo || s.data_fim)
+          );
         case 'sem_prazo':
-          return isConsideredActive(s.project?.status) && isConsideredActive(s.status) && !hasValidDeadline(s);
+          return (
+            isConsideredActive(s.project?.status) &&
+            isConsideredActive(s.status) &&
+            !hasValidDeadline(s)
+          );
         default:
           return true;
       }
@@ -361,10 +391,14 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               value={overdueSchedulesInfo.count}
               icon={AlertTriangle}
               className={
-                overdueSchedulesInfo.count > 0 ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500' : ''
+                overdueSchedulesInfo.count > 0
+                  ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500'
+                  : ''
               }
               subtitle={
-                overdueSchedulesInfo.count > 0 ? `Maior atraso: ${overdueSchedulesInfo.maxDays} dias` : 'Nenhuma atividade atrasada'
+                overdueSchedulesInfo.count > 0
+                  ? `Maior atraso: ${overdueSchedulesInfo.maxDays} dias`
+                  : 'Nenhuma atividade atrasada'
               }
               active={activeKpiFilter === 'atrasados'}
               onClick={() => handleKpiClick('atrasados')}
@@ -382,7 +416,9 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               value={missingDeadlineCount}
               icon={AlertTriangle}
               className={
-                missingDeadlineCount > 0 ? '[&_[class*=bg-primary]]:bg-amber-500/10 [&_svg]:text-amber-500' : ''
+                missingDeadlineCount > 0
+                  ? '[&_[class*=bg-primary]]:bg-amber-500/10 [&_svg]:text-amber-500'
+                  : ''
               }
               subtitle="Necessitam preencher prazo"
               active={activeKpiFilter === 'sem_prazo'}
@@ -396,7 +432,6 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               <FilterBar
                 moduleId="cronogramas"
                 filters={registry}
-
                 // Filter callbacks
                 onFiltersChange={(newFilters) => {
                   Object.entries(newFilters).forEach(([key, value]) => {
@@ -410,18 +445,14 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                   resetAllFilters();
                   setSearch('');
                 }}
-
                 // Search callbacks
                 onSearchChange={setSearch}
-
                 // ViewMode callbacks ✅ INTEGRADO
                 onViewModeChange={setViewMode}
-
                 // Initial state
                 initialFilters={filters}
                 initialSearch={search}
                 initialViewMode={viewMode}
-
                 // Controlled state
                 currentFilters={filters}
                 currentSearch={search}
@@ -646,15 +677,15 @@ function MonthView({
                       isToday && 'bg-accent font-bold',
                       isSelected && 'bg-primary/5 ring-2 ring-primary',
                       hasDelayed &&
-                      daySchedules.length > 0 &&
-                      'ring-1 ring-red-300 dark:ring-red-700',
+                        daySchedules.length > 0 &&
+                        'ring-1 ring-red-300 dark:ring-red-700',
                     )}
                   >
                     <span
                       className={cn(
                         'mt-0.5 text-xs leading-none',
                         isToday &&
-                        'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
+                          'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
                         !isToday && date.getMonth() !== month && 'text-muted-foreground/50',
                       )}
                     >

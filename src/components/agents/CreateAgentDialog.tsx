@@ -76,17 +76,21 @@ const AGENT_TYPES = [
 
 const MODEL_OPTIONS = [
   { provider: 'openai', label: 'OpenAI', models: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'] },
-  { provider: 'anthropic', label: 'Anthropic', models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'] },
+  {
+    provider: 'anthropic',
+    label: 'Anthropic',
+    models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
+  },
   { provider: 'azure_openai', label: 'Azure OpenAI', models: ['gpt-4', 'gpt-35-turbo'] },
 ];
 
 export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const [step, setStep] = React.useState<'type' | 'basic' | 'model' | 'prompt' | 'confirm'>(
-    'type'
-  );
+  const [step, setStep] = React.useState<'type' | 'basic' | 'model' | 'prompt' | 'confirm'>('type');
   const [isLoading, setIsLoading] = React.useState(false);
-  const [errors, setErrors] = React.useState<Partial<Record<keyof CreateAgentFormValues, string>>>({});
+  const [errors, setErrors] = React.useState<Partial<Record<keyof CreateAgentFormValues, string>>>(
+    {},
+  );
   const [formData, setFormData] = React.useState<CreateAgentFormValues>({
     name: '',
     slug: '',
@@ -214,10 +218,10 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
           Novo Agente
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
         {/* Header com Progress */}
         <DialogHeader>
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <div>
               <DialogTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-blue-500" />
@@ -234,7 +238,7 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
             </Badge>
           </div>
           {/* Progress Bar */}
-          <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
+          <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
             <div
               className="h-full bg-blue-500 transition-all duration-300"
               style={{
@@ -258,9 +262,10 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
           {step === 'type' && (
             <div className="space-y-4">
               <div>
-                <Label className="text-base font-semibold mb-3 block">Tipo de Agente</Label>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Escolha o tipo de agente que deseja criar. Cada tipo vem com configurações pré-definidas.
+                <Label className="mb-3 block text-base font-semibold">Tipo de Agente</Label>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Escolha o tipo de agente que deseja criar. Cada tipo vem com configurações
+                  pré-definidas.
                 </p>
               </div>
               <div className="grid grid-cols-1 gap-3">
@@ -277,8 +282,8 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                     <CardContent className="pt-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className="font-semibold text-sm">{type.name}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{type.description}</p>
+                          <p className="text-sm font-semibold">{type.name}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">{type.description}</p>
                         </div>
                         {formData.agent_type === type.id && (
                           <Badge className="ml-2">✓ Selecionado</Badge>
@@ -295,8 +300,8 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
           {step === 'basic' && (
             <div className="space-y-4">
               <div>
-                <Label className="text-base font-semibold mb-3 block">Informações Básicas</Label>
-                <p className="text-sm text-muted-foreground mb-4">
+                <Label className="mb-3 block text-base font-semibold">Informações Básicas</Label>
+                <p className="mb-4 text-sm text-muted-foreground">
                   Configure o nome e identificador do agente
                 </p>
               </div>
@@ -314,7 +319,7 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                     disabled={isLoading}
                     className="mt-1"
                   />
-                  {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
+                  {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
                 </div>
 
                 <div>
@@ -329,8 +334,8 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                     disabled={isLoading}
                     className="mt-1"
                   />
-                  {errors.slug && <p className="text-xs text-destructive mt-1">{errors.slug}</p>}
-                  <p className="text-xs text-muted-foreground mt-1">Usado em APIs e workflows</p>
+                  {errors.slug && <p className="mt-1 text-xs text-destructive">{errors.slug}</p>}
+                  <p className="mt-1 text-xs text-muted-foreground">Usado em APIs e workflows</p>
                 </div>
 
                 <div>
@@ -340,7 +345,7 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                   <Textarea
                     id="description"
                     placeholder="Descreva o propósito do agente..."
-                    className="resize-none mt-1"
+                    className="mt-1 resize-none"
                     rows={3}
                     value={formData.description || ''}
                     onChange={(e) =>
@@ -357,8 +362,10 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
           {step === 'model' && (
             <div className="space-y-4">
               <div>
-                <Label className="text-base font-semibold mb-3 block">Configuração do Modelo LLM</Label>
-                <p className="text-sm text-muted-foreground mb-4">
+                <Label className="mb-3 block text-base font-semibold">
+                  Configuração do Modelo LLM
+                </Label>
+                <p className="mb-4 text-sm text-muted-foreground">
                   Escolha o provider e modelo de IA que será usado
                 </p>
               </div>
@@ -375,7 +382,8 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                         setFormData((prev) => ({
                           ...prev,
                           model_provider: value,
-                          model_id: MODEL_OPTIONS.find((m) => m.provider === value)?.models[0] || 'gpt-4',
+                          model_id:
+                            MODEL_OPTIONS.find((m) => m.provider === value)?.models[0] || 'gpt-4',
                         }))
                       }
                       disabled={isLoading}
@@ -408,13 +416,13 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {MODEL_OPTIONS.find((m) => m.provider === formData.model_provider)?.models.map(
-                          (model) => (
-                            <SelectItem key={model} value={model}>
-                              {model}
-                            </SelectItem>
-                          )
-                        )}
+                        {MODEL_OPTIONS.find(
+                          (m) => m.provider === formData.model_provider,
+                        )?.models.map((model) => (
+                          <SelectItem key={model} value={model}>
+                            {model}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -443,7 +451,7 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                         className="flex-1"
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       0 = Determinístico, 2 = Criativo
                     </p>
                   </div>
@@ -477,8 +485,8 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
           {step === 'prompt' && (
             <div className="space-y-4">
               <div>
-                <Label className="text-base font-semibold mb-3 block">Persona & Objetivo</Label>
-                <p className="text-sm text-muted-foreground mb-4">
+                <Label className="mb-3 block text-base font-semibold">Persona & Objetivo</Label>
+                <p className="mb-4 text-sm text-muted-foreground">
                   Configure como o agente deve se comportar
                 </p>
               </div>
@@ -491,15 +499,13 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                   <Textarea
                     id="persona"
                     placeholder="ex: Você é um analista experiente com 10 anos em gestão de projetos..."
-                    className="resize-none mt-1"
+                    className="mt-1 resize-none"
                     rows={2}
                     value={formData.persona || ''}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, persona: e.target.value }))
-                    }
+                    onChange={(e) => setFormData((prev) => ({ ...prev, persona: e.target.value }))}
                     disabled={isLoading}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Descreva a personalidade do agente
                   </p>
                 </div>
@@ -511,7 +517,7 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                   <Textarea
                     id="prompt_objective"
                     placeholder="ex: Analisar status de projetos e gerar relatório executivo..."
-                    className="resize-none mt-1"
+                    className="mt-1 resize-none"
                     rows={2}
                     value={formData.prompt_objective || ''}
                     onChange={(e) =>
@@ -519,9 +525,7 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
                     }
                     disabled={isLoading}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    O que o agente deve fazer
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">O que o agente deve fazer</p>
                 </div>
               </div>
             </div>
@@ -531,8 +535,10 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
           {step === 'confirm' && (
             <div className="space-y-4">
               <div>
-                <Label className="text-base font-semibold mb-3 block">Confirmar Criação</Label>
-                <p className="text-sm text-muted-foreground mb-4">Revise as informações antes de criar</p>
+                <Label className="mb-3 block text-base font-semibold">Confirmar Criação</Label>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Revise as informações antes de criar
+                </p>
               </div>
 
               <Card className="bg-muted/50">
@@ -574,7 +580,7 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 justify-between pt-4 border-t">
+        <div className="flex justify-between gap-2 border-t pt-4">
           <Button
             type="button"
             variant="outline"
@@ -586,7 +592,7 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
 
           {step !== 'confirm' && (
             <Button onClick={handleNextStep} disabled={isLoading}>
-              Próximo <ChevronRight className="h-4 w-4 ml-1" />
+              Próximo <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           )}
 

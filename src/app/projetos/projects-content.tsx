@@ -26,12 +26,7 @@ import { syncEspaiderAction } from '@/app/actions/sync';
 import { updateProjectStatusAction } from '@/app/actions/projects';
 import { ProjectCockpit } from '@/components/project';
 import { ProjectKanbanCard } from '@/components/project/ProjectKanbanCard';
-import {
-  phaseLabels,
-  phaseColors,
-  phaseOrder,
-  bannedPhases,
-} from '@/lib/constants/phase-labels';
+import { phaseLabels, phaseColors, phaseOrder, bannedPhases } from '@/lib/constants/phase-labels';
 import { SkeletonKanbanCard, SkeletonTableRow } from '@/components/ui/skeletons';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { useProjetosFilters } from '@/hooks/useProjetosFilters';
@@ -139,7 +134,7 @@ function getOverdueData(
     prazo_cronograma?: string | null;
     prazo_aprovador?: string | null;
   },
-  referenceDate = new Date()
+  referenceDate = new Date(),
 ): { isOverdue: boolean; maxDays: number } {
   const status = (project.status || '').trim().toLowerCase();
   if (status === 'concluído' || status === 'cancelado') return { isOverdue: false, maxDays: 0 };
@@ -227,19 +222,27 @@ export function ProjectsContent({
     return projects.filter((p) => (p.status || '').trim().toLowerCase() === 'em execução').length;
   }, [projects]);
 
-  const inHomologationCount = React.useMemo(() => projects.filter((p) => {
-    if (!isConsideredActive(p.status)) return false;
-    const fase = (p.fase_atual || '').toLowerCase();
-    const aprovador = (p.aprovador_atual || '').toLowerCase();
-    return fase.includes('homolog') || aprovador.includes('homolog');
-  }).length, [projects]);
+  const inHomologationCount = React.useMemo(
+    () =>
+      projects.filter((p) => {
+        if (!isConsideredActive(p.status)) return false;
+        const fase = (p.fase_atual || '').toLowerCase();
+        const aprovador = (p.aprovador_atual || '').toLowerCase();
+        return fase.includes('homolog') || aprovador.includes('homolog');
+      }).length,
+    [projects],
+  );
 
-  const inProductionCount = React.useMemo(() => projects.filter((p) => {
-    if (!isConsideredActive(p.status)) return false;
-    const fase = (p.fase_atual || '').toLowerCase();
-    const aprovador = (p.aprovador_atual || '').toLowerCase();
-    return fase.includes('prod') || aprovador.includes('prod');
-  }).length, [projects]);
+  const inProductionCount = React.useMemo(
+    () =>
+      projects.filter((p) => {
+        if (!isConsideredActive(p.status)) return false;
+        const fase = (p.fase_atual || '').toLowerCase();
+        const aprovador = (p.aprovador_atual || '').toLowerCase();
+        return fase.includes('prod') || aprovador.includes('prod');
+      }).length,
+    [projects],
+  );
 
   // KPI 2: Atrasados
   const overdueProjectsInfo = React.useMemo(() => {
@@ -257,19 +260,36 @@ export function ProjectsContent({
   }, [projects]);
 
   // KPI 3: Alta Prioridade
-  const highPriorityCount = React.useMemo(() => projects.filter((p) => {
-    if (!isConsideredActive(p.status)) return false;
-    const prio = (p.priority || '').toLowerCase();
-    const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
-    const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
-    return (
-      prio === 'urgente' || prio === 'alta' || p.importancia_especial || isEstrategicoAlto || isOperacionalAlto
-    );
-  }).length, [projects]);
+  const highPriorityCount = React.useMemo(
+    () =>
+      projects.filter((p) => {
+        if (!isConsideredActive(p.status)) return false;
+        const prio = (p.priority || '').toLowerCase();
+        const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
+        const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
+        return (
+          prio === 'urgente' ||
+          prio === 'alta' ||
+          p.importancia_especial ||
+          isEstrategicoAlto ||
+          isOperacionalAlto
+        );
+      }).length,
+    [projects],
+  );
 
   // KPI 4: Importância Especial
-  const specialCount = React.useMemo(() => projects.filter((p) => p.importancia_especial && isConsideredActive(p.status)).length, [projects]);
-  const specialCompletedCount = React.useMemo(() => projects.filter((p) => p.importancia_especial && (p.status || '').trim().toLowerCase() === 'concluído').length, [projects]);
+  const specialCount = React.useMemo(
+    () => projects.filter((p) => p.importancia_especial && isConsideredActive(p.status)).length,
+    [projects],
+  );
+  const specialCompletedCount = React.useMemo(
+    () =>
+      projects.filter(
+        (p) => p.importancia_especial && (p.status || '').trim().toLowerCase() === 'concluído',
+      ).length,
+    [projects],
+  );
 
   // KPI 5: Projetos Recentes
   const recentProjectsCount = React.useMemo(() => {
@@ -301,7 +321,7 @@ export function ProjectsContent({
   }, [projects]);
 
   const handleKpiClick = (filterName: string) => {
-    setActiveKpiFilter(prev => prev === filterName ? null : filterName);
+    setActiveKpiFilter((prev) => (prev === filterName ? null : filterName));
   };
 
   const finalFilteredData = React.useMemo(() => {
@@ -318,7 +338,13 @@ export function ProjectsContent({
           const prio = (p.priority || '').toLowerCase();
           const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
           const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
-          return (prio === 'urgente' || prio === 'alta' || p.importancia_especial || isEstrategicoAlto || isOperacionalAlto);
+          return (
+            prio === 'urgente' ||
+            prio === 'alta' ||
+            p.importancia_especial ||
+            isEstrategicoAlto ||
+            isOperacionalAlto
+          );
         }
         case 'importancia_especial':
           return p.importancia_especial && isConsideredActive(p.status);
@@ -472,7 +498,7 @@ export function ProjectsContent({
 
       <div className="flex-1 space-y-6 p-6">
         {/* KPIs (Gerencial) */}
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
           <KPICard
             title="Em Execução"
             value={inExecutionProjects}
@@ -947,12 +973,13 @@ function ProjectList({
                     <td className="px-3 py-3">
                       {project.priority ? (
                         <span
-                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${project.priority === 'urgente'
-                            ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                            : project.priority === 'alta'
-                              ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
-                              : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
-                            }`}
+                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${
+                            project.priority === 'urgente'
+                              ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                              : project.priority === 'alta'
+                                ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
+                                : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                          }`}
                         >
                           {project.priority}
                         </span>
@@ -1182,8 +1209,9 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
-        }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        statusStyles[status] || statusStyles.projeto_futuro
+      }`}
     >
       {statusLabels[status] || status}
     </span>

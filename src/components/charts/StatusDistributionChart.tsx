@@ -110,7 +110,9 @@ export function StatusDistributionChart({
 }
 
 // Helper to build distribution data
-export function buildDistributionData(projects: Array<{ status: string; fase_atual?: string | null }>): DistributionData[] {
+export function buildDistributionData(
+  projects: Array<{ status: string; fase_atual?: string | null }>,
+): DistributionData[] {
   const counts: Record<string, number> = {};
   let totalActive = 0;
 
@@ -128,9 +130,18 @@ export function buildDistributionData(projects: Array<{ status: string; fase_atu
 
   // Since phases are dynamic, we use a predefined palette
   const defaultColors = [
-    '#3b82f6', '#f59e0b', '#a855f7', '#06b6d4',
-    '#22c55e', '#ef4444', '#6b7280', '#eab308',
-    '#ec4899', '#14b8a6', '#8b5cf6', '#f97316'
+    '#3b82f6',
+    '#f59e0b',
+    '#a855f7',
+    '#06b6d4',
+    '#22c55e',
+    '#ef4444',
+    '#6b7280',
+    '#eab308',
+    '#ec4899',
+    '#14b8a6',
+    '#8b5cf6',
+    '#f97316',
   ];
 
   return Object.entries(counts)

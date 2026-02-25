@@ -6,7 +6,19 @@
  * então os IDs dos filtros correspondem aos nomes das colunas do banco.
  */
 
-import { Building2, CheckCircle2, Users, Calendar, List, CalendarDays, LayoutTemplate, BarChartHorizontal, AlertCircle, Clock, AlertTriangle } from 'lucide-react';
+import {
+  Building2,
+  CheckCircle2,
+  Users,
+  Calendar,
+  List,
+  CalendarDays,
+  LayoutTemplate,
+  BarChartHorizontal,
+  AlertCircle,
+  Clock,
+  AlertTriangle,
+} from 'lucide-react';
 // NOTE: Calendar icon é usado 2x (filters + viewModes), ambos importantes para UX
 import { FilterDefinition, FilterRegistry } from './filter-types';
 

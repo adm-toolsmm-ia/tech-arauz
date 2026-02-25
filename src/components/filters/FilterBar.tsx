@@ -2,7 +2,7 @@
  * FilterBar Component
  * Main filter container integrating search, quick filters, advanced filters, and view toggle
  * Standardized UI/UX for all modules
- * 
+ *
  * CONTROLLED COMPONENT: All state is managed by parent component
  * This is a presentational component that only handles UI interactions
  */
@@ -49,9 +49,7 @@ function QuickFilterButton({
   onUpdateFilter?: (filterId: string, value: any) => void;
   onClearFilter: (filterId: string) => void;
 }) {
-  const isActive = Array.isArray(value)
-    ? value.length > 0
-    : value !== null && value !== undefined;
+  const isActive = Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined;
 
   const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
 
@@ -90,7 +88,7 @@ function QuickFilterButton({
                         }
                         setIsPopoverOpen(false);
                       }}
-                      className="block w-full text-left rounded px-2 py-1 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                      className="block w-full rounded px-2 py-1 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                     >
                       {opt.label}
                     </button>
@@ -167,7 +165,7 @@ export function FilterBar({
   // Use current values or fallback to defaults
   const activeFilters = React.useMemo(
     () => currentFilters ?? initialFilters ?? {},
-    [currentFilters, initialFilters]
+    [currentFilters, initialFilters],
   );
   const activeSearch = currentSearch ?? searchInput;
   const activeViewMode = currentViewMode ?? initialViewMode ?? 'kanban';
@@ -191,7 +189,9 @@ export function FilterBar({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        const searchInputElement = document.querySelector('[data-filter-search]') as HTMLInputElement;
+        const searchInputElement = document.querySelector(
+          '[data-filter-search]',
+        ) as HTMLInputElement;
         searchInputElement?.focus();
       }
     };
@@ -353,13 +353,13 @@ export function FilterBar({
           </div>
 
           <SheetFooter className="flex justify-between gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 onClearFilters?.();
                 onSearchChange?.('');
                 setSearchInput('');
-              }} 
+              }}
               className="flex-1"
             >
               Limpar Tudo

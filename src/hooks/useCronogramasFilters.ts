@@ -43,8 +43,8 @@ export interface CronogramaData {
   created_at?: string | null;
   updated_at?: string | null;
   // Computed fields
-  proximo_vencer?: boolean;  // Computed: prazo vencendo em ≤ 7 dias
-  sem_prazo?: boolean;       // Computed: sem data_prazo e sem data_fim
+  proximo_vencer?: boolean; // Computed: prazo vencendo em ≤ 7 dias
+  sem_prazo?: boolean; // Computed: sem data_prazo e sem data_fim
   project?: {
     id: string;
     titulo: string | null;
@@ -71,8 +71,8 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
                 value: s.project_id,
                 label: s.project?.titulo || s.project_id,
               },
-            ])
-          ).values()
+            ]),
+          ).values(),
         );
         return {
           ...def,
@@ -84,11 +84,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'status') {
         return {
           ...def,
-          options: buildFilterOptions(
-            schedules,
-            'status',
-            (v) => v || 'Sem Status'
-          ),
+          options: buildFilterOptions(schedules, 'status', (v) => v || 'Sem Status'),
         };
       }
 
@@ -96,11 +92,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'responsavel') {
         return {
           ...def,
-          options: buildFilterOptions(
-            schedules,
-            'responsavel',
-            (v) => v || 'Sem Responsável'
-          ),
+          options: buildFilterOptions(schedules, 'responsavel', (v) => v || 'Sem Responsável'),
         };
       }
 
@@ -108,11 +100,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'setor_responsavel') {
         return {
           ...def,
-          options: buildFilterOptions(
-            schedules,
-            'setor_responsavel',
-            (v) => v || 'Sem Setor'
-          ),
+          options: buildFilterOptions(schedules, 'setor_responsavel', (v) => v || 'Sem Setor'),
         };
       }
 
@@ -120,11 +108,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'fase_atividade') {
         return {
           ...def,
-          options: buildFilterOptions(
-            schedules,
-            'fase_atividade',
-            (v) => v || 'Sem Fase'
-          ),
+          options: buildFilterOptions(schedules, 'fase_atividade', (v) => v || 'Sem Fase'),
         };
       }
 
@@ -217,14 +201,14 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     // State
     filters: filterState.filters,
     search: filterState.search,
-    viewMode: filterState.viewMode,        // ✅ ViewMode do hook (persistido)
+    viewMode: filterState.viewMode, // ✅ ViewMode do hook (persistido)
     definitions: filterState.definitions,
     filteredData,
 
     // Actions
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,
-    setViewMode: filterState.setViewMode,  // ✅ SetViewMode do hook
+    setViewMode: filterState.setViewMode, // ✅ SetViewMode do hook
     setFilters: filterState.setFilters,
     resetAllFilters: filterState.resetAllFilters,
     clearFilters: filterState.clearFilters,
@@ -237,7 +221,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     // Registry (para usar em FilterBar) - com definitions dinâmicas
     registry: {
       ...filterRegistryCronogramas,
-      filters: definitions,  // ✅ Definitions com options dinâmicas
+      filters: definitions, // ✅ Definitions com options dinâmicas
     },
   };
 }
@@ -248,7 +232,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
 export function useCronogramasFilteredList(
   schedules: CronogramaData[],
   filters: FilterState,
-  search: string
+  search: string,
 ) {
   return useMemo(() => {
     return applyFilters(schedules, filters, {

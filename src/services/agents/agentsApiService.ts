@@ -40,11 +40,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
     } catch {
       details = text;
     }
-    throw new AgentServiceError(
-      `API error: ${res.statusText}`,
-      res.status,
-      details,
-    );
+    throw new AgentServiceError(`API error: ${res.statusText}`, res.status, details);
   }
   return res.json();
 }
@@ -98,10 +94,7 @@ export const agentsApiService = {
    * Update agent draft
    * Only allowed on draft status agents
    */
-  async saveDraft(
-    id: string,
-    updates: UpdateAgentDraftRequest,
-  ): Promise<AgentConfig> {
+  async saveDraft(id: string, updates: UpdateAgentDraftRequest): Promise<AgentConfig> {
     const res = await fetch(`/api/agents/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -126,10 +119,7 @@ export const agentsApiService = {
    * Publish agent draft → creates immutable version
    * Auto-increments semver
    */
-  async publish(
-    id: string,
-    request: PublishAgentRequest,
-  ): Promise<AgentVersion> {
+  async publish(id: string, request: PublishAgentRequest): Promise<AgentVersion> {
     const res = await fetch(`/api/agents/${id}/publish`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -1,44 +1,45 @@
 'use client';
 
-import { Bot, Activity, TrendingUp, DollarSign } from 'lucide-react';
+import React from 'react';
 import { KPICard } from '@/components/dashboard/KPICard';
-import type { Agent } from './AgentCard';
+import { Brain, Zap, CheckCircle2, Clock } from 'lucide-react';
+import type { UIAgent } from '@/lib/transformers/agent';
 
 interface AgentKPIsProps {
-  agents: Agent[];
+  agents: UIAgent[];
 }
 
 export function AgentKPIs({ agents }: AgentKPIsProps) {
   const totalAgents = agents.length;
-  const activeAgents = agents.filter((a) => a.status === 'active').length;
-  const totalRuns = agents.reduce((sum, a) => sum + a.total_runs, 0);
-  const avgSuccessRate =
-    agents.length > 0 ? agents.reduce((sum, a) => sum + a.success_rate, 0) / agents.length : 0;
-  const totalCost = agents.reduce((sum, a) => sum + a.total_cost_usd, 0);
+  const publishedAgents = agents.filter((a) => a.status === 'published').length;
+  const draftAgents = agents.filter((a) => a.status === 'draft').length;
+  const totalExecutions = agents.reduce((sum, a) => sum + a.executionCount, 0);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <KPICard title="Agentes" value={totalAgents} icon={Bot} subtitle={`${activeAgents} ativos`} />
+    <div className="grid grid-cols-4 gap-4">
       <KPICard
-        title="Total de Execuções"
-        value={totalRuns}
-        icon={Activity}
-        trend={{ value: '+12 esta semana', positive: true }}
+        title="Agentes"
+        value={totalAgents}
+        icon={Brain}
+        subtitle="Total no sistema"
       />
       <KPICard
-        title="Taxa de Sucesso"
-        value={`${avgSuccessRate.toFixed(1)}%`}
-        icon={TrendingUp}
-        trend={{
-          value: avgSuccessRate >= 90 ? 'Saudável' : 'Atenção',
-          positive: avgSuccessRate >= 90,
-        }}
+        title="Publicados"
+        value={publishedAgents}
+        icon={CheckCircle2}
+        subtitle="Prontos para uso"
       />
       <KPICard
-        title="Custo Total"
-        value={`$${totalCost.toFixed(2)}`}
-        icon={DollarSign}
-        subtitle="Acumulado este mês"
+        title="Rascunhos"
+        value={draftAgents}
+        icon={Clock}
+        subtitle="Em configuração"
+      />
+      <KPICard
+        title="Execuções"
+        value={totalExecutions}
+        icon={Zap}
+        subtitle="Total do período"
       />
     </div>
   );

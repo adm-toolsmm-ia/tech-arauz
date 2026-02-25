@@ -12,12 +12,7 @@
 import Ajv from 'ajv';
 import { z } from 'zod';
 
-import type {
-  AgentConfig,
-  AgentVariable,
-  ModelConfig,
-  PromptConfig,
-} from '@/types/agents';
+import type { AgentConfig, AgentVariable, ModelConfig, PromptConfig } from '@/types/agents';
 
 const ajv = new Ajv();
 
@@ -26,7 +21,10 @@ const ajv = new Ajv();
  */
 
 export const AgentVariableSchema = z.object({
-  key: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/),
+  key: z
+    .string()
+    .min(1)
+    .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/),
   type: z.enum(['string', 'number', 'boolean', 'enum', 'array', 'object']),
   required: z.boolean().default(false),
   default: z.unknown().optional(),
@@ -123,17 +121,12 @@ export function validateTemplateVariables(
   const definedVars = variables.map((v) => v.key);
   const requiredVars = variables.filter((v) => v.required).map((v) => v.key);
 
-  const missingInTemplate = requiredVars.filter(
-    (v) => !templateVars.includes(v),
-  );
+  const missingInTemplate = requiredVars.filter((v) => !templateVars.includes(v));
   const unusedVariables = definedVars.filter((v) => !templateVars.includes(v));
-  const missingInDefinition = templateVars.filter(
-    (v) => !definedVars.includes(v),
-  );
+  const missingInDefinition = templateVars.filter((v) => !definedVars.includes(v));
 
   return {
-    valid:
-      missingInTemplate.length === 0 && missingInDefinition.length === 0,
+    valid: missingInTemplate.length === 0 && missingInDefinition.length === 0,
     missingInTemplate,
     unusedVariables,
     missingInDefinition,
@@ -143,16 +136,10 @@ export function validateTemplateVariables(
 /**
  * Render template with variables
  */
-export function renderTemplate(
-  template: string,
-  variables: Record<string, unknown>,
-): string {
+export function renderTemplate(template: string, variables: Record<string, unknown>): string {
   let result = template;
   for (const [key, value] of Object.entries(variables)) {
-    result = result.replace(
-      new RegExp(`\\{\\{${key}\\}\\}`, 'g'),
-      String(value ?? ''),
-    );
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
   }
   return result;
 }
@@ -176,9 +163,7 @@ export function validateJsonSchema(schema: unknown): {
 /**
  * Generate example value from JSON Schema
  */
-export function generateExampleFromSchema(
-  schema: Record<string, unknown>,
-): unknown {
+export function generateExampleFromSchema(schema: Record<string, unknown>): unknown {
   if (schema.type === 'object' && schema.properties) {
     const example: Record<string, unknown> = {};
     const props = schema.properties as Record<string, unknown>;
@@ -234,14 +219,10 @@ export function detectBreakingChange(
     }
 
     // Breaking if field type changed
-    const oldProps = (oldConfig.output_schema.properties as Record<
-      string,
-      Record<string, unknown>
-    >) || {};
-    const newProps = (newConfig.output_schema.properties as Record<
-      string,
-      Record<string, unknown>
-    >) || {};
+    const oldProps =
+      (oldConfig.output_schema.properties as Record<string, Record<string, unknown>>) || {};
+    const newProps =
+      (newConfig.output_schema.properties as Record<string, Record<string, unknown>>) || {};
 
     for (const [field, oldProp] of Object.entries(oldProps)) {
       if (newProps[field] && oldProp.type !== newProps[field].type) {

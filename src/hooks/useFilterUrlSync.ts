@@ -23,7 +23,7 @@ export function useFilterUrlSync(
   filters: FilterState,
   definitions: FilterDefinition[],
   onFiltersChange: (filters: FilterState) => void,
-  options?: { enabled?: boolean; debounceMs?: number }
+  options?: { enabled?: boolean; debounceMs?: number },
 ) {
   const router = useRouter();
   const pathname = usePathname();

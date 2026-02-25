@@ -30,13 +30,11 @@ const NOTES_HTML_MAX_LENGTH = 100_000;
  * - priority (array of values)
  * - search (project name or espaider code, partial match)
  */
-export async function fetchProjectsWithFiltersAction(
-  filters?: {
-    status?: string[];
-    priority?: string[];
-    search?: string;
-  },
-): Promise<FetchProjectsWithFiltersResult> {
+export async function fetchProjectsWithFiltersAction(filters?: {
+  status?: string[];
+  priority?: string[];
+  search?: string;
+}): Promise<FetchProjectsWithFiltersResult> {
   const supabase = await createClient();
 
   // Auth check
@@ -69,14 +67,16 @@ export async function fetchProjectsWithFiltersAction(
   // Start building query
   let query = supabase
     .from('projects')
-    .select(`
+    .select(
+      `
       *,
       schedules:project_schedules(*),
       deliveries:project_deliveries(*),
       histories:project_histories(*),
       approvers:project_approvers(*),
       budgets:project_budgets(*)
-    `)
+    `,
+    )
     .eq('tenant_id', profile.tenant_id)
     .order('created_at', { ascending: false });
 

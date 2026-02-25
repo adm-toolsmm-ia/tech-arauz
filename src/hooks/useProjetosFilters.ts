@@ -116,11 +116,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
       if (def.id === 'status') {
         return {
           ...def,
-          options: buildFilterOptions(
-            projects,
-            'status',
-            (v) => v || 'Sem Status'
-          ),
+          options: buildFilterOptions(projects, 'status', (v) => v || 'Sem Status'),
         };
       }
 
@@ -128,11 +124,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
       if (def.id === 'responsible') {
         return {
           ...def,
-          options: buildFilterOptions(
-            projects,
-            'responsible',
-            (v) => v || 'Sem Responsável'
-          ),
+          options: buildFilterOptions(projects, 'responsible', (v) => v || 'Sem Responsável'),
         };
       }
 
@@ -140,11 +132,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
       if (def.id === 'area') {
         return {
           ...def,
-          options: buildFilterOptions(
-            projects,
-            'area',
-            (v) => v || 'Sem Área'
-          ),
+          options: buildFilterOptions(projects, 'area', (v) => v || 'Sem Área'),
         };
       }
 
@@ -152,11 +140,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
       if (def.id === 'priority') {
         return {
           ...def,
-          options: buildFilterOptions(
-            projects,
-            'priority',
-            (v) => v || 'Sem Prioridade'
-          ),
+          options: buildFilterOptions(projects, 'priority', (v) => v || 'Sem Prioridade'),
         };
       }
 
@@ -164,11 +148,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
       if (def.id === 'category') {
         return {
           ...def,
-          options: buildFilterOptions(
-            projects,
-            'category',
-            (v) => v || 'Sem Categoria'
-          ),
+          options: buildFilterOptions(projects, 'category', (v) => v || 'Sem Categoria'),
         };
       }
 
@@ -179,7 +159,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
           options: buildFilterOptions(
             projects,
             'impacto_estrategico',
-            (v) => v || 'Sem Impacto Definido'
+            (v) => v || 'Sem Impacto Definido',
           ),
         };
       }
@@ -239,7 +219,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     const hasFaseFilter = Array.isArray(faseFilter) && faseFilter.length > 0;
 
     // 1. Aplicar filtro de fase separadamente (porque usa slug normalizado)
-    let data = projectsWithComputed;  // ✅ Usar projectsWithComputed
+    let data = projectsWithComputed; // ✅ Usar projectsWithComputed
     if (hasFaseFilter) {
       data = data.filter((p) => {
         const slug = normalizeFaseSlug(p.fase_atual);
@@ -308,7 +288,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     // Registry (para usar em FilterBar) - com definitions dinâmicas
     registry: {
       ...filterRegistryProjetos,
-      filters: definitions,  // ✅ Definitions com options dinâmicas
+      filters: definitions, // ✅ Definitions com options dinâmicas
     },
   };
 }

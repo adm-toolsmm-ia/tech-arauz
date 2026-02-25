@@ -67,17 +67,22 @@ class GitWrapper {
     return new Promise((resolve, reject) => {
       const timeout = options.timeout || this.timeoutMs;
 
-      execFile('git', args, {
-        cwd: this.repoPath,
-        timeout,
-        maxBuffer: 1024 * 1024,  // 1MB buffer
-      }, (error, stdout, stderr) => {
-        if (error) {
-          reject(new Error(stderr || error.message));
-        } else {
-          resolve(stdout.trim());
-        }
-      });
+      execFile(
+        'git',
+        args,
+        {
+          cwd: this.repoPath,
+          timeout,
+          maxBuffer: 1024 * 1024, // 1MB buffer
+        },
+        (error, stdout, stderr) => {
+          if (error) {
+            reject(new Error(stderr || error.message));
+          } else {
+            resolve(stdout.trim());
+          }
+        },
+      );
     });
   }
 
@@ -106,10 +111,7 @@ class GitWrapper {
       await fs.mkdir(logDir, { recursive: true }).catch(() => {});
 
       // Append to log file
-      await fs.appendFile(
-        this.logPath,
-        JSON.stringify(logEntry) + '\n'
-      ).catch(() => {});  // Non-critical failure
+      await fs.appendFile(this.logPath, JSON.stringify(logEntry) + '\n').catch(() => {}); // Non-critical failure
     } catch (err) {
       // Logging failure should not block execution
       console.warn('Git wrapper: Failed to write log:', err.message);
@@ -126,9 +128,9 @@ class GitWrapper {
   async _branchExists(branch) {
     try {
       const output = await this._execute(['branch', '-a']);
-      return output.split('\n').some(line =>
-        line.trim().endsWith(branch) || line.includes(`/${branch}`)
-      );
+      return output
+        .split('\n')
+        .some((line) => line.trim().endsWith(branch) || line.includes(`/${branch}`));
     } catch {
       return false;
     }
@@ -176,7 +178,7 @@ class GitWrapper {
   async _countCommits(base, target) {
     try {
       const output = await this._execute(['log', `${base}..${target}`, '--oneline']);
-      return output.split('\n').filter(line => line.length > 0).length;
+      return output.split('\n').filter((line) => line.length > 0).length;
     } catch {
       return 0;
     }
@@ -236,13 +238,7 @@ class GitWrapper {
       }
 
       if (errors.length > 0) {
-        const result = this._createResult(
-          false,
-          errors.join('; '),
-          '',
-          errors[0],
-          suggestions
-        );
+        const result = this._createResult(false, errors.join('; '), '', errors[0], suggestions);
         result.duration = Date.now() - start;
         await this._log('push', [branch, remote], result);
         return result;
@@ -258,7 +254,7 @@ class GitWrapper {
             `Force-push exceeds limit (max ${this.maxForcePushCommits} commits, found ${commitCount})`,
             '',
             'Force limit exceeded',
-            [`Reduce to ≤ ${this.maxForcePushCommits} commits or contact team lead`]
+            [`Reduce to ≤ ${this.maxForcePushCommits} commits or contact team lead`],
           );
           result.duration = Date.now() - start;
           await this._log('push', [branch, remote], result);
@@ -281,21 +277,12 @@ class GitWrapper {
 
       // Execute push
       const output = await this._execute(args);
-      const result = this._createResult(
-        true,
-        `Successfully pushed ${branch} to ${remote}`,
-        output
-      );
+      const result = this._createResult(true, `Successfully pushed ${branch} to ${remote}`, output);
       result.duration = Date.now() - start;
       await this._log('push', [branch, remote], result);
       return result;
     } catch (err) {
-      const result = this._createResult(
-        false,
-        `Push failed: ${err.message}`,
-        '',
-        err.message
-      );
+      const result = this._createResult(false, `Push failed: ${err.message}`, '', err.message);
       result.duration = Date.now() - start;
       await this._log('push', [branch, remote], result);
       return result;
@@ -327,21 +314,12 @@ class GitWrapper {
       }
 
       const output = await this._execute(args);
-      const result = this._createResult(
-        true,
-        'Successfully pulled changes',
-        output
-      );
+      const result = this._createResult(true, 'Successfully pulled changes', output);
       result.duration = Date.now() - start;
       await this._log('pull', args, result);
       return result;
     } catch (err) {
-      const result = this._createResult(
-        false,
-        `Pull failed: ${err.message}`,
-        '',
-        err.message
-      );
+      const result = this._createResult(false, `Pull failed: ${err.message}`, '', err.message);
       result.duration = Date.now() - start;
       await this._log('pull', args, result);
       return result;
@@ -379,21 +357,12 @@ class GitWrapper {
       args.push('-m', message);
 
       const output = await this._execute(args);
-      const result = this._createResult(
-        true,
-        'Commit created successfully',
-        output
-      );
+      const result = this._createResult(true, 'Commit created successfully', output);
       result.duration = Date.now() - start;
       await this._log('commit', [message], result);
       return result;
     } catch (err) {
-      const result = this._createResult(
-        false,
-        `Commit failed: ${err.message}`,
-        '',
-        err.message
-      );
+      const result = this._createResult(false, `Commit failed: ${err.message}`, '', err.message);
       result.duration = Date.now() - start;
       await this._log('commit', [message], result);
       return result;
@@ -419,13 +388,9 @@ class GitWrapper {
       // Check if branch exists
       const exists = await this._branchExists(branch);
       if (!exists) {
-        return this._createResult(
-          false,
-          `Branch '${branch}' not found`,
-          '',
-          'Branch not found',
-          [`Run 'git branch -a' to see available branches`]
-        );
+        return this._createResult(false, `Branch '${branch}' not found`, '', 'Branch not found', [
+          `Run 'git branch -a' to see available branches`,
+        ]);
       }
 
       if (options.noFF !== false) {
@@ -439,21 +404,12 @@ class GitWrapper {
       args.push(branch);
 
       const output = await this._execute(args);
-      const result = this._createResult(
-        true,
-        `Successfully merged ${branch}`,
-        output
-      );
+      const result = this._createResult(true, `Successfully merged ${branch}`, output);
       result.duration = Date.now() - start;
       await this._log('merge', [branch], result);
       return result;
     } catch (err) {
-      const result = this._createResult(
-        false,
-        `Merge failed: ${err.message}`,
-        '',
-        err.message
-      );
+      const result = this._createResult(false, `Merge failed: ${err.message}`, '', err.message);
       result.duration = Date.now() - start;
       await this._log('merge', [branch], result);
       return result;
@@ -485,7 +441,7 @@ class GitWrapper {
             'Cannot hard reset with uncommitted changes',
             '',
             'Uncommitted changes exist',
-            ['Commit or stash changes before reset']
+            ['Commit or stash changes before reset'],
           );
         }
       }
@@ -497,21 +453,12 @@ class GitWrapper {
       args.push(target);
 
       const output = await this._execute(args);
-      const result = this._createResult(
-        true,
-        `Successfully reset to ${target}`,
-        output
-      );
+      const result = this._createResult(true, `Successfully reset to ${target}`, output);
       result.duration = Date.now() - start;
       await this._log('reset', [target], result);
       return result;
     } catch (err) {
-      const result = this._createResult(
-        false,
-        `Reset failed: ${err.message}`,
-        '',
-        err.message
-      );
+      const result = this._createResult(false, `Reset failed: ${err.message}`, '', err.message);
       result.duration = Date.now() - start;
       await this._log('reset', [target], result);
       return result;
@@ -539,7 +486,7 @@ class GitWrapper {
           false,
           'Interactive rebase must be run manually in terminal',
           '',
-          'Interactive rebase not automated'
+          'Interactive rebase not automated',
         );
         result.duration = Date.now() - start;
         await this._log('rebase', [target], result);
@@ -555,22 +502,14 @@ class GitWrapper {
       args.push(target);
 
       const output = await this._execute(args);
-      const result = this._createResult(
-        true,
-        `Successfully rebased onto ${target}`,
-        output
-      );
+      const result = this._createResult(true, `Successfully rebased onto ${target}`, output);
       result.duration = Date.now() - start;
       await this._log('rebase', [target], result);
       return result;
     } catch (err) {
-      const result = this._createResult(
-        false,
-        `Rebase failed: ${err.message}`,
-        '',
-        err.message,
-        ['Resolve conflicts and run: git rebase --continue']
-      );
+      const result = this._createResult(false, `Rebase failed: ${err.message}`, '', err.message, [
+        'Resolve conflicts and run: git rebase --continue',
+      ]);
       result.duration = Date.now() - start;
       await this._log('rebase', [target], result);
       return result;
@@ -599,17 +538,13 @@ class GitWrapper {
           false,
           `Commit '${commitHash}' not found`,
           '',
-          'Commit not found'
+          'Commit not found',
         );
       }
 
       const args = ['cherry-pick', commitHash];
       const output = await this._execute(args);
-      const result = this._createResult(
-        true,
-        `Successfully cherry-picked ${commitHash}`,
-        output
-      );
+      const result = this._createResult(true, `Successfully cherry-picked ${commitHash}`, output);
       result.duration = Date.now() - start;
       await this._log('cherry-pick', [commitHash], result);
       return result;
@@ -619,7 +554,7 @@ class GitWrapper {
         `Cherry-pick failed: ${err.message}`,
         '',
         err.message,
-        ['Resolve conflicts and run: git cherry-pick --continue']
+        ['Resolve conflicts and run: git cherry-pick --continue'],
       );
       result.duration = Date.now() - start;
       await this._log('cherry-pick', [commitHash], result);
@@ -639,7 +574,7 @@ class GitWrapper {
       message,
       output,
       ...(error && { error }),
-      ...(suggestions.length > 0 && { suggestions })
+      ...(suggestions.length > 0 && { suggestions }),
     };
   }
 }

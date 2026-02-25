@@ -41,22 +41,37 @@
 
 // Dangerous path patterns that should be rejected
 const DANGEROUS_PATHS = [
-  /^\/$/,                    // Root directory
-  /^\/etc\//,               // System config
-  /^\/sys\//,               // System files
-  /^\/proc\//,              // Process files
-  /^\/dev\//,               // Device files
-  /^\/boot\//,              // Boot files
-  /^\/root\//,              // Root home
-  /~\/\*/,                  // Home wildcard expansion
-  /\.\.\/\.\.\/\.\.\//,     // Multiple traversals
+  /^\/$/, // Root directory
+  /^\/etc\//, // System config
+  /^\/sys\//, // System files
+  /^\/proc\//, // Process files
+  /^\/dev\//, // Device files
+  /^\/boot\//, // Boot files
+  /^\/root\//, // Root home
+  /~\/\*/, // Home wildcard expansion
+  /\.\.\/\.\.\/\.\.\//, // Multiple traversals
 ];
 
 // Commands that are allowed
 const DEFAULT_ALLOWED_COMMANDS = [
-  'git', 'gh', 'npm', 'yarn', 'pnpm',
-  'node', 'npx', 'bash', 'sh', 'rm', 'mv', 'cp',
-  'mkdir', 'touch', 'cat', 'ls', 'cd', 'pwd',
+  'git',
+  'gh',
+  'npm',
+  'yarn',
+  'pnpm',
+  'node',
+  'npx',
+  'bash',
+  'sh',
+  'rm',
+  'mv',
+  'cp',
+  'mkdir',
+  'touch',
+  'cat',
+  'ls',
+  'cd',
+  'pwd',
 ];
 
 /**
@@ -111,16 +126,16 @@ function validateCommand(command, args = [], options = {}) {
   }
 
   // Check for null/undefined arguments
-  const invalidArgs = args.filter(arg => arg === null || arg === undefined);
+  const invalidArgs = args.filter((arg) => arg === null || arg === undefined);
   if (invalidArgs.length > 0) {
     errors.push(`Found ${invalidArgs.length} null/undefined argument(s)`);
   }
 
   // Normalize arguments
   const normalizedArgs = args
-    .filter(arg => arg !== null && arg !== undefined)
-    .map(arg => String(arg).trim())
-    .filter(arg => arg.length > 0);
+    .filter((arg) => arg !== null && arg !== undefined)
+    .map((arg) => String(arg).trim())
+    .filter((arg) => arg.length > 0);
 
   // Check required environment variables
   if (options.requiredEnvVars && Array.isArray(options.requiredEnvVars)) {
@@ -134,9 +149,7 @@ function validateCommand(command, args = [], options = {}) {
   // Check for dangerous patterns
   if (options.dangerousPatterns && Array.isArray(options.dangerousPatterns)) {
     for (const pattern of options.dangerousPatterns) {
-      const found = [normalizedCommand, ...normalizedArgs].some(item =>
-        item.includes(pattern)
-      );
+      const found = [normalizedCommand, ...normalizedArgs].some((item) => item.includes(pattern));
       if (found) {
         warnings.push(`Dangerous pattern detected: '${pattern}'`);
       }
@@ -149,7 +162,7 @@ function validateCommand(command, args = [], options = {}) {
       if (isPathLike(arg)) {
         const pathCheck = validatePath(arg);
         if (!pathCheck.isSafe) {
-          if (pathCheck.issues.some(issue => issue.includes('dangerous'))) {
+          if (pathCheck.issues.some((issue) => issue.includes('dangerous'))) {
             errors.push(`Unsafe path: ${arg} - ${pathCheck.issues[0]}`);
             suggestions.push(pathCheck.suggestion);
           } else {
@@ -185,7 +198,7 @@ function validatePath(path) {
     return {
       isSafe: false,
       issues: ['Path must be a string'],
-      suggestion: null
+      suggestion: null,
     };
   }
 
@@ -195,7 +208,7 @@ function validatePath(path) {
       return {
         isSafe: false,
         issues: ['Path matches dangerous pattern'],
-        suggestion: 'Use a safer path'
+        suggestion: 'Use a safer path',
       };
     }
   }
@@ -268,10 +281,7 @@ function normalizeCommand(command) {
     return '';
   }
 
-  return command
-    .trim()
-    .toLowerCase()
-    .split(/\s+/)[0];  // Take only first word
+  return command.trim().toLowerCase().split(/\s+/)[0]; // Take only first word
 }
 
 /**
@@ -301,7 +311,7 @@ function createResult(isValid, errors, warnings, command, args, suggestions) {
     warnings: warnings || [],
     normalizedCommand: command,
     normalizedArgs: args || [],
-    suggestions: suggestions || []
+    suggestions: suggestions || [],
   };
 }
 
@@ -316,6 +326,6 @@ module.exports = {
   _internal: {
     isPathLike,
     DANGEROUS_PATHS,
-    DEFAULT_ALLOWED_COMMANDS
-  }
+    DEFAULT_ALLOWED_COMMANDS,
+  },
 };

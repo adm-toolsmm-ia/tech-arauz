@@ -7,7 +7,19 @@
  * Ex: 'responsible' (UI) e não 'responsavel' (DB)
  */
 
-import { CheckCircle2, Users, Calendar, LayoutGrid, List, Layers, Building2, Star, TrendingUp, Clock, AlertCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  Users,
+  Calendar,
+  LayoutGrid,
+  List,
+  Layers,
+  Building2,
+  Star,
+  TrendingUp,
+  Clock,
+  AlertCircle,
+} from 'lucide-react';
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**

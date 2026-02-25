@@ -120,11 +120,7 @@ export class AgentSupabaseService {
    * Get single agent
    */
   static async getAgent(id: string): Promise<AgentHead> {
-    const { data, error } = await supabase
-      .from('agents')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = await supabase.from('agents').select('*').eq('id', id).single();
 
     if (error) {
       console.error('Supabase select error:', error);

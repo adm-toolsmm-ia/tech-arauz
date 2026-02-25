@@ -158,44 +158,66 @@ export function LmProviderCockpit({ provider, models, onModelCreated }: LmProvid
           </div>
           {models.length > 0 && (
             <div className="space-y-2">
-              {models.map((model) => (
-                <div
-                  key={model.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div>
-                    <p className="font-medium">{model.name}</p>
-                    <p className="text-xs font-mono text-muted-foreground">{model.model_id}</p>
-                    {model.docs_url && (
-                      <a
-                        href={model.docs_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                      >
-                        Documentação
-                        <ExternalLink className="size-3" />
-                      </a>
-                    )}
+              {models
+                .sort((a, b) => (a.display_order ?? 100) - (b.display_order ?? 100))
+                .map((model) => (
+                  <div
+                    key={model.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{model.name}</p>
+                        {model.tier && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs font-semibold"
+                          >
+                            {model.tier === 'entry' && '🚀'}
+                            {model.tier === 'balanced' && '⚡'}
+                            {model.tier === 'pro' && '💎'}
+                            {model.tier === 'flagship' && '👑'}
+                            {' '}
+                            {model.tier.charAt(0).toUpperCase() + model.tier.slice(1)}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs font-mono text-muted-foreground">{model.model_id}</p>
+                      {model.context_window != null && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Contexto: {(model.context_window / 1000).toFixed(0)}K tokens
+                        </p>
+                      )}
+                      {model.docs_url && (
+                        <a
+                          href={model.docs_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
+                          Documentação
+                          <ExternalLink className="size-3" />
+                        </a>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {model.is_system && (
+                        <Badge variant="outline" className="text-xs">
+                          Sistema
+                        </Badge>
+                      )}
+                      {model.is_active ? (
+                        <Badge variant="secondary" className="text-xs">
+                          Ativo
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">
+                          Inativo
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    {model.is_system && (
-                      <Badge variant="outline" className="text-xs">
-                        Sistema
-                      </Badge>
-                    )}
-                    {model.is_active ? (
-                      <Badge variant="secondary" className="text-xs">
-                        Ativo
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-xs">
-                        Inativo
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
 

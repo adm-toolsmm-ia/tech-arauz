@@ -77,15 +77,22 @@ export function ModelsIaContent({
 
   // Filtrar modelos
   const filteredModels = useMemo(() => {
-    return models.filter((model) => {
-      const searchLower = search.toLowerCase();
-      const matchesSearch =
-        model.name.toLowerCase().includes(searchLower) ||
-        model.model_id.toLowerCase().includes(searchLower);
-      const matchesProvider =
-        selectedProvider === 'all' || model.provider_id === selectedProvider;
-      return matchesSearch && matchesProvider;
-    });
+    return models
+      .filter((model) => {
+        const searchLower = search.toLowerCase();
+        const matchesSearch =
+          model.name.toLowerCase().includes(searchLower) ||
+          model.model_id.toLowerCase().includes(searchLower);
+        const matchesProvider =
+          selectedProvider === 'all' || model.provider_id === selectedProvider;
+        return matchesSearch && matchesProvider;
+      })
+      .sort((a, b) => {
+        // Sort by display_order (ascending), with default value of 100
+        const orderA = a.display_order ?? 100;
+        const orderB = b.display_order ?? 100;
+        return orderA - orderB;
+      });
   }, [models, search, selectedProvider]);
 
   const resetForm = useCallback(() => {

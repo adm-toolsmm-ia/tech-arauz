@@ -18,6 +18,22 @@ export async function createLmModelAction(
 ): Promise<LmModelActionResult> {
   const supabase = await createClient();
 
+  // Validate tier if present
+  const VALID_TIERS = ['entry', 'balanced', 'pro', 'flagship'];
+  if (payload.tier && !VALID_TIERS.includes(payload.tier)) {
+    return { success: false, message: `Tier inválido. Valores permitidos: ${VALID_TIERS.join(', ')}` };
+  }
+
+  // Validate display_order if present (should be a positive number)
+  if (payload.display_order != null && payload.display_order < 0) {
+    return { success: false, message: 'Display order deve ser um número não-negativo.' };
+  }
+
+  // Validate context_window if present (should be a positive number)
+  if (payload.context_window != null && payload.context_window < 1) {
+    return { success: false, message: 'Context window deve ser um número positivo.' };
+  }
+
   const {
     data: { user },
     error: authError,

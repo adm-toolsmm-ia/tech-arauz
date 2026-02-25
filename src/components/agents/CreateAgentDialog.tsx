@@ -82,7 +82,9 @@ export function CreateAgentDialog({
     if (modelsByProvider[providerId]) return;
     try {
       const models = await LmModelsService.listModels(providerId);
-      setModelsByProvider((prev) => ({ ...prev, [providerId]: models }));
+      // Sort models by display_order (ascending) with default value of 100
+      const sortedModels = models.sort((a, b) => (a.display_order ?? 100) - (b.display_order ?? 100));
+      setModelsByProvider((prev) => ({ ...prev, [providerId]: sortedModels }));
     } catch {
       toast.error('❌ Erro ao carregar modelos');
     }
@@ -328,7 +330,12 @@ export function CreateAgentDialog({
                         }
                         return models.map((m) => (
                           <SelectItem key={m.id} value={m.model_id}>
-                            {m.name} ({m.model_id})
+                            <span className="flex items-center gap-2">
+                              <span>{m.name}</span>
+                              {m.tier && (
+                                <span className="text-xs opacity-70">[{m.tier}]</span>
+                              )}
+                            </span>
                           </SelectItem>
                         ));
                       })()}

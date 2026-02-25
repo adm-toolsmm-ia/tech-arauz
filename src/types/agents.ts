@@ -47,6 +47,9 @@ export interface LmModel {
   input_cost_per_1k_tokens?: number;
   output_cost_per_1k_tokens?: number;
   docs_url?: string; // URL base da documentação para rotinas futuras de atualização
+  context_window?: number; // Maximum input tokens (context window) for prompt engineering and compliance
+  display_order?: number; // Display order in UI selectors and catalogs (lower values first; default 100)
+  tier?: 'entry' | 'balanced' | 'pro' | 'flagship'; // Operational tier for model curation (default: balanced)
   is_active: boolean;
   is_system: boolean;
   created_at: string;

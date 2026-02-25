@@ -16,6 +16,9 @@
     "sync:ide": "node .aios-core/infrastructure/scripts/ide-sync/index.js sync",
     "sync:ide:check": "node .aios-core/infrastructure/scripts/ide-sync/index.js validate --strict",
     "sync": "powershell -ExecutionPolicy Bypass -File ./scripts/sync.ps1",
+    "sync:commit": "powershell -ExecutionPolicy Bypass -File ./scripts/git-commit.ps1",
+    "sync:push": "powershell -ExecutionPolicy Bypass -File ./scripts/git-push.ps1",
+    "sync:pr": "powershell -ExecutionPolicy Bypass -File ./scripts/git-pr.ps1",
     "db:apply": "powershell -ExecutionPolicy Bypass -File ./scripts/apply-migrations.ps1"
   },
   "dependencies": {

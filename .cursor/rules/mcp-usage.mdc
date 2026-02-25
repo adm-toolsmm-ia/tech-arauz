@@ -14,9 +14,10 @@ alwaysApply: false
 
 | MCP        | Uso                                                                 |
 | ---------- | ------------------------------------------------------------------- |
-| **supabase** | migrations, schema, RLS, execução SQL. Nunca alucinar credenciais. Verificar schema antes de SQL.  |
+| **supabase** | migrations, schema, RLS, execução SQL. Nunca alucinar credenciais. Verificar schema antes de SQL. Usa `project_ref` na URL. |
 | **context7** | documentação de libs, referência de API. Usa `CONTEXT7_API_KEY` (opcional para uso básico).     |
 | **shadcn**   | componentes shadcn/ui — adicionar, atualizar.                                                   |
+| **github**   | issues, PRs, repositório. Requer `GITHUB_PERSONAL_ACCESS_TOKEN` no `.env` (mesmo valor que `GITHUB_TOKEN`). Read/write conforme escopo do token. |
 
 ## Prioridade de Ferramentas
 

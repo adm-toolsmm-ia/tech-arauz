@@ -9,7 +9,7 @@
                 "-y",
                 "@upstash/context7-mcp",
                 "--api-key",
-                "YOUR_API_KEY"
+                "${CONTEXT7_API_KEY}"
             ]
         },
         "shadcn": {
@@ -18,14 +18,19 @@
                 "shadcn@latest",
                 "mcp"
             ]
+        },
+        "github": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-github"]
         }
     }
 }
 
 // MCP Servers disponíveis:
 // - supabase: Gestão de banco de dados, migrations, RLS (OAuth 2.1)
-// - context7: Contexto de documentação (requer API key)
+// - context7: Contexto de documentação (CONTEXT7_API_KEY opcional)
 // - shadcn: Componentes UI
+// - github: Issues, PRs (GITHUB_PERSONAL_ACCESS_TOKEN no .env)
 //
 // Setup para outros IDEs: ~/.gemini/antigravity/mcp_config.json
 

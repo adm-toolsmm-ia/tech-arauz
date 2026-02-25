@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Zap, Database, List, LayoutGrid } from 'lucide-react';
+import { Plus, Zap, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { filterRegistryModelosIa } from '@/lib/filters/filters-modelos-ia';
@@ -267,47 +267,15 @@ export function ModelsIaContent({
             filters={filterRegistryModelosIa}
             onFiltersChange={() => {}}
             onSearchChange={setSearch}
-            onViewModeChange={() => {}}
+            onViewModeChange={(mode) => setViewMode(mode as 'grid' | 'list' | 'kanban')}
             initialFilters={{}}
             initialSearch={search}
-            initialViewMode="list"
+            initialViewMode="grid"
             currentFilters={{}}
             currentSearch={search}
             currentViewMode={viewMode}
             onUpdateFilter={() => {}}
           />
-
-          {/* View Toggle */}
-          <div className="flex gap-1 border rounded-lg p-1 bg-muted/50">
-            <Button
-              size="sm"
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              className="h-8 w-8 p-0"
-              onClick={() => setViewMode('grid')}
-              title="Visualização em grade"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              className="h-8 w-8 p-0"
-              onClick={() => setViewMode('list')}
-              title="Visualização em lista"
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-              className="h-8 w-auto px-2"
-              onClick={() => setViewMode('kanban')}
-              title="Visualização Kanban"
-            >
-              📊
-              <span className="sr-only">Kanban</span>
-            </Button>
-          </div>
         </div>
 
         {/* Provider Filter */}

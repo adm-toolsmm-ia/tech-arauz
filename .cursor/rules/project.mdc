@@ -30,6 +30,7 @@ alwaysApply: true
 4. `.context/03-specs/adr/` - Decisões de arquitetura (3 ADRs)
 5. `.context/03-specs/tokens_brand.json` - Design tokens
 6. `.context/03-specs/component-patterns.md` - Padrões de componentes
+7. `docs/architecture/PADRAO-KANBAN-VIEW-TOGGLE.md` - Padrão Kanban/View Toggle (FilterBar + ícones canônicos)
 
 ## MCPs Disponíveis
 

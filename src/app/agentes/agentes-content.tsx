@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Bot, RefreshCw, Grid3X3, List, Trello } from 'lucide-react';
+import { Bot, RefreshCw, Grid3X3, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import type { UIAgent } from '@/lib/transformers/agent';
@@ -222,7 +222,7 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
               onClick={() => setViewMode('kanban')}
               title="Visualização Kanban"
             >
-              <Trello className="h-4 w-4" />
+              <LayoutGrid className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"

@@ -9,6 +9,51 @@
  */
 
 /**
+ * LM Provider Definition (Tabela Auxiliar)
+ * Describes AI model providers like OpenAI, Anthropic, etc.
+ */
+export interface LmProvider {
+  id: string; // UUID
+  tenant_id: string; // UUID
+  name: string; // e.g., "OpenAI"
+  slug: string; // e.g., "openai"
+  description?: string;
+  api_endpoint?: string; // e.g., "https://api.openai.com/v1"
+  api_key_field_name?: string; // Name of the API key field
+  icon_emoji?: string; // e.g., "🤖"
+  color_hex?: string; // e.g., "#64748B"
+  is_active: boolean;
+  is_system: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
+  updated_by?: string;
+}
+
+/**
+ * LM Model Definition (Tabela Auxiliar)
+ * Describes specific models within providers (e.g., GPT-4 under OpenAI)
+ */
+export interface LmModel {
+  id: string; // UUID
+  tenant_id: string; // UUID
+  provider_id: string; // UUID reference to LmProvider
+  name: string; // e.g., "GPT-4"
+  model_id: string; // e.g., "gpt-4"
+  description?: string;
+  max_tokens?: number;
+  default_temperature?: number; // 0-2
+  input_cost_per_1k_tokens?: number;
+  output_cost_per_1k_tokens?: number;
+  is_active: boolean;
+  is_system: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
+  updated_by?: string;
+}
+
+/**
  * Agent Type Definition (Tabela Auxiliar)
  * Describes available agent types (e.g., "Status Report", "Requirements")
  * Tabelado no Supabase, gerenciável via UI

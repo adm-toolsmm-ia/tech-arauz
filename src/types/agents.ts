@@ -22,6 +22,7 @@ export interface LmProvider {
   api_key_field_name?: string; // Name of the API key field
   icon_emoji?: string; // e.g., "🤖"
   color_hex?: string; // e.g., "#64748B"
+  docs_url?: string; // URL base da documentação para rotinas futuras de atualização
   is_active: boolean;
   is_system: boolean;
   created_at: string;
@@ -45,6 +46,7 @@ export interface LmModel {
   default_temperature?: number; // 0-2
   input_cost_per_1k_tokens?: number;
   output_cost_per_1k_tokens?: number;
+  docs_url?: string; // URL base da documentação para rotinas futuras de atualização
   is_active: boolean;
   is_system: boolean;
   created_at: string;

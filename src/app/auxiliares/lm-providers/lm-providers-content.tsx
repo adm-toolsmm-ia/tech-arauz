@@ -50,6 +50,7 @@ interface CreateProviderFormData {
   slug: string;
   description: string;
   api_endpoint: string;
+  docs_url: string;
   icon_emoji: string;
   color_hex: string;
   is_active: boolean;
@@ -71,6 +72,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
     slug: '',
     description: '',
     api_endpoint: '',
+    docs_url: '',
     icon_emoji: '🤖',
     color_hex: '#64748B',
     is_active: true,
@@ -128,6 +130,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
           slug: '',
           description: '',
           api_endpoint: '',
+          docs_url: '',
           icon_emoji: '🤖',
           color_hex: '#64748B',
           is_active: true,
@@ -536,6 +539,23 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                 }
                 disabled={isLoading}
               />
+            </div>
+
+            {/* URL Documentação */}
+            <div>
+              <Label htmlFor="docs_url">URL da documentação</Label>
+              <Input
+                id="docs_url"
+                placeholder="Ex: https://platform.openai.com/docs"
+                value={formData.docs_url}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, docs_url: e.target.value }))
+                }
+                disabled={isLoading}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Base para rotinas futuras de atualização de dados
+              </p>
             </div>
 
             {/* Emoji */}

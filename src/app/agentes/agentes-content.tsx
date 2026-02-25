@@ -99,6 +99,7 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
     try {
       await AgentSupabaseService.deleteAgent(agent.id);
       setAgents((prev) => prev.filter((a) => a.id !== agent.id));
+      setSelectedAgent(null);
       toast.success(`✅ Agente "${agent.name}" deletado!`);
     } catch (error) {
       toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);

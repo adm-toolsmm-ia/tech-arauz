@@ -149,7 +149,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
   // Delete provider
   const handleDelete = useCallback(async (provider: LmProvider) => {
     if (provider.is_system) {
-      toast.error('❌ Provedores de sistema não podem ser deletados');
+      toast.error('❌ Fornecedores de sistema não podem ser deletados');
       return;
     }
 
@@ -159,6 +159,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
       const result = await deleteLmProviderAction(provider.id);
       if (result.success) {
         setProviders((prev) => prev.filter((p) => p.id !== provider.id));
+        setSelectedProvider(null);
         toast.success(`✅ ${result.message}`);
       } else {
         toast.error(`❌ ${result.message}`);
@@ -277,13 +278,13 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
-            Sobre Provedores de LM
+            Sobre Fornecedores IA
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
           <p>
-            Provedores de LM são serviços externos que fornecem modelos de linguagem (como OpenAI,
-            Anthropic, etc.). Cada provedor pode ter múltiplos modelos com configurações diferentes.
+            Fornecedores IA são serviços externos que fornecem modelos de linguagem (como OpenAI,
+            Anthropic, etc.). Cada fornecedor pode ter múltiplos modelos com configurações diferentes.
           </p>
         </CardContent>
       </Card>
@@ -327,7 +328,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {filteredData.length} de {providers.length} provedores
+              {filteredData.length} de {providers.length} fornecedores
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -355,7 +356,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {filteredData.length} de {providers.length} provedores
+              {filteredData.length} de {providers.length} fornecedores
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -421,7 +422,10 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                             variant="ghost"
                             size="sm"
                             title="Alternar status"
-                            onClick={() => handleToggleActive(provider)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleActive(provider);
+                            }}
                           >
                             {provider.is_active ? '🔴' : '🟢'}
                           </Button>
@@ -429,7 +433,10 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                             variant="ghost"
                             size="sm"
                             title="Deletar"
-                            onClick={() => handleDelete(provider)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(provider);
+                            }}
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>

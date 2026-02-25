@@ -260,6 +260,103 @@ interface ProjectNotesEditorProps {
 
 ---
 
+### 3.5 Cards Padronizados (Auxiliares — Fornecedores, Modelos, Tipos de Agentes, Agentes)
+
+**Propósito**: Componentes de card reutilizáveis com padrão visual consistente (barra lateral colorida, seções, rodapé com badges) para cadastros auxiliares e agentes. Cada card é clicável para abrir SplitView com detalhes 360°.
+
+**Padrão Visual** (baseado em ProjectKanbanCard):
+- **Barra lateral colorida** (esquerda, 4px) com cor específica do contexto (fornecedor, modelo, etc.)
+- **Seções** hierárquicas:
+  - SEÇÃO 1: Header (título/nome + slug/identificador + descrição)
+  - SEÇÃO 2: Contexto específico (endpoint, modelo padrão, contexto, etc.)
+  - SEÇÃO 3: Informações adicionais (docs, temperatura, etc.)
+  - SEÇÃO 4: Rodapé (status badges + ações — editar, deletar, copiar)
+- **Separadores**: `border-t border-border/30 pt-1` entre seções
+- **Ações**: Botões com `onClick={(e) => { e.stopPropagation(); ... }}` para evitar propag ação do clique ao card clicável
+
+**Componentes Implementados**:
+
+#### ProviderCard (`src/components/lm-providers/ProviderCard.tsx`)
+```typescript
+interface ProviderCardProps {
+  provider: LmProvider;
+  isSelected?: boolean;
+  onSelect?: (provider: LmProvider) => void;
+  onEdit?: (provider: LmProvider) => void;
+  onDelete?: (e: React.MouseEvent, provider: LmProvider) => void;
+}
+```
+- Barra lateral: cor `provider.color_hex`
+- Seções: Nome/Slug, Endpoint da API, Status + Ações
+- Uso: Listagem em `/auxiliares/lm-providers`
+
+#### ModelCard (`src/components/lm-models/ModelCard.tsx`)
+```typescript
+interface ModelCardProps {
+  model: LmModel;
+  provider?: LmProvider;
+  isSelected?: boolean;
+  onSelect?: (model: LmModel) => void;
+  onDelete?: (e: React.MouseEvent, model: LmModel) => void;
+  onCopy?: (model: LmModel) => void;
+}
+```
+- Barra lateral: cor do `provider.color_hex`
+- Seções: Nome/Model ID, Fornecedor + Contexto, Docs, Status + Ações
+- Uso: Listagem em `/auxiliares/modelos-ia`
+
+#### AgentTypeCard (`src/components/agent-types/AgentTypeCard.tsx`)
+```typescript
+interface AgentTypeCardProps {
+  agentType: AgentType;
+  provider?: LmProvider;
+  model?: LmModel;
+  isSelected?: boolean;
+  onSelect?: (agentType: AgentType) => void;
+  onEdit?: (agentType: AgentType) => void;
+  onDelete?: (e: React.MouseEvent, agentType: AgentType) => void;
+}
+```
+- Barra lateral: cor `agentType.color_hex`
+- Seções: Nome/Slug, Modelo Padrão (com fornecedor), Temperatura, Status + Ações
+- Uso: Listagem em `/auxiliares/agent-types`
+
+#### AgentCardStandard (`src/components/agents/AgentCardStandard.tsx`)
+```typescript
+interface AgentCardProps {
+  agent: UIAgent;
+  isSelected?: boolean;
+  onSelect?: (agent: UIAgent) => void;
+  onEdit?: (agent: UIAgent) => void;
+  onDelete?: (e: React.MouseEvent, agent: UIAgent) => void;
+}
+```
+- Barra lateral: azul primário (fixo para agentes)
+- Seções: Nome/Slug, Tipo + Versão, Modelo + Temperatura, Status + Ações
+- Status: Draft (cinza), Published (verde), Deprecated (vermelho)
+- Uso: Listagem em `/agentes`
+
+**Integração em Listas**:
+```tsx
+// Exemplo de uso em listagem
+<div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+  {filteredItems.map((item) => (
+    <ItemCard
+      key={item.id}
+      item={item}
+      isSelected={selectedItem?.id === item.id}
+      onSelect={setSelectedItem}
+      onDelete={(e, item) => {
+        e.stopPropagation();
+        handleDelete(item);
+      }}
+    />
+  ))}
+</div>
+```
+
+---
+
 ## 4. Padrões de Página
 
 ### 4.1 Página de Listagem (Projetos, Clientes, etc.)

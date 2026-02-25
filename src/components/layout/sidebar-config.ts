@@ -10,6 +10,7 @@ import {
   HelpCircle,
   UserPlus,
   Zap,
+  Database,
 } from 'lucide-react';
 import type { NavGroup, NavItem } from './sidebar-types';
 
@@ -48,7 +49,8 @@ export const menuConfig: NavGroup[] = [
     group: 'Auxiliares',
     items: [
       { title: 'Tipos de Agentes', url: '/auxiliares/agent-types', icon: Settings },
-      { title: 'Provedores de LM', url: '/auxiliares/lm-providers', icon: Zap },
+      { title: 'Modelos IA', url: '/auxiliares/modelos-ia', icon: Database },
+      { title: 'Fornecedores IA', url: '/auxiliares/lm-providers', icon: Zap },
     ],
   },
 ];

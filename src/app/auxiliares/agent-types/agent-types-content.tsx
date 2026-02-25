@@ -244,6 +244,7 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
       const result = await deleteAgentTypeAction(type.id);
       if (result.success) {
         setAgentTypes((prev) => prev.filter((t) => t.id !== type.id));
+        setSelectedAgentType(null);
         toast.success(`✅ ${result.message}`);
       } else {
         toast.error(`❌ ${result.message}`);
@@ -486,7 +487,10 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
                           variant="ghost"
                           size="sm"
                           title="Alternar status"
-                          onClick={() => handleToggleActive(type)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleActive(type);
+                          }}
                         >
                           {type.is_active ? '🔴' : '🟢'}
                         </Button>
@@ -494,7 +498,10 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
                           variant="ghost"
                           size="sm"
                           title="Deletar"
-                          onClick={() => handleDelete(type)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(type);
+                          }}
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>

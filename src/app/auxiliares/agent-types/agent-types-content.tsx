@@ -1,55 +1,215 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
+import { KPICard } from '@/components/dashboard/KPICard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Edit2, Lock, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Search, Plus, Edit2, Lock, Trash2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { AgentTypesService } from '@/services/agents/agentTypesService';
 import type { AgentType } from '@/types/agents';
 
 interface AgentTypesContentProps {
   initialAgentTypes: AgentType[];
 }
 
+interface CreateFormData {
+  name: string;
+  slug: string;
+  description: string;
+  icon_emoji: string;
+  color_hex: string;
+  is_active: boolean;
+}
+
+const EMOJI_OPTIONS = ['⚙️', '📊', '🤖', '📋', '🔍', '🚀', '💡', '🎯', '📈', '🔧'];
+const COLOR_OPTIONS = [
+  { hex: '#64748B', label: 'Cinza' },
+  { hex: '#3B82F6', label: 'Azul' },
+  { hex: '#8B5CF6', label: 'Roxo' },
+  { hex: '#EC4899', label: 'Rosa' },
+  { hex: '#F59E0B', label: 'Âmbar' },
+  { hex: '#10B981', label: 'Verde' },
+];
+
 export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps) {
   const [agentTypes, setAgentTypes] = useState(initialAgentTypes);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<CreateFormData>({
+    name: '',
+    slug: '',
+    description: '',
+    icon_emoji: '⚙️',
+    color_hex: '#64748B',
+    is_active: true,
+  });
 
-  // Filter by search
-  const filtered = agentTypes.filter(
-    (type) =>
-      type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      type.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      type.description?.toLowerCase().includes(searchTerm.toLowerCase()),
+  // KPIs
+  const kpis = useMemo(
+    () => ({
+      total: agentTypes.length,
+      active: agentTypes.filter((t) => t.is_active).length,
+      system: agentTypes.filter((t) => t.is_system).length,
+    }),
+    [agentTypes]
   );
 
+  // Filter by search
+  const filtered = useMemo(() => {
+    return agentTypes.filter(
+      (type) =>
+        type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        type.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        type.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [agentTypes, searchTerm]);
+
+  // Auto-generate slug
+  const handleNameChange = useCallback((value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      name: value,
+      slug: value.toLowerCase().replace(/\s+/g, '_'),
+    }));
+  }, []);
+
+  // Create agent type
+  const handleCreate = useCallback(async () => {
+    if (!formData.name.trim()) {
+      toast.error('❌ Nome é obrigatório');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const newType = await AgentTypesService.createAgentType({
+        ...formData,
+        is_system: false,
+        tenant_id: '', // Will be set by RLS on the backend
+      });
+      setAgentTypes((prev) => [...prev, newType]);
+      toast.success(`✅ Tipo "${newType.name}" criado!`);
+      setFormData({
+        name: '',
+        slug: '',
+        description: '',
+        icon_emoji: '⚙️',
+        color_hex: '#64748B',
+        is_active: true,
+      });
+      setIsCreateDialogOpen(false);
+    } catch (error) {
+      toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [formData]);
+
+  // Delete agent type
+  const handleDelete = useCallback(async (type: AgentType) => {
+    if (type.is_system) {
+      toast.error('❌ Tipos de sistema não podem ser deletados');
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja deletar "${type.name}"?`)) return;
+
+    try {
+      await AgentTypesService.deleteAgentType(type.id);
+      setAgentTypes((prev) => prev.filter((t) => t.id !== type.id));
+      toast.success(`✅ Tipo "${type.name}" deletado!`);
+    } catch (error) {
+      toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+    }
+  }, []);
+
+  // Toggle active status
+  const handleToggleActive = useCallback(async (type: AgentType) => {
+    try {
+      await AgentTypesService.updateAgentType(type.id, {
+        is_active: !type.is_active,
+      });
+      setAgentTypes((prev) =>
+        prev.map((t) => (t.id === type.id ? { ...t, is_active: !t.is_active } : t))
+      );
+      toast.success(`✅ Status atualizado!`);
+    } catch (error) {
+      toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+    }
+  }, []);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <DashboardHeader
           title="Tipos de Agentes"
           subtitle="Gerencie as categorias e tipos de agentes disponíveis no sistema"
         />
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="h-4 w-4" />
           Novo Tipo
         </Button>
       </div>
 
+      {/* KPIs */}
+      {agentTypes.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <KPICard
+            icon={Plus}
+            title="Total"
+            value={kpis.total}
+            trend={{ value: '0', positive: false }}
+          />
+          <KPICard
+            icon={Plus}
+            title="Ativos"
+            value={kpis.active}
+            trend={{ value: '0', positive: true }}
+          />
+          <KPICard
+            icon={Lock}
+            title="Sistema"
+            value={kpis.system}
+            trend={{ value: '0', positive: false }}
+          />
+        </div>
+      )}
+
       {/* Info Card */}
       <Card className="border-blue-200 bg-blue-50">
         <CardHeader>
-          <CardTitle className="text-sm">ℹ️ Sobre Tipos de Agentes</CardTitle>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            Sobre Tipos de Agentes
+          </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
           <p>
             Tipos de agentes são categorias que padronizam a configuração e o comportamento dos
             agentes. Cada tipo pode ter modelos padrão, temperatura e outras configurações
-            pré-definidas.
+            pré-definidas. Tipos marcados com 🔒 são do sistema e não podem ser editados.
           </p>
         </CardContent>
       </Card>
@@ -65,15 +225,13 @@ export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps)
         />
       </div>
 
-      {/* Table */}
+      {/* Results */}
       {filtered.length === 0 ? (
         <Card>
           <CardContent className="pb-12 pt-12">
             <div className="text-center">
               <p className="mb-4 text-muted-foreground">
-                {agentTypes.length === 0
-                  ? 'Nenhum tipo criado ainda'
-                  : 'Nenhum resultado encontrado'}
+                {agentTypes.length === 0 ? 'Nenhum tipo criado ainda' : 'Nenhum resultado encontrado'}
               </p>
             </div>
           </CardContent>
@@ -92,61 +250,69 @@ export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps)
                   key={type.id}
                   className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                 >
-                  <div className="flex flex-1 items-center gap-3">
-                    {/* Icon & Name */}
-                    <div className="text-2xl">{type.icon_emoji || '⚙️'}</div>
+                  {/* Icon & Name */}
+                  <div className="flex flex-1 items-center gap-4">
+                    <div
+                      className="text-2xl w-10 h-10 flex items-center justify-center rounded"
+                      style={{ backgroundColor: `${type.color_hex}20` }}
+                    >
+                      {type.icon_emoji || '⚙️'}
+                    </div>
                     <div className="flex-1">
                       <h3 className="font-medium">{type.name}</h3>
-                      <p className="text-sm text-muted-foreground">{type.slug}</p>
+                      <p className="text-sm text-muted-foreground font-mono text-xs">
+                        {type.slug}
+                      </p>
                       {type.description && (
-                        <p className="mt-1 text-xs text-muted-foreground">{type.description}</p>
+                        <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
+                          {type.description}
+                        </p>
                       )}
                     </div>
                   </div>
 
                   {/* Badges & Status */}
-                  <div className="flex items-center gap-2">
-                    {type.is_system && <Badge variant="outline">🔒 Sistema</Badge>}
+                  <div className="flex items-center gap-2 mr-4">
+                    {type.is_system && (
+                      <Badge variant="outline">
+                        <Lock className="h-3 w-3 mr-1" />
+                        Sistema
+                      </Badge>
+                    )}
                     {type.is_active ? (
-                      <Badge className="bg-green-100 text-green-800">✅ Ativo</Badge>
+                      <Badge variant="default" className="bg-green-600">
+                        ✅ Ativo
+                      </Badge>
                     ) : (
                       <Badge variant="secondary">⭐ Inativo</Badge>
-                    )}
-
-                    {/* Model Info */}
-                    {type.default_model_provider && (
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {type.default_model_provider} - {type.default_model_id}
-                      </span>
                     )}
                   </div>
 
                   {/* Actions */}
-                  <div className="ml-4 flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={type.is_system}
-                      title={type.is_system ? 'Tipos de sistema não podem ser editados' : 'Editar'}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    {type.is_system ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled
-                        title="Tipos de sistema não podem ser deletados"
-                      >
-                        <Lock className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toast.error('Delete não implementado ainda')}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                  <div className="flex gap-2">
+                    {!type.is_system && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Alternar status"
+                          onClick={() => handleToggleActive(type)}
+                        >
+                          {type.is_active ? '🔴' : '🟢'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Deletar"
+                          onClick={() => handleDelete(type)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </>
+                    )}
+                    {type.is_system && (
+                      <Button variant="ghost" size="sm" disabled title="Tipo do sistema">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
                       </Button>
                     )}
                   </div>
@@ -156,6 +322,117 @@ export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps)
           </CardContent>
         </Card>
       )}
+
+      {/* Create Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Criar Novo Tipo de Agente</DialogTitle>
+            <DialogDescription>
+              Defina um novo tipo de agente com suas configurações padrão
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Name */}
+            <div>
+              <Label htmlFor="name">Nome *</Label>
+              <Input
+                id="name"
+                placeholder="Ex: Análise de Requisitos"
+                value={formData.name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Slug */}
+            <div>
+              <Label htmlFor="slug">Slug</Label>
+              <Input
+                id="slug"
+                placeholder="Ex: analise_requisitos"
+                value={formData.slug}
+                disabled
+                className="bg-muted text-sm text-muted-foreground"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <Label htmlFor="description">Descrição</Label>
+              <Input
+                id="description"
+                placeholder="Descreva este tipo de agente..."
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, description: e.target.value }))
+                }
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Emoji */}
+            <div>
+              <Label>Ícone Emoji</Label>
+              <div className="grid grid-cols-5 gap-2">
+                {EMOJI_OPTIONS.map((emoji) => (
+                  <Button
+                    key={emoji}
+                    variant={formData.icon_emoji === emoji ? 'default' : 'outline'}
+                    size="sm"
+                    className="text-xl"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, icon_emoji: emoji }))
+                    }
+                    disabled={isLoading}
+                  >
+                    {emoji}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Color */}
+            <div>
+              <Label>Cor</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {COLOR_OPTIONS.map((color) => (
+                  <Button
+                    key={color.hex}
+                    variant={formData.color_hex === color.hex ? 'default' : 'outline'}
+                    size="sm"
+                    className="justify-start"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, color_hex: color.hex }))
+                    }
+                    disabled={isLoading}
+                  >
+                    <div
+                      className="w-4 h-4 rounded mr-2"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                    {color.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateDialogOpen(false)}
+              disabled={isLoading}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleCreate} disabled={isLoading}>
+              {isLoading ? 'Criando...' : 'Criar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

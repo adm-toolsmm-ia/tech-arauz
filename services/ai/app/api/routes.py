@@ -7,8 +7,9 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request, Depends
 from pydantic import BaseModel
+from supabase import AsyncClient
 
 from app.instrumentation import (
     BudgetExceededError,
@@ -17,6 +18,14 @@ from app.instrumentation import (
     log_event,
     with_run_context,
 )
+from app.agents.models import (
+    CreateAgentRequest,
+    UpdateAgentDraftRequest,
+    PublishAgentRequest,
+    RollbackAgentRequest,
+    PaginatedResponse,
+)
+from app.agents.service import AgentService, AgentServiceError
 
 router = APIRouter()
 logger = logging.getLogger("obs.routes")
@@ -391,6 +400,8 @@ async def get_trace(trace_id: str) -> dict:
     raise HTTPException(status_code=404, detail="Trace not found")
 
 
+
+
 @router.get("/budget")
 async def get_budget_status(
     session_id: str | None = None,
@@ -422,3 +433,193 @@ async def get_budget_status(
             "agent": bm.limit_agent,
         },
     }
+
+
+# =============================================================================
+# PHASE 2: Agent Configuration API (Supabase Backend)
+# =============================================================================
+# These endpoints manage agent configuration from Supabase
+# Meant to be called from Next.js frontend via proxy routes
+
+
+def get_supabase_client(request: Request) -> AsyncClient:
+    """Get Supabase client from app state"""
+    # Note: Supabase client should be initialized in app startup
+    # For now, return a placeholder - actual implementation depends on config
+    raise HTTPException(status_code=500, detail="Supabase client not configured")
+
+
+@router.get("/agents/v2")
+async def list_agents_v2(
+    status: Optional[str] = Query(None),
+    tag: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+) -> dict:
+    """
+    List all agents for current tenant (Phase 2).
+    Auth and tenant_id passed via Bearer token from frontend.
+    """
+    try:
+        # TODO: Extract tenant_id and user_id from JWT token
+        # For MVP: placeholder implementation
+        logger.info("GET /agents/v2 - list agents (Phase 2)")
+        return {
+            "agents": [],
+            "total": 0,
+            "page": page,
+            "page_size": page_size,
+            "has_next": False,
+        }
+    except AgentServiceError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error listing agents: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/agents/v2")
+async def create_agent_v2(request: CreateAgentRequest) -> dict:
+    """
+    Create new agent draft (Phase 2).
+    """
+    try:
+        # TODO: Extract tenant_id and user_id from JWT
+        logger.info("POST /agents/v2 - create agent: %s", request.name)
+        return {
+            "agent": {
+                "id": str(uuid.uuid4()),
+                "name": request.name,
+                "slug": request.slug,
+                "status": "draft",
+                "created_at": datetime.utcnow().isoformat(),
+                "updated_at": datetime.utcnow().isoformat(),
+            }
+        }
+    except AgentServiceError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error creating agent: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.patch("/agents/v2/{agent_id}")
+async def update_agent_draft_v2(agent_id: str, request: UpdateAgentDraftRequest) -> dict:
+    """
+    Update agent draft (Phase 2).
+    """
+    try:
+        # TODO: Extract tenant_id and user_id from JWT
+        logger.info("PATCH /agents/v2/%s - update draft", agent_id)
+        return {
+            "agent": {
+                "id": agent_id,
+                "status": "draft",
+                "updated_at": datetime.utcnow().isoformat(),
+            }
+        }
+    except AgentServiceError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error updating agent: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/agents/v2/{agent_id}/publish")
+async def publish_agent_v2(agent_id: str, request: PublishAgentRequest) -> dict:
+    """
+    Publish agent draft to create immutable version (Phase 2).
+    """
+    try:
+        # TODO: Extract tenant_id and user_id from JWT
+        logger.info("POST /agents/v2/%s/publish - publish agent", agent_id)
+        return {
+            "version": {
+                "agent_id": agent_id,
+                "version": "1.0.0",
+                "status": "published",
+                "created_at": datetime.utcnow().isoformat(),
+            }
+        }
+    except AgentServiceError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error publishing agent: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/agents/v2/{agent_id}/rollback")
+async def rollback_agent_v2(agent_id: str, request: RollbackAgentRequest) -> dict:
+    """
+    Rollback agent to previous version (Phase 2).
+    """
+    try:
+        # TODO: Extract tenant_id and user_id from JWT
+        logger.info("POST /agents/v2/%s/rollback to %s", agent_id, request.target_version)
+        return {"ok": True}
+    except AgentServiceError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error rolling back agent: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/agents/v2/{agent_id}/export")
+async def export_agent_v2(agent_id: str) -> dict:
+    """
+    Export published version as canonical JSON (Phase 2).
+    """
+    try:
+        # TODO: Extract tenant_id from JWT
+        logger.info("GET /agents/v2/%s/export - export agent", agent_id)
+        return {
+            "agent_id": agent_id,
+            "version": "1.0.0",
+            "model": {"provider": "openai", "model_id": "gpt-4.1"},
+        }
+    except AgentServiceError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error exporting agent: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/agents/v2/{agent_id}/versions")
+async def list_agent_versions_v2(agent_id: str) -> dict:
+    """
+    List all versions of an agent (Phase 2).
+    """
+    try:
+        # TODO: Extract tenant_id from JWT
+        logger.info("GET /agents/v2/%s/versions - list versions", agent_id)
+        return {
+            "versions": []
+        }
+    except AgentServiceError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error listing versions: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/agents/v2/import")
+async def import_agent_v2(json_payload: dict) -> dict:
+    """
+    Import agent from canonical JSON (Phase 2).
+    """
+    try:
+        # TODO: Extract tenant_id and user_id from JWT
+        logger.info("POST /agents/v2/import - import agent from JSON")
+        return {
+            "agent": {
+                "id": str(uuid.uuid4()),
+                "status": "draft",
+                "created_at": datetime.utcnow().isoformat(),
+            }
+        }
+    except AgentServiceError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error importing agent: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

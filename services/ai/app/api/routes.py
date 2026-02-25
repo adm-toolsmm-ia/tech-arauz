@@ -515,9 +515,11 @@ async def list_agents_v2(
         supabase = await get_supabase_client(request)
         service = AgentService(supabase)
         
-        agents = await service.list_agents(
+        agents, total = await service.list_agents(
             tenant_id=tenant_id,
-            filters={"status": status, "tag": tag, "search": search},
+            status=status,
+            tag=tag,
+            search=search,
             page=page,
             page_size=page_size,
         )
@@ -526,10 +528,10 @@ async def list_agents_v2(
         
         return {
             "agents": [a.model_dump() for a in agents],
-            "total": len(agents),
+            "total": total,
             "page": page,
             "page_size": page_size,
-            "has_next": len(agents) >= page_size,
+            "has_next": (page * page_size) < total,
         }
     except AgentServiceError as e:
         logger.warning("Agent service error: %s", str(e))

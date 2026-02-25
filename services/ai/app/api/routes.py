@@ -3,10 +3,12 @@ API Routes para o serviço AI
 """
 
 import logging
+import os
 import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 
+import jwt
 from fastapi import APIRouter, HTTPException, Query, Request, Depends
 from pydantic import BaseModel
 from supabase import AsyncClient
@@ -29,6 +31,56 @@ from app.agents.service import AgentService, AgentServiceError
 
 router = APIRouter()
 logger = logging.getLogger("obs.routes")
+
+# JWT Configuration
+SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "super-secret-jwt-token-change-me")
+
+
+# =============================================================================
+# JWT & Auth Helpers
+# =============================================================================
+
+
+async def get_token_data(request: Request) -> dict:
+    """Extract and validate JWT token from Authorization header"""
+    auth_header = request.headers.get("Authorization", "")
+    
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    
+    token = auth_header.split(" ")[1]
+    
+    try:
+        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"])
+        user_id = payload.get("sub")
+        
+        # Get tenant_id from app_metadata
+        app_metadata = payload.get("app_metadata", {})
+        tenant_id = app_metadata.get("tenant_id")
+        
+        if not user_id or not tenant_id:
+            logger.warning("JWT missing sub or tenant_id: %s", payload)
+            raise HTTPException(status_code=401, detail="Invalid token structure")
+        
+        return {
+            "user_id": user_id,
+            "tenant_id": tenant_id,
+            "role": payload.get("role", "user"),
+            "email": payload.get("email"),
+        }
+    except jwt.InvalidTokenError as e:
+        logger.warning("JWT validation failed: %s", str(e))
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+
+
+async def get_supabase_client(request: Request) -> AsyncClient:
+    """Get Supabase async client from app state"""
+    supabase = getattr(request.app.state, "supabase", None)
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Supabase client not initialized")
+    return supabase
 
 
 # =============================================================================
@@ -442,13 +494,6 @@ async def get_budget_status(
 # Meant to be called from Next.js frontend via proxy routes
 
 
-def get_supabase_client(request: Request) -> AsyncClient:
-    """Get Supabase client from app state"""
-    # Note: Supabase client should be initialized in app startup
-    # For now, return a placeholder - actual implementation depends on config
-    raise HTTPException(status_code=500, detail="Supabase client not configured")
-
-
 @router.get("/agents/v2")
 async def list_agents_v2(
     status: Optional[str] = Query(None),
@@ -456,48 +501,106 @@ async def list_agents_v2(
     search: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
 ) -> dict:
     """
     List all agents for current tenant (Phase 2).
     Auth and tenant_id passed via Bearer token from frontend.
     """
     try:
-        # TODO: Extract tenant_id and user_id from JWT token
-        # For MVP: placeholder implementation
-        logger.info("GET /agents/v2 - list agents (Phase 2)")
+        tenant_id = token_data["tenant_id"]
+        user_id = token_data["user_id"]
+        
+        supabase = await get_supabase_client(request)
+        service = AgentService(supabase)
+        
+        agents = await service.list_agents(
+            tenant_id=tenant_id,
+            filters={"status": status, "tag": tag, "search": search},
+            page=page,
+            page_size=page_size,
+        )
+        
+        logger.info("Listed %d agents for tenant %s", len(agents), tenant_id)
+        
         return {
-            "agents": [],
-            "total": 0,
+            "agents": [a.model_dump() for a in agents],
+            "total": len(agents),
             "page": page,
             "page_size": page_size,
-            "has_next": False,
+            "has_next": len(agents) >= page_size,
         }
     except AgentServiceError as e:
+        logger.warning("Agent service error: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.exception("Error listing agents: %s", str(e))
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+@router.get("/agents/v2/{agent_id}")
+async def get_agent_v2(
+    agent_id: str,
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
+    """
+    Get agent detail by ID (Phase 2).
+    """
+    try:
+        tenant_id = token_data["tenant_id"]
+        user_id = token_data["user_id"]
+        
+        supabase = await get_supabase_client(request)
+        service = AgentService(supabase)
+        
+        agent = await service.get_agent(tenant_id=tenant_id, agent_id=agent_id)
+        
+        logger.info("Retrieved agent %s for tenant %s", agent_id, tenant_id)
+        
+        return {
+            "agent": agent.model_dump(),
+        }
+    except AgentServiceError as e:
+        if "not found" in str(e).lower():
+            raise HTTPException(status_code=404, detail=str(e))
+        logger.warning("Agent service error: %s", str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error retrieving agent: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @router.post("/agents/v2")
-async def create_agent_v2(request: CreateAgentRequest) -> dict:
+async def create_agent_v2(
+    request_body: CreateAgentRequest,
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
     """
     Create new agent draft (Phase 2).
     """
     try:
-        # TODO: Extract tenant_id and user_id from JWT
-        logger.info("POST /agents/v2 - create agent: %s", request.name)
+        tenant_id = token_data["tenant_id"]
+        user_id = token_data["user_id"]
+        
+        supabase = await get_supabase_client(request)
+        service = AgentService(supabase)
+        
+        agent = await service.create_agent(
+            tenant_id=tenant_id,
+            user_id=user_id,
+            request=request_body,
+        )
+        
+        logger.info("Created agent %s for tenant %s", agent.id, tenant_id)
+        
         return {
-            "agent": {
-                "id": str(uuid.uuid4()),
-                "name": request.name,
-                "slug": request.slug,
-                "status": "draft",
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat(),
-            }
+            "agent": agent.model_dump(),
         }
     except AgentServiceError as e:
+        logger.warning("Agent service error: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.exception("Error creating agent: %s", str(e))
@@ -505,44 +608,108 @@ async def create_agent_v2(request: CreateAgentRequest) -> dict:
 
 
 @router.patch("/agents/v2/{agent_id}")
-async def update_agent_draft_v2(agent_id: str, request: UpdateAgentDraftRequest) -> dict:
+async def update_agent_draft_v2(
+    agent_id: str,
+    request_body: UpdateAgentDraftRequest,
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
     """
     Update agent draft (Phase 2).
     """
     try:
-        # TODO: Extract tenant_id and user_id from JWT
-        logger.info("PATCH /agents/v2/%s - update draft", agent_id)
+        tenant_id = token_data["tenant_id"]
+        user_id = token_data["user_id"]
+        
+        supabase = await get_supabase_client(request)
+        service = AgentService(supabase)
+        
+        agent = await service.update_agent_draft(
+            tenant_id=tenant_id,
+            agent_id=agent_id,
+            user_id=user_id,
+            request=request_body,
+        )
+        
+        logger.info("Updated draft for agent %s", agent_id)
+        
         return {
-            "agent": {
-                "id": agent_id,
-                "status": "draft",
-                "updated_at": datetime.utcnow().isoformat(),
-            }
+            "agent": agent.model_dump(),
         }
     except AgentServiceError as e:
+        logger.warning("Agent service error: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.exception("Error updating agent: %s", str(e))
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+@router.delete("/agents/v2/{agent_id}")
+async def delete_agent_draft_v2(
+    agent_id: str,
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
+    """
+    Delete agent draft (Phase 2).
+    """
+    try:
+        tenant_id = token_data["tenant_id"]
+        user_id = token_data["user_id"]
+        
+        supabase = await get_supabase_client(request)
+        service = AgentService(supabase)
+        
+        await service.delete_agent_draft(
+            tenant_id=tenant_id,
+            agent_id=agent_id,
+        )
+        
+        logger.info("Deleted agent %s", agent_id)
+        
+        return {
+            "success": True,
+            "message": f"Agent {agent_id} deleted",
+        }
+    except AgentServiceError as e:
+        logger.warning("Agent service error: %s", str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error deleting agent: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @router.post("/agents/v2/{agent_id}/publish")
-async def publish_agent_v2(agent_id: str, request: PublishAgentRequest) -> dict:
+async def publish_agent_v2(
+    agent_id: str,
+    request_body: PublishAgentRequest,
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
     """
     Publish agent draft to create immutable version (Phase 2).
     """
     try:
-        # TODO: Extract tenant_id and user_id from JWT
-        logger.info("POST /agents/v2/%s/publish - publish agent", agent_id)
+        tenant_id = token_data["tenant_id"]
+        user_id = token_data["user_id"]
+        
+        supabase = await get_supabase_client(request)
+        service = AgentService(supabase)
+        
+        version = await service.publish_agent(
+            tenant_id=tenant_id,
+            agent_id=agent_id,
+            user_id=user_id,
+            request=request_body,
+        )
+        
+        logger.info("Published agent %s as version %s", agent_id, version.version)
+        
         return {
-            "version": {
-                "agent_id": agent_id,
-                "version": "1.0.0",
-                "status": "published",
-                "created_at": datetime.utcnow().isoformat(),
-            }
+            "version": version.model_dump(),
         }
     except AgentServiceError as e:
+        logger.warning("Agent service error: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.exception("Error publishing agent: %s", str(e))
@@ -550,76 +717,115 @@ async def publish_agent_v2(agent_id: str, request: PublishAgentRequest) -> dict:
 
 
 @router.post("/agents/v2/{agent_id}/rollback")
-async def rollback_agent_v2(agent_id: str, request: RollbackAgentRequest) -> dict:
+async def rollback_agent_v2(
+    agent_id: str,
+    request_body: RollbackAgentRequest,
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
     """
-    Rollback agent to previous version (Phase 2).
+    Rollback agent to a specific version (Phase 2).
     """
     try:
-        # TODO: Extract tenant_id and user_id from JWT
-        logger.info("POST /agents/v2/%s/rollback to %s", agent_id, request.target_version)
-        return {"ok": True}
+        tenant_id = token_data["tenant_id"]
+        user_id = token_data["user_id"]
+        
+        supabase = await get_supabase_client(request)
+        service = AgentService(supabase)
+        
+        agent = await service.rollback_agent(
+            tenant_id=tenant_id,
+            agent_id=agent_id,
+            user_id=user_id,
+            request=request_body,
+        )
+        
+        logger.info("Rolled back agent %s to version %s", agent_id, request_body.version)
+        
+        return {
+            "agent": agent.model_dump(),
+        }
     except AgentServiceError as e:
+        logger.warning("Agent service error: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.exception("Error rolling back agent: %s", str(e))
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/agents/v2/{agent_id}/export")
-async def export_agent_v2(agent_id: str) -> dict:
+@router.get("/agents/v2/{agent_id}/versions")
+async def get_agent_versions_v2(
+    agent_id: str,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=50),
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
     """
-    Export published version as canonical JSON (Phase 2).
+    Get all versions of an agent (Phase 2).
     """
     try:
-        # TODO: Extract tenant_id from JWT
-        logger.info("GET /agents/v2/%s/export - export agent", agent_id)
+        tenant_id = token_data["tenant_id"]
+        
+        supabase = await get_supabase_client(request)
+        service = AgentService(supabase)
+        
+        versions = await service.get_agent_versions(
+            tenant_id=tenant_id,
+            agent_id=agent_id,
+            page=page,
+            page_size=page_size,
+        )
+        
+        logger.info("Retrieved %d versions for agent %s", len(versions), agent_id)
+        
         return {
-            "agent_id": agent_id,
-            "version": "1.0.0",
-            "model": {"provider": "openai", "model_id": "gpt-4.1"},
+            "versions": [v.model_dump() for v in versions],
+            "total": len(versions),
+            "page": page,
+            "page_size": page_size,
+            "has_next": len(versions) >= page_size,
         }
     except AgentServiceError as e:
+        logger.warning("Agent service error: %s", str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception("Error retrieving agent versions: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/agents/v2/{agent_id}/export")
+async def export_agent_version_v2(
+    agent_id: str,
+    version: Optional[str] = Query(None),
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
+    """
+    Export agent version as canonical JSON (Phase 2).
+    """
+    try:
+        tenant_id = token_data["tenant_id"]
+        
+        supabase = await get_supabase_client(request)
+        service = AgentService(supabase)
+        
+        exported = await service.export_agent_version(
+            tenant_id=tenant_id,
+            agent_id=agent_id,
+            version=version,
+        )
+        
+        logger.info("Exported agent %s version %s", agent_id, version or "latest")
+        
+        return {
+            "exported": exported,
+        }
+    except AgentServiceError as e:
+        logger.warning("Agent service error: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.exception("Error exporting agent: %s", str(e))
         raise HTTPException(status_code=500, detail="Internal server error")
-
-
-@router.get("/agents/v2/{agent_id}/versions")
-async def list_agent_versions_v2(agent_id: str) -> dict:
-    """
-    List all versions of an agent (Phase 2).
-    """
-    try:
-        # TODO: Extract tenant_id from JWT
-        logger.info("GET /agents/v2/%s/versions - list versions", agent_id)
-        return {
-            "versions": []
-        }
-    except AgentServiceError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        logger.exception("Error listing versions: %s", str(e))
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-
-@router.post("/agents/v2/import")
-async def import_agent_v2(json_payload: dict) -> dict:
-    """
-    Import agent from canonical JSON (Phase 2).
-    """
-    try:
-        # TODO: Extract tenant_id and user_id from JWT
-        logger.info("POST /agents/v2/import - import agent from JSON")
-        return {
-            "agent": {
-                "id": str(uuid.uuid4()),
-                "status": "draft",
-                "created_at": datetime.utcnow().isoformat(),
-            }
-        }
-    except AgentServiceError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        logger.exception("Error importing agent: %s", str(e))
+        logger.exception("Error publishing agent: %s", str(e))
         raise HTTPException(status_code=500, detail="Internal server error")

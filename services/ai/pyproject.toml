@@ -38,6 +38,9 @@ dependencies = [
     # Database
     "asyncpg>=0.29.0",
     "supabase>=2.3.0",
+    
+    # JWT for authentication
+    "PyJWT>=2.8.0",
 ]
 
 [project.optional-dependencies]

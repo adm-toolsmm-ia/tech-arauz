@@ -4,12 +4,14 @@ Serviço de AI para Tech Arauz
 """
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from supabase import AsyncClient, create_client
 
 from app import __version__
 from app.api.routes import router as api_router
@@ -26,6 +28,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Initialize observability (tracing + structured logging)
     init_observability()
+
+    # Initialize Supabase client
+    supabase_url = os.getenv("SUPABASE_URL")
+    supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    
+    if supabase_url and supabase_key:
+        try:
+            app.state.supabase = await create_client(supabase_url, supabase_key)
+            logger.info("Supabase client initialized")
+        except Exception as e:
+            logger.error("Failed to initialize Supabase: %s", str(e))
+            app.state.supabase = None
+    else:
+        logger.warning("Supabase credentials not configured")
+        app.state.supabase = None
 
     # Startup
     log_event(

@@ -59,6 +59,9 @@ yarn-error.log*
 # Temporary files
 *.tmp
 *.temp
+temp_pptx/
+push_error*.txt
+design-system/
 
 # Credenciais sensíveis
 docs/credenciais/

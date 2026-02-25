@@ -9,6 +9,28 @@ import type { AgentHead, AgentConfig, CreateAgentRequest } from '@/types/agents'
 
 const supabase = createClient();
 
+/**
+ * Extract tenant_id from Supabase user metadata
+ */
+async function getTenantId(): Promise<string> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Get tenant_id from user metadata
+  const tenantId = (user.user_metadata?.tenant_id || user.app_metadata?.tenant_id) as string;
+
+  if (!tenantId) {
+    throw new Error('No tenant_id in user metadata. Ensure Supabase user has tenant_id set.');
+  }
+
+  return tenantId;
+}
+
 export class AgentSupabaseService {
   /**
    * Create agent directly in Supabase
@@ -22,22 +44,7 @@ export class AgentSupabaseService {
       throw new Error('User not authenticated');
     }
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      throw new Error('No session');
-    }
-
-    // Get tenant ID from JWT
-    const parts = session.access_token.split('.');
-    const payload = JSON.parse(atob(parts[1]));
-    const tenantId = payload.tenant_id;
-
-    if (!tenantId) {
-      throw new Error('No tenant ID in token');
-    }
+    const tenantId = await getTenantId();
 
     const agentId = crypto.randomUUID();
     const now = new Date().toISOString();
@@ -51,8 +58,16 @@ export class AgentSupabaseService {
       status: 'draft' as const,
       owners: data.owners || [user.email || user.id],
       tags: [],
-      model_id: 'gpt-4',
+      model_provider: data.model_provider || 'openai',
+      model_id: data.model_id || 'gpt-4',
+      model_temperature: data.model_temperature || 0.7,
+      model_max_tokens: data.model_max_tokens || 2000,
       agent_type: data.agent_type || null,
+      agent_type_id: data.agent_type_id || null,
+      prompt_objective: '',
+      prompt_instructions: '[]',
+      prompt_template: '',
+      persona: '',
       created_at: now,
       updated_at: now,
       created_by: user.id,
@@ -85,21 +100,7 @@ export class AgentSupabaseService {
       throw new Error('User not authenticated');
     }
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      throw new Error('No session');
-    }
-
-    const parts = session.access_token.split('.');
-    const payload = JSON.parse(atob(parts[1]));
-    const tenantId = payload.tenant_id;
-
-    if (!tenantId) {
-      throw new Error('No tenant ID in token');
-    }
+    const tenantId = await getTenantId();
 
     const { data, error } = await supabase
       .from('agents')

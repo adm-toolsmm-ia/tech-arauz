@@ -252,6 +252,13 @@ export interface CreateAgentRequest {
   slug: string;
   description?: string;
   agent_type?: string;
+  agent_type_id?: string;
+  model_provider?: string;
+  model_id?: string;
+  model_temperature?: number;
+  model_max_tokens?: number;
+  persona?: string;
+  prompt_objective?: string;
 }
 
 export interface UpdateAgentDraftRequest {

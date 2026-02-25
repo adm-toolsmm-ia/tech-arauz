@@ -2,87 +2,148 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { Bot } from 'lucide-react';
+import { Bot, Edit2, Trash2 } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
-import { AgentCard, AgentKPIs, type Agent } from '@/components/agents';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { CreateAgentDialog } from '@/components/agents/CreateAgentDialog';
-import { useAgentsList } from '@/services/agents/agentsStore';
+import { useAgentsList, useDeleteAgentMutation } from '@/services/agents/agentsStore';
+import { toast } from 'sonner';
 import type { AgentHead } from '@/types/agents';
 
 export function AgentsContent() {
   const router = useRouter();
   const { data: agents = [], isLoading, refetch } = useAgentsList();
+  const deleteDelete = useDeleteAgentMutation();
 
-  const handleAgentClick = (agent: AgentHead | Agent) => {
-    router.push(`/agentes/${agent.id}`);
-  };
-
-  const handleCreateSuccess = () => {
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Deletar agente "${name}"?`)) return;
+    await deleteDelete.mutateAsync(id);
     refetch();
   };
 
-  // Cast AgentHead to Agent for display (UI only)
-  const displayAgents = agents.map((agent) => ({
-    id: agent.id,
-    name: agent.name,
-    slug: agent.slug,
-    status: agent.status,
-    tags: agent.tags,
-    model_id: agent.model_id,
-    owners: agent.owners,
-    created_at: agent.created_at,
-    updated_at: agent.updated_at,
-    current_version: agent.current_version,
-    description: agent.slug,
-    type: 'assistant' as const,
-    version: agent.current_version || '0.1.0',
-    last_run: null,
-    total_runs: 0,
-    success_rate: 0,
-    avg_latency_ms: 0,
-    total_cost_usd: 0,
-  })) as Agent[];
+  const handleEdit = (id: string) => {
+    router.push(`/agentes/${id}`);
+  };
 
   return (
-    <div className="flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <DashboardHeader
           title="Gestão de Agentes AI"
-          subtitle="Monitore e gerencie seus agentes de inteligência artificial"
+          subtitle="Crie e gerencie seus agentes de inteligência artificial"
         />
+        <CreateAgentDialog onSuccess={() => refetch()} />
       </div>
 
-      <div className="flex-1 space-y-6 p-6">
-        {/* Header with create button */}
-        <div className="flex justify-between items-center">
-          <div></div>
-          <CreateAgentDialog onSuccess={handleCreateSuccess} />
-        </div>
-
-        {/* KPIs */}
-        {displayAgents.length > 0 && <AgentKPIs agents={displayAgents} />}
-
-        {/* Agent list */}
-        <div className="space-y-3">
-          {isLoading ? (
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground">Carregando agentes...</p>
-            </div>
-          ) : displayAgents.length === 0 ? (
-            <div className="py-12 text-center">
-              <Bot className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-medium">Nenhum agente encontrado</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Crie seu primeiro agente para começar a gerenciar inteligência artificial.
-              </p>
-            </div>
-          ) : (
-            displayAgents.map((agent) => (
-              <AgentCard key={agent.id} agent={agent} onClick={() => handleAgentClick(agent)} />
-            ))
-          )}
-        </div>
+      {/* List */}
+      <div className="space-y-3">
+        {isLoading ? (
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-center text-muted-foreground">Carregando agentes...</p>
+            </CardContent>
+          </Card>
+        ) : agents.length === 0 ? (
+          <Card>
+            <CardContent className="pt-12 pb-12">
+              <div className="text-center">
+                <Bot className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+                <h3 className="text-lg font-medium mb-2">Nenhum agente cadastrado</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Clique em &quot;Novo Agente&quot; para criar seu primeiro agente.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          agents.map((agent) => (
+            <AgentListCard
+              key={agent.id}
+              agent={agent}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))
+        )}
       </div>
     </div>
+  );
+}
+
+interface AgentListCardProps {
+  agent: AgentHead;
+  onEdit: (id: string) => void;
+  onDelete: (id: string, name: string) => void;
+}
+
+function AgentListCard({ agent, onEdit, onDelete }: AgentListCardProps) {
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <CardTitle className="text-lg">{agent.name}</CardTitle>
+            <CardDescription>{agent.slug}</CardDescription>
+          </div>
+          <Badge variant={agent.status === 'draft' ? 'secondary' : 'default'}>
+            {agent.status === 'draft' ? '📝 Rascunho' : '✅ Publicado'}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {/* Info Grid */}
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground text-xs">Modelo</p>
+              <p className="font-mono">{agent.model_id}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Proprietários</p>
+              <p className="truncate">{agent.owners?.[0] || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Atualizado</p>
+              <p className="truncate">{new Date(agent.updated_at).toLocaleDateString('pt-BR')}</p>
+            </div>
+          </div>
+
+          {/* Tags */}
+          {agent.tags && agent.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {agent.tags.map((tag) => (
+                <Badge key={tag} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 gap-2"
+              onClick={() => onEdit(agent.id)}
+            >
+              <Edit2 className="h-4 w-4" />
+              Editar
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              className="gap-2"
+              onClick={() => onDelete(agent.id, agent.name)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

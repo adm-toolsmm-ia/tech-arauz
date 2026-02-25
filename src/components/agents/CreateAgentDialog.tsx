@@ -218,9 +218,9 @@ export function CreateAgentDialog({
               <div>
                 <Label htmlFor="agent-type">Tipo de Agente</Label>
                 <Select
-                  value={formData.agent_type_id || ''}
+                  value={formData.agent_type_id || 'no-type'}
                   onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, agent_type_id: value || undefined }))
+                    setFormData((prev) => ({ ...prev, agent_type_id: value === 'no-type' ? undefined : value }))
                   }
                   disabled={isLoading || externalLoading}
                 >
@@ -228,7 +228,7 @@ export function CreateAgentDialog({
                     <SelectValue placeholder="Selecionar tipo..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sem tipo (Custom)</SelectItem>
+                    <SelectItem value="no-type">Sem tipo (Custom)</SelectItem>
                     {agentTypes.map((type) => (
                       <SelectItem key={type.id} value={type.id}>
                         {type.icon_emoji} {type.name}

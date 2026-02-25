@@ -14,12 +14,14 @@ export default async function CronogramasPage() {
   }
 
   // Fetch schedules with their project info
+  // NOTE: usando status_original (métrica verificada) ao invés de situacao_original (status bruto)
+  // Ver .cursor/GLOSSARIO_CAMPOS.md para distinção entre campos de status
   const { data: schedules, error } = await supabase
     .from('project_schedules')
     .select(
       `
       *,
-      project:projects(id, titulo, codigo, status:situacao_original, fase_atual)
+      project:projects(id, titulo, codigo, status:status_original, fase_atual)
     `,
     )
     .order('data_fim', { ascending: true });

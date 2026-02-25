@@ -14,8 +14,11 @@ import { CronogramaData } from '@/hooks/useCronogramasFilters';
 /** Use CronogramaData as the single source of truth */
 export type Schedule = CronogramaData;
 
-/** Projetos iniciado ou em execução (Gantt exibe apenas esses) */
+/** Projetos iniciado ou em execução (Gantt exibe apenas esses)
+ * @see .cursor/GLOSSARIO_CAMPOS.md — usar status_original para status do projeto
+ */
 function isProjectActiveForGantt(s: Schedule): boolean {
+  // Usar status_original (métrica verificada) ao invés de situacao_original (bruto)
   const status = (s.project?.status || '').trim().toLowerCase();
   return status === 'iniciado' || status === 'em execução';
 }

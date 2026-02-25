@@ -466,6 +466,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             <CronogramaGantt
               schedules={filteredSchedules}
               projectIds={projectIds}
+              agendaPeriod={(agendaPeriod as 'day' | 'week' | 'month') || 'day'}
               onActivityClick={setSelectedSchedule}
             />
           ) : viewMode === 'agenda' ? (
@@ -513,44 +514,72 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             />
           )}
 
-          {/* Activity List - usa finalFilteredSchedules para consistência com calendário/KPI */}
-          <div className={cn('space-y-3', viewMode === 'lista' && 'mt-0')}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
-                Todas as Atividades
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  ({finalFilteredSchedules.length})
-                </span>
-              </h2>
-            </div>
-            <div
-              className={cn(
-                'grid gap-3',
-                viewMode === 'lista'
-                  ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                  : 'md:grid-cols-2 xl:grid-cols-3',
-              )}
-            >
-              {finalFilteredSchedules.length === 0 ? (
-                <div className="col-span-full py-12 text-center">
-                  <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">Nenhuma atividade encontrada</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Ajuste os filtros ou sincronize os dados do Espaider.
-                  </p>
+          {/* Activity List - responde ao período da Agenda ou mostra todas conforme view */}
+          {(() => {
+            // Determinar qual lista exibir conforme o período
+            let displaySchedules: Schedule[] = finalFilteredSchedules;
+            let periodLabel = '';
+
+            if (viewMode === 'agenda' && (agendaPeriod === 'day' || agendaPeriod === 'week' || agendaPeriod === 'month')) {
+              // Quando em Agenda, exibir apenas atividades do período selecionado
+              displaySchedules = getSchedulesForDate(currentDate) as Schedule[];
+              
+              if (agendaPeriod === 'day') {
+                periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', {
+                  weekday: 'long',
+                  day: '2-digit',
+                  month: 'long',
+                })}`;
+              } else if (agendaPeriod === 'week') {
+                const weekStart = getWeekStart(currentDate);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                periodLabel = ` — Semana de ${weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} a ${weekEnd.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}`;
+              } else if (agendaPeriod === 'month') {
+                periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`;
+              }
+            }
+
+            return (
+              <div className={cn('space-y-3', viewMode === 'lista' && 'mt-0')}>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">
+                    Todas as Atividades{periodLabel}
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      ({displaySchedules.length})
+                    </span>
+                  </h2>
                 </div>
-              ) : (
-                finalFilteredSchedules.map((schedule) => (
-                  <ActivityCard
-                    key={schedule.id}
-                    schedule={schedule}
-                    projectIds={projectIds}
-                    onClick={() => setSelectedSchedule(schedule)}
-                  />
-                ))
-              )}
-            </div>
-          </div>
+                <div
+                  className={cn(
+                    'grid gap-3',
+                    viewMode === 'lista'
+                      ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                      : 'md:grid-cols-2 xl:grid-cols-3',
+                  )}
+                >
+                  {displaySchedules.length === 0 ? (
+                    <div className="col-span-full py-12 text-center">
+                      <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                      <h3 className="mt-4 text-lg font-medium">Nenhuma atividade encontrada</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Ajuste os filtros ou sincronize os dados do Espaider.
+                      </p>
+                    </div>
+                  ) : (
+                    displaySchedules.map((schedule) => (
+                      <ActivityCard
+                        key={schedule.id}
+                        schedule={schedule}
+                        projectIds={projectIds}
+                        onClick={() => setSelectedSchedule(schedule)}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* SplitView for Project Cockpit */}
           <SplitView

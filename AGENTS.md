@@ -1,7 +1,6 @@
-# AGENTS.md — tech-arauz AI Engineering (Codex CLI)
+# AGENTS.md - Synkra AIOS (Codex CLI)
 
-> **Este projeto usa a arquitetura AIOS + Antigravity unificada.**
-> ⚠️ **NUNCA carregue arquivos de `_deprecated/`** — backup histórico, fora de uso.
+Este arquivo define as instrucoes do projeto para o Codex CLI.
 
 <!-- AIOS-MANAGED-START: core -->
 ## Core Rules

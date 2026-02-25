@@ -1,0 +1,247 @@
+/**
+ * @file Agent Configuration and Version Types
+ * @description TypeScript definitions for AI Agents used in workflows.
+ *
+ * These types are shared between:
+ * - Frontend (UI editor, validation)
+ * - Backend API (request/response)
+ * - Workflow runtime (LangChain/LangGraph, Phase 2)
+ */
+
+/**
+ * Agent Variable Definition
+ * Describes a template variable in the prompt_template
+ */
+export interface AgentVariable {
+  key: string;
+  type: 'string' | 'number' | 'boolean' | 'enum' | 'array' | 'object';
+  required: boolean;
+  default?: unknown;
+  enum?: string[];
+  regex?: string;
+  description?: string;
+}
+
+/**
+ * Model/LLM Configuration
+ */
+export interface ModelConfig {
+  provider: 'openai' | 'anthropic' | 'azure_openai' | 'other';
+  model_id: string;
+  temperature?: number;
+  top_p?: number;
+  max_tokens?: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
+  stop_sequences?: string[];
+  response_format?: 'text' | 'json';
+  endpoint_overrides?: {
+    base_url?: string;
+    deployment_id?: string;
+  };
+}
+
+/**
+ * Prompt Configuration
+ */
+export interface PromptConfig {
+  objective: string; // 1-2 sentences
+  instructions: string[]; // bullets/array of instructions
+  user_template: string; // template with {{variables}}
+  persona?: string; // optional short persona
+  examples?: Array<{ user: string; assistant: string }>;
+  variables: AgentVariable[]; // derived from template
+}
+
+/**
+ * Runtime Placeholders (Phase 2)
+ * References to tools, context providers, memory options
+ */
+export interface RuntimePlaceholders {
+  tool_ids?: string[];
+  context_provider_ids?: string[];
+  memory?: 'stateless' | 'stateful';
+}
+
+/**
+ * Main Agent Configuration
+ * Represents the current/draft state of an agent
+ */
+export interface AgentConfig {
+  id: string; // UUID
+  name: string;
+  slug: string;
+  description?: string;
+  owners: string[]; // user IDs/emails
+  tags?: string[];
+  status: 'draft' | 'published' | 'deprecated';
+
+  // Persona & Prompt
+  persona?: string;
+  prompt_objective: string;
+  prompt_instructions: string[];
+  prompt_template: string;
+
+  // Output Validation
+  output_schema?: Record<string, unknown>; // JSON Schema
+
+  // Model/LLM
+  model: ModelConfig;
+
+  // Runtime (Phase 2)
+  runtime_placeholders?: RuntimePlaceholders;
+}
+
+/**
+ * Agent Version
+ * Immutable snapshot of agent config at publication time
+ */
+export interface AgentVersion {
+  id: string; // UUID
+  agent_id: string;
+  version: string; // semver: "1.0.0"
+  status: 'published';
+
+  // Full snapshot of config
+  agent_config: AgentConfig;
+
+  // Publication metadata
+  commit_message?: string;
+  change_reason?: string;
+  breaking_change?: boolean;
+
+  created_at: string; // ISO 8601
+  created_by: string; // user ID
+}
+
+/**
+ * Agent Head
+ * Current state pointer (draft + published version)
+ */
+export interface AgentHead {
+  id: string; // Same as agents.id
+  name: string;
+  slug: string;
+  status: 'draft' | 'published' | 'deprecated';
+  tags?: string[];
+  model_id: string; // Quick access
+  owners: string[];
+
+  // Version info
+  current_version?: string; // null if only draft exists
+  draft?: AgentConfig; // current draft state
+
+  // Metadata
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+}
+
+/**
+ * Agent List Item
+ * Lightweight type for list views
+ */
+export interface AgentListItem {
+  id: string;
+  name: string;
+  slug: string;
+  status: 'draft' | 'published' | 'deprecated';
+  tags?: string[];
+  model_id: string;
+  current_version?: string;
+  updated_at: string;
+  owners: string[];
+}
+
+/**
+ * Agent Run (Execution History)
+ * Optional for MVP, useful for Phase 2
+ */
+export interface AgentRun {
+  id: string;
+  agent_id: string;
+  agent_version?: string;
+  tenant_id: string;
+
+  input_data?: Record<string, unknown>;
+  output_data?: Record<string, unknown>;
+  status: 'running' | 'completed' | 'failed';
+  error_message?: string;
+
+  tokens_used?: number;
+  cost_usd?: number;
+  duration_ms?: number;
+
+  created_at: string;
+  completed_at?: string;
+  created_by: string;
+}
+
+/**
+ * Diff Result for Version Comparison
+ */
+export interface AgentDiff {
+  modelChanged: boolean;
+  promptChanged: boolean;
+  ioChanged: boolean;
+  breakingChange: boolean;
+  details: Array<{
+    field: string;
+    oldValue?: unknown;
+    newValue?: unknown;
+  }>;
+}
+
+/**
+ * API Request/Response Types
+ */
+
+export interface CreateAgentRequest {
+  name: string;
+  slug: string;
+  description?: string;
+}
+
+export interface UpdateAgentDraftRequest {
+  name?: string;
+  slug?: string;
+  description?: string;
+  owners?: string[];
+  tags?: string[];
+  persona?: string;
+  prompt_objective?: string;
+  prompt_instructions?: string[];
+  prompt_template?: string;
+  output_schema?: Record<string, unknown>;
+  model?: ModelConfig;
+  runtime_placeholders?: RuntimePlaceholders;
+}
+
+export interface PublishAgentRequest {
+  commit_message?: string;
+  change_reason?: string;
+}
+
+export interface RollbackAgentRequest {
+  target_version: string;
+}
+
+export interface ImportAgentRequest {
+  agent_config: AgentConfig;
+}
+
+/**
+ * Export Format
+ * Canonical JSON format for consumption by workflows (Phase 2)
+ */
+export interface ExportedAgentSpec {
+  agent_id: string;
+  version: string;
+  model: ModelConfig;
+  prompt: Omit<PromptConfig, 'variables'> & {
+    variables: AgentVariable[];
+  };
+  output_schema?: Record<string, unknown>;
+  runtime_placeholders?: RuntimePlaceholders;
+}

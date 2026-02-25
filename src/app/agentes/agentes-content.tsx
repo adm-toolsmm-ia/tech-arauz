@@ -32,6 +32,7 @@ import {
   Download,
   Upload,
   Bot,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAgentFilters } from '@/hooks/useAgentFilters';
@@ -46,40 +47,50 @@ type ViewMode = 'grid' | 'list';
 
 export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
   const router = useRouter();
-  const [agents, setAgents] = React.useState(initialAgents);
+  const [agents, setAgents] = useState(initialAgents);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { filters, setFilters, filtered } = useAgentFilters(agents);
 
-  const handleRefresh = () => {
-    router.refresh();
-    toast.success('✅ Agentes recarregados!');
+  // Refresh data from server
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      router.refresh();
+      toast.success('✅ Agentes recarregados!');
+    } catch (error) {
+      toast.error('❌ Erro ao recarregar');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
+  // Delete agent with confirmation
   const handleDelete = async (agent: UIAgent) => {
-    if (!confirm(`Tem certeza que deseja deletar "${agent.name}"?\n\nEsta ação não pode ser desfeita!`)) {
+    if (
+      !confirm(
+        `Tem certeza que deseja deletar "${agent.name}"?\n\nEsta ação não pode ser desfeita!`
+      )
+    ) {
       return;
     }
 
-    setIsDeleting(true);
     try {
       await AgentSupabaseService.deleteAgent(agent.id);
       setAgents((prev) => prev.filter((a) => a.id !== agent.id));
       toast.success(`✅ Agente "${agent.name}" deletado!`);
       router.refresh();
     } catch (error) {
-      toast.error(
-        `❌ Erro ao deletar: ${error instanceof Error ? error.message : 'desconhecido'}`
-      );
-    } finally {
-      setIsDeleting(false);
+      toast.error(`❌ Erro ao deletar: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
   };
 
+  // Edit agent
   const handleEdit = (id: string) => {
     router.push(`/agentes/${id}`);
   };
 
+  // Duplicate agent
   const handleDuplicate = async (agent: UIAgent) => {
     try {
       await AgentSupabaseService.createAgent({
@@ -95,13 +106,21 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
       toast.success(`✅ Agente "${agent.name}" duplicado!`);
       router.refresh();
     } catch (error) {
-      toast.error(
-        `❌ Erro ao duplicar: ${error instanceof Error ? error.message : 'desconhecido'}`
-      );
+      toast.error(`❌ Erro ao duplicar: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
   };
 
+  // Status options
+  const STATUS_OPTIONS = [
+    { value: 'all', label: 'Todos os status' },
+    { value: 'draft', label: '📝 Rascunho' },
+    { value: 'published', label: '✅ Publicado' },
+    { value: 'deprecated', label: '⛔ Deprecado' },
+  ];
+
+  // Agent type options
   const AGENT_TYPES = [
+    { value: 'all', label: 'Todos os tipos' },
     { value: 'status-report', label: '📊 Status Report' },
     { value: 'requirements', label: '📋 Requisitos' },
     { value: 'analysis', label: '🔍 Análise' },
@@ -126,7 +145,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            {/* Top Row: Search + Controls */}
+            {/* Top Row: Search + Refresh */}
             <div className="flex gap-3 items-end">
               <div className="flex-1">
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
@@ -149,7 +168,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="gap-2">
                     <Filter className="h-4 w-4" />
-                    Mais Opções
+                    Mais
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -164,8 +183,13 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="outline" size="sm" onClick={handleRefresh}>
-                Recarregar
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
             </div>
 
@@ -176,22 +200,26 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                   Status
                 </label>
                 <Select
-                  value={filters.status || ''}
+                  value={filters.status ? String(filters.status) : 'all'}
                   onValueChange={(value) =>
                     setFilters({
                       ...filters,
-                      status: value as 'draft' | 'published' | 'deprecated' | undefined,
+                      status:
+                        value === 'all'
+                          ? undefined
+                          : (value as 'draft' | 'published' | 'deprecated'),
                     })
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos os status" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos</SelectItem>
-                    <SelectItem value="draft">📝 Rascunho</SelectItem>
-                    <SelectItem value="published">✅ Publicado</SelectItem>
-                    <SelectItem value="deprecated">⛔ Deprecado</SelectItem>
+                    {STATUS_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -201,19 +229,21 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                   Tipo
                 </label>
                 <Select
-                  value={filters.agentType || ''}
+                  value={filters.agentType ? String(filters.agentType) : 'all'}
                   onValueChange={(value) =>
-                    setFilters({ ...filters, agentType: value || undefined })
+                    setFilters({
+                      ...filters,
+                      agentType: value === 'all' ? undefined : value,
+                    })
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos os tipos" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos</SelectItem>
-                    {AGENT_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
+                    {AGENT_TYPES.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -221,13 +251,17 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
               </div>
 
               <div className="flex gap-2 items-end">
-                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+                <Tabs
+                  value={viewMode}
+                  onValueChange={(v) => setViewMode(v as ViewMode)}
+                  className="w-full"
+                >
                   <TabsList className="w-full">
-                    <TabsTrigger value="grid" className="gap-1">
+                    <TabsTrigger value="grid" className="gap-1 text-xs">
                       <Grid3x3 className="h-4 w-4" />
                       <span className="hidden sm:inline">Grid</span>
                     </TabsTrigger>
-                    <TabsTrigger value="list" className="gap-1">
+                    <TabsTrigger value="list" className="gap-1 text-xs">
                       <List className="h-4 w-4" />
                       <span className="hidden sm:inline">Lista</span>
                     </TabsTrigger>
@@ -286,19 +320,16 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                     <p className="text-sm text-muted-foreground">{agent.description}</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <Badge className="text-xs">
-                      {agent.agentType}
-                    </Badge>
+                    <Badge className="text-xs">{agent.agentType}</Badge>
                     <Badge
-                      variant={
-                        agent.status === 'published' ? 'default' : 'secondary'
-                      }
+                      variant={agent.status === 'published' ? 'default' : 'secondary'}
+                      className="text-xs"
                     >
                       {agent.status === 'draft' && '📝 Rascunho'}
                       {agent.status === 'published' && '✅ Publicado'}
                       {agent.status === 'deprecated' && '⛔ Deprecado'}
                     </Badge>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">
                       {agent.executionCount} execuções
                     </span>
                   </div>
@@ -308,9 +339,6 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
           ))}
         </div>
       )}
-
-      {/* Delete Dialog */}
-      {/* Handled via native confirm() dialog */}
     </div>
   );
 }

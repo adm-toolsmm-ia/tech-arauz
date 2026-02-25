@@ -182,16 +182,17 @@ const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 // ---------- Main Component ----------
 
 export function CronogramasContent({ schedules }: CronogramasContentProps) {
-  // ✨ NEW: Hook para gerenciar filtros com dados filtrados (INCLUI viewMode)
   const {
     filters,
     search,
-    viewMode, // ✅ Do hook (com persistência)
+    viewMode,
+    agendaPeriod,
     filteredData,
     updateFilter,
     setSearch,
-    setViewMode, // ✅ Do hook
-    resetAllFilters, // ✅ Para onResetFilters
+    setViewMode,
+    setAgendaPeriod,
+    resetAllFilters,
     registry,
   } = useCronogramasFilters(schedules);
 
@@ -204,11 +205,11 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   // Dashboard KPI Toggle State
   const [activeKpiFilter, setActiveKpiFilter] = React.useState<string | null>(null);
 
-  // Unique project IDs for consistent coloring
+  // Unique project IDs for consistent coloring (usa dados filtrados)
   const projectIds = React.useMemo(() => {
-    const ids = Array.from(new Set(schedules.map((s) => s.project_id)));
+    const ids = Array.from(new Set(filteredSchedules.map((s) => s.project_id)));
     return ids.sort();
-  }, [schedules]);
+  }, [filteredSchedules]);
 
   // ✨ ROUND 6 KPI CALCULATIONS
   const pendingSchedulesCount = React.useMemo(() => {
@@ -426,83 +427,84 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             />
           </div>
 
-          {/* ✨ NEW: FilterBar com quick filters, search e viewMode integrados */}
-          <div className="flex items-start gap-3">
-            <div className="min-w-0 flex-1">
-              <FilterBar
-                moduleId="cronogramas"
-                filters={registry}
-                // Filter callbacks
-                onFiltersChange={(newFilters) => {
-                  Object.entries(newFilters).forEach(([key, value]) => {
-                    if (filters[key] !== value) {
-                      updateFilter(key, value);
-                    }
-                  });
-                }}
-                onUpdateFilter={updateFilter}
-                onResetFilters={() => {
-                  resetAllFilters();
-                  setSearch('');
-                }}
-                // Search callbacks
-                onSearchChange={setSearch}
-                // ViewMode callbacks ✅ INTEGRADO
-                onViewModeChange={setViewMode}
-                // Initial state
-                initialFilters={filters}
-                initialSearch={search}
-                initialViewMode={viewMode}
-                // Controlled state
-                currentFilters={filters}
-                currentSearch={search}
-                currentViewMode={viewMode}
-              />
-            </div>
+          {/* FilterBar: sticky para manter visível ao rolar (Gantt/Agenda) */}
+          <div className="sticky top-0 z-10 -mx-6 -mt-2 bg-background px-6 pb-2">
+            <FilterBar
+              moduleId="cronogramas"
+              filters={registry}
+              onFiltersChange={(newFilters) => {
+                Object.entries(newFilters).forEach(([key, value]) => {
+                  if (filters[key] !== value) {
+                    updateFilter(key, value);
+                  }
+                });
+              }}
+              onUpdateFilter={updateFilter}
+              onResetFilters={() => {
+                resetAllFilters();
+                setSearch('');
+              }}
+              onSearchChange={setSearch}
+              onViewModeChange={setViewMode}
+              onAgendaPeriodChange={setAgendaPeriod}
+              initialFilters={filters}
+              initialSearch={search}
+              initialViewMode={viewMode}
+              initialAgendaPeriod={agendaPeriod}
+              currentFilters={filters}
+              currentSearch={search}
+              currentViewMode={viewMode}
+              currentAgendaPeriod={agendaPeriod}
+            />
           </div>
 
-          {/* Calendar Section */}
-          {viewMode === 'gantt' ? (
+          {/* Seção de visualização: Gantt | Agenda (Dia/Semana/Mês) | Lista */}
+          {viewMode === 'lista' ? (
+            /* View Lista: apenas grid de atividades, sem calendário */
+            null
+          ) : viewMode === 'gantt' ? (
             <CronogramaGantt
               schedules={filteredSchedules}
               projectIds={projectIds}
               onActivityClick={setSelectedSchedule}
             />
-          ) : viewMode === 'month' ? (
-            <MonthView
-              currentDate={currentDate}
-              selectedDay={selectedDay}
-              onSelectDay={setSelectedDay}
-              onNavigate={navigateMonth}
-              getSchedulesForDate={getSchedulesForDate}
-              projectIds={projectIds}
-            />
-          ) : viewMode === 'week' ? (
-            <WeekView
-              currentDate={currentDate}
-              selectedDay={selectedDay}
-              onSelectDay={setSelectedDay}
-              onNavigate={navigateWeek}
-              getSchedulesForDate={getSchedulesForDate}
-              projectIds={projectIds}
-            />
-          ) : (
-            <DayView
-              currentDate={currentDate}
-              onNavigate={(dir) => {
-                const d = new Date(currentDate);
-                d.setDate(d.getDate() + dir);
-                setCurrentDate(d);
-                setSelectedDay(null);
-              }}
-              getSchedulesForDate={getSchedulesForDate}
-              projectIds={projectIds}
-              onActivityClick={setSelectedSchedule}
-            />
-          )}
+          ) : viewMode === 'agenda' ? (
+            agendaPeriod === 'month' ? (
+              <MonthView
+                currentDate={currentDate}
+                selectedDay={selectedDay}
+                onSelectDay={setSelectedDay}
+                onNavigate={navigateMonth}
+                getSchedulesForDate={getSchedulesForDate}
+                projectIds={projectIds}
+              />
+            ) : agendaPeriod === 'week' ? (
+              <WeekView
+                currentDate={currentDate}
+                selectedDay={selectedDay}
+                onSelectDay={setSelectedDay}
+                onNavigate={navigateWeek}
+                getSchedulesForDate={getSchedulesForDate}
+                projectIds={projectIds}
+              />
+            ) : (
+              <DayView
+                currentDate={currentDate}
+                onNavigate={(dir) => {
+                  const d = new Date(currentDate);
+                  d.setDate(d.getDate() + dir);
+                  setCurrentDate(d);
+                  setSelectedDay(null);
+                }}
+                getSchedulesForDate={getSchedulesForDate}
+                projectIds={projectIds}
+                onActivityClick={setSelectedSchedule}
+              />
+            )
+          ) : null}
 
-          {/* Selected Day Activities */}
-          {selectedDay && (viewMode === 'month' || viewMode === 'week') && (
+          {/* Selected Day Activities (Agenda Mês ou Semana) */}
+          {selectedDay && viewMode === 'agenda' && (agendaPeriod === 'month' || agendaPeriod === 'week') && (
             <SelectedDayPanel
               date={selectedDay}
               schedules={getSchedulesForDate(selectedDay)}
@@ -511,18 +513,25 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             />
           )}
 
-          {/* Activity List */}
-          <div className="space-y-3">
+          {/* Activity List - usa finalFilteredSchedules para consistência com calendário/KPI */}
+          <div className={cn('space-y-3', viewMode === 'lista' && 'mt-0')}>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">
                 Todas as Atividades
                 <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  ({filteredSchedules.length})
+                  ({finalFilteredSchedules.length})
                 </span>
               </h2>
             </div>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {filteredSchedules.length === 0 ? (
+            <div
+              className={cn(
+                'grid gap-3',
+                viewMode === 'lista'
+                  ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  : 'md:grid-cols-2 xl:grid-cols-3',
+              )}
+            >
+              {finalFilteredSchedules.length === 0 ? (
                 <div className="col-span-full py-12 text-center">
                   <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground/50" />
                   <h3 className="mt-4 text-lg font-medium">Nenhuma atividade encontrada</h3>
@@ -531,7 +540,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                   </p>
                 </div>
               ) : (
-                filteredSchedules.map((schedule) => (
+                finalFilteredSchedules.map((schedule) => (
                   <ActivityCard
                     key={schedule.id}
                     schedule={schedule}

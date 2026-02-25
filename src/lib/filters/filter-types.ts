@@ -47,6 +47,15 @@ export interface FilterDefinition {
 }
 
 /**
+ * Agenda period (when viewMode is 'agenda')
+ */
+export interface AgendaPeriod {
+  id: string; // 'day' | 'week' | 'month'
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+}
+
+/**
  * Filter configuration for a module
  * Defines all available filters for that module
  */
@@ -55,6 +64,7 @@ export interface FilterRegistry {
   filters: FilterDefinition[];
   searchable?: boolean; // Global search available (default: true)
   viewModes?: ViewMode[]; // Available view modes for this module
+  agendaPeriods?: AgendaPeriod[]; // Periods when viewMode is 'agenda' (day, week, month)
 }
 
 /**
@@ -83,9 +93,11 @@ export interface FilterBarProps {
   onFiltersChange: (filters: FilterState) => void;
   onSearchChange?: (search: string) => void;
   onViewModeChange?: (mode: string) => void;
+  onAgendaPeriodChange?: (period: string) => void;
   initialFilters?: FilterState;
   initialSearch?: string;
   initialViewMode?: string;
+  initialAgendaPeriod?: string;
   className?: string;
 }
 

@@ -22,6 +22,7 @@ interface UseFilterStateOptions {
   moduleId: string;
   definitions: FilterDefinition[];
   persistence?: FilterPersistenceConfig;
+  initialViewMode?: string; // Override default (e.g. from registry viewModes[].default)
   onFiltersChange?: (filters: FilterState) => void;
   onSearchChange?: (search: string) => void;
   onViewModeChange?: (mode: string) => void;
@@ -51,6 +52,7 @@ export function useFilterState(options: UseFilterStateOptions): UseFilterStateRe
     moduleId,
     definitions,
     persistence = { enabled: false },
+    initialViewMode,
     onFiltersChange,
     onSearchChange,
     onViewModeChange,
@@ -69,7 +71,7 @@ export function useFilterState(options: UseFilterStateOptions): UseFilterStateRe
   const [filters, setFiltersState] = useState<FilterState>(initialFilters);
   const [search, setSearchState] = useState('');
   const [viewMode, setViewModeState] = useState(
-    definitions[0]?.group === 'viewMode' ? definitions[0].id : 'kanban',
+    initialViewMode ?? (definitions[0]?.group === 'viewMode' ? definitions[0].id : 'kanban'),
   );
 
   // Callbacks

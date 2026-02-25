@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import {
   filterDefinitionsCronogramas,
   filterRegistryCronogramas,
@@ -54,10 +54,22 @@ export interface CronogramaData {
   } | null;
 }
 
+/** Projetos ativos: status diferente de concluído e cancelado */
+function isProjectActive(s: CronogramaData): boolean {
+  const status = (s.project?.status || '').trim().toLowerCase();
+  return status !== 'concluído' && status !== 'cancelado';
+}
+
 /**
  * Hook for managing Cronogramas filters with data
  */
 export function useCronogramasFilters(schedules: CronogramaData[]) {
+  // Filtro padrão: apenas cronogramas de projetos ativos (sem concluído/cancelado)
+  const activeSchedules = useMemo(
+    () => schedules.filter((s) => !s.project || isProjectActive(s)),
+    [schedules],
+  );
+
   // Update filter definitions with dynamic options from actual data
   const definitions = useMemo(() => {
     return filterDefinitionsCronogramas.map((def) => {
@@ -65,7 +77,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'project_id') {
         const projectOptions = Array.from(
           new Map(
-            schedules.map((s) => [
+            activeSchedules.map((s) => [
               s.project_id,
               {
                 value: s.project_id,
@@ -84,7 +96,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'status') {
         return {
           ...def,
-          options: buildFilterOptions(schedules, 'status', (v) => v || 'Sem Status'),
+          options: buildFilterOptions(activeSchedules, 'status', (v) => v || 'Sem Status'),
         };
       }
 
@@ -92,7 +104,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'responsavel') {
         return {
           ...def,
-          options: buildFilterOptions(schedules, 'responsavel', (v) => v || 'Sem Responsável'),
+          options: buildFilterOptions(activeSchedules, 'responsavel', (v) => v || 'Sem Responsável'),
         };
       }
 
@@ -100,7 +112,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'setor_responsavel') {
         return {
           ...def,
-          options: buildFilterOptions(schedules, 'setor_responsavel', (v) => v || 'Sem Setor'),
+          options: buildFilterOptions(activeSchedules, 'setor_responsavel', (v) => v || 'Sem Setor'),
         };
       }
 
@@ -108,13 +120,19 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'fase_atividade') {
         return {
           ...def,
-          options: buildFilterOptions(schedules, 'fase_atividade', (v) => v || 'Sem Fase'),
+          options: buildFilterOptions(activeSchedules, 'fase_atividade', (v) => v || 'Sem Fase'),
         };
       }
 
       return def;
     });
-  }, [schedules]);
+  }, [activeSchedules]);
+
+  // Agenda period (day | week | month) - usado quando viewMode === 'agenda'
+  const [agendaPeriod, setAgendaPeriodState] = useState<string>('day');
+  const setAgendaPeriod = useCallback((period: string) => {
+    setAgendaPeriodState(period);
+  }, []);
 
   // Pre-compute computed fields (proximo_vencer, sem_prazo)
   const schedulesWithComputed = useMemo(() => {
@@ -124,7 +142,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     const in7Days = new Date(today);
     in7Days.setDate(in7Days.getDate() + 7);
 
-    return schedules.map((s) => {
+    return activeSchedules.map((s) => {
       // Próximo vencer: prazo vencendo em ≤ 7 dias (não atrasado e não concluído)
       let proximo_vencer = false;
       const status = (s.status || '').trim().toLowerCase();
@@ -141,14 +159,14 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
 
       return { ...s, proximo_vencer, sem_prazo };
     });
-  }, [schedules]);
+  }, [activeSchedules]);
 
   // Use centralized filter state management
-  // NOTE: viewMode será 'kanban' por padrão do hook, mas cronogramas-content
-  // deve inicializar com 'gantt'. Vêr cronogramas-content.tsx para override.
+  // Padrão: agenda (formas Gantt, Lista, Agenda)
   const filterState = useFilterState({
     moduleId: 'cronogramas',
     definitions,
+    initialViewMode: 'agenda',
     persistence: {
       enabled: true,
       storageKey: 'filters-cronogramas',
@@ -201,14 +219,16 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     // State
     filters: filterState.filters,
     search: filterState.search,
-    viewMode: filterState.viewMode, // ✅ ViewMode do hook (persistido)
+    viewMode: filterState.viewMode,
+    agendaPeriod,
     definitions: filterState.definitions,
     filteredData,
 
     // Actions
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,
-    setViewMode: filterState.setViewMode, // ✅ SetViewMode do hook
+    setViewMode: filterState.setViewMode,
+    setAgendaPeriod,
     setFilters: filterState.setFilters,
     resetAllFilters: filterState.resetAllFilters,
     clearFilters: filterState.clearFilters,
@@ -221,7 +241,7 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     // Registry (para usar em FilterBar) - com definitions dinâmicas
     registry: {
       ...filterRegistryCronogramas,
-      filters: definitions, // ✅ Definitions com options dinâmicas
+      filters: definitions,
     },
   };
 }

@@ -14,6 +14,12 @@ import { CronogramaData } from '@/hooks/useCronogramasFilters';
 /** Use CronogramaData as the single source of truth */
 export type Schedule = CronogramaData;
 
+/** Projetos iniciado ou em execução (Gantt exibe apenas esses) */
+function isProjectActiveForGantt(s: Schedule): boolean {
+  const status = (s.project?.status || '').trim().toLowerCase();
+  return status === 'iniciado' || status === 'em execução';
+}
+
 interface CronogramaGanttProps {
   schedules: Schedule[];
   projectIds: string[];
@@ -140,6 +146,18 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
   const [collapsedIds, setCollapsedIds] = React.useState<string[]>([]);
   const [listWidth, setListWidth] = React.useState<string>('480px');
 
+  // Gantt exibe apenas projetos iniciado ou em execução
+  const ganttSchedules = React.useMemo(
+    () => schedules.filter((s) => !s.project || isProjectActiveForGantt(s)),
+    [schedules],
+  );
+
+  // projectIds atualizados para os schedules filtrados
+  const ganttProjectIds = React.useMemo(() => {
+    const ids = Array.from(new Set(ganttSchedules.map((s) => s.project_id)));
+    return ids.sort();
+  }, [ganttSchedules]);
+
   React.useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 1024) {
@@ -157,26 +175,43 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
   }, []);
 
   const tasks: any[] = React.useMemo(() => {
-    const uniqueProjectIds = Array.from(new Set(schedules.map((s) => s.project_id)));
+    const uniqueProjectIds = Array.from(new Set(ganttSchedules.map((s) => s.project_id)));
+    if (uniqueProjectIds.length === 0) return [];
 
-    // Define clipping window constraints (Today - 5 days => Today + 30 days)
+    // Janela de datas baseada nos dados: min/max de todas as tarefas + margem
+    // Não exibir datas futuras vazias (sem cronogramas)
+    let dataMin = new Date(8640000000000000);
+    let dataMax = new Date(-8640000000000000);
+    ganttSchedules.forEach((s) => {
+      const end = new Date(s.data_fim || s.data_prazo || new Date());
+      const start = new Date(s.data_inicio || end);
+      if (start < dataMin) dataMin = start;
+      if (end > dataMax) dataMax = end;
+    });
+
     const today = new Date();
-    const clipWindowStart = new Date(today);
-    clipWindowStart.setDate(clipWindowStart.getDate() - 5);
-    const clipWindowEnd = new Date(today);
-    clipWindowEnd.setDate(clipWindowEnd.getDate() + 30);
+    today.setHours(0, 0, 0, 0);
+    if (dataMin.getTime() > dataMax.getTime()) {
+      dataMin = new Date(today);
+      dataMax = new Date(today);
+    }
+    const marginDays = viewMode === ViewMode.Month ? 14 : viewMode === ViewMode.Week ? 7 : 3;
+    const clipWindowStart = new Date(dataMin);
+    clipWindowStart.setDate(clipWindowStart.getDate() - marginDays);
+    const clipWindowEnd = new Date(dataMax);
+    clipWindowEnd.setDate(clipWindowEnd.getDate() + marginDays);
+    if (today < clipWindowStart) clipWindowStart.setTime(today.getTime());
+    if (today > clipWindowEnd) clipWindowEnd.setTime(today.getTime());
 
-    // Function to clamp date within our 30-day clipped window
     const clampDate = (d: Date) => {
       if (d < clipWindowStart) return new Date(clipWindowStart);
       if (d > clipWindowEnd) return new Date(clipWindowEnd);
       return new Date(d);
     };
 
-    // Create virtual project parent tasks
     const projectTasks: any[] = uniqueProjectIds.map((projectId) => {
-      const projectSchedules = schedules.filter((s) => s.project_id === projectId);
-      const projectColor = getProjectColorHex(projectId, projectIds);
+      const projectSchedules = ganttSchedules.filter((s) => s.project_id === projectId);
+      const projectColor = getProjectColorHex(projectId, ganttProjectIds);
       const projectName = projectSchedules[0]?.project?.titulo || 'Projeto Sem Nome';
 
       let minStart = new Date(8640000000000000);
@@ -188,7 +223,7 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
         const start = new Date(s.data_inicio || end);
         if (start < minStart) minStart = start;
         if (end > maxEnd) maxEnd = end;
-        if (s.status === 'Concluído') completedCount++;
+        if ((s.status || '').trim().toLowerCase() === 'concluído') completedCount++;
       });
 
       if (minStart.getTime() > maxEnd.getTime()) {
@@ -233,8 +268,7 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
       };
     });
 
-    // Create activity child tasks
-    const activityTasks: any[] = schedules.map((s) => {
+    const activityTasks: any[] = ganttSchedules.map((s) => {
       let end = new Date(s.data_fim || s.data_prazo || new Date());
       let start = new Date(s.data_inicio || end);
 
@@ -252,9 +286,9 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
         end = new Date(start);
       }
 
-      const projectColor = getProjectColorHex(s.project_id, projectIds);
+      const projectColor = getProjectColorHex(s.project_id, ganttProjectIds);
       let progress = 0;
-      if (s.status === 'Concluído') progress = 100;
+      if ((s.status || '').trim().toLowerCase() === 'concluído') progress = 100;
       else if (s.status?.toLowerCase().includes('andamento') || s.fase_atividade) progress = 50;
 
       return {
@@ -290,7 +324,7 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
     });
 
     return allTasks;
-  }, [schedules, projectIds, collapsedIds]);
+  }, [ganttSchedules, ganttProjectIds, collapsedIds, viewMode]);
 
   if (tasks.length === 0) {
     return (
@@ -311,7 +345,7 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
     }
 
     if (onActivityClick) {
-      const schedule = schedules.find((s) => s.id === task.id);
+      const schedule = ganttSchedules.find((s) => s.id === task.id);
       if (schedule) onActivityClick(schedule);
     }
   };
@@ -326,8 +360,9 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
 
   return (
     <div className="space-y-4">
-      <div className="mb-4 flex w-fit items-center justify-between rounded-md border bg-muted/30 p-1">
-        <div className="flex gap-2">
+      {/* Controles de período (Dia/Semana/Mês) - sempre visíveis */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-fit items-center rounded-md border border-border bg-muted/30 p-1">
           <Button
             variant={viewMode === ViewMode.Day ? 'default' : 'ghost'}
             size="sm"
@@ -355,7 +390,8 @@ export function CronogramaGantt({ schedules, projectIds, onActivityClick }: Cron
         </div>
       </div>
 
-      <div className="scrollbar-thin w-full overflow-x-auto rounded-md border bg-card/50 shadow-sm">
+      {/* Gráfico Gantt - altura controlada para melhor UX */}
+      <div className="scrollbar-thin max-h-[600px] w-full overflow-auto rounded-md border border-border bg-card/50 shadow-sm">
         <div className="min-w-[700px] lg:min-w-0">
           <Gantt
             tasks={tasks}

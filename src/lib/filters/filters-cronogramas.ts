@@ -150,26 +150,35 @@ export const filterDefinitionsCronogramas: FilterDefinition[] = [
 
 /**
  * Filter Registry para o módulo Cronogramas
+ *
+ * Formas de visualização: Agenda (padrão), Gantt, Lista
+ * Períodos da Agenda: Dia, Semana, Mês
  */
 export const filterRegistryCronogramas: FilterRegistry = {
   moduleId: 'cronogramas',
   filters: filterDefinitionsCronogramas,
   viewModes: [
     {
+      id: 'agenda',
+      label: 'Agenda',
+      icon: CalendarDays,
+      default: true,
+    },
+    {
       id: 'gantt',
       label: 'Gantt',
       icon: BarChartHorizontal,
     },
     {
-      id: 'month',
-      label: 'Mês',
-      icon: CalendarDays,
+      id: 'lista',
+      label: 'Lista',
+      icon: List,
     },
-    {
-      id: 'week',
-      label: 'Semana',
-      icon: Calendar,
-    },
+  ],
+  agendaPeriods: [
+    { id: 'day', label: 'Dia', icon: Calendar },
+    { id: 'week', label: 'Semana', icon: Calendar },
+    { id: 'month', label: 'Mês', icon: CalendarDays },
   ],
 };
 

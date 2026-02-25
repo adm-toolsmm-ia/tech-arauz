@@ -149,3 +149,65 @@ export async function updateLmModelDisplayOrderAction(
   revalidatePath('/auxiliares/modelos-ia');
   return { success: true, message: 'Ordem atualizada!', data: updated as LmModel };
 }
+
+/**
+ * Server Action: Bulk update is_active status for multiple models
+ */
+export async function bulkUpdateLmModelsActiveAction(
+  modelIds: string[],
+  isActive: boolean,
+): Promise<{ success: boolean; message: string; ids?: string[] }> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, message: 'Usuário não autenticado. Faça login novamente.' };
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile?.tenant_id) {
+    return { success: false, message: 'Perfil não encontrado. Contate o administrador.' };
+  }
+
+  const { data: models, error: modelsError } = await supabase
+    .from('lm_models')
+    .select('id, tenant_id')
+    .in('id', modelIds);
+
+  if (modelsError) {
+    return { success: false, message: `Erro ao buscar modelos: ${modelsError.message}` };
+  }
+
+  const validIds = (models || [])
+    .filter((m) => m.tenant_id === profile.tenant_id)
+    .map((m) => m.id);
+
+  if (validIds.length === 0) {
+    return { success: false, message: 'Nenhum modelo válido encontrado.' };
+  }
+
+  const { error } = await supabase
+    .from('lm_models')
+    .update({ is_active: isActive, updated_by: user.id })
+    .in('id', validIds);
+
+  if (error) {
+    return { success: false, message: `Erro ao atualizar modelos: ${error.message}` };
+  }
+
+  revalidatePath('/auxiliares/modelos-ia');
+  return {
+    success: true,
+    message: `${validIds.length} modelo(s) ${isActive ? 'ativado(s)' : 'desativado(s)'}!`,
+    ids: validIds,
+  };
+}

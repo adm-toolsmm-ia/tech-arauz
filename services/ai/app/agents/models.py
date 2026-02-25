@@ -62,14 +62,27 @@ class AgentConfigModel(BaseModel):
     tags: Optional[list[str]] = None
     status: str  # 'draft', 'published', 'deprecated'
     
+    # Agent Type & Classification (NEW)
+    agent_type: Optional[str] = None  # e.g., 'projetos', 'requisitos'
+    agent_type_id: Optional[str] = None
+    is_template: bool = False
+    
+    # Prompt & Persona Configuration
     persona: Optional[str] = None
     prompt_objective: str
     prompt_instructions: list[str]
     prompt_template: str
     output_schema: Optional[dict[str, Any]] = None
+    requirements: Optional[list[str]] = None  # Array of requirements (NEW)
     
+    # Model Configuration
     model: ModelConfigModel
     runtime_placeholders: Optional[RuntimePlaceholdersModel] = None
+    
+    # Validation & Metadata (NEW)
+    requires_validation: bool = True
+    validation_rules: Optional[dict[str, Any]] = None
+    configuration_meta: Optional[dict[str, Any]] = None
 
 
 class AgentVersionModel(BaseModel):
@@ -95,12 +108,15 @@ class AgentHeadModel(BaseModel):
     tags: Optional[list[str]] = None
     model_id: str
     owners: list[str]
+    agent_type: Optional[str] = None  # NEW
     current_version: Optional[str] = None  # null if only draft
     draft: Optional[AgentConfigModel] = None
     created_at: datetime
     updated_at: datetime
     created_by: str
     updated_by: str
+    execution_count: int = 0  # NEW
+    last_execution_at: Optional[datetime] = None  # NEW
 
 
 class CreateAgentRequest(BaseModel):
@@ -108,6 +124,8 @@ class CreateAgentRequest(BaseModel):
     name: str
     slug: str
     description: Optional[str] = None
+    agent_type: Optional[str] = None  # NEW: e.g., 'projetos'
+    agent_type_id: Optional[str] = None  # NEW
 
 
 class UpdateAgentDraftRequest(BaseModel):
@@ -117,13 +135,17 @@ class UpdateAgentDraftRequest(BaseModel):
     description: Optional[str] = None
     owners: Optional[list[str]] = None
     tags: Optional[list[str]] = None
+    agent_type: Optional[str] = None  # NEW
     persona: Optional[str] = None
     prompt_objective: Optional[str] = None
     prompt_instructions: Optional[list[str]] = None
     prompt_template: Optional[str] = None
     output_schema: Optional[dict[str, Any]] = None
+    requirements: Optional[list[str]] = None  # NEW
     model: Optional[ModelConfigModel] = None
     runtime_placeholders: Optional[RuntimePlaceholdersModel] = None
+    validation_rules: Optional[dict[str, Any]] = None  # NEW
+    configuration_meta: Optional[dict[str, Any]] = None  # NEW
 
 
 class PublishAgentRequest(BaseModel):
@@ -135,6 +157,38 @@ class PublishAgentRequest(BaseModel):
 class RollbackAgentRequest(BaseModel):
     """Rollback to previous version request"""
     target_version: str
+
+
+# =============================================================================
+# Agent Types & Templates
+# =============================================================================
+
+class AgentTypeModel(BaseModel):
+    """Agent type definition"""
+    id: str
+    name: str
+    slug: str
+    description: Optional[str] = None
+    required_fields: Optional[list[str]] = None
+    recommended_fields: Optional[list[str]] = None
+
+
+class AgentTemplateModel(BaseModel):
+    """Reusable template for agent configuration"""
+    id: str
+    name: str
+    slug: str
+    description: Optional[str] = None
+    agent_type_id: str
+    persona_template: Optional[str] = None
+    prompt_objective_template: Optional[str] = None
+    prompt_instructions_template: Optional[list[str]] = None
+    output_schema_template: Optional[dict[str, Any]] = None
+    model_provider_default: str = "openai"
+    model_id_default: str = "gpt-4"
+    model_temperature_default: float = 0.7
+    model_max_tokens_default: int = 2000
+    usage_count: int = 0
 
 
 class PaginatedResponse(BaseModel):

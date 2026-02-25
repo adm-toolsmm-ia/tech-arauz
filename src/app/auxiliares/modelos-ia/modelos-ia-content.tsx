@@ -53,7 +53,7 @@ export function ModelsIaContent({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [selectedProvider, setSelectedProvider] = useState<string>('all');
   const [formData, setFormData] = useState<FormData>({
     name: '',
     model_id: '',
@@ -66,9 +66,10 @@ export function ModelsIaContent({
   const kpis = useMemo(
     () => ({
       total: models.length,
-      byProvider: selectedProvider
-        ? models.filter((m) => m.provider_id === selectedProvider).length
-        : 0,
+      byProvider:
+        selectedProvider && selectedProvider !== 'all'
+          ? models.filter((m) => m.provider_id === selectedProvider).length
+          : 0,
       unique_providers: new Set(models.map((m) => m.provider_id)).size,
     }),
     [models, selectedProvider]
@@ -81,7 +82,8 @@ export function ModelsIaContent({
       const matchesSearch =
         model.name.toLowerCase().includes(searchLower) ||
         model.model_id.toLowerCase().includes(searchLower);
-      const matchesProvider = !selectedProvider || model.provider_id === selectedProvider;
+      const matchesProvider =
+        selectedProvider === 'all' || model.provider_id === selectedProvider;
       return matchesSearch && matchesProvider;
     });
   }, [models, search, selectedProvider]);
@@ -123,8 +125,16 @@ export function ModelsIaContent({
           />
           <KPICard
             icon={Zap}
-            title={selectedProvider ? 'Modelos do Fornecedor' : 'Fornecedores'}
-            value={selectedProvider ? kpis.byProvider : kpis.unique_providers}
+            title={
+              selectedProvider && selectedProvider !== 'all'
+                ? 'Modelos do Fornecedor'
+                : 'Fornecedores'
+            }
+            value={
+              selectedProvider && selectedProvider !== 'all'
+                ? kpis.byProvider
+                : kpis.unique_providers
+            }
             trend={{ value: '0', positive: false }}
           />
           <KPICard
@@ -173,7 +183,7 @@ export function ModelsIaContent({
             <SelectValue placeholder="Filtrar por fornecedor..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos os fornecedores</SelectItem>
+            <SelectItem value="all">Todos os fornecedores</SelectItem>
             {initialProviders.map((provider) => (
               <SelectItem key={provider.id} value={provider.id}>
                 {provider.icon_emoji} {provider.name}

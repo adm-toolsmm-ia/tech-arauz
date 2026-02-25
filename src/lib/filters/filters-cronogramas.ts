@@ -164,11 +164,7 @@ export const filterRegistryCronogramas: FilterRegistry = {
       icon: CalendarDays,
       default: true,
     },
-    {
-      id: 'gantt',
-      label: 'Gantt',
-      icon: BarChartHorizontal,
-    },
+    // ⚠️ GANTT REMOVIDO TEMPORARIAMENTE - Será re-habilitado no futuro após configuração
     {
       id: 'lista',
       label: 'Lista',

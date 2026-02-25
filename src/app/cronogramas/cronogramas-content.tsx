@@ -405,71 +405,68 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
           {/* Content: SCROLLABLE AREA */}
           <div className="flex-1 space-y-6 overflow-y-auto p-6">
-            <KPICard
-              title="Atividades Pendentes"
-              value={pendingSchedulesCount}
-              icon={CalendarDays}
-              subtitle="Vinculados a proj. ativos"
-              active={activeKpiFilter === 'pendentes'}
-              onClick={() => handleKpiClick('pendentes')}
-            />
-            <KPICard
-              title="Em Execução"
-              value={inExecutionSchedulesCount}
-              icon={Clock}
-              subtitle="Operação ativa em campo"
-              active={activeKpiFilter === 'em_execucao'}
-              onClick={() => handleKpiClick('em_execucao')}
-            />
-            <KPICard
-              title="Atrasadas"
-              value={overdueSchedulesInfo.count}
-              icon={AlertTriangle}
-              className={
-                overdueSchedulesInfo.count > 0
-                  ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500'
-                  : ''
-              }
-              subtitle={
-                overdueSchedulesInfo.count > 0
-                  ? `Maior atraso: ${overdueSchedulesInfo.maxDays} dias`
-                  : 'Nenhuma atividade atrasada'
-              }
-              active={activeKpiFilter === 'atrasados'}
-              onClick={() => handleKpiClick('atrasados')}
-            />
-            <KPICard
-              title="Próximas do Prazo"
-              value={nearDeadlineCountUpdated}
-              icon={CheckCircle2}
-              subtitle="Vencimentos em ≤ 7 dias"
-              active={activeKpiFilter === 'proximos_vencer'}
-              onClick={() => handleKpiClick('proximos_vencer')}
-            />
-            <KPICard
-              title="Data Ausente"
-              value={missingDeadlineCount}
-              icon={AlertTriangle}
-              className={
-                missingDeadlineCount > 0
-                  ? '[&_[class*=bg-primary]]:bg-amber-500/10 [&_svg]:text-amber-500'
-                  : ''
-              }
-              subtitle="Necessitam preencher prazo"
-              active={activeKpiFilter === 'sem_prazo'}
-              onClick={() => handleKpiClick('sem_prazo')}
-            />
+            {/* KPIs Grid */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+              <KPICard
+                title="Atividades Pendentes"
+                value={pendingSchedulesCount}
+                icon={CalendarDays}
+                subtitle="Vinculados a proj. ativos"
+                active={activeKpiFilter === 'pendentes'}
+                onClick={() => handleKpiClick('pendentes')}
+              />
+              <KPICard
+                title="Em Execução"
+                value={inExecutionSchedulesCount}
+                icon={Clock}
+                subtitle="Operação ativa em campo"
+                active={activeKpiFilter === 'em_execucao'}
+                onClick={() => handleKpiClick('em_execucao')}
+              />
+              <KPICard
+                title="Atrasadas"
+                value={overdueSchedulesInfo.count}
+                icon={AlertTriangle}
+                className={
+                  overdueSchedulesInfo.count > 0
+                    ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500'
+                    : ''
+                }
+                subtitle={
+                  overdueSchedulesInfo.count > 0
+                    ? `Maior atraso: ${overdueSchedulesInfo.maxDays} dias`
+                    : 'Nenhuma atividade atrasada'
+                }
+                active={activeKpiFilter === 'atrasados'}
+                onClick={() => handleKpiClick('atrasados')}
+              />
+              <KPICard
+                title="Próximas do Prazo"
+                value={nearDeadlineCountUpdated}
+                icon={CheckCircle2}
+                subtitle="Vencimentos em ≤ 7 dias"
+                active={activeKpiFilter === 'proximos_vencer'}
+                onClick={() => handleKpiClick('proximos_vencer')}
+              />
+              <KPICard
+                title="Data Ausente"
+                value={missingDeadlineCount}
+                icon={AlertTriangle}
+                className={
+                  missingDeadlineCount > 0
+                    ? '[&_[class*=bg-primary]]:bg-amber-500/10 [&_svg]:text-amber-500'
+                    : ''
+                }
+                subtitle="Necessitam preencher prazo"
+                active={activeKpiFilter === 'sem_prazo'}
+                onClick={() => handleKpiClick('sem_prazo')}
+              />
+            </div>
           </div>
 
-          {/* Seção de visualização: Gantt | Agenda (Dia/Semana/Mês) | Lista */}
-          {viewMode === 'gantt' ? (
-            <CronogramaGantt
-              schedules={filteredSchedules}
-              projectIds={projectIds}
-              calendarPeriod={calendarPeriod}
-              onActivityClick={setSelectedSchedule}
-            />
-          ) : viewMode === 'agenda' ? (
+          {/* Seção de visualização: Agenda (Dia/Semana/Mês) | Lista */}
+          {/* ⚠️ GANTT REMOVIDO TEMPORARIAMENTE - Será re-habilitado no futuro após configuração */}
+          {viewMode === 'agenda' ? (
             calendarPeriod === 'month' ? (
               <MonthView
                 currentDate={currentDate}
@@ -610,6 +607,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             <ScheduleCockpit
               schedule={selectedSchedule}
               onClose={() => setSelectedSchedule(null)}
+              project={selectedSchedule?.project || undefined}
               projectSchedules={schedules.filter(s => s.project_id === selectedSchedule?.project_id)}
               projectDeliveries={[]}
               projectHistories={[]}

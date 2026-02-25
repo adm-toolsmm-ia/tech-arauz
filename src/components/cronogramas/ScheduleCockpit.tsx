@@ -24,6 +24,7 @@ export interface ScheduleCockpitProps {
   schedule: CronogramaData | null;
   onClose: () => void;
   // Dados do projeto para as outras abas (mesmo padrão ProjectCockpit)
+  project?: any; // Projeto vinculado ao cronograma
   projectSchedules?: any[];
   projectDeliveries?: any[];
   projectHistories?: any[];
@@ -56,6 +57,7 @@ const getStatusIcon = (status: string | null) => {
 export function ScheduleCockpit({
   schedule,
   onClose,
+  project,
   projectSchedules = [],
   projectDeliveries = [],
   projectHistories = [],
@@ -278,29 +280,29 @@ export function ScheduleCockpit({
 
           {/* TAB: Detalhes (Projeto) */}
           <TabsContent value="detalhes" className="space-y-4 mt-4">
-            {schedule.project ? (
+            {project || schedule.project ? (
               <div className="space-y-4">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Projeto</p>
-                  <p className="text-sm font-medium">{schedule.project.titulo}</p>
-                  {schedule.project.codigo && (
-                    <p className="text-[11px] text-muted-foreground">Código: {schedule.project.codigo}</p>
+                  <p className="text-sm font-medium">{project?.project_name || project?.titulo || schedule.project?.titulo}</p>
+                  {(project?.espaider_code || schedule.project?.codigo) && (
+                    <p className="text-[11px] text-muted-foreground">Código: {project?.espaider_code || schedule.project?.codigo}</p>
                   )}
                 </div>
 
-                {schedule.project.status && (
+                {(project?.status || schedule.project?.status) && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Status</p>
                     <Badge variant="outline" className="text-xs">
-                      {schedule.project.status}
+                      {project?.status || schedule.project?.status}
                     </Badge>
                   </div>
                 )}
 
-                {schedule.project.fase_atual && (
+                {(project?.fase_atual || schedule.project?.fase_atual) && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Fase Atual</p>
-                    <p className="text-sm">{schedule.project.fase_atual}</p>
+                    <p className="text-sm">{project?.fase_atual || schedule.project?.fase_atual}</p>
                   </div>
                 )}
               </div>

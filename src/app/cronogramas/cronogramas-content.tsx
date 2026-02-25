@@ -16,6 +16,7 @@ import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { SplitView } from '@/components/views/SplitView';
 import { ProjectCockpit } from '@/components/project';
+import { ScheduleCockpit } from '@/components/cronogramas/ScheduleCockpit';
 import { CronogramaGantt } from '@/components/cronogramas/CronogramaGantt';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -370,7 +371,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           subtitle="Visualize todos os cronogramas de projetos"
         />
 
-        <div className="flex-1 space-y-6 p-6">
+        <div className="flex-1 space-y-6 overflow-y-auto p-6">
           {/* KPIs */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <KPICard
@@ -461,10 +462,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           </div>
 
           {/* Seção de visualização: Gantt | Agenda (Dia/Semana/Mês) | Lista */}
-          {viewMode === 'lista' ? (
-            /* View Lista: apenas grid de atividades, sem calendário */
-            null
-          ) : viewMode === 'gantt' ? (
+          {viewMode === 'gantt' ? (
             <CronogramaGantt
               schedules={filteredSchedules}
               projectIds={projectIds}
@@ -540,6 +538,24 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               } else if (calendarPeriod === 'month') {
                 periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`;
               }
+            } else if (viewMode === 'lista' && (calendarPeriod === 'day' || calendarPeriod === 'week' || calendarPeriod === 'month')) {
+              // ✨ NOVO: Quando em Lista, também filtrar por período
+              displaySchedules = getSchedulesForDate(currentDate) as Schedule[];
+              
+              if (calendarPeriod === 'day') {
+                periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', {
+                  weekday: 'long',
+                  day: '2-digit',
+                  month: 'long',
+                })}`;
+              } else if (calendarPeriod === 'week') {
+                const weekStart = getWeekStart(currentDate);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                periodLabel = ` — Semana de ${weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} a ${weekEnd.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}`;
+              } else if (calendarPeriod === 'month') {
+                periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`;
+              }
             }
 
             return (
@@ -583,48 +599,18 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             );
           })()}
 
-          {/* SplitView for Project Cockpit */}
+          {/* SplitView for Schedule Details */}
           <SplitView
             isOpen={!!selectedSchedule}
             onClose={() => setSelectedSchedule(null)}
-            title={selectedSchedule?.project?.titulo || 'Visão 360'}
-            subtitle={selectedSchedule?.project?.codigo || undefined}
+            title={selectedSchedule?.atividade || 'Cronograma'}
+            subtitle={selectedSchedule?.project?.titulo || undefined}
             width="wide"
           >
-            {selectedSchedule?.project && (
-              <ProjectCockpit
-                project={{
-                  id: selectedSchedule.project.id,
-                  espaider_code: selectedSchedule.project.codigo || '',
-                  project_name: selectedSchedule.project.titulo || '',
-                  status: selectedSchedule.project.status || '',
-                  fase_atual: selectedSchedule.project.fase_atual,
-                  end_date: null,
-                  responsible: null,
-                  priority: null,
-                  category: null,
-                }}
-                schedules={schedules
-                  .filter((s) => s.project_id === selectedSchedule.project?.id)
-                  .map((s) => ({
-                    id: s.id,
-                    atividade: s.atividade,
-                    responsavel: s.responsavel,
-                    data_inicio: s.data_inicio,
-                    data_fim: s.data_fim,
-                    data_prazo: s.data_prazo,
-                    status: s.status,
-                    fase_atividade: s.fase_atividade,
-                    atrasado: s.atrasado,
-                    setor_responsavel: s.setor_responsavel,
-                    item: s.item,
-                  }))}
-                deliveries={[]}
-                histories={[]}
-                approvers={[]}
-                budgets={[]}
-              />
-            )}
+            <ScheduleCockpit
+              schedule={selectedSchedule}
+              onClose={() => setSelectedSchedule(null)}
+            />
           </SplitView>
         </div>
       </div>

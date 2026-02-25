@@ -386,62 +386,31 @@ export function CronogramaGantt({ schedules, projectIds, calendarPeriod, onActiv
   const isDarkMode = theme === 'dark';
 
   return (
-    <div className="space-y-4">
-      {/* Controles de período (Dia/Semana/Mês) - sempre visíveis */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex w-fit items-center rounded-md border border-border bg-muted/30 p-1">
-          <Button
-            variant={viewMode === ViewMode.Day ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode(ViewMode.Day)}
-            className="h-7 text-xs"
-          >
-            Dia
-          </Button>
-          <Button
-            variant={viewMode === ViewMode.Week ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode(ViewMode.Week)}
-            className="h-7 text-xs"
-          >
-            Semana
-          </Button>
-          <Button
-            variant={viewMode === ViewMode.Month ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode(ViewMode.Month)}
-            className="h-7 text-xs"
-          >
-            Mês
-          </Button>
-        </div>
-      </div>
-
-      {/* Gráfico Gantt - altura controlada para melhor UX */}
+    <div className="w-full overflow-hidden">
+      {/* ✨ Período centralizado no FilterBar (remover duplicação local)
+          Gantt renderiza apenas o gráfico, controles ficam sticky no topo */}
       <div className="scrollbar-thin max-h-[600px] w-full overflow-auto rounded-md border border-border bg-card/50 shadow-sm">
-        <div className="min-w-[700px] lg:min-w-0">
-          <Gantt
-            tasks={tasks}
-            viewMode={viewMode}
-            onClick={handleTaskClick}
-            onExpanderClick={handleExpanderClick}
-            onDateChange={() => {}}
-            onProgressChange={() => {}}
-            listCellWidth={listWidth}
-            TaskListHeader={TaskListHeaderDefault}
-            TaskListTable={TaskListTableDefault}
-            columnWidth={columnWidth}
-            rowHeight={45}
-            barCornerRadius={4}
-            handleWidth={8}
-            fontFamily="inherit"
-            fontSize="12px"
-            arrowColor="#9ca3af" // muted-foreground equivalent
-            todayColor={isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'}
-            barProgressColor={isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}
-            barBackgroundColor={isDarkMode ? '#333' : '#e5e7eb'}
-          />
-        </div>
+        <Gantt
+          tasks={tasks}
+          viewMode={viewMode}
+          onClick={handleTaskClick}
+          onExpanderClick={handleExpanderClick}
+          onDateChange={() => {}}
+          onProgressChange={() => {}}
+          listCellWidth={listWidth}
+          TaskListHeader={TaskListHeaderDefault}
+          TaskListTable={TaskListTableDefault}
+          columnWidth={columnWidth}
+          rowHeight={45}
+          barCornerRadius={4}
+          handleWidth={8}
+          fontFamily="inherit"
+          fontSize="12px"
+          arrowColor="#9ca3af"
+          todayColor={isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'}
+          barProgressColor={isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}
+          barBackgroundColor={isDarkMode ? '#333' : '#e5e7eb'}
+        />
       </div>
     </div>
   );

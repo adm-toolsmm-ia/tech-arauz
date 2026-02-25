@@ -22,6 +22,8 @@ import type {
   AgentHead,
   AgentConfig,
   AgentVersion,
+  AgentType,
+  AgentTemplate,
   CreateAgentRequest,
   UpdateAgentDraftRequest,
   PublishAgentRequest,
@@ -40,6 +42,13 @@ export const agentKeys = {
   details: () => [...agentKeys.all, 'detail'] as const,
   detail: (id: string) => [...agentKeys.details(), id] as const,
   versions: (id: string) => [...agentKeys.detail(id), 'versions'] as const,
+  types: () => [...agentKeys.all, 'types'] as const,
+  templates: (typeId?: string) => {
+    if (typeId) {
+      return [...agentKeys.all, 'templates', typeId] as const;
+    }
+    return [...agentKeys.all, 'templates'] as const;
+  },
 };
 
 /**
@@ -254,5 +263,44 @@ export function useExportAgentMutation(): UseMutationResult<
     onError: (error) => {
       toast.error(`Export failed: ${error.message}`);
     },
+  });
+}
+
+/**
+ * Query: List all agent types (Phase 4)
+ */
+export function useAgentTypesList(): UseQueryResult<AgentType[], AgentServiceError> {
+  return useQuery({
+    queryKey: agentKeys.types(),
+    queryFn: async () => {
+      const response = await fetch('/api/agents/types', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to fetch agent types');
+      const data = await response.json();
+      return data.types || [];
+    },
+    staleTime: 60000, // 1 minute
+  });
+}
+
+/**
+ * Query: List agent templates (Phase 4)
+ */
+export function useAgentTemplatesList(typeId?: string): UseQueryResult<AgentTemplate[], AgentServiceError> {
+  return useQuery({
+    queryKey: agentKeys.templates(typeId),
+    queryFn: async () => {
+      const params = typeId ? `?type_id=${typeId}` : '';
+      const response = await fetch(`/api/agents/templates${params}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to fetch agent templates');
+      const data = await response.json();
+      return data.templates || [];
+    },
+    staleTime: 60000, // 1 minute
   });
 }

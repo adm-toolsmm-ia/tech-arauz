@@ -9,6 +9,41 @@
  */
 
 /**
+ * Agent Type Definition (Phase 4)
+ * Describes available agent types (e.g., "Projetos", "Requisitos")
+ */
+export interface AgentType {
+  id: string; // UUID
+  name: string; // e.g., "Projetos"
+  slug: string; // e.g., "projetos"
+  description?: string;
+  required_fields: string[]; // e.g., ["persona", "prompt_objective", "prompt_instructions"]
+  recommended_fields: string[];
+  default_template?: Record<string, unknown>;
+}
+
+/**
+ * Agent Template (Phase 4)
+ * Reusable template for quick agent configuration
+ */
+export interface AgentTemplate {
+  id: string; // UUID
+  agent_type_id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  persona_template?: string;
+  prompt_objective_template?: string;
+  prompt_instructions_template?: string[];
+  prompt_examples?: Array<{ user: string; assistant: string }>;
+  output_schema_template?: Record<string, unknown>;
+  model_provider_default?: string;
+  model_id_default?: string;
+  model_temperature_default?: number;
+  model_max_tokens_default?: number;
+}
+
+/**
  * Agent Variable Definition
  * Describes a template variable in the prompt_template
  */
@@ -76,6 +111,12 @@ export interface AgentConfig {
   tags?: string[];
   status: 'draft' | 'published' | 'deprecated';
 
+  // Phase 4: Advanced Configuration
+  agent_type?: string; // e.g., "projetos", "requisitos"
+  agent_type_id?: string; // UUID reference to agent_types
+  requirements?: string[]; // array of requirement descriptions
+  configuration_meta?: Record<string, unknown>; // flexible config storage
+
   // Persona & Prompt
   persona?: string;
   prompt_objective: string;
@@ -90,6 +131,10 @@ export interface AgentConfig {
 
   // Runtime (Phase 2)
   runtime_placeholders?: RuntimePlaceholders;
+
+  // Validation
+  requires_validation?: boolean;
+  validation_rules?: Record<string, unknown>;
 }
 
 /**
@@ -126,6 +171,11 @@ export interface AgentHead {
   tags?: string[];
   model_id: string; // Quick access
   owners: string[];
+
+  // Phase 4: Advanced Configuration
+  agent_type?: string;
+  execution_count?: number;
+  last_execution_at?: string | null;
 
   // Version info
   current_version?: string; // null if only draft exists
@@ -201,6 +251,7 @@ export interface CreateAgentRequest {
   name: string;
   slug: string;
   description?: string;
+  agent_type?: string;
 }
 
 export interface UpdateAgentDraftRequest {
@@ -209,6 +260,10 @@ export interface UpdateAgentDraftRequest {
   description?: string;
   owners?: string[];
   tags?: string[];
+  agent_type?: string;
+  agent_type_id?: string;
+  requirements?: string[];
+  configuration_meta?: Record<string, unknown>;
   persona?: string;
   prompt_objective?: string;
   prompt_instructions?: string[];
@@ -216,6 +271,7 @@ export interface UpdateAgentDraftRequest {
   output_schema?: Record<string, unknown>;
   model?: ModelConfig;
   runtime_placeholders?: RuntimePlaceholders;
+  validation_rules?: Record<string, unknown>;
 }
 
 export interface PublishAgentRequest {

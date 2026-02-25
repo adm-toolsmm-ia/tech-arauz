@@ -15,8 +15,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { agentsApiService } from '@/services/agents/agentsApiService';
+import { useAgentTypesList } from '@/services/agents/agentsStore';
 
 const createAgentSchema = z.object({
   name: z
@@ -29,6 +37,7 @@ const createAgentSchema = z.object({
     .regex(/^[a-z0-9-]+$/, 'Slug deve conter apenas letras minúsculas, números e hífens')
     .max(50, 'Slug não pode ter mais de 50 caracteres'),
   description: z.string().max(500, 'Descrição não pode ter mais de 500 caracteres').optional(),
+  agent_type: z.string().optional(),
 });
 
 type CreateAgentFormValues = z.infer<typeof createAgentSchema>;
@@ -45,7 +54,10 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
     name: '',
     slug: '',
     description: '',
+    agent_type: '',
   });
+
+  const { data: agentTypes = [], isLoading: loadingTypes } = useAgentTypesList();
 
   // Auto-generate slug from name
   React.useEffect(() => {
@@ -91,10 +103,11 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
         name: formData.name,
         slug: formData.slug,
         description: formData.description || undefined,
+        agent_type: formData.agent_type || undefined,
       });
 
       toast.success('Agente criado com sucesso!');
-      setFormData({ name: '', slug: '', description: '' });
+      setFormData({ name: '', slug: '', description: '', agent_type: '' });
       setOpen(false);
 
       // Call callback if provided
@@ -125,6 +138,30 @@ export function CreateAgentDialog({ onSuccess }: CreateAgentDialogProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Agent Type Select */}
+          <div className="space-y-2">
+            <Label htmlFor="agent_type">Tipo de Agente (Opcional)</Label>
+            <Select
+              value={formData.agent_type || ''}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, agent_type: value }))}
+              disabled={isLoading || loadingTypes}
+            >
+              <SelectTrigger id="agent_type">
+                <SelectValue placeholder="Selecione um tipo..." />
+              </SelectTrigger>
+              <SelectContent>
+                {agentTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.slug}>
+                    {type.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              {loadingTypes ? 'Carregando tipos...' : 'Selecione o tipo de agente para aplicar configurações pré-definidas'}
+            </p>
+          </div>
+
           {/* Name field */}
           <div className="space-y-2">
             <Label htmlFor="name">Nome do Agente</Label>

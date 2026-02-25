@@ -829,5 +829,56 @@ async def export_agent_version_v2(
     except Exception as e:
         logger.exception("Error exporting agent: %s", str(e))
         raise HTTPException(status_code=500, detail="Internal server error")
-        logger.exception("Error publishing agent: %s", str(e))
+
+
+@router.get("/agents/v2/types")
+async def list_agent_types(
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
+    """
+    List all agent types available for the tenant (Phase 4).
+    Returns: [{ id, name, slug, description, required_fields, recommended_fields }]
+    """
+    try:
+        tenant_id = token_data["tenant_id"]
+        supabase = await get_supabase_client(request)
+        
+        response = await supabase.table("agent_types").select(
+            "id, name, slug, description, required_fields, recommended_fields"
+        ).eq("tenant_id", tenant_id).execute()
+        
+        logger.info("Listed agent types for tenant %s", tenant_id)
+        return {"types": response.data}
+    except Exception as e:
+        logger.exception("Error listing agent types: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/agents/v2/templates")
+async def list_agent_templates(
+    type_id: Optional[str] = Query(None),
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
+    """
+    List agent templates, optionally filtered by type_id (Phase 4).
+    Returns: [{ id, name, slug, description, ... }]
+    """
+    try:
+        tenant_id = token_data["tenant_id"]
+        supabase = await get_supabase_client(request)
+        
+        query = supabase.table("agent_templates").select(
+            "*"
+        ).eq("tenant_id", tenant_id)
+        
+        if type_id:
+            query = query.eq("agent_type_id", type_id)
+        
+        response = await query.execute()
+        logger.info("Listed agent templates for tenant %s (type_id: %s)", tenant_id, type_id)
+        return {"templates": response.data}
+    except Exception as e:
+        logger.exception("Error listing agent templates: %s", str(e))
         raise HTTPException(status_code=500, detail="Internal server error")

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -19,26 +19,17 @@ import { Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import { AgentTypesService } from '@/services/agents/agentTypesService';
-import type { CreateAgentRequest, AgentType } from '@/types/agents';
+import { LmModelsService } from '@/services/agents/lmModelsService';
+import type { CreateAgentRequest, AgentType, LmProvider, LmModel } from '@/types/agents';
 
 interface CreateAgentDialogProps {
+  providers?: LmProvider[];
   onSuccess?: () => void;
   isLoading?: boolean;
 }
 
-const MODEL_PROVIDERS = [
-  { value: 'openai', label: 'OpenAI' },
-  { value: 'anthropic', label: 'Anthropic' },
-  { value: 'azure_openai', label: 'Azure OpenAI' },
-];
-
-const MODELS_BY_PROVIDER: Record<string, string[]> = {
-  openai: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-  anthropic: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
-  azure_openai: ['gpt-4', 'gpt-4-turbo', 'gpt-35-turbo'],
-};
-
 export function CreateAgentDialog({
+  providers: initialProviders = [],
   onSuccess,
   isLoading: externalLoading = false,
 }: CreateAgentDialogProps) {
@@ -47,6 +38,32 @@ export function CreateAgentDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
   const [agentTypes, setAgentTypes] = useState<AgentType[]>([]);
+  const [modelsByProvider, setModelsByProvider] = useState<Record<string, LmModel[]>>({});
+
+  const providers = initialProviders.filter((p) => p.is_active);
+  const defaultProvider = providers[0];
+  const defaultProviderSlug = defaultProvider?.slug ?? 'openai';
+
+  const [formData, setFormData] = useState<
+    CreateAgentRequest & {
+      persona?: string;
+      prompt_objective?: string;
+    }
+  >({
+    name: '',
+    slug: '',
+    description: '',
+    agent_type: 'custom',
+    agent_type_id: undefined,
+    model_provider: defaultProviderSlug,
+    model_id: 'gpt-4',
+    model_temperature: 0.7,
+    model_max_tokens: 2000,
+    persona: '',
+    prompt_objective: '',
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Load agent types on mount
   useEffect(() => {
@@ -60,26 +77,39 @@ export function CreateAgentDialog({
     }
   }, [open]);
 
-  const [formData, setFormData] = useState<
-    CreateAgentRequest & {
-      persona?: string;
-      prompt_objective?: string;
+  // Load models for a provider
+  const loadModelsForProvider = useCallback(async (providerId: string) => {
+    if (modelsByProvider[providerId]) return;
+    try {
+      const models = await LmModelsService.listModels(providerId);
+      setModelsByProvider((prev) => ({ ...prev, [providerId]: models }));
+    } catch {
+      toast.error('❌ Erro ao carregar modelos');
     }
-  >({
-    name: '',
-    slug: '',
-    description: '',
-    agent_type: 'custom',
-    agent_type_id: undefined,
-    model_provider: 'openai',
-    model_id: 'gpt-4',
-    model_temperature: 0.7,
-    model_max_tokens: 2000,
-    persona: '',
-    prompt_objective: '',
-  });
+  }, [modelsByProvider]);
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // Preload models for selected provider when dialog opens
+  useEffect(() => {
+    const providerSlug = formData.model_provider;
+    if (open && providerSlug && providers.length > 0) {
+      const provider = providers.find((p) => p.slug === providerSlug);
+      if (provider) void loadModelsForProvider(provider.id);
+    }
+  }, [open, formData.model_provider, providers, loadModelsForProvider]);
+
+  // When models load for current provider, set default model_id if current one is invalid
+  useEffect(() => {
+    const providerSlug = formData.model_provider;
+    const provider = providerSlug ? providers.find((p) => p.slug === providerSlug) : undefined;
+    if (!provider || !modelsByProvider[provider.id]) return;
+    const models = modelsByProvider[provider.id];
+    const validIds = models.map((m) => m.model_id);
+    const currentModelId = formData.model_id ?? '';
+    const firstModelId = models[0]?.model_id ?? 'gpt-4';
+    if (validIds.length > 0 && !validIds.includes(currentModelId)) {
+      setFormData((prev) => ({ ...prev, model_id: firstModelId }));
+    }
+  }, [formData.model_provider, formData.model_id, modelsByProvider, providers]);
 
   // Validate form
   const validateForm = (): boolean => {
@@ -116,7 +146,7 @@ export function CreateAgentDialog({
         description: '',
         agent_type: 'custom',
         agent_type_id: undefined,
-        model_provider: 'openai',
+        model_provider: defaultProviderSlug,
         model_id: 'gpt-4',
         model_temperature: 0.7,
         model_max_tokens: 2000,
@@ -239,31 +269,38 @@ export function CreateAgentDialog({
               </div>
             </TabsContent>
 
-            {/* TAB 2: LLM Configuration */}
+            {/* TAB 2: LLM Configuration (provedores e modelos do banco) */}
             <TabsContent value="llm" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="provider">Provedor *</Label>
                   <Select
-                    value={formData.model_provider}
-                    onValueChange={(value: any) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        model_provider: value,
-                        model_id: MODELS_BY_PROVIDER[value]?.[0] || 'gpt-4',
-                      }))
-                    }
+                    value={formData.model_provider || 'openai'}
+                    onValueChange={(value) => {
+                      const provider = providers.find((p) => p.slug === value);
+                      if (provider) {
+                        void loadModelsForProvider(provider.id);
+                        setFormData((prev) => ({
+                          ...prev,
+                          model_provider: value,
+                          model_id: modelsByProvider[provider.id]?.[0]?.model_id ?? 'gpt-4',
+                        }));
+                      }
+                    }}
                     disabled={isLoading || externalLoading}
                   >
                     <SelectTrigger id="provider">
-                      <SelectValue />
+                      <SelectValue placeholder="Selecionar provedor..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {MODEL_PROVIDERS.map((p) => (
-                        <SelectItem key={p.value} value={p.value}>
-                          {p.label}
+                      {providers.map((p) => (
+                        <SelectItem key={p.id} value={p.slug}>
+                          {p.icon_emoji} {p.name}
                         </SelectItem>
                       ))}
+                      {providers.length === 0 && (
+                        <SelectItem value="openai">OpenAI (padrão)</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -278,14 +315,29 @@ export function CreateAgentDialog({
                     disabled={isLoading || externalLoading}
                   >
                     <SelectTrigger id="model-id">
-                      <SelectValue />
+                      <SelectValue placeholder="Selecionar modelo..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {MODELS_BY_PROVIDER[formData.model_provider || 'openai']?.map((model: string) => (
-                        <SelectItem key={model} value={model}>
-                          {model}
-                        </SelectItem>
-                      )) || []}
+                      {(() => {
+                        const provider = providers.find(
+                          (p) => p.slug === (formData.model_provider || 'openai'),
+                        );
+                        const models = provider ? modelsByProvider[provider.id] ?? [] : [];
+                        if (models.length === 0 && provider) {
+                          void loadModelsForProvider(provider.id);
+                        }
+                        return models.map((m) => (
+                          <SelectItem key={m.id} value={m.model_id}>
+                            {m.name} ({m.model_id})
+                          </SelectItem>
+                        ));
+                      })()}
+                      {providers.length === 0 && (
+                        <>
+                          <SelectItem value="gpt-4">GPT-4</SelectItem>
+                          <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

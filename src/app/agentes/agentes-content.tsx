@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { CreateAgentDialog } from '@/components/agents/CreateAgentDialog';
+import { AgentCockpit } from '@/components/agents/AgentCockpit';
+import { SplitView } from '@/components/views/SplitView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,16 +22,19 @@ import { Bot, RefreshCw, Grid3X3, List, Trello } from 'lucide-react';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import type { UIAgent } from '@/lib/transformers/agent';
+import type { LmProvider } from '@/types/agents';
 
 interface AgentsContentProps {
   agents: UIAgent[];
+  providers?: LmProvider[];
 }
 
 type ViewMode = 'kanban' | 'list' | 'grid';
 
-export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
+export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsContentProps) {
   const router = useRouter();
   const [agents, setAgents] = useState(initialAgents);
+  const [selectedAgent, setSelectedAgent] = useState<UIAgent | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -124,7 +129,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
           title="Gestão 360° de Agentes AI"
           subtitle="Crie, configure, monitore e gerencie seus agentes"
         />
-        <CreateAgentDialog onSuccess={() => router.refresh()} />
+        <CreateAgentDialog providers={providers} onSuccess={() => router.refresh()} />
       </div>
 
       {/* KPIs */}
@@ -256,9 +261,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
             <Card
               key={agent.id}
               className="cursor-pointer hover:shadow-md transition-all"
-              onClick={() => {
-                /* TODO: open agent detail */
-              }}
+              onClick={() => setSelectedAgent(agent)}
             >
               <CardContent className="pt-4">
                 <div className="flex items-center justify-between">
@@ -304,9 +307,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                     <Card
                       key={agent.id}
                       className="cursor-pointer hover:shadow-md transition-all"
-                      onClick={() => {
-                        /* TODO: open agent detail */
-                      }}
+                      onClick={() => setSelectedAgent(agent)}
                     >
                       <CardContent className="pt-4">
                         <h4 className="font-semibold text-sm mb-1">{agent.name}</h4>
@@ -335,9 +336,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
             <Card
               key={agent.id}
               className="cursor-pointer hover:shadow-md transition-all"
-              onClick={() => {
-                /* TODO: open agent detail */
-              }}
+              onClick={() => setSelectedAgent(agent)}
             >
               <CardContent className="pt-6">
                 <div className="space-y-3">
@@ -376,6 +375,27 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
           ))}
         </div>
       )}
+
+      {/* SplitView: detalhes do agente */}
+      <SplitView
+        isOpen={!!selectedAgent}
+        onClose={() => setSelectedAgent(null)}
+        title={selectedAgent?.name ?? ''}
+        subtitle={selectedAgent?.slug}
+        width="lg"
+      >
+        {selectedAgent && (
+          <AgentCockpit
+            agent={selectedAgent}
+            onEdit={() => {
+              if (selectedAgent) {
+                setSelectedAgent(null);
+                router.push(`/agentes/${selectedAgent.id}`);
+              }
+            }}
+          />
+        )}
+      </SplitView>
     </div>
   );
 }

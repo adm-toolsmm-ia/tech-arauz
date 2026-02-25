@@ -26,6 +26,9 @@ import {
 import { FilterBar } from '@/components/filters/FilterBar';
 import { useLmProvidersFilters } from '@/hooks/useLmProvidersFilters';
 import { LmModelsService } from '@/services/agents/lmModelsService';
+import { KanbanBoard, type KanbanItem } from '@/components/views/KanbanBoard';
+import { SplitView } from '@/components/views/SplitView';
+import { LmProviderCockpit } from '@/components/lm-providers/LmProviderCockpit';
 import type { LmProvider, LmModel } from '@/types/agents';
 
 const EMOJI_OPTIONS = ['🤖', '⚡', '🔮', '🎨', '🧠', '💡', '🚀', '📊', '🔧', '⚙️'];
@@ -52,11 +55,16 @@ interface CreateProviderFormData {
   is_active: boolean;
 }
 
+const LM_PROVIDER_KANBAN_COLUMNS = [
+  { id: 'active', title: 'Ativos', color: 'green' },
+  { id: 'inactive', title: 'Inativos', color: 'gray' },
+];
+
 export function LmProvidersContent({ initialProviders }: LmProvidersContentProps) {
   const [providers, setProviders] = useState(initialProviders);
-  const [models, setModels] = useState<LmModel[]>([]);
+  const [modelsByProviderId, setModelsByProviderId] = useState<Record<string, LmModel[]>>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<LmProvider | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<CreateProviderFormData>({
     name: '',
@@ -81,6 +89,8 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
   const {
     filters,
     search,
+    viewMode,
+    setViewMode,
     filteredData,
     setSearch,
     updateFilter,
@@ -174,16 +184,52 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
     }
   }, []);
 
-  // Load models for a provider
-  const handleSelectProvider = useCallback(async (providerId: string) => {
-    setSelectedProviderId(providerId);
+  // Load models and open cockpit when selecting a provider
+  const handleSelectProvider = useCallback(async (provider: LmProvider) => {
+    setSelectedProvider(provider);
     try {
-      const providerModels = await LmModelsService.listModels(providerId);
-      setModels(providerModels);
-    } catch (error) {
-      toast.error(`❌ Erro ao carregar modelos`);
+      const providerModels = await LmModelsService.listModels(provider.id);
+      setModelsByProviderId((prev) => ({ ...prev, [provider.id]: providerModels }));
+    } catch {
+      toast.error('❌ Erro ao carregar modelos');
     }
   }, []);
+
+  // Kanban items (grouped by is_active)
+  const kanbanItems: KanbanItem[] = useMemo(
+    () =>
+      filteredData.map((p) => ({
+        id: p.id,
+        title: p.name,
+        subtitle: p.slug,
+        status: p.is_active ? 'active' : 'inactive',
+        metadata: {},
+      })),
+    [filteredData],
+  );
+
+  const handleKanbanStatusChange = useCallback(
+    async (itemId: string | number, newStatus: string) => {
+      const provider = providers.find((p) => p.id === itemId);
+      if (!provider || provider.is_system) return;
+
+      const newIsActive = newStatus === 'active';
+      try {
+        const result = await updateLmProviderAction(provider.id, { is_active: newIsActive });
+        if (result.success) {
+          setProviders((prev) =>
+            prev.map((p) => (p.id === provider.id ? { ...p, is_active: newIsActive } : p)),
+          );
+          toast.success(result.message);
+        } else {
+          toast.error(result.message);
+        }
+      } catch {
+        toast.error('❌ Erro ao atualizar status');
+      }
+    },
+    [providers],
+  );
 
   return (
     <div className="space-y-6 p-6">
@@ -239,7 +285,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         </CardContent>
       </Card>
 
-      {/* FilterBar: busca padronizada */}
+      {/* FilterBar: busca padronizada + ViewToggle */}
       <FilterBar
         moduleId="lm-providers"
         filters={registry}
@@ -249,10 +295,13 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
           });
         }}
         onSearchChange={setSearch}
+        onViewModeChange={setViewMode}
         initialFilters={filters}
         initialSearch={search}
+        initialViewMode={viewMode}
         currentFilters={filters}
         currentSearch={search}
+        currentViewMode={viewMode}
         onUpdateFilter={updateFilter}
         onResetFilters={() => {
           resetAllFilters();
@@ -260,7 +309,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         }}
       />
 
-      {/* Providers List */}
+      {/* Providers List or Kanban */}
       {filteredData.length === 0 ? (
         <Card>
           <CardContent className="pb-12 pt-12">
@@ -269,6 +318,34 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                 {providers.length === 0 ? 'Nenhum provedor criado ainda' : 'Nenhum resultado encontrado'}
               </p>
             </div>
+          </CardContent>
+        </Card>
+      ) : viewMode === 'kanban' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {filteredData.length} de {providers.length} provedores
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <KanbanBoard
+              columns={LM_PROVIDER_KANBAN_COLUMNS}
+              items={kanbanItems}
+              selectedId={selectedProvider?.id}
+              onItemClick={(item) => {
+                const provider = filteredData.find((p) => p.id === item.id);
+                if (provider) void handleSelectProvider(provider);
+              }}
+              onStatusChange={handleKanbanStatusChange}
+              renderItemContent={(item) => (
+                <div className="space-y-1">
+                  <p className="font-medium">{item.title}</p>
+                  {item.subtitle && (
+                    <p className="text-xs font-mono text-muted-foreground">{item.subtitle}</p>
+                  )}
+                </div>
+              )}
+            />
           </CardContent>
         </Card>
       ) : (
@@ -283,7 +360,16 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
               {filteredData.map((provider) => (
                 <div
                   key={provider.id}
-                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                  role="button"
+                  tabIndex={0}
+                  className="cursor-pointer border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                  onClick={() => void handleSelectProvider(provider)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      void handleSelectProvider(provider);
+                    }
+                  }}
                 >
                   {/* Provider Header */}
                   <div className="flex items-center justify-between mb-3">
@@ -366,6 +452,22 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
           </CardContent>
         </Card>
       )}
+
+      {/* SplitView: detalhes do provedor + modelos */}
+      <SplitView
+        isOpen={!!selectedProvider}
+        onClose={() => setSelectedProvider(null)}
+        title={selectedProvider?.name ?? ''}
+        subtitle={selectedProvider?.slug}
+        width="lg"
+      >
+        {selectedProvider && (
+          <LmProviderCockpit
+            provider={selectedProvider}
+            models={modelsByProviderId[selectedProvider.id] ?? []}
+          />
+        )}
+      </SplitView>
 
       {/* Create Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

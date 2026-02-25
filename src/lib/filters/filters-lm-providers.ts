@@ -5,6 +5,7 @@
  * Campos de busca: name, slug, description
  */
 
+import { LayoutGrid, List } from 'lucide-react';
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
@@ -20,6 +21,10 @@ export const filterRegistryLmProviders: FilterRegistry = {
   moduleId: 'lm-providers',
   filters: filterDefinitionsLmProviders,
   searchable: true,
+  viewModes: [
+    { id: 'kanban', label: 'Kanban', icon: LayoutGrid },
+    { id: 'list', label: 'Lista', icon: List },
+  ],
 };
 
 /**

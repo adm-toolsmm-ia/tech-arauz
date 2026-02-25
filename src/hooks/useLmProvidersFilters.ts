@@ -21,6 +21,7 @@ export function useLmProvidersFilters(providers: LmProvider[]) {
   const filterState = useFilterState({
     moduleId: 'lm-providers',
     definitions: filterDefinitionsLmProviders,
+    initialViewMode: filterRegistryLmProviders.viewModes?.[0]?.id ?? 'kanban',
     persistence: {
       enabled: true,
       storageKey: 'filters-lm-providers',
@@ -37,6 +38,8 @@ export function useLmProvidersFilters(providers: LmProvider[]) {
   return {
     filters: filterState.filters,
     search: filterState.search,
+    viewMode: filterState.viewMode,
+    setViewMode: filterState.setViewMode,
     filteredData,
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,

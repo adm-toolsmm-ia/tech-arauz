@@ -26,7 +26,7 @@ function isProjectActiveForGantt(s: Schedule): boolean {
 interface CronogramaGanttProps {
   schedules: Schedule[];
   projectIds: string[];
-  agendaPeriod?: 'day' | 'week' | 'month'; // Período sincronizado com FilterBar
+  calendarPeriod: 'day' | 'week' | 'month'; // ✨ CENTRALIZADO: período único
   onActivityClick?: (schedule: Schedule) => void;
 }
 
@@ -144,13 +144,19 @@ const TaskListTableDefault = ({
   );
 };
 
-export function CronogramaGantt({ schedules, projectIds, agendaPeriod = 'day', onActivityClick }: CronogramaGanttProps) {
+export function CronogramaGantt({ schedules, projectIds, calendarPeriod, onActivityClick }: CronogramaGanttProps) {
   const { theme } = useTheme();
-  // Sincronizar viewMode interno com agendaPeriod recebido
-  const initialViewMode = agendaPeriod === 'month' ? ViewMode.Month : agendaPeriod === 'week' ? ViewMode.Week : ViewMode.Day;
+  // ✨ CENTRALIZADO: viewMode interno é derivado do calendarPeriod global
+  const initialViewMode = calendarPeriod === 'month' ? ViewMode.Month : calendarPeriod === 'week' ? ViewMode.Week : ViewMode.Day;
   const [viewMode, setViewMode] = React.useState<ViewMode>(initialViewMode);
   const [collapsedIds, setCollapsedIds] = React.useState<string[]>([]);
   const [listWidth, setListWidth] = React.useState<string>('480px');
+
+  // ✨ CENTRALIZADO: Sincronizar viewMode quando calendarPeriod muda
+  React.useEffect(() => {
+    const newViewMode = calendarPeriod === 'month' ? ViewMode.Month : calendarPeriod === 'week' ? ViewMode.Week : ViewMode.Day;
+    setViewMode(newViewMode);
+  }, [calendarPeriod]);
 
   // Debug: log status values para diagnóstico
   React.useEffect(() => {
@@ -158,8 +164,9 @@ export function CronogramaGantt({ schedules, projectIds, agendaPeriod = 'day', o
     if (process.env.NODE_ENV === 'development') {
       console.log('[CronogramaGantt] Project statuses found:', uniqueStatuses);
       console.log('[CronogramaGantt] Total schedules:', schedules.length);
+      console.log('[CronogramaGantt] Calendar period:', calendarPeriod);
     }
-  }, [schedules]);
+  }, [schedules, calendarPeriod]);
 
   // Gantt exibe apenas projetos iniciado ou em execução
   const ganttSchedules = React.useMemo(

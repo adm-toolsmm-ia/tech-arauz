@@ -132,14 +132,17 @@ export function FilterBar({
   onFiltersChange,
   onSearchChange,
   onViewModeChange,
+  onAgendaPeriodChange,
   initialFilters,
   initialSearch = '',
   initialViewMode,
+  initialAgendaPeriod,
   className,
   // New controlled props
   currentFilters,
   currentSearch,
   currentViewMode,
+  currentAgendaPeriod,
   onClearFilters,
   onResetFilters,
   onUpdateFilter,
@@ -153,6 +156,9 @@ export function FilterBar({
       setSearchInput(currentSearch);
     }
   }, [currentSearch]);
+
+  // ✨ CENTRALIZADO: Período calendário (sincronizado entre Agenda e Gantt)
+  const activePeriod = currentAgendaPeriod ?? initialAgendaPeriod ?? 'day';
 
   // Handle search input with debounce
   React.useEffect(() => {
@@ -318,19 +324,21 @@ export function FilterBar({
                 </Button>
               ))}
             </div>
-            {/* Agenda Period Selector (Dia/Semana/Mês) - visível quando viewMode é agenda */}
-            {activeViewMode === 'agenda' &&
+            {/* ✨ CENTRALIZADO: Calendar Period Selector (Dia/Semana/Mês)
+                Sempre visível quando em Agenda ou Gantt (não apenas Agenda)
+                Períodos são compartilhados entre ambas as views */}
+            {(activeViewMode === 'agenda' || activeViewMode === 'gantt') &&
               filterRegistry.agendaPeriods &&
               filterRegistry.agendaPeriods.length > 0 && (
                 <div className="flex gap-1 border-l border-border pl-2">
                   {filterRegistry.agendaPeriods.map((period) => (
                     <Button
                       key={period.id}
-                      variant="ghost"
+                      variant={
+                        activePeriod === period.id ? 'default' : 'ghost'
+                      }
                       size="sm"
-                      onClick={() => {
-                        /* TODO: handle period change */
-                      }}
+                      onClick={() => onAgendaPeriodChange?.(period.id)}
                       title={period.label}
                     >
                       {period.icon ? (

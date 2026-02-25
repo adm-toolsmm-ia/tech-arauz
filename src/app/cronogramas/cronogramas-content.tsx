@@ -186,12 +186,14 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
     filters,
     search,
     viewMode,
-    agendaPeriod,
+    calendarPeriod, // ✨ CENTRALIZADO: período único
+    agendaPeriod, // Backward compat (equals calendarPeriod)
     filteredData,
     updateFilter,
     setSearch,
     setViewMode,
-    setAgendaPeriod,
+    setCalendarPeriod, // ✨ NOVO: setter centralizado
+    setAgendaPeriod, // Backward compat (chama setCalendarPeriod)
     resetAllFilters,
     registry,
   } = useCronogramasFilters(schedules);
@@ -446,15 +448,15 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               }}
               onSearchChange={setSearch}
               onViewModeChange={setViewMode}
-              onAgendaPeriodChange={setAgendaPeriod}
+              onAgendaPeriodChange={(period) => setCalendarPeriod(period as 'day' | 'week' | 'month')}
               initialFilters={filters}
               initialSearch={search}
               initialViewMode={viewMode}
-              initialAgendaPeriod={agendaPeriod}
+              initialAgendaPeriod={calendarPeriod}
               currentFilters={filters}
               currentSearch={search}
               currentViewMode={viewMode}
-              currentAgendaPeriod={agendaPeriod}
+              currentAgendaPeriod={calendarPeriod}
             />
           </div>
 
@@ -466,11 +468,11 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             <CronogramaGantt
               schedules={filteredSchedules}
               projectIds={projectIds}
-              agendaPeriod={(agendaPeriod as 'day' | 'week' | 'month') || 'day'}
+              calendarPeriod={calendarPeriod}
               onActivityClick={setSelectedSchedule}
             />
           ) : viewMode === 'agenda' ? (
-            agendaPeriod === 'month' ? (
+            calendarPeriod === 'month' ? (
               <MonthView
                 currentDate={currentDate}
                 selectedDay={selectedDay}
@@ -479,7 +481,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                 getSchedulesForDate={getSchedulesForDate}
                 projectIds={projectIds}
               />
-            ) : agendaPeriod === 'week' ? (
+            ) : calendarPeriod === 'week' ? (
               <WeekView
                 currentDate={currentDate}
                 selectedDay={selectedDay}
@@ -505,7 +507,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           ) : null}
 
           {/* Selected Day Activities (Agenda Mês ou Semana) */}
-          {selectedDay && viewMode === 'agenda' && (agendaPeriod === 'month' || agendaPeriod === 'week') && (
+          {selectedDay && viewMode === 'agenda' && (calendarPeriod === 'month' || calendarPeriod === 'week') && (
             <SelectedDayPanel
               date={selectedDay}
               schedules={getSchedulesForDate(selectedDay)}
@@ -514,28 +516,28 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             />
           )}
 
-          {/* Activity List - responde ao período da Agenda ou mostra todas conforme view */}
+          {/* Activity List - responde ao período centralizado ou mostra todas conforme view */}
           {(() => {
             // Determinar qual lista exibir conforme o período
             let displaySchedules: Schedule[] = finalFilteredSchedules;
             let periodLabel = '';
 
-            if (viewMode === 'agenda' && (agendaPeriod === 'day' || agendaPeriod === 'week' || agendaPeriod === 'month')) {
+            if (viewMode === 'agenda' && (calendarPeriod === 'day' || calendarPeriod === 'week' || calendarPeriod === 'month')) {
               // Quando em Agenda, exibir apenas atividades do período selecionado
               displaySchedules = getSchedulesForDate(currentDate) as Schedule[];
               
-              if (agendaPeriod === 'day') {
+              if (calendarPeriod === 'day') {
                 periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', {
                   weekday: 'long',
                   day: '2-digit',
                   month: 'long',
                 })}`;
-              } else if (agendaPeriod === 'week') {
+              } else if (calendarPeriod === 'week') {
                 const weekStart = getWeekStart(currentDate);
                 const weekEnd = new Date(weekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
                 periodLabel = ` — Semana de ${weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} a ${weekEnd.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}`;
-              } else if (agendaPeriod === 'month') {
+              } else if (calendarPeriod === 'month') {
                 periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`;
               }
             }

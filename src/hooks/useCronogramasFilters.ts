@@ -64,6 +64,9 @@ function isProjectActive(s: CronogramaData): boolean {
  * Hook for managing Cronogramas filters with data
  */
 export function useCronogramasFilters(schedules: CronogramaData[]) {
+  // ✨ CENTRALIZADO: Período único compartilhado entre Agenda e Gantt
+  const [calendarPeriod, setCalendarPeriod] = useState<'day' | 'week' | 'month'>('day');
+
   // Filtro padrão: apenas cronogramas de projetos ativos (sem concluído/cancelado)
   const activeSchedules = useMemo(
     () => schedules.filter((s) => !s.project || isProjectActive(s)),
@@ -128,10 +131,10 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     });
   }, [activeSchedules]);
 
-  // Agenda period (day | week | month) - usado quando viewMode === 'agenda'
-  const [agendaPeriod, setAgendaPeriodState] = useState<string>('day');
+  // ✨ DEPRECATED: agendaPeriod foi substituído por calendarPeriod centralizado
+  // Mantém compatibilidade para não quebrar imports existentes
   const setAgendaPeriod = useCallback((period: string) => {
-    setAgendaPeriodState(period);
+    setCalendarPeriod((period as 'day' | 'week' | 'month') || 'day');
   }, []);
 
   // Pre-compute computed fields (proximo_vencer, sem_prazo)
@@ -220,7 +223,8 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     filters: filterState.filters,
     search: filterState.search,
     viewMode: filterState.viewMode,
-    agendaPeriod,
+    calendarPeriod, // ✨ CENTRALIZADO: período único compartilhado entre Agenda e Gantt
+    agendaPeriod: calendarPeriod, // Backward compatibility
     definitions: filterState.definitions,
     filteredData,
 
@@ -228,7 +232,8 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,
     setViewMode: filterState.setViewMode,
-    setAgendaPeriod,
+    setCalendarPeriod, // ✨ NOVO: setter centralizado
+    setAgendaPeriod, // Backward compatibility (chama setCalendarPeriod)
     setFilters: filterState.setFilters,
     resetAllFilters: filterState.resetAllFilters,
     clearFilters: filterState.clearFilters,

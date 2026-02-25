@@ -1,16 +1,34 @@
 'use client';
 
 import * as React from 'react';
-import { X, Calendar, Clock, CheckCircle2, AlertCircle, User, FolderKanban } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Calendar,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  User,
+  FolderKanban,
+  FileText,
+  Package,
+  DollarSign,
+  History,
+  UserCheck,
+  ListChecks,
+  StickyNote,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CronogramaData } from '@/hooks/useCronogramasFilters';
 
 export interface ScheduleCockpitProps {
   schedule: CronogramaData | null;
   onClose: () => void;
+  // Dados do projeto para as outras abas (mesmo padrão ProjectCockpit)
+  projectSchedules?: any[];
+  projectDeliveries?: any[];
+  projectHistories?: any[];
+  projectApprovers?: any[];
+  projectBudgets?: any[];
 }
 
 const formatDateBR = (dateStr: string | null): string => {
@@ -35,47 +53,121 @@ const getStatusIcon = (status: string | null) => {
   return <AlertCircle className="h-4 w-4 text-amber-500" />;
 };
 
-export function ScheduleCockpit({ schedule, onClose }: ScheduleCockpitProps) {
+export function ScheduleCockpit({
+  schedule,
+  onClose,
+  projectSchedules = [],
+  projectDeliveries = [],
+  projectHistories = [],
+  projectApprovers = [],
+  projectBudgets = [],
+}: ScheduleCockpitProps) {
   if (!schedule) {
     return (
-      <Card className="h-full rounded-none border-l border-t-0 border-r-0 border-b-0">
-        <CardContent className="flex items-center justify-center py-12">
-          <p className="text-sm text-muted-foreground">Selecione um cronograma para visualizar detalhes</p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center py-12">
+        <p className="text-sm text-muted-foreground">Selecione um cronograma para visualizar detalhes</p>
+      </div>
     );
   }
 
+  const completedDeliveries = projectDeliveries.filter((d) => d.completed).length;
+
   return (
-    <Card className="h-full rounded-none border-l border-t-0 border-r-0 border-b-0 overflow-y-auto">
-      <CardHeader className="sticky top-0 z-10 border-b bg-background">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 pr-4">
-            <CardTitle className="text-lg">{schedule.atividade || 'Sem nome'}</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {schedule.project?.titulo || 'Projeto'}
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="h-6 w-6 p-0 shrink-0"
+    <div className="space-y-6 overflow-y-auto">
+      {/* Tabs */}
+      <Tabs defaultValue="detalhes-cronograma" className="w-full">
+        <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
+          {/* TAB 1: Detalhes Cronograma (padrão ao abrir) */}
+          <TabsTrigger
+            value="detalhes-cronograma"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
+            <Calendar className="mr-2 size-4" />
+            Detalhes Cronograma
+          </TabsTrigger>
 
-      <CardContent className="p-4">
-        <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">Detalhes Cronograma</TabsTrigger>
-            <TabsTrigger value="project">Projeto</TabsTrigger>
-          </TabsList>
+          {/* TAB 2: Detalhes (do Projeto) */}
+          <TabsTrigger
+            value="detalhes"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <FileText className="mr-2 size-4" />
+            Detalhes
+          </TabsTrigger>
 
-          {/* TAB: Detalhes Cronograma */}
-          <TabsContent value="details" className="space-y-4 mt-4">
+          {/* TAB 3: Anotações */}
+          <TabsTrigger
+            value="anotacoes"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <StickyNote className="mr-2 size-4" />
+            Anotações
+          </TabsTrigger>
+
+          {/* TAB 4: Entregas */}
+          <TabsTrigger
+            value="entregas"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <Package className="mr-2 size-4" />
+            Entregas
+            {projectDeliveries.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({completedDeliveries}/{projectDeliveries.length})
+              </span>
+            )}
+          </TabsTrigger>
+
+          {/* TAB 5: Orçamentos */}
+          <TabsTrigger
+            value="orcamentos"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <DollarSign className="mr-2 size-4" />
+            Orçamentos
+            {projectBudgets.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">({projectBudgets.length})</span>
+            )}
+          </TabsTrigger>
+
+          {/* TAB 6: Histórico */}
+          <TabsTrigger
+            value="historicos"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <History className="mr-2 size-4" />
+            Histórico
+            {projectHistories.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">({projectHistories.length})</span>
+            )}
+          </TabsTrigger>
+
+          {/* TAB 7: Aprovadores */}
+          <TabsTrigger
+            value="aprovadores"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <UserCheck className="mr-2 size-4" />
+            Aprovadores
+            {projectApprovers.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">({projectApprovers.length})</span>
+            )}
+          </TabsTrigger>
+
+          {/* TAB 8: Ações */}
+          <TabsTrigger
+            value="acoes"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <ListChecks className="mr-2 size-4" />
+            Ações
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Content */}
+        <div className="p-4">
+          {/* TAB: Detalhes Cronograma (PRIMEIRO e PADRÃO) */}
+          <TabsContent value="detalhes-cronograma" className="space-y-4 mt-4">
             {/* Status */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -184,15 +276,12 @@ export function ScheduleCockpit({ schedule, onClose }: ScheduleCockpitProps) {
             )}
           </TabsContent>
 
-          {/* TAB: Projeto */}
-          <TabsContent value="project" className="space-y-4 mt-4">
+          {/* TAB: Detalhes (Projeto) */}
+          <TabsContent value="detalhes" className="space-y-4 mt-4">
             {schedule.project ? (
-              <>
+              <div className="space-y-4">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <FolderKanban className="h-3 w-3" />
-                    Projeto
-                  </div>
+                  <p className="text-xs text-muted-foreground">Projeto</p>
                   <p className="text-sm font-medium">{schedule.project.titulo}</p>
                   {schedule.project.codigo && (
                     <p className="text-[11px] text-muted-foreground">Código: {schedule.project.codigo}</p>
@@ -201,7 +290,7 @@ export function ScheduleCockpit({ schedule, onClose }: ScheduleCockpitProps) {
 
                 {schedule.project.status && (
                   <div className="space-y-1">
-                    <span className="text-xs font-medium text-muted-foreground">Status</span>
+                    <p className="text-xs font-medium text-muted-foreground">Status</p>
                     <Badge variant="outline" className="text-xs">
                       {schedule.project.status}
                     </Badge>
@@ -210,17 +299,89 @@ export function ScheduleCockpit({ schedule, onClose }: ScheduleCockpitProps) {
 
                 {schedule.project.fase_atual && (
                   <div className="space-y-1">
-                    <span className="text-xs font-medium text-muted-foreground">Fase Atual</span>
+                    <p className="text-xs font-medium text-muted-foreground">Fase Atual</p>
                     <p className="text-sm">{schedule.project.fase_atual}</p>
                   </div>
                 )}
-              </>
+              </div>
             ) : (
               <p className="text-sm text-muted-foreground">Projeto não vinculado</p>
             )}
           </TabsContent>
+
+          {/* TAB: Anotações */}
+          <TabsContent value="anotacoes" className="space-y-4 mt-4">
+            <p className="text-sm text-muted-foreground">Anotações do projeto vinculado</p>
+          </TabsContent>
+
+          {/* TAB: Entregas */}
+          <TabsContent value="entregas" className="space-y-4 mt-4">
+            {projectDeliveries.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma entrega</p>
+            ) : (
+              <div className="space-y-2">
+                {projectDeliveries.map((d) => (
+                  <div key={d.id} className="rounded-md border p-3">
+                    <p className="text-sm font-medium">{d.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* TAB: Orçamentos */}
+          <TabsContent value="orcamentos" className="space-y-4 mt-4">
+            {projectBudgets.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum orçamento</p>
+            ) : (
+              <div className="space-y-2">
+                {projectBudgets.map((b) => (
+                  <div key={b.id} className="rounded-md border p-3">
+                    <p className="text-sm font-medium">{b.supplier}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* TAB: Histórico */}
+          <TabsContent value="historicos" className="space-y-4 mt-4">
+            {projectHistories.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum histórico</p>
+            ) : (
+              <div className="space-y-2">
+                {projectHistories.map((h) => (
+                  <div key={h.id} className="rounded-md border p-3 text-xs">
+                    <p className="font-medium">{h.type}</p>
+                    <p className="text-muted-foreground">{h.message}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* TAB: Aprovadores */}
+          <TabsContent value="aprovadores" className="space-y-4 mt-4">
+            {projectApprovers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum aprovador</p>
+            ) : (
+              <div className="space-y-2">
+                {projectApprovers.map((a) => (
+                  <div key={a.id} className="rounded-md border p-3">
+                    <p className="text-sm font-medium">{a.responsible}</p>
+                    <p className="text-xs text-muted-foreground">{a.type}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* TAB: Ações */}
+          <TabsContent value="acoes" className="space-y-4 mt-4">
+            <p className="text-sm text-muted-foreground">Ações do projeto vinculado</p>
+          </TabsContent>
+        </div>
         </Tabs>
-      </CardContent>
-    </Card>
-  );
-}
+      </div>
+    );
+  }

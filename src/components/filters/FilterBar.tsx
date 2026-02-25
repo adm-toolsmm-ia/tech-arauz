@@ -325,9 +325,9 @@ export function FilterBar({
               ))}
             </div>
             {/* ✨ CENTRALIZADO: Calendar Period Selector (Dia/Semana/Mês)
-                Sempre visível quando em Agenda ou Gantt (não apenas Agenda)
-                Períodos são compartilhados entre ambas as views */}
-            {(activeViewMode === 'agenda' || activeViewMode === 'gantt') &&
+                Visível em Agenda, Gantt E Lista
+                Períodos são compartilhados entre todas as views */}
+            {(activeViewMode === 'agenda' || activeViewMode === 'gantt' || activeViewMode === 'lista') &&
               filterRegistry.agendaPeriods &&
               filterRegistry.agendaPeriods.length > 0 && (
                 <div className="flex gap-1 border-l border-border pl-2">

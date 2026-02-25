@@ -371,9 +371,40 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           subtitle="Visualize todos os cronogramas de projetos"
         />
 
-        <div className="flex-1 space-y-6 overflow-y-auto p-6">
-          {/* KPIs */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+          {/* FilterBar: DEVE FICAR NO TOPO, FORA DO SCROLL */}
+          <div className="border-b bg-background px-6 py-4 shrink-0">
+            <FilterBar
+              moduleId="cronogramas"
+              filters={registry}
+              onFiltersChange={(newFilters) => {
+                Object.entries(newFilters).forEach(([key, value]) => {
+                  if (filters[key] !== value) {
+                    updateFilter(key, value);
+                  }
+                });
+              }}
+              onUpdateFilter={updateFilter}
+              onResetFilters={() => {
+                resetAllFilters();
+                setSearch('');
+              }}
+              onSearchChange={setSearch}
+              onViewModeChange={setViewMode}
+              onAgendaPeriodChange={(period) => setCalendarPeriod(period as 'day' | 'week' | 'month')}
+              initialFilters={filters}
+              initialSearch={search}
+              initialViewMode={viewMode}
+              initialAgendaPeriod={calendarPeriod}
+              currentFilters={filters}
+              currentSearch={search}
+              currentViewMode={viewMode}
+              currentAgendaPeriod={calendarPeriod}
+            />
+          </div>
+
+          {/* Content: SCROLLABLE AREA */}
+          <div className="flex-1 space-y-6 overflow-y-auto p-6">
             <KPICard
               title="Atividades Pendentes"
               value={pendingSchedulesCount}
@@ -427,37 +458,6 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               subtitle="Necessitam preencher prazo"
               active={activeKpiFilter === 'sem_prazo'}
               onClick={() => handleKpiClick('sem_prazo')}
-            />
-          </div>
-
-          {/* FilterBar: sticky para manter visível ao rolar (Gantt/Agenda) */}
-          <div className="sticky top-0 z-10 -mx-6 -mt-2 bg-background px-6 pb-2">
-            <FilterBar
-              moduleId="cronogramas"
-              filters={registry}
-              onFiltersChange={(newFilters) => {
-                Object.entries(newFilters).forEach(([key, value]) => {
-                  if (filters[key] !== value) {
-                    updateFilter(key, value);
-                  }
-                });
-              }}
-              onUpdateFilter={updateFilter}
-              onResetFilters={() => {
-                resetAllFilters();
-                setSearch('');
-              }}
-              onSearchChange={setSearch}
-              onViewModeChange={setViewMode}
-              onAgendaPeriodChange={(period) => setCalendarPeriod(period as 'day' | 'week' | 'month')}
-              initialFilters={filters}
-              initialSearch={search}
-              initialViewMode={viewMode}
-              initialAgendaPeriod={calendarPeriod}
-              currentFilters={filters}
-              currentSearch={search}
-              currentViewMode={viewMode}
-              currentAgendaPeriod={calendarPeriod}
             />
           </div>
 
@@ -610,6 +610,11 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             <ScheduleCockpit
               schedule={selectedSchedule}
               onClose={() => setSelectedSchedule(null)}
+              projectSchedules={schedules.filter(s => s.project_id === selectedSchedule?.project_id)}
+              projectDeliveries={[]}
+              projectHistories={[]}
+              projectApprovers={[]}
+              projectBudgets={[]}
             />
           </SplitView>
         </div>

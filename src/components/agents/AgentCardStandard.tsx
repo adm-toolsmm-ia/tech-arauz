@@ -79,33 +79,23 @@ export function AgentCard({
           )}
         </div>
 
-        {/* SEÇÃO 2: TIPO + VERSÃO */}
+        {/* SEÇÃO 2: TIPO */}
         <div className="space-y-1 border-t border-border/30 pt-2">
-          <div className="flex items-center justify-between text-xs">
-            <div>
-              <p className="text-[10px] text-muted-foreground">Tipo:</p>
-              <p className="text-xs text-foreground font-semibold">{agent.agentType}</p>
-            </div>
-            {agent.version && (
-              <div className="text-right">
-                <p className="text-[10px] text-muted-foreground">Versão:</p>
-                <p className="text-xs text-foreground font-mono">{agent.version}</p>
-              </div>
-            )}
-          </div>
+          <p className="text-[10px] text-muted-foreground">Tipo:</p>
+          <p className="text-xs text-foreground font-semibold">{agent.agentType}</p>
         </div>
 
         {/* SEÇÃO 3: MODELO + TEMPERATURA (se aplicável) */}
-        {agent.model_name && (
+        {(agent.modelId || agent.fullConfig?.modelTemperature != null) && (
           <div className="space-y-1 border-t border-border/30 pt-2">
             <p className="text-[10px] text-muted-foreground">Modelo:</p>
             <div className="flex items-center gap-2">
               <span className="text-lg">⚡</span>
               <div className="flex-1">
-                <p className="text-xs text-foreground font-semibold">{agent.model_name}</p>
-                {agent.temperature && (
+                <p className="text-xs text-foreground font-mono">{agent.modelId || '-'}</p>
+                {agent.fullConfig?.modelTemperature != null && (
                   <p className="text-xs text-muted-foreground">
-                    Temperatura: {agent.temperature}
+                    Temperatura: {agent.fullConfig.modelTemperature}
                   </p>
                 )}
               </div>

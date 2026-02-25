@@ -64,11 +64,11 @@ export function ModelCard({
               </div>
             </div>
           )}
-          {model.context_length && (
+          {model.max_tokens != null && (
             <div>
-              <p className="text-[10px] text-muted-foreground">Contexto:</p>
+              <p className="text-[10px] text-muted-foreground">Máx. Tokens:</p>
               <p className="text-xs text-foreground">
-                {model.context_length.toLocaleString('pt-BR')} tokens
+                {model.max_tokens.toLocaleString('pt-BR')} tokens
               </p>
             </div>
           )}

@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/dialog';
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -26,6 +26,7 @@ import {
 import { Plus, Zap, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { filterRegistryModelosIa } from '@/lib/filters/filters-modelos-ia';
 import { SplitView } from '@/components/views/SplitView';
 import { ModelCard } from '@/components/lm-models/ModelCard';
 import type { LmModel, LmProvider } from '@/types/agents';
@@ -40,7 +41,7 @@ interface FormData {
   model_id: string;
   provider_id: string;
   docs_url: string;
-  context_length?: number;
+  max_tokens?: number;
 }
 
 export function ModelsIaContent({
@@ -58,7 +59,7 @@ export function ModelsIaContent({
     model_id: '',
     provider_id: '',
     docs_url: '',
-    context_length: undefined,
+    max_tokens: undefined,
   });
 
   // KPIs
@@ -91,7 +92,7 @@ export function ModelsIaContent({
       model_id: '',
       provider_id: '',
       docs_url: '',
-      context_length: undefined,
+      max_tokens: undefined,
     });
   }, []);
 
@@ -152,8 +153,8 @@ export function ModelsIaContent({
       {/* Filtros */}
       <div className="space-y-4">
         <FilterBar
-          moduleId="modelos-ia"
-          filters={{}}
+          moduleId={filterRegistryModelosIa.moduleId}
+          filters={filterRegistryModelosIa}
           onFiltersChange={() => {}}
           onSearchChange={setSearch}
           onViewModeChange={() => {}}
@@ -239,11 +240,11 @@ export function ModelsIaContent({
                   <dt className="text-muted-foreground">Model ID:</dt>
                   <dd className="font-mono">{selectedModel.model_id}</dd>
                 </div>
-                {selectedModel.context_length && (
+                {selectedModel.max_tokens != null && (
                   <div>
-                    <dt className="text-muted-foreground">Tamanho de Contexto:</dt>
+                    <dt className="text-muted-foreground">Máx. Tokens:</dt>
                     <dd className="font-medium">
-                      {selectedModel.context_length.toLocaleString('pt-BR')} tokens
+                      {selectedModel.max_tokens.toLocaleString('pt-BR')} tokens
                     </dd>
                   </div>
                 )}
@@ -328,15 +329,15 @@ export function ModelsIaContent({
             </div>
 
             <div>
-              <Label>Tamanho de Contexto (tokens, opcional)</Label>
+              <Label>Máx. Tokens (opcional)</Label>
               <Input
                 type="number"
                 placeholder="Ex: 8000"
-                value={formData.context_length || ''}
+                value={formData.max_tokens ?? ''}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    context_length: e.target.value ? parseInt(e.target.value) : undefined,
+                    max_tokens: e.target.value ? parseInt(e.target.value, 10) : undefined,
                   }))
                 }
               />

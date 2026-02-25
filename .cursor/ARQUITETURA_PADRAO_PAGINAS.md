@@ -207,10 +207,16 @@ export function NovoModuloContent({ initialData }) {
 
 ## 🔧 COMO APLICAR NO PROJETO
 
-### Para /auxiliares (JÁ FEITO):
-✅ `src/app/auxiliares/layout.tsx` — criado com SidebarProvider
-✅ `src/app/auxiliares/agent-types/page.tsx` — server component
-✅ `src/app/auxiliares/agent-types/agent-types-content.tsx` — client component
+### Para /auxiliares (PADRONIZADO 2026-02-25):
+✅ `src/app/auxiliares/layout.tsx` — SidebarProvider + AppSidebar
+✅ `src/app/auxiliares/agent-types/` — page (server) + content (client) + FilterBar + useAgentTypesFilters + Server Actions
+✅ `src/app/auxiliares/lm-providers/` — page (server) + content (client) + FilterBar + useLmProvidersFilters + Server Actions
+
+**Padrão auxiliares:** Mesma engenharia do módulo Projetos:
+- Auth: `getUser()` na page
+- Mutações: Server Actions (`app/actions/agent-types.ts`, `app/actions/lm-providers.ts`) + `revalidatePath`
+- Filtros: FilterBar + `filters-*` + hook `use*Filters` (busca em name, slug, description)
+- Listagem: Card com `filteredData` do hook
 
 ### Para FUTURAS páginas:
 1. Copiar este template EXATAMENTE
@@ -271,5 +277,5 @@ npm run dev
 
 ---
 
-**Última atualização:** 2026-02-24
+**Última atualização:** 2026-02-25
 **Próxima revisão:** Ao adicionar novo módulo

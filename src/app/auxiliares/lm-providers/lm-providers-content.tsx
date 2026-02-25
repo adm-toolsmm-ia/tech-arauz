@@ -16,9 +16,15 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Search, Plus, Trash2, Lock, AlertCircle, Zap } from 'lucide-react';
+import { Plus, Trash2, Lock, AlertCircle, Zap } from 'lucide-react';
 import { toast } from 'sonner';
-import { LmProvidersService } from '@/services/agents/lmProvidersService';
+import {
+  createLmProviderAction,
+  updateLmProviderAction,
+  deleteLmProviderAction,
+} from '@/app/actions/lm-providers';
+import { FilterBar } from '@/components/filters/FilterBar';
+import { useLmProvidersFilters } from '@/hooks/useLmProvidersFilters';
 import { LmModelsService } from '@/services/agents/lmModelsService';
 import type { LmProvider, LmModel } from '@/types/agents';
 
@@ -49,7 +55,6 @@ interface CreateProviderFormData {
 export function LmProvidersContent({ initialProviders }: LmProvidersContentProps) {
   const [providers, setProviders] = useState(initialProviders);
   const [models, setModels] = useState<LmModel[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,15 +78,15 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
     [providers]
   );
 
-  // Filter by search
-  const filtered = useMemo(() => {
-    return providers.filter(
-      (provider) =>
-        provider.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        provider.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        provider.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [providers, searchTerm]);
+  const {
+    filters,
+    search,
+    filteredData,
+    setSearch,
+    updateFilter,
+    resetAllFilters,
+    registry,
+  } = useLmProvidersFilters(providers);
 
   // Auto-generate slug
   const handleNameChange = useCallback((value: string) => {
@@ -101,23 +106,26 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
 
     setIsLoading(true);
     try {
-      const newProvider = await LmProvidersService.createProvider({
+      const result = await createLmProviderAction({
         ...formData,
         is_system: false,
-        tenant_id: '', // Will be set by RLS
       });
-      setProviders((prev) => [...prev, newProvider]);
-      toast.success(`✅ Provedor "${newProvider.name}" criado!`);
-      setFormData({
-        name: '',
-        slug: '',
-        description: '',
-        api_endpoint: '',
-        icon_emoji: '🤖',
-        color_hex: '#64748B',
-        is_active: true,
-      });
-      setIsCreateDialogOpen(false);
+      if (result.success && result.data) {
+        setProviders((prev) => [...prev, result.data!]);
+        toast.success(`✅ ${result.message}`);
+        setFormData({
+          name: '',
+          slug: '',
+          description: '',
+          api_endpoint: '',
+          icon_emoji: '🤖',
+          color_hex: '#64748B',
+          is_active: true,
+        });
+        setIsCreateDialogOpen(false);
+      } else {
+        toast.error(`❌ ${result.message}`);
+      }
     } catch (error) {
       toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     } finally {
@@ -135,9 +143,13 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
     if (!confirm(`Tem certeza que deseja deletar "${provider.name}"?`)) return;
 
     try {
-      await LmProvidersService.deleteProvider(provider.id);
-      setProviders((prev) => prev.filter((p) => p.id !== provider.id));
-      toast.success(`✅ Provedor "${provider.name}" deletado!`);
+      const result = await deleteLmProviderAction(provider.id);
+      if (result.success) {
+        setProviders((prev) => prev.filter((p) => p.id !== provider.id));
+        toast.success(`✅ ${result.message}`);
+      } else {
+        toast.error(`❌ ${result.message}`);
+      }
     } catch (error) {
       toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
@@ -146,13 +158,17 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
   // Toggle active status
   const handleToggleActive = useCallback(async (provider: LmProvider) => {
     try {
-      await LmProvidersService.updateProvider(provider.id, {
+      const result = await updateLmProviderAction(provider.id, {
         is_active: !provider.is_active,
       });
-      setProviders((prev) =>
-        prev.map((p) => (p.id === provider.id ? { ...p, is_active: !p.is_active } : p))
-      );
-      toast.success('✅ Status atualizado!');
+      if (result.success) {
+        setProviders((prev) =>
+          prev.map((p) => (p.id === provider.id ? { ...p, is_active: !p.is_active } : p))
+        );
+        toast.success(`✅ ${result.message}`);
+      } else {
+        toast.error(`❌ ${result.message}`);
+      }
     } catch (error) {
       toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
@@ -223,19 +239,29 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         </CardContent>
       </Card>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por nome, slug ou descrição..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      {/* FilterBar: busca padronizada */}
+      <FilterBar
+        moduleId="lm-providers"
+        filters={registry}
+        onFiltersChange={(newFilters) => {
+          Object.entries(newFilters).forEach(([key, value]) => {
+            if (filters[key] !== value) updateFilter(key, value);
+          });
+        }}
+        onSearchChange={setSearch}
+        initialFilters={filters}
+        initialSearch={search}
+        currentFilters={filters}
+        currentSearch={search}
+        onUpdateFilter={updateFilter}
+        onResetFilters={() => {
+          resetAllFilters();
+          setSearch('');
+        }}
+      />
 
       {/* Providers List */}
-      {filtered.length === 0 ? (
+      {filteredData.length === 0 ? (
         <Card>
           <CardContent className="pb-12 pt-12">
             <div className="text-center">
@@ -249,12 +275,12 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {filtered.length} de {providers.length} provedores
+              {filteredData.length} de {providers.length} provedores
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {filtered.map((provider) => (
+              {filteredData.map((provider) => (
                 <div
                   key={provider.id}
                   className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"

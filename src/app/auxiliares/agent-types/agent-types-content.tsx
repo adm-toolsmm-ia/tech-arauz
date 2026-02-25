@@ -23,9 +23,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Plus, Edit2, Lock, Trash2, AlertCircle } from 'lucide-react';
+import { Plus, Lock, Trash2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { AgentTypesService } from '@/services/agents/agentTypesService';
+import {
+  createAgentTypeAction,
+  updateAgentTypeAction,
+  deleteAgentTypeAction,
+} from '@/app/actions/agent-types';
+import { FilterBar } from '@/components/filters/FilterBar';
+import { useAgentTypesFilters } from '@/hooks/useAgentTypesFilters';
 import type { AgentType } from '@/types/agents';
 
 interface AgentTypesContentProps {
@@ -53,7 +59,6 @@ const COLOR_OPTIONS = [
 
 export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps) {
   const [agentTypes, setAgentTypes] = useState(initialAgentTypes);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<CreateFormData>({
@@ -75,15 +80,15 @@ export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps)
     [agentTypes]
   );
 
-  // Filter by search
-  const filtered = useMemo(() => {
-    return agentTypes.filter(
-      (type) =>
-        type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        type.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        type.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [agentTypes, searchTerm]);
+  const {
+    filters,
+    search,
+    filteredData,
+    setSearch,
+    updateFilter,
+    resetAllFilters,
+    registry,
+  } = useAgentTypesFilters(agentTypes);
 
   // Auto-generate slug
   const handleNameChange = useCallback((value: string) => {
@@ -103,22 +108,25 @@ export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps)
 
     setIsLoading(true);
     try {
-      const newType = await AgentTypesService.createAgentType({
+      const result = await createAgentTypeAction({
         ...formData,
         is_system: false,
-        tenant_id: '', // Will be set by RLS on the backend
       });
-      setAgentTypes((prev) => [...prev, newType]);
-      toast.success(`✅ Tipo "${newType.name}" criado!`);
-      setFormData({
-        name: '',
-        slug: '',
-        description: '',
-        icon_emoji: '⚙️',
-        color_hex: '#64748B',
-        is_active: true,
-      });
-      setIsCreateDialogOpen(false);
+      if (result.success && result.data) {
+        setAgentTypes((prev) => [...prev, result.data!]);
+        toast.success(`✅ ${result.message}`);
+        setFormData({
+          name: '',
+          slug: '',
+          description: '',
+          icon_emoji: '⚙️',
+          color_hex: '#64748B',
+          is_active: true,
+        });
+        setIsCreateDialogOpen(false);
+      } else {
+        toast.error(`❌ ${result.message}`);
+      }
     } catch (error) {
       toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     } finally {
@@ -136,9 +144,13 @@ export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps)
     if (!confirm(`Tem certeza que deseja deletar "${type.name}"?`)) return;
 
     try {
-      await AgentTypesService.deleteAgentType(type.id);
-      setAgentTypes((prev) => prev.filter((t) => t.id !== type.id));
-      toast.success(`✅ Tipo "${type.name}" deletado!`);
+      const result = await deleteAgentTypeAction(type.id);
+      if (result.success) {
+        setAgentTypes((prev) => prev.filter((t) => t.id !== type.id));
+        toast.success(`✅ ${result.message}`);
+      } else {
+        toast.error(`❌ ${result.message}`);
+      }
     } catch (error) {
       toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
@@ -147,13 +159,17 @@ export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps)
   // Toggle active status
   const handleToggleActive = useCallback(async (type: AgentType) => {
     try {
-      await AgentTypesService.updateAgentType(type.id, {
+      const result = await updateAgentTypeAction(type.id, {
         is_active: !type.is_active,
       });
-      setAgentTypes((prev) =>
-        prev.map((t) => (t.id === type.id ? { ...t, is_active: !t.is_active } : t))
-      );
-      toast.success(`✅ Status atualizado!`);
+      if (result.success) {
+        setAgentTypes((prev) =>
+          prev.map((t) => (t.id === type.id ? { ...t, is_active: !t.is_active } : t))
+        );
+        toast.success(`✅ ${result.message}`);
+      } else {
+        toast.error(`❌ ${result.message}`);
+      }
     } catch (error) {
       toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
@@ -214,19 +230,29 @@ export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps)
         </CardContent>
       </Card>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por nome, slug ou descrição..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      {/* FilterBar: busca padronizada */}
+      <FilterBar
+        moduleId="agent-types"
+        filters={registry}
+        onFiltersChange={(newFilters) => {
+          Object.entries(newFilters).forEach(([key, value]) => {
+            if (filters[key] !== value) updateFilter(key, value);
+          });
+        }}
+        onSearchChange={setSearch}
+        initialFilters={filters}
+        initialSearch={search}
+        currentFilters={filters}
+        currentSearch={search}
+        onUpdateFilter={updateFilter}
+        onResetFilters={() => {
+          resetAllFilters();
+          setSearch('');
+        }}
+      />
 
       {/* Results */}
-      {filtered.length === 0 ? (
+      {filteredData.length === 0 ? (
         <Card>
           <CardContent className="pb-12 pt-12">
             <div className="text-center">
@@ -240,12 +266,12 @@ export function AgentTypesContent({ initialAgentTypes }: AgentTypesContentProps)
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {filtered.length} de {agentTypes.length} tipos
+              {filteredData.length} de {agentTypes.length} tipos
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {filtered.map((type) => (
+              {filteredData.map((type) => (
                 <div
                   key={type.id}
                   className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"

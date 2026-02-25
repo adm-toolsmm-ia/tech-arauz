@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { AgentTypesContent } from './agent-types-content';
 import type { AgentType } from '@/types/agents';
 
@@ -9,30 +9,22 @@ import type { AgentType } from '@/types/agents';
 export default async function AgentTypesPage() {
   const supabase = await createClient();
 
-  // Get current user (via session)
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     redirect('/login');
   }
 
-  try {
-    // Fetch agent_types for current tenant (RLS will filter)
-    const { data: agentTypes, error } = await supabase
-      .from('agent_types')
-      .select('*')
-      .order('name', { ascending: true });
+  const { data: agentTypes, error } = await supabase
+    .from('agent_types')
+    .select('*')
+    .order('name', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching agent types:', error);
-      return notFound();
-    }
-
-    return <AgentTypesContent initialAgentTypes={(agentTypes as AgentType[]) || []} />;
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return notFound();
+  if (error) {
+    console.error('Error fetching agent types:', error);
   }
+
+  return <AgentTypesContent initialAgentTypes={(agentTypes as AgentType[]) || []} />;
 }

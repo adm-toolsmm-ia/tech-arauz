@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { ExternalLink, Trash2, Copy } from 'lucide-react';
 import type { LmModel, LmProvider } from '@/types/agents';
 
@@ -90,16 +91,29 @@ export function ModelCard({
             <p className="text-xs font-mono text-muted-foreground">{model.model_id}</p>
           </div>
           {tierConfig && (
-            <Badge
-              variant="outline"
-              className={cn(
-                'whitespace-nowrap text-[10px] font-semibold border',
-                tierConfig.bgColor,
-                tierConfig.color
-              )}
-            >
-              {tierConfig.emoji} {tierConfig.label}
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'whitespace-nowrap text-[10px] font-semibold border cursor-help',
+                    tierConfig.bgColor,
+                    tierConfig.color
+                  )}
+                >
+                  {tierConfig.emoji} {tierConfig.label}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="max-w-xs text-xs">
+                {model.tier === 'entry'
+                  ? 'entry: Gratuito/low-cost'
+                  : model.tier === 'balanced'
+                    ? 'balanced: Recomendado (padrão)'
+                    : model.tier === 'pro'
+                      ? 'pro: Profissional'
+                      : 'flagship: Cutting-edge'}
+              </TooltipContent>
+            </Tooltip>
           )}
         </div>
 
@@ -118,7 +132,16 @@ export function ModelCard({
           {/* Context Window */}
           {model.context_window != null && (
             <div>
-              <p className="text-[10px] text-muted-foreground">Contexto (entrada):</p>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-[10px] text-muted-foreground cursor-help border-b border-dashed border-muted-foreground/30">
+                    Contexto (entrada)
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs text-xs">
+                  Máximo de tokens que o modelo pode processar de uma vez
+                </TooltipContent>
+              </Tooltip>
               <p className="text-xs text-foreground font-mono">
                 {formatTokens(model.context_window)} tokens
               </p>

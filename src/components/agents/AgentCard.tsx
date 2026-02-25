@@ -15,13 +15,25 @@ import type { UIAgent } from '@/lib/transformers/agent';
 
 interface AgentCardProps {
   agent: UIAgent;
+  agentTypeName?: string;
+  toolsCount?: number;
+  publishedVersionsCount?: number;
   onClick?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onDuplicate?: () => void;
 }
 
-export function AgentCard({ agent, onClick, onEdit, onDelete, onDuplicate }: AgentCardProps) {
+export function AgentCard({
+  agent,
+  agentTypeName,
+  toolsCount = 0,
+  publishedVersionsCount = 0,
+  onClick,
+  onEdit,
+  onDelete,
+  onDuplicate,
+}: AgentCardProps) {
   const statusColor = {
     draft: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
     published: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -35,19 +47,39 @@ export function AgentCard({ agent, onClick, onEdit, onDelete, onDuplicate }: Age
     custom: '⚙️',
   };
 
+  // Calcular tempo desde última atualização
+  const getTimeAgoLabel = (dateString: string): string => {
+    const now = new Date();
+    const updated = new Date(dateString);
+    const diffMs = now.getTime() - updated.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'hoje';
+    if (diffDays === 1) return '1 dia atrás';
+    if (diffDays < 7) return `${diffDays} dias atrás`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} sem atrás`;
+    return `${Math.floor(diffDays / 30)} mês${Math.floor(diffDays / 30) > 1 ? 'es' : ''} atrás`;
+  };
+
   return (
     <Card
       className="group cursor-pointer transition-all hover:border-blue-500 hover:shadow-lg"
       onClick={onClick}
     >
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
+        {/* SEÇÃO 1: HEADER - Nome + Status Badge + Tempo */}
+        <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <span className="text-xl">
                 {agentTypeEmoji[agent.agentType as keyof typeof agentTypeEmoji] || '⚙️'}
               </span>
-              <h3 className="truncate text-sm font-semibold">{agent.name}</h3>
+              <div>
+                <h3 className="truncate text-sm font-semibold">{agent.name}</h3>
+                <p className="text-[10px] text-muted-foreground">
+                  Atualizado {getTimeAgoLabel(agent.updatedAt)}
+                </p>
+              </div>
             </div>
             <p className="mt-1 truncate text-xs text-muted-foreground">{agent.slug}</p>
           </div>
@@ -98,12 +130,40 @@ export function AgentCard({ agent, onClick, onEdit, onDelete, onDuplicate }: Age
           <p className="line-clamp-2 text-xs text-muted-foreground">{agent.description}</p>
         )}
 
-        {/* Info Grid */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div>
-            <p className="text-muted-foreground">Modelo</p>
-            <p className="truncate font-mono">{agent.modelId}</p>
+        {/* SEÇÃO 2: TIPO DE AGENTE */}
+        {agentTypeName && (
+          <div className="border-t border-border/30 pt-2">
+            <p className="text-[10px] text-muted-foreground">Tipo de Agente:</p>
+            <p className="text-xs font-semibold text-foreground">{agentTypeName}</p>
           </div>
+        )}
+
+        {/* SEÇÃO 3: MODELO PADRÃO */}
+        <div className="border-t border-border/30 pt-2">
+          <p className="text-[10px] text-muted-foreground">Modelo padrão:</p>
+          <p className="truncate text-xs font-mono text-foreground">{agent.modelId || 'N/A'}</p>
+        </div>
+
+        {/* SEÇÃO 4: FERRAMENTAS (Tools Count) */}
+        <div className="border-t border-border/30 pt-2">
+          <p className="text-[10px] text-muted-foreground">Ferramentas:</p>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🔧</span>
+            <span className="text-xs font-semibold text-foreground">{toolsCount}</span>
+          </div>
+        </div>
+
+        {/* SEÇÃO 5: VERSÕES PUBLICADAS */}
+        <div className="border-t border-border/30 pt-2">
+          <p className="text-[10px] text-muted-foreground">Versões publicadas:</p>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">📦</span>
+            <span className="text-xs font-semibold text-foreground">{publishedVersionsCount}</span>
+          </div>
+        </div>
+
+        {/* Info Grid (antigo) */}
+        <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/30 pt-2">
           <div>
             <p className="text-muted-foreground">Proprietários</p>
             <p className="truncate">{agent.owners?.[0] || 'N/A'}</p>
@@ -111,10 +171,6 @@ export function AgentCard({ agent, onClick, onEdit, onDelete, onDuplicate }: Age
           <div>
             <p className="text-muted-foreground">Execuções</p>
             <p className="font-semibold">{agent.executionCount}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Atualizado</p>
-            <p className="truncate">{new Date(agent.updatedAt).toLocaleDateString('pt-BR')}</p>
           </div>
         </div>
 
@@ -129,7 +185,7 @@ export function AgentCard({ agent, onClick, onEdit, onDelete, onDuplicate }: Age
           </div>
         )}
 
-        {/* Status Badge */}
+        {/* SEÇÃO 6: STATUS BADGE (Footer) */}
         <Badge className={`w-full justify-center text-xs ${statusColor[agent.status]}`}>
           {agent.status === 'draft' && '📝 Rascunho'}
           {agent.status === 'published' && '✅ Publicado'}

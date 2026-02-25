@@ -1,5 +1,12 @@
 # 📐 PADRÃO DE COMPONENTES — Módulos Agentes & Auxiliares
 
+## 📚 DOCUMENTAÇÃO DE REFERÊNCIA
+
+> Antes de começar a implementar um novo módulo, consulte:
+> - **`.cursor/GLOSSARIO_CAMPOS.md`** — Distinção entre campos de status, datas e relacionamentos
+> - **`.aios-core/constitution.md`** — Regras inegociáveis do projeto
+> - **`docs/framework/coding-standards.md`** — Padrões de código
+
 ## ✅ OBJETIVOS DESTA PADRONIZAÇÃO
 
 1. **Alinhamento 100%** com módulo de `projetos` (padrão validado)

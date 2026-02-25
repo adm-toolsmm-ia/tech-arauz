@@ -23,12 +23,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Zap, Database } from 'lucide-react';
+import { Plus, Zap, Database, List, LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { filterRegistryModelosIa } from '@/lib/filters/filters-modelos-ia';
 import { SplitView } from '@/components/views/SplitView';
+import { ViewToggle, type ViewMode } from '@/components/views/ViewToggle';
+import { KanbanBoard, type KanbanItem, type KanbanColumn } from '@/components/views/KanbanBoard';
 import { ModelCard } from '@/components/lm-models/ModelCard';
+import { ModelsKanbanCard } from '@/components/lm-models/ModelsKanbanCard';
+import { ModelsListView } from '@/components/lm-models/ModelsListView';
+import { updateLmModelDisplayOrderAction } from '@/app/actions/lm-models';
 import type { LmModel, LmProvider } from '@/types/agents';
 
 interface ModelsIaContentProps {
@@ -54,6 +59,8 @@ export function ModelsIaContent({
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'kanban'>('grid');
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     model_id: '',
@@ -103,6 +110,91 @@ export function ModelsIaContent({
       docs_url: '',
       max_tokens: undefined,
     });
+  }, []);
+
+  // ===== KANBAN LOGIC =====
+  // Build dynamic columns based on providers (1 column per provider)
+  const kanbanColumns: KanbanColumn[] = useMemo(() => {
+    const providers = initialProviders.filter((p) =>
+      models.some((m) => m.provider_id === p.id)
+    );
+    return providers.map((provider) => ({
+      id: provider.id,
+      title: `${provider.icon_emoji || '🤖'} ${provider.name}`,
+      color: 'blue', // Default color
+    }));
+  }, [initialProviders, models]);
+
+  // Transform models to Kanban items
+  const kanbanItems: KanbanItem[] = useMemo(() => {
+    return filteredModels.map((model) => ({
+      id: model.id,
+      title: model.name,
+      subtitle: model.model_id,
+      status: model.provider_id,
+      metadata: {
+        tier: model.tier || 'balanced',
+      },
+    }));
+  }, [filteredModels]);
+
+  // Handle drag-drop reordering (update display_order)
+  const handleKanbanStatusChange = async (itemId: string | number, newStatus: string) => {
+    const modelId = String(itemId);
+    const model = models.find((m) => m.id === modelId);
+    if (!model) return;
+
+    const newDisplayOrder = (model.display_order ?? 100) + 1;
+
+    toast.loading('Atualizando ordem...');
+    try {
+      const result = await updateLmModelDisplayOrderAction(modelId, newDisplayOrder);
+      if (result.success) {
+        // Update local state
+        setModels((prev) =>
+          prev.map((m) =>
+            m.id === modelId ? { ...m, provider_id: newStatus, display_order: newDisplayOrder } : m
+          )
+        );
+        toast.success('Ordem atualizada!');
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar ordem:', error);
+      toast.error('Erro ao atualizar ordem');
+    }
+  };
+
+  const handleBulkToggleActive = useCallback(async (modelIds: string[], isActive: boolean) => {
+    try {
+      setIsBulkUpdating(true);
+      const response = await fetch('/api/lm-models/bulk-update', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modelIds, isActive }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar modelos');
+      }
+
+      const updated = await response.json();
+      setModels((prevModels) =>
+        prevModels.map((m) =>
+          updated.ids.includes(m.id) ? { ...m, is_active: isActive } : m
+        )
+      );
+
+      toast.success(
+        `${updated.ids.length} modelo${updated.ids.length !== 1 ? 's' : ''} ${isActive ? 'ativado' : 'desativado'}`
+      );
+    } catch (error) {
+      console.error('Erro ao atualizar modelos:', error);
+      toast.error('Erro ao atualizar modelos');
+    } finally {
+      setIsBulkUpdating(false);
+    }
   }, []);
 
   // TODO: Implementar ações (create, delete)
@@ -169,20 +261,54 @@ export function ModelsIaContent({
 
       {/* Filtros */}
       <div className="space-y-4">
-        <FilterBar
-          moduleId={filterRegistryModelosIa.moduleId}
-          filters={filterRegistryModelosIa}
-          onFiltersChange={() => {}}
-          onSearchChange={setSearch}
-          onViewModeChange={() => {}}
-          initialFilters={{}}
-          initialSearch={search}
-          initialViewMode="list"
-          currentFilters={{}}
-          currentSearch={search}
-          currentViewMode="list"
-          onUpdateFilter={() => {}}
-        />
+        <div className="flex items-center justify-between gap-4">
+          <FilterBar
+            moduleId={filterRegistryModelosIa.moduleId}
+            filters={filterRegistryModelosIa}
+            onFiltersChange={() => {}}
+            onSearchChange={setSearch}
+            onViewModeChange={() => {}}
+            initialFilters={{}}
+            initialSearch={search}
+            initialViewMode="list"
+            currentFilters={{}}
+            currentSearch={search}
+            currentViewMode={viewMode}
+            onUpdateFilter={() => {}}
+          />
+
+          {/* View Toggle */}
+          <div className="flex gap-1 border rounded-lg p-1 bg-muted/50">
+            <Button
+              size="sm"
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              className="h-8 w-8 p-0"
+              onClick={() => setViewMode('grid')}
+              title="Visualização em grade"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              className="h-8 w-8 p-0"
+              onClick={() => setViewMode('list')}
+              title="Visualização em lista"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+              className="h-8 w-auto px-2"
+              onClick={() => setViewMode('kanban')}
+              title="Visualização Kanban"
+            >
+              📊
+              <span className="sr-only">Kanban</span>
+            </Button>
+          </div>
+        </div>
 
         {/* Provider Filter */}
         <Select value={selectedProvider} onValueChange={setSelectedProvider}>
@@ -200,7 +326,7 @@ export function ModelsIaContent({
         </Select>
       </div>
 
-      {/* Models Grid/List */}
+      {/* Models Grid/List/Kanban */}
       {filteredModels.length === 0 ? (
         <Card>
           <CardContent className="pb-12 pt-12">
@@ -213,6 +339,37 @@ export function ModelsIaContent({
             </div>
           </CardContent>
         </Card>
+      ) : viewMode === 'kanban' ? (
+        <div className="space-y-4">
+          <KanbanBoard
+            columns={kanbanColumns}
+            items={kanbanItems}
+            selectedId={selectedModel?.id}
+            onItemClick={(item) => {
+              const model = models.find((m) => m.id === item.id);
+              if (model) setSelectedModel(model);
+            }}
+            onStatusChange={handleKanbanStatusChange}
+            renderItemContent={(item) => {
+              const model = models.find((m) => m.id === item.id);
+              if (!model) return null;
+              const provider = initialProviders.find((p) => p.id === model.provider_id);
+              return <ModelsKanbanCard model={model} provider={provider} />;
+            }}
+            emptyMessage="Nenhum modelo disponível no Kanban"
+          />
+        </div>
+      ) : viewMode === 'list' ? (
+        <ModelsListView
+          models={filteredModels}
+          providers={initialProviders}
+          onSelectModel={(modelId) => {
+            const model = models.find((m) => m.id === modelId);
+            if (model) setSelectedModel(model);
+          }}
+          onBulkToggleActive={handleBulkToggleActive}
+          isLoading={isBulkUpdating}
+        />
       ) : (
         <Card>
           <CardHeader>

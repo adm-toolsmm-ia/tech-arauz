@@ -87,3 +87,65 @@ export async function createLmModelAction(
   revalidatePath('/auxiliares/lm-providers');
   return { success: true, message: `Modelo "${created.name}" criado!`, data: created as LmModel };
 }
+
+/**
+ * Server Action: Update model display_order (for drag-drop reordering)
+ */
+export async function updateLmModelDisplayOrderAction(
+  modelId: string,
+  newDisplayOrder: number,
+): Promise<LmModelActionResult> {
+  const supabase = await createClient();
+
+  // Validate display_order (should be a non-negative number)
+  if (newDisplayOrder < 0) {
+    return { success: false, message: 'Display order deve ser um número não-negativo.' };
+  }
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, message: 'Usuário não autenticado. Faça login novamente.' };
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile?.tenant_id) {
+    return { success: false, message: 'Perfil não encontrado. Contate o administrador.' };
+  }
+
+  const { data: model, error: modelError } = await supabase
+    .from('lm_models')
+    .select('tenant_id')
+    .eq('id', modelId)
+    .single();
+
+  if (modelError || !model) {
+    return { success: false, message: 'Modelo não encontrado.' };
+  }
+
+  if (model.tenant_id !== profile.tenant_id) {
+    return { success: false, message: 'Modelo não pertence ao seu tenant.' };
+  }
+
+  const { data: updated, error } = await supabase
+    .from('lm_models')
+    .update({ display_order: newDisplayOrder, updated_by: user.id })
+    .eq('id', modelId)
+    .select()
+    .single();
+
+  if (error) {
+    return { success: false, message: `Erro ao atualizar modelo: ${error.message}` };
+  }
+
+  revalidatePath('/auxiliares/modelos-ia');
+  return { success: true, message: 'Ordem atualizada!', data: updated as LmModel };
+}

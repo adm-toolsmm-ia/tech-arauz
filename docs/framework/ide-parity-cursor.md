@@ -7,6 +7,7 @@
 | Claude (`.claude/rules/`) | Cursor (`.cursor/rules/`) |
 |---------------------------|---------------------------|
 | agent-authority.md | agent-authority.mdc |
+| devops-execution-safety.md | devops-execution-safety.mdc |
 | workflow-execution.md | workflow-execution.mdc |
 | story-lifecycle.md | story-lifecycle.mdc |
 | mcp-usage.md | mcp-usage.mdc |

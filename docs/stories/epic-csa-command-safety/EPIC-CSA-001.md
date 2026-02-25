@@ -95,8 +95,8 @@ Este epic garante que TODA execução de comando (git, gh cli, npm, bash) passa 
   - [ ] Checklist de implementação para cada regra
   - [ ] Rastreabilidade com ADRs
 - **Related Files**:
-  - `docs/devops/devops-execution-safety.md` (new)
-  - `.aios-core/development/tasks/devops-safety-rules.md` (new)
+  - `docs/stories/epic-csa-command-safety/CSA-001-rules-reference.md` (full spec)
+  - `.claude/rules/devops-execution-safety.md` (context summary for IDE)
 
 ### Phase 2: Enhancement
 
@@ -288,7 +288,7 @@ tests/
 - **Authority Rules**: `.claude/rules/agent-authority.md`
 - **Workflow Execution**: `.claude/rules/workflow-execution.md`
 - **Story Lifecycle**: `.claude/rules/story-lifecycle.md`
-- **Git Safety Rules**: `docs/devops/devops-execution-safety.md` (TBD)
+- **Git Safety Rules**: `docs/stories/epic-csa-command-safety/CSA-001-rules-reference.md` (full spec); `.claude/rules/devops-execution-safety.md` (IDE context)
 - **Audit Log Format**: `docs/devops/devops-safety-audit-log.md` (TBD)
 
 ---

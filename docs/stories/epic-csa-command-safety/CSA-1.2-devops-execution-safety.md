@@ -129,7 +129,8 @@ Create a comprehensive, single-source-of-truth rule document that:
 
 | File | Status | Purpose |
 |------|--------|---------|
-| `.claude/rules/devops-execution-safety.md` | COMPLETE | Main rules document (34 rules) |
+| `docs/stories/epic-csa-command-safety/CSA-001-rules-reference.md` | COMPLETE | Full spec (34 rules, examples, troubleshooting, FAQ) |
+| `.claude/rules/devops-execution-safety.md` | COMPLETE | Context summary for IDE (AIOS pattern, ~85 lines) |
 | `docs/devops/devops-safety-quick-reference.md` | PENDING | 1-page cheat sheet |
 | `docs/devops/devops-safety-troubleshooting.md` | PENDING | FAQ & troubleshooting |
 | `.aios-core/decision-logs/ADR-CSA-safety-rules.md` | PENDING | Decision log |

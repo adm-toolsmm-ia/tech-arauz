@@ -1,8 +1,7 @@
 ---
-paths:
-  - ".aios-core/**"
-  - "bin/**"
-  - ".github/**"
+description: DevOps Execution Safety (CSA-001) — Regras de validação de comandos git/gh/npm/bash
+globs: "**/*"
+alwaysApply: false
 ---
 
 # DevOps Execution Safety (CSA-001)

@@ -63,7 +63,7 @@ Layer 1: Validator Utility      (command-validator.js)
 - Versionable and reviewable like code
 - Linked to implementation code
 
-**Decision**: Rules defined in `devops-execution-safety.md` (30+ rules) with cross-references to implementation code.
+**Decision**: Rules defined in `devops-execution-safety.md` (30+ rules) with cross-references to implementation code. Full specification: `docs/stories/epic-csa-command-safety/CSA-001-rules-reference.md`. Context summary for IDE: `.claude/rules/devops-execution-safety.md`.
 
 ### 3. Paranoid Validation (Fail-Safe Default)
 **Why**: Better to reject a valid command than allow an invalid one

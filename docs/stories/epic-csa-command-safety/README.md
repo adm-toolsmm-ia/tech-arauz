@@ -11,6 +11,8 @@
 
 - **Epic Definition**: `EPIC-CSA-001.md`
 - **Roadmap & Timeline**: `ROADMAP.md`
+- **Full 34 rules (reference)**: `CSA-001-rules-reference.md` — spec completa das regras CSA
+- **Context rule for IDE**: `.claude/rules/devops-execution-safety.md` — resumo carregado pelo Claude
 - **Story CSA-1.1**: `CSA-1.1-command-validator.md` (13 pts)
 - **Story CSA-1.2**: `CSA-1.2-devops-execution-safety.md` (8 pts)
 - **Story CSA-1.3**: `CSA-1.3-git-wrapper.md` (13 pts)

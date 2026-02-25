@@ -11,10 +11,11 @@ if (-not $branch) { throw "Não foi possível obter a branch atual" }
 Write-Host "Branch atual: $branch"
 
 # Pull rebase (falha se a branch ainda não existir no remoto — nesse caso só faz push -u)
+# Git escreve progresso em stderr; capturar 2>&1 evita que PowerShell trate como erro.
 Write-Host "Atualizando (pull origin $branch --rebase)..."
-git pull origin $branch --rebase 2>$null
+$null = git pull origin $branch --rebase 2>&1
 if ($LASTEXITCODE -ne 0) {
-    $refExists = git ls-remote origin $branch 2>$null
+    $refExists = git ls-remote origin $branch 2>&1
     if (-not $refExists) {
         Write-Host "Branch ainda não existe no remoto. Enviando com -u..."
         git push -u origin $branch

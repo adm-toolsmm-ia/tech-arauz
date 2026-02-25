@@ -1,18 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
-import { AgentKPIs } from '@/components/agents/AgentKPIs';
-import { AgentCard } from '@/components/agents/AgentCard';
+import { KPICard } from '@/components/dashboard/KPICard';
 import { CreateAgentDialog } from '@/components/agents/CreateAgentDialog';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -21,12 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Grid3x3, List, Filter, Search, Download, Upload, Bot, RefreshCw } from 'lucide-react';
+import { Bot, RefreshCw, Grid3X3, List, Trello } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAgentFilters } from '@/hooks/useAgentFilters';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import type { UIAgent } from '@/lib/transformers/agent';
 
@@ -34,17 +25,58 @@ interface AgentsContentProps {
   agents: UIAgent[];
 }
 
-type ViewMode = 'grid' | 'list';
+type ViewMode = 'kanban' | 'list' | 'grid';
 
 export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
   const router = useRouter();
   const [agents, setAgents] = useState(initialAgents);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { filters, setFilters, filtered } = useAgentFilters(agents);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  // Refresh data from server
-  const handleRefresh = async () => {
+  // KPIs
+  const kpis = useMemo(
+    () => ({
+      total: agents.length,
+      draft: agents.filter((a) => a.status === 'draft').length,
+      published: agents.filter((a) => a.status === 'published').length,
+      deprecated: agents.filter((a) => a.status === 'deprecated').length,
+    }),
+    [agents]
+  );
+
+  // Apply filters & search
+  const filtered = useMemo(() => {
+    return agents.filter((agent) => {
+      if (statusFilter !== 'all' && agent.status !== statusFilter) return false;
+      if (typeFilter !== 'all' && agent.agentType !== typeFilter) return false;
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        return (
+          agent.name.toLowerCase().includes(term) ||
+          agent.slug.toLowerCase().includes(term) ||
+          agent.description?.toLowerCase().includes(term)
+        );
+      }
+      return true;
+    });
+  }, [agents, statusFilter, typeFilter, searchTerm]);
+
+  // Unique types for filter dropdown
+  const uniqueTypes = useMemo(() => {
+    const types: string[] = [];
+    agents.forEach((a) => {
+      if (!types.includes(a.agentType)) {
+        types.push(a.agentType);
+      }
+    });
+    return types.sort();
+  }, [agents]);
+
+  // Handle refresh
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       router.refresh();
@@ -54,248 +86,179 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [router]);
 
-  // Delete agent with confirmation
-  const handleDelete = async (agent: UIAgent) => {
-    if (
-      !confirm(
-        `Tem certeza que deseja deletar "${agent.name}"?\n\nEsta ação não pode ser desfeita!`,
-      )
-    ) {
-      return;
-    }
-
+  // Handle delete
+  const handleDelete = useCallback(async (agent: UIAgent) => {
+    if (!confirm(`Tem certeza que deseja deletar "${agent.name}"?`)) return;
     try {
       await AgentSupabaseService.deleteAgent(agent.id);
       setAgents((prev) => prev.filter((a) => a.id !== agent.id));
       toast.success(`✅ Agente "${agent.name}" deletado!`);
-      router.refresh();
     } catch (error) {
-      toast.error(`❌ Erro ao deletar: ${error instanceof Error ? error.message : 'desconhecido'}`);
+      toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
-  };
+  }, []);
 
-  // Edit agent
-  const handleEdit = (id: string) => {
-    router.push(`/agentes/${id}`);
-  };
-
-  // Duplicate agent
-  const handleDuplicate = async (agent: UIAgent) => {
-    try {
-      await AgentSupabaseService.createAgent({
-        name: `${agent.name} (Cópia)`,
-        slug: `${agent.slug}-copy-${Date.now()}`,
-        description: agent.description,
-        agent_type: agent.agentType,
-        model_provider: agent.fullConfig.modelProvider,
-        model_id: agent.modelId,
-        model_temperature: agent.fullConfig.modelTemperature,
-        model_max_tokens: agent.fullConfig.modelMaxTokens,
-      });
-      toast.success(`✅ Agente "${agent.name}" duplicado!`);
-      router.refresh();
-    } catch (error) {
-      toast.error(
-        `❌ Erro ao duplicar: ${error instanceof Error ? error.message : 'desconhecido'}`,
-      );
-    }
-  };
-
-  // Status options
-  const STATUS_OPTIONS = [
-    { value: 'all', label: 'Todos os status' },
-    { value: 'draft', label: '📝 Rascunho' },
-    { value: 'published', label: '✅ Publicado' },
-    { value: 'deprecated', label: '⛔ Deprecado' },
-  ];
-
-  // Agent type options
-  const AGENT_TYPES = [
-    { value: 'all', label: 'Todos os tipos' },
-    { value: 'status-report', label: '📊 Status Report' },
-    { value: 'requirements', label: '📋 Requisitos' },
-    { value: 'analysis', label: '🔍 Análise' },
-    { value: 'custom', label: '⚙️ Custom' },
-  ];
+  // Handle status change
+  const handleStatusChange = useCallback(
+    async (agentId: string, newStatus: string) => {
+      try {
+        await AgentSupabaseService.updateAgent(agentId, { status: newStatus as any });
+        setAgents((prev) =>
+          prev.map((a) => (a.id === agentId ? { ...a, status: newStatus as any } : a))
+        );
+        toast.success('✅ Status atualizado!');
+      } catch (error) {
+        toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+      }
+    },
+    []
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <DashboardHeader
           title="Gestão 360° de Agentes AI"
-          subtitle="Crie, configure, monitore e gerencie seus agentes de inteligência artificial"
+          subtitle="Crie, configure, monitore e gerencie seus agentes"
         />
         <CreateAgentDialog onSuccess={() => router.refresh()} />
       </div>
 
       {/* KPIs */}
-      {agents.length > 0 && <AgentKPIs agents={agents} />}
+      {agents.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KPICard
+            icon={Bot}
+            title="Total"
+            value={kpis.total}
+            trend={{ value: '0', positive: false }}
+          />
+          <KPICard
+            icon={Bot}
+            title="Rascunho"
+            value={kpis.draft}
+            trend={{ value: '0', positive: false }}
+          />
+          <KPICard
+            icon={Bot}
+            title="Publicado"
+            value={kpis.published}
+            trend={{ value: '0', positive: true }}
+          />
+          <KPICard
+            icon={Bot}
+            title="Deprecado"
+            value={kpis.deprecated}
+            trend={{ value: '0', positive: false }}
+          />
+        </div>
+      )}
 
-      {/* Filters & Controls */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            {/* Top Row: Search + Refresh */}
-            <div className="flex items-end gap-3">
-              <div className="flex-1">
-                <label className="mb-2 block text-sm font-medium text-muted-foreground">
-                  Buscar
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Nome, slug ou descrição..."
-                    value={filters.searchTerm || ''}
-                    onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
+      {/* Filters & View Controls */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <Input
+            placeholder="Pesquisar agentes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    <Filter className="h-4 w-4" />
-                    Mais
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Download className="mr-2 h-4 w-4" />
-                    Exportar
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Upload className="mr-2 h-4 w-4" />
-                    Importar
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="draft">📝 Rascunho</SelectItem>
+              <SelectItem value="published">✅ Publicado</SelectItem>
+              <SelectItem value="deprecated">⛔ Deprecado</SelectItem>
+            </SelectContent>
+          </Select>
 
-              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os tipos</SelectItem>
+              {uniqueTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-            {/* Second Row: Filters */}
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-muted-foreground">
-                  Status
-                </label>
-                <Select
-                  value={filters.status ? String(filters.status) : 'all'}
-                  onValueChange={(value) =>
-                    setFilters({
-                      ...filters,
-                      status:
-                        value === 'all'
-                          ? undefined
-                          : (value as 'draft' | 'published' | 'deprecated'),
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-muted-foreground">Tipo</label>
-                <Select
-                  value={filters.agentType ? String(filters.agentType) : 'all'}
-                  onValueChange={(value) =>
-                    setFilters({
-                      ...filters,
-                      agentType: value === 'all' ? undefined : value,
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AGENT_TYPES.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-end gap-2">
-                <Tabs
-                  value={viewMode}
-                  onValueChange={(v) => setViewMode(v as ViewMode)}
-                  className="w-full"
-                >
-                  <TabsList className="w-full">
-                    <TabsTrigger value="grid" className="gap-1 text-xs">
-                      <Grid3x3 className="h-4 w-4" />
-                      <span className="hidden sm:inline">Grid</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="list" className="gap-1 text-xs">
-                      <List className="h-4 w-4" />
-                      <span className="hidden sm:inline">Lista</span>
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
-
-            {/* Results Count */}
-            <div className="text-sm text-muted-foreground">
-              Mostrando {filtered.length} de {agents.length} agentes
-            </div>
+          <div className="flex gap-2 ml-auto">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              title="Visualização de grade"
+            >
+              <Grid3X3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              title="Visualização em lista"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'kanban' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('kanban')}
+              title="Visualização Kanban"
+            >
+              <Trello className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              title="Atualizar"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Agents View */}
+        <p className="text-sm text-muted-foreground">
+          {filtered.length} de {agents.length} agentes
+        </p>
+      </div>
+
+      {/* Content */}
       {filtered.length === 0 ? (
         <Card>
-          <CardContent className="pb-12 pt-12">
+          <CardContent className="pt-12 pb-12">
             <div className="text-center">
-              <Bot className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mb-2 text-lg font-medium">Nenhum agente encontrado</h3>
+              <Bot className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+              <h3 className="text-lg font-medium mb-2">Nenhum agente encontrado</h3>
               <p className="text-sm text-muted-foreground">
                 {agents.length === 0
                   ? 'Crie seu primeiro agente para começar!'
-                  : 'Ajuste os filtros e tente novamente.'}
+                  : 'Ajuste os filtros ou pesquisa.'}
               </p>
             </div>
           </CardContent>
         </Card>
-      ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((agent) => (
-            <AgentCard
-              key={agent.id}
-              agent={agent}
-              onEdit={() => handleEdit(agent.id)}
-              onDelete={() => handleDelete(agent)}
-              onDuplicate={() => handleDuplicate(agent)}
-            />
-          ))}
-        </div>
-      ) : (
+      ) : viewMode === 'list' ? (
         <div className="space-y-2">
           {filtered.map((agent) => (
             <Card
               key={agent.id}
-              className="cursor-pointer transition-all hover:shadow-md"
-              onClick={() => handleEdit(agent.id)}
+              className="cursor-pointer hover:shadow-md transition-all"
+              onClick={() => {
+                /* TODO: open agent detail */
+              }}
             >
               <CardContent className="pt-4">
                 <div className="flex items-center justify-between">
@@ -303,18 +266,108 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                     <h3 className="font-semibold">{agent.name}</h3>
                     <p className="text-sm text-muted-foreground">{agent.description}</p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Badge className="text-xs">{agent.agentType}</Badge>
+                  <div className="flex gap-2 items-center">
+                    <Badge>{agent.agentType}</Badge>
                     <Badge
                       variant={agent.status === 'published' ? 'default' : 'secondary'}
-                      className="text-xs"
                     >
-                      {agent.status === 'draft' && '📝 Rascunho'}
-                      {agent.status === 'published' && '✅ Publicado'}
-                      {agent.status === 'deprecated' && '⛔ Deprecado'}
+                      {agent.status}
                     </Badge>
-                    <span className="whitespace-nowrap text-sm text-muted-foreground">
-                      {agent.executionCount} execuções
+                    <span className="text-xs text-muted-foreground">
+                      {agent.executionCount} exec
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : viewMode === 'kanban' ? (
+        <div className="grid auto-cols-max gap-4 overflow-x-auto pb-4">
+          {['draft', 'published', 'deprecated'].map((status) => (
+            <div
+              key={status}
+              className="min-w-[300px] space-y-3 p-3 rounded-lg bg-muted/30"
+            >
+              <h3 className="font-semibold text-sm">
+                {status === 'draft' && '📝 Rascunho'}
+                {status === 'published' && '✅ Publicado'}
+                {status === 'deprecated' && '⛔ Deprecado'}
+                <span className="ml-2 text-xs text-muted-foreground">
+                  ({filtered.filter((a) => a.status === status).length})
+                </span>
+              </h3>
+              <div className="space-y-2">
+                {filtered
+                  .filter((a) => a.status === status)
+                  .map((agent) => (
+                    <Card
+                      key={agent.id}
+                      className="cursor-pointer hover:shadow-md transition-all"
+                      onClick={() => {
+                        /* TODO: open agent detail */
+                      }}
+                    >
+                      <CardContent className="pt-4">
+                        <h4 className="font-semibold text-sm mb-1">{agent.name}</h4>
+                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                          {agent.description}
+                        </p>
+                        <div className="flex gap-1 flex-wrap">
+                          <Badge variant="outline" className="text-xs">
+                            {agent.agentType}
+                          </Badge>
+                          <Badge className="text-xs">
+                            {agent.modelId}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        // Grid view (default)
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((agent) => (
+            <Card
+              key={agent.id}
+              className="cursor-pointer hover:shadow-md transition-all"
+              onClick={() => {
+                /* TODO: open agent detail */
+              }}
+            >
+              <CardContent className="pt-6">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold">{agent.name}</h3>
+                    <p className="text-xs text-muted-foreground">{agent.slug}</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {agent.description}
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span>Modelo:</span>
+                      <span className="font-mono">{agent.modelId}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>Tipo:</span>
+                      <Badge variant="outline" className="text-xs">
+                        {agent.agentType}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Badge
+                      variant={agent.status === 'published' ? 'default' : 'secondary'}
+                    >
+                      {agent.status}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      {agent.executionCount} exec
                     </span>
                   </div>
                 </div>

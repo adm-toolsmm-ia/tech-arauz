@@ -14,7 +14,10 @@ export interface AgentTypeActionResult {
  * Server Action: Create new agent type
  */
 export async function createAgentTypeAction(
-  payload: Omit<AgentType, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'>,
+  payload: Omit<
+    AgentType,
+    'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'
+  >,
 ): Promise<AgentTypeActionResult> {
   const supabase = await createClient();
 
@@ -63,7 +66,9 @@ export async function createAgentTypeAction(
  */
 export async function updateAgentTypeAction(
   id: string,
-  updates: Partial<Omit<AgentType, 'id' | 'tenant_id' | 'created_at' | 'created_by'>>,
+  updates: Partial<
+    Omit<AgentType, 'id' | 'tenant_id' | 'created_at' | 'created_by'>
+  >,
 ): Promise<AgentTypeActionResult> {
   const supabase = await createClient();
 

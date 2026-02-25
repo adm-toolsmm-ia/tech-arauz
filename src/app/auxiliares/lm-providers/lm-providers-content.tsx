@@ -465,6 +465,12 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
           <LmProviderCockpit
             provider={selectedProvider}
             models={modelsByProviderId[selectedProvider.id] ?? []}
+            onModelCreated={(model) =>
+              setModelsByProviderId((prev) => ({
+                ...prev,
+                [selectedProvider.id]: [...(prev[selectedProvider.id] ?? []), model],
+              }))
+            }
           />
         )}
       </SplitView>

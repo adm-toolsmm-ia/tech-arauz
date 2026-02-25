@@ -21,6 +21,7 @@ export function useAgentTypesFilters(agentTypes: AgentType[]) {
   const filterState = useFilterState({
     moduleId: 'agent-types',
     definitions: filterDefinitionsAgentTypes,
+    initialViewMode: filterRegistryAgentTypes.viewModes?.[0]?.id ?? 'kanban',
     persistence: {
       enabled: true,
       storageKey: 'filters-agent-types',
@@ -37,6 +38,8 @@ export function useAgentTypesFilters(agentTypes: AgentType[]) {
   return {
     filters: filterState.filters,
     search: filterState.search,
+    viewMode: filterState.viewMode,
+    setViewMode: filterState.setViewMode,
     filteredData,
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,

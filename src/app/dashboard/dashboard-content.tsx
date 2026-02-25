@@ -27,8 +27,6 @@ import {
   buildPipelineData,
   ResponsibleWorkloadChart,
   buildWorkloadData,
-  StatusDistributionChart,
-  buildDistributionData,
 } from '@/components/charts';
 import type { UIProject } from '@/lib/transformers/project';
 import { SkeletonKPI } from '@/components/ui/skeletons';
@@ -224,10 +222,6 @@ export function DashboardContent({
   // ─── Chart Data ───
   const pipelineData = React.useMemo(() => buildPipelineData(chartProjects), [chartProjects]);
   const trendData = React.useMemo(() => buildWorkloadData(projects as any), [projects]);
-  const distributionData = React.useMemo(
-    () => buildDistributionData(chartProjects),
-    [chartProjects],
-  );
 
   // ─── Filtered Project List ───
   const filteredProjects = React.useMemo(() => {
@@ -423,11 +417,6 @@ export function DashboardContent({
               data={pipelineData}
               onBarClick={handleChartStatusClick}
               activeStatus={activeFilter?.type === 'by_status' ? activeFilter.value : null}
-            />
-            <StatusDistributionChart
-              data={distributionData}
-              onSegmentClick={handleChartPhaseClick}
-              activeStatus={activeFilter?.type === 'by_phase' ? activeFilter.value : null}
             />
             <ResponsibleWorkloadChart data={trendData} />
           </div>

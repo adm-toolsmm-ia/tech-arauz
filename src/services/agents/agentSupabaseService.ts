@@ -10,7 +10,8 @@ import type { AgentHead, AgentConfig, CreateAgentRequest } from '@/types/agents'
 const supabase = createClient();
 
 /**
- * Extract tenant_id from Supabase user metadata
+ * Extract tenant_id via RLS function (get_user_tenant_id)
+ * RLS will enforce tenant isolation automatically
  */
 async function getTenantId(): Promise<string> {
   const {
@@ -21,14 +22,21 @@ async function getTenantId(): Promise<string> {
     throw new Error('User not authenticated');
   }
 
-  // Get tenant_id from user metadata
-  const tenantId = (user.user_metadata?.tenant_id || user.app_metadata?.tenant_id) as string;
+  // Query tenant via RLS - this will use get_user_tenant_id() on the server
+  // We fetch from tenants table to get the actual tenant_id
+  const { data: userTenants, error } = await supabase
+    .from('tenants')
+    .select('id')
+    .limit(1)
+    .single();
 
-  if (!tenantId) {
-    throw new Error('No tenant_id in user metadata. Ensure Supabase user has tenant_id set.');
+  if (error || !userTenants?.id) {
+    throw new Error(
+      `Failed to get tenant: ${error?.message || 'No tenant found for user'}. Ensure user is assigned to a tenant.`,
+    );
   }
 
-  return tenantId;
+  return userTenants.id;
 }
 
 export class AgentSupabaseService {

@@ -9,17 +9,27 @@
  */
 
 /**
- * Agent Type Definition (Phase 4)
- * Describes available agent types (e.g., "Projetos", "Requisitos")
+ * Agent Type Definition (Tabela Auxiliar)
+ * Describes available agent types (e.g., "Status Report", "Requirements")
+ * Tabelado no Supabase, gerenciável via UI
  */
 export interface AgentType {
   id: string; // UUID
-  name: string; // e.g., "Projetos"
-  slug: string; // e.g., "projetos"
-  description?: string;
-  required_fields: string[]; // e.g., ["persona", "prompt_objective", "prompt_instructions"]
-  recommended_fields: string[];
-  default_template?: Record<string, unknown>;
+  tenant_id: string; // UUID
+  name: string; // e.g., "Status Report"
+  slug: string; // e.g., "status-report"
+  description?: string; // e.g., "Agent for analyzing project status"
+  icon_emoji?: string; // e.g., "📊"
+  color_hex?: string; // e.g., "#3B82F6"
+  is_active: boolean;
+  is_system: boolean; // Cannot be deleted if TRUE
+  default_model_provider?: string; // e.g., "openai"
+  default_model_id?: string; // e.g., "gpt-4"
+  default_temperature?: number;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
 }
 
 /**

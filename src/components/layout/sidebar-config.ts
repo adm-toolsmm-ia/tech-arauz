@@ -43,6 +43,10 @@ export const menuConfig: NavGroup[] = [
       { title: 'Usuários', url: '/cadastros/usuarios', icon: UserPlus },
     ],
   },
+  {
+    group: 'Auxiliares',
+    items: [{ title: 'Tipos de Agentes', url: '/auxiliares/agent-types', icon: Settings }],
+  },
 ];
 
 export const bottomItems: NavItem[] = [

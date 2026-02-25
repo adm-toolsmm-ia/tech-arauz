@@ -24,16 +24,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Grid3x3,
-  List,
-  Filter,
-  Search,
-  Download,
-  Upload,
-  Bot,
-  RefreshCw,
-} from 'lucide-react';
+import { Grid3x3, List, Filter, Search, Download, Upload, Bot, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAgentFilters } from '@/hooks/useAgentFilters';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
@@ -69,7 +60,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
   const handleDelete = async (agent: UIAgent) => {
     if (
       !confirm(
-        `Tem certeza que deseja deletar "${agent.name}"?\n\nEsta ação não pode ser desfeita!`
+        `Tem certeza que deseja deletar "${agent.name}"?\n\nEsta ação não pode ser desfeita!`,
       )
     ) {
       return;
@@ -106,7 +97,9 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
       toast.success(`✅ Agente "${agent.name}" duplicado!`);
       router.refresh();
     } catch (error) {
-      toast.error(`❌ Erro ao duplicar: ${error instanceof Error ? error.message : 'desconhecido'}`);
+      toast.error(
+        `❌ Erro ao duplicar: ${error instanceof Error ? error.message : 'desconhecido'}`,
+      );
     }
   };
 
@@ -146,9 +139,9 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
         <CardContent className="pt-6">
           <div className="space-y-4">
             {/* Top Row: Search + Refresh */}
-            <div className="flex gap-3 items-end">
+            <div className="flex items-end gap-3">
               <div className="flex-1">
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                <label className="mb-2 block text-sm font-medium text-muted-foreground">
                   Buscar
                 </label>
                 <div className="relative">
@@ -156,9 +149,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                   <Input
                     placeholder="Nome, slug ou descrição..."
                     value={filters.searchTerm || ''}
-                    onChange={(e) =>
-                      setFilters({ ...filters, searchTerm: e.target.value })
-                    }
+                    onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
                     className="pl-10"
                   />
                 </div>
@@ -173,22 +164,17 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem className="cursor-pointer">
-                    <Download className="h-4 w-4 mr-2" />
+                    <Download className="mr-2 h-4 w-4" />
                     Exportar
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
-                    <Upload className="h-4 w-4 mr-2" />
+                    <Upload className="mr-2 h-4 w-4" />
                     Importar
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-              >
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
             </div>
@@ -196,7 +182,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
             {/* Second Row: Filters */}
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                <label className="mb-2 block text-sm font-medium text-muted-foreground">
                   Status
                 </label>
                 <Select
@@ -225,9 +211,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Tipo
-                </label>
+                <label className="mb-2 block text-sm font-medium text-muted-foreground">Tipo</label>
                 <Select
                   value={filters.agentType ? String(filters.agentType) : 'all'}
                   onValueChange={(value) =>
@@ -250,7 +234,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                 </Select>
               </div>
 
-              <div className="flex gap-2 items-end">
+              <div className="flex items-end gap-2">
                 <Tabs
                   value={viewMode}
                   onValueChange={(v) => setViewMode(v as ViewMode)}
@@ -281,10 +265,10 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
       {/* Agents View */}
       {filtered.length === 0 ? (
         <Card>
-          <CardContent className="pt-12 pb-12">
+          <CardContent className="pb-12 pt-12">
             <div className="text-center">
-              <Bot className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhum agente encontrado</h3>
+              <Bot className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+              <h3 className="mb-2 text-lg font-medium">Nenhum agente encontrado</h3>
               <p className="text-sm text-muted-foreground">
                 {agents.length === 0
                   ? 'Crie seu primeiro agente para começar!'
@@ -294,7 +278,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
           </CardContent>
         </Card>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((agent) => (
             <AgentCard
               key={agent.id}
@@ -310,7 +294,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
           {filtered.map((agent) => (
             <Card
               key={agent.id}
-              className="cursor-pointer hover:shadow-md transition-all"
+              className="cursor-pointer transition-all hover:shadow-md"
               onClick={() => handleEdit(agent.id)}
             >
               <CardContent className="pt-4">
@@ -329,7 +313,7 @@ export function AgentsContent({ agents: initialAgents }: AgentsContentProps) {
                       {agent.status === 'published' && '✅ Publicado'}
                       {agent.status === 'deprecated' && '⛔ Deprecado'}
                     </Badge>
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    <span className="whitespace-nowrap text-sm text-muted-foreground">
                       {agent.executionCount} execuções
                     </span>
                   </div>

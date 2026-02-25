@@ -94,7 +94,11 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Tem certeza que deseja deletar "${initialAgent.name}"?\n\nEsta ação não pode ser desfeita!`)) {
+    if (
+      !confirm(
+        `Tem certeza que deseja deletar "${initialAgent.name}"?\n\nEsta ação não pode ser desfeita!`,
+      )
+    ) {
       return;
     }
 
@@ -121,18 +125,15 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="gap-2"
-          >
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="gap-2">
             <ChevronLeft className="h-4 w-4" />
             Voltar
           </Button>
           <div>
             <h1 className="text-3xl font-bold">{agent.name}</h1>
-            <Badge className={`text-xs mt-2 ${statusColor[agent.status as keyof typeof statusColor]}`}>
+            <Badge
+              className={`mt-2 text-xs ${statusColor[agent.status as keyof typeof statusColor]}`}
+            >
               {agent.status === 'draft' && '📝 Rascunho'}
               {agent.status === 'published' && '✅ Publicado'}
               {agent.status === 'deprecated' && '⛔ Deprecado'}
@@ -140,21 +141,16 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
           </div>
         </div>
         <div className="flex gap-2">
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={handleDelete}
-          disabled={isSaving || isDeleting}
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Deletar
-        </Button>
           <Button
+            variant="destructive"
             size="sm"
-            onClick={handleSave}
-            disabled={!isDirty || isSaving}
-            className="gap-2"
+            onClick={handleDelete}
+            disabled={isSaving || isDeleting}
           >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Deletar
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={!isDirty || isSaving} className="gap-2">
             <Save className="h-4 w-4" />
             {isSaving ? 'Salvando...' : 'Salvar'}
           </Button>
@@ -163,12 +159,13 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
 
       {/* Dirty State Alert */}
       {isDirty && (
-        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800">
+        <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-yellow-600" />
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                Você tem alterações não salvas. Clique em &quot;Salvar&quot; para persistir as mudanças.
+                Você tem alterações não salvas. Clique em &quot;Salvar&quot; para persistir as
+                mudanças.
               </p>
             </div>
           </CardContent>
@@ -185,7 +182,7 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
         </TabsList>
 
         {/* TAB 1: BASIC */}
-        <TabsContent value="basic" className="space-y-4 mt-4">
+        <TabsContent value="basic" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Informações Básicas</CardTitle>
@@ -257,7 +254,7 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
         </TabsContent>
 
         {/* TAB 2: PERSONA */}
-        <TabsContent value="persona" className="space-y-4 mt-4">
+        <TabsContent value="persona" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Persona & Prompt</CardTitle>
@@ -308,7 +305,7 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
         </TabsContent>
 
         {/* TAB 3: MODEL */}
-        <TabsContent value="model" className="space-y-4 mt-4">
+        <TabsContent value="model" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Configuração do Modelo LLM</CardTitle>
@@ -358,7 +355,7 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
         </TabsContent>
 
         {/* TAB 4: ADVANCED */}
-        <TabsContent value="advanced" className="space-y-4 mt-4">
+        <TabsContent value="advanced" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Configuração Avançada</CardTitle>
@@ -414,11 +411,15 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
             </div>
             <div>
               <p className="text-muted-foreground">Criado em</p>
-              <p className="text-sm">{new Date(initialAgent.createdAt).toLocaleDateString('pt-BR')}</p>
+              <p className="text-sm">
+                {new Date(initialAgent.createdAt).toLocaleDateString('pt-BR')}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Atualizado em</p>
-              <p className="text-sm">{new Date(initialAgent.updatedAt).toLocaleDateString('pt-BR')}</p>
+              <p className="text-sm">
+                {new Date(initialAgent.updatedAt).toLocaleDateString('pt-BR')}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Última execução</p>

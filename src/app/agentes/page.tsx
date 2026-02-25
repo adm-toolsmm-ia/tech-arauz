@@ -25,9 +25,7 @@ export default async function AgentsPage() {
   }
 
   // Transform DB rows to UI format
-  const uiAgents = ((agents as DBAgent[]) || []).map((a) =>
-    dbAgentsToUI([a])[0]
-  );
+  const uiAgents = ((agents as DBAgent[]) || []).map((a) => dbAgentsToUI([a])[0]);
 
   return <AgentsContent agents={uiAgents} />;
 }

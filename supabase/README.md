@@ -15,7 +15,8 @@ Garantir a integridade, versionamento e reprodutibilidade do banco de dados.
 ### Aplicar Migrations (Local)
 ```bash
 npm run db:apply
-# ou
+# (roda: npx supabase db push)
+# ou reset completo local:
 npx supabase db reset
 ```
 

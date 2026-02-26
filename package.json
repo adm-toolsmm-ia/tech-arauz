@@ -19,7 +19,7 @@
     "sync:commit": "powershell -ExecutionPolicy Bypass -File ./scripts/git-commit.ps1",
     "sync:push": "powershell -ExecutionPolicy Bypass -File ./scripts/git-push.ps1",
     "sync:pr": "powershell -ExecutionPolicy Bypass -File ./scripts/git-pr.ps1",
-    "db:apply": "powershell -ExecutionPolicy Bypass -File ./scripts/apply-migrations.ps1"
+    "db:apply": "npx supabase db push"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

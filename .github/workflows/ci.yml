@@ -27,13 +27,33 @@ jobs:
     - name: Run Lint
       run: npm run lint
 
+    - name: Run Typecheck
+      run: npm run typecheck
+
     - name: Check Formatting
       run: npm run format:check
 
     - name: Run Tests
-      # Assuming 'test' script runs vitest. 
-      # Using --passWithNoTests to avoid failure if no tests exist yet.
-      run: npm run test -- --passWithNoTests
+      run: npm run test
+
+    - name: Validate Supabase secrets for RLS audit
+      if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+      run: |
+        if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+          echo "Missing required secret: SUPABASE_URL"
+          exit 1
+        fi
+        if [ -z "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ]; then
+          echo "Missing required secret: SUPABASE_SERVICE_ROLE_KEY"
+          exit 1
+        fi
+
+    - name: Run RLS audit gate
+      if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      run: npm run audit:rls
 
     - name: Build Project
       run: npm run build

@@ -30,6 +30,9 @@ import { phaseLabels, phaseColors, phaseOrder, bannedPhases } from '@/lib/consta
 import { SkeletonKanbanCard, SkeletonTableRow } from '@/components/ui/skeletons';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { useProjetosFilters } from '@/hooks/useProjetosFilters';
+import { getOverdueData, isConsideredActive } from '@/lib/domain/project-health';
+import { normalizePhaseSlug } from '@/lib/domain/project-phase';
+import { isHighPriorityProject } from '@/lib/domain/project-priority';
 
 interface Project {
   id: string;
@@ -120,47 +123,6 @@ interface Project {
 interface ProjectsContentProps {
   projects: Project[];
   isLoading?: boolean;
-}
-
-function isConsideredActive(statusStr: string | null | undefined) {
-  const s = (statusStr || '').trim().toLowerCase();
-  return s !== 'cancelado' && s !== 'concluído';
-}
-
-function getOverdueData(
-  project: {
-    status?: string | null;
-    end_date?: string | null;
-    prazo_cronograma?: string | null;
-    prazo_aprovador?: string | null;
-  },
-  referenceDate = new Date(),
-): { isOverdue: boolean; maxDays: number } {
-  const status = (project.status || '').trim().toLowerCase();
-  if (status === 'concluído' || status === 'cancelado') return { isOverdue: false, maxDays: 0 };
-
-  const datesToCheck = [project.end_date, project.prazo_cronograma, project.prazo_aprovador]
-    .filter(Boolean)
-    .map((d) => new Date(d as string));
-
-  if (datesToCheck.length === 0) return { isOverdue: false, maxDays: 0 };
-
-  const refMidnight = new Date(referenceDate);
-  refMidnight.setHours(0, 0, 0, 0);
-
-  let maxDays = 0;
-  let isOverdue = false;
-
-  datesToCheck.forEach((d) => {
-    if (d < refMidnight) {
-      isOverdue = true;
-      const diffTime = Math.abs(refMidnight.getTime() - d.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > maxDays) maxDays = diffDays;
-    }
-  });
-
-  return { isOverdue, maxDays };
 }
 
 export function ProjectsContent({
@@ -261,20 +223,7 @@ export function ProjectsContent({
 
   // KPI 3: Alta Prioridade
   const highPriorityCount = React.useMemo(
-    () =>
-      projects.filter((p) => {
-        if (!isConsideredActive(p.status)) return false;
-        const prio = (p.priority || '').toLowerCase();
-        const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
-        const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
-        return (
-          prio === 'urgente' ||
-          prio === 'alta' ||
-          p.importancia_especial ||
-          isEstrategicoAlto ||
-          isOperacionalAlto
-        );
-      }).length,
+    () => projects.filter((p) => isHighPriorityProject(p)).length,
     [projects],
   );
 
@@ -334,17 +283,7 @@ export function ProjectsContent({
         case 'atrasados':
           return getOverdueData(p, now).isOverdue;
         case 'alta_prioridade': {
-          if (!isConsideredActive(p.status)) return false;
-          const prio = (p.priority || '').toLowerCase();
-          const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
-          const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
-          return (
-            prio === 'urgente' ||
-            prio === 'alta' ||
-            p.importancia_especial ||
-            isEstrategicoAlto ||
-            isOperacionalAlto
-          );
+          return isHighPriorityProject(p);
         }
         case 'importancia_especial':
           return p.importancia_especial && isConsideredActive(p.status);
@@ -383,7 +322,7 @@ export function ProjectsContent({
     value: p.total_value ? `R$ ${p.total_value.toLocaleString('pt-BR')}` : undefined,
     priority: (p.priority as KanbanItem['priority']) || 'normal',
     // Usa fase_atual para agrupamento, fallback para status se fase_atual não existir
-    status: normalizeFaseSlug(p.fase_atual) || normalizeFaseSlug(p.status) || 'fila_projetos',
+    status: normalizePhaseSlug(p.fase_atual) || normalizePhaseSlug(p.status) || 'fila_projetos',
     metadata: {
       ...(p.mensagem_movimentacao ? { mensagem: p.mensagem_movimentacao } : {}),
       ...(p.last_update ? { data_movimentacao: p.last_update } : {}),
@@ -394,7 +333,11 @@ export function ProjectsContent({
   const dynamicColumns = React.useMemo(() => {
     // Extrai fases únicas (usa fase_atual, fallback para status)
     const existingPhases = Array.from(
-      new Set(projects.map((p) => normalizeFaseSlug(p.fase_atual) || p.status || 'fila_projetos')),
+      new Set(
+        projects.map(
+          (p) => normalizePhaseSlug(p.fase_atual) || normalizePhaseSlug(p.status) || 'fila_projetos',
+        ),
+      ),
     );
 
     // Combine phases (only show phases that actually exist, excluding banned)
@@ -415,7 +358,7 @@ export function ProjectsContent({
     return sortedPhases.map((phase) => {
       // Tenta encontrar o título original da fase de um projeto
       const project = projects.find(
-        (p) => normalizeFaseSlug(p.fase_atual) === phase || p.status === phase,
+        (p) => normalizePhaseSlug(p.fase_atual) === phase || normalizePhaseSlug(p.status) === phase,
       );
       const originalTitle = project?.fase_atual || project?.aprovador_atual;
 
@@ -489,6 +432,10 @@ export function ProjectsContent({
     }
   };
 
+  const listAnnouncement = activeKpiFilter
+    ? `Filtro ativo com ${finalFilteredData.length} projetos.`
+    : `Lista com ${finalFilteredData.length} projetos.`;
+
   return (
     <div className="flex flex-col">
       <DashboardHeader
@@ -497,6 +444,10 @@ export function ProjectsContent({
       />
 
       <div className="flex-1 space-y-6 p-6">
+        <p className="sr-only" role="status" aria-live="polite">
+          {listAnnouncement}
+        </p>
+
         {/* KPIs (Gerencial) */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
           <KPICard
@@ -794,17 +745,6 @@ function ImpactBadge({ level }: { level: string | null | undefined }) {
 /**
  * Normaliza fase_atual para slug de coluna Kanban
  */
-function normalizeFaseSlug(fase: string | null | undefined): string {
-  if (!fase) return '';
-  return fase
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-    .replace(/[^a-z0-9]+/g, '_') // Substitui caracteres especiais por _
-    .replace(/^_+|_+$/g, ''); // Remove _ do início e fim
-}
-
 // Project List Component (Enhanced Grid)
 function ProjectList({
   projects,
@@ -942,8 +882,8 @@ function ProjectList({
             </thead>
             <tbody className="divide-y [&>tr:nth-child(even)]:bg-muted/20">
               {sortedProjects.map((project) => {
-                const faseSlug = normalizeFaseSlug(project.fase_atual);
-                const statusSlug = normalizeFaseSlug(project.status); // Reuse same normalization for simplicity
+                const faseSlug = normalizePhaseSlug(project.fase_atual);
+                const statusSlug = normalizePhaseSlug(project.status); // Reuse same normalization for simplicity
 
                 // Now uses shared phaseLabels from @/lib/constants/phase-labels
 
@@ -1217,3 +1157,5 @@ function StatusBadge({ status }: { status: string }) {
     </span>
   );
 }
+
+

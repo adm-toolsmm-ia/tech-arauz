@@ -85,7 +85,63 @@ export async function createLmModelAction(
   }
 
   revalidatePath('/auxiliares/lm-providers');
+  revalidatePath('/auxiliares/modelos-ia');
   return { success: true, message: `Modelo "${created.name}" criado!`, data: created as LmModel };
+}
+
+/**
+ * Server Action: Delete LM model
+ */
+export async function deleteLmModelAction(modelId: string): Promise<LmModelActionResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, message: 'Usuário não autenticado. Faça login novamente.' };
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile?.tenant_id) {
+    return { success: false, message: 'Perfil não encontrado. Contate o administrador.' };
+  }
+
+  const { data: existing, error: fetchError } = await supabase
+    .from('lm_models')
+    .select('id, tenant_id, name, is_system')
+    .eq('id', modelId)
+    .single();
+
+  if (fetchError || !existing) {
+    return { success: false, message: 'Modelo não encontrado.' };
+  }
+
+  if (existing.tenant_id !== profile.tenant_id) {
+    return { success: false, message: 'Modelo não pertence ao seu tenant.' };
+  }
+
+  if (existing.is_system) {
+    return { success: false, message: 'Modelos de sistema não podem ser excluídos.' };
+  }
+
+  const { error } = await supabase.from('lm_models').delete().eq('id', modelId);
+
+  if (error) {
+    return { success: false, message: `Erro ao excluir modelo: ${error.message}` };
+  }
+
+  revalidatePath('/auxiliares/lm-providers');
+  revalidatePath('/auxiliares/modelos-ia');
+
+  return { success: true, message: `Modelo "${existing.name}" excluído com sucesso.` };
 }
 
 /**

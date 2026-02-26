@@ -113,13 +113,12 @@ Estrutura minima:
 
 ## 5. Gaps atuais identificados (fornecedores/modelos)
 
-Principais desvios em relacao ao baseline:
+Atualizacao apos hardening da Story 1.2:
 
-1. `modelos-ia` usa filtros parcialmente fora do padrao (`onFiltersChange={() => {}}`) e combina estados locais paralelos.
-2. `modelos-ia` tem TODO aberto para CRUD (`create/delete`) e nao fecha ciclo funcional.
-3. `lm-providers` e `agent-types` usam `confirm()` nativo para delete (quebra padrao de UX).
-4. Modulos auxiliares repetem estrutura manual parecida sem extracao de scaffold comum.
-5. Definicoes de filtros em auxiliares ainda estao vazias (`filterDefinitions... = []`).
+1. `modelos-ia` foi alinhado ao baseline com `FilterBar` controlado, filtros centralizados, CRUD basico de create/delete e feedback async padronizado.
+2. `lm-providers` foi alinhado com confirmacao de exclusao via `Dialog` (sem `confirm()` nativo) e quick filters de status/origem.
+3. Gap residual: `agent-types` ainda usa `confirm()` nativo para delete e deve seguir o mesmo padrao de dialog.
+4. Gap residual: modulos auxiliares ainda repetem parte do scaffold manual e podem evoluir para um layout base compartilhado.
 
 ## 6. Checklist de entrega para novos modulos (gate de workflow)
 

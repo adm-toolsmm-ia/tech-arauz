@@ -1,6 +1,6 @@
 # Story 1.2 - Refactor Front Domain and Components
 
-Status: Draft  
+Status: Ready for Review  
 Epic: TD-EPIC-01  
 Prioridade: Alta
 
@@ -21,25 +21,38 @@ para aumentar consistencia funcional e velocidade de manutencao.
 
 ## Tasks
 
-- [ ] Criar modulo de dominio para calculos compartilhados.
-- [ ] Refatorar componentes para subcomponentes menores.
-- [ ] Ajustar hooks/servicos para reduzir acoplamento.
-- [ ] Revisar padrao de mensagens de loading/erro/sucesso.
-- [ ] Consolidar `docs/architecture/module-standards.md` como referencia oficial.
-- [ ] Alinhar `lm-providers` e `modelos-ia` ao padrao (FilterBar, lista, Kanban, dialogs e detalhe lateral).
+- [x] Criar modulo de dominio para calculos compartilhados.
+- [x] Refatorar componentes para subcomponentes menores.
+- [x] Ajustar hooks/servicos para reduzir acoplamento.
+- [x] Revisar padrao de mensagens de loading/erro/sucesso.
+- [x] Consolidar `docs/architecture/module-standards.md` como referencia oficial.
+- [x] Alinhar `lm-providers` e `modelos-ia` ao padrao (FilterBar, lista, Kanban, dialogs e detalhe lateral).
 
 ## Testes
 
-- [ ] Testes unitarios para funcoes de dominio extraidas.
-- [ ] Testes de integracao para dashboard/projetos.
-- [ ] Validacao de acessibilidade basica (focus, teclado, aria-live).
+- [x] Testes unitarios para funcoes de dominio extraidas.
+- [x] Testes de integracao para dashboard/projetos.
+- [x] Validacao de acessibilidade basica (focus, teclado, aria-live).
 
 ## File List
 
 - src/app/dashboard/dashboard-content.tsx
+- src/app/dashboard/__tests__/dashboard-content.integration.test.tsx
 - src/app/projetos/projects-content.tsx
+- src/app/projetos/__tests__/projects-content.integration.test.tsx
 - src/app/auxiliares/lm-providers/lm-providers-content.tsx
 - src/app/auxiliares/modelos-ia/modelos-ia-content.tsx
-- src/lib/domain/* (novo)
-- src/components/* (subcomponentes novos/ajustados)
+- src/app/actions/lm-models.ts
+- src/components/lm-models/ModelsListView.tsx
+- src/hooks/useProjetosFilters.ts
+- src/hooks/useModelosIaFilters.ts
+- src/hooks/__tests__/useModelosIaFilters.test.ts
+- src/lib/domain/project-health.ts
+- src/lib/domain/project-priority.ts
+- src/lib/domain/project-phase.ts
+- src/lib/domain/__tests__/project-health.test.ts
+- src/lib/domain/__tests__/project-priority.test.ts
+- src/lib/domain/__tests__/project-phase.test.ts
+- src/lib/filters/filters-lm-providers.ts
+- src/lib/filters/filters-modelos-ia.ts
 - docs/architecture/module-standards.md

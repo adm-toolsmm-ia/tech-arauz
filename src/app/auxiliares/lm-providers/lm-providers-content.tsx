@@ -65,6 +65,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
   const [providers, setProviders] = useState(initialProviders);
   const [modelsByProviderId, setModelsByProviderId] = useState<Record<string, LmModel[]>>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [providerToDelete, setProviderToDelete] = useState<LmProvider | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<LmProvider | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<CreateProviderFormData>({
@@ -153,13 +154,12 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
       return;
     }
 
-    if (!confirm(`Tem certeza que deseja deletar "${provider.name}"?`)) return;
-
     try {
       const result = await deleteLmProviderAction(provider.id);
       if (result.success) {
         setProviders((prev) => prev.filter((p) => p.id !== provider.id));
         setSelectedProvider(null);
+        setProviderToDelete(null);
         toast.success(`✅ ${result.message}`);
       } else {
         toast.error(`❌ ${result.message}`);
@@ -435,7 +435,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                             title="Deletar"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDelete(provider);
+                              setProviderToDelete(provider);
                             }}
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
@@ -626,6 +626,31 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!providerToDelete} onOpenChange={(open) => !open && setProviderToDelete(null)}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Confirmar exclusao</DialogTitle>
+            <DialogDescription>
+              Deseja excluir o provedor {providerToDelete?.name}? Esta acao nao pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setProviderToDelete(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (providerToDelete) void handleDelete(providerToDelete);
+              }}
+            >
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+

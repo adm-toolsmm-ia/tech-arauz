@@ -5,15 +5,14 @@ import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import {
@@ -23,17 +22,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Zap, Database } from 'lucide-react';
+import { Database, Plus, Trash2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { FilterBar } from '@/components/filters/FilterBar';
-import { filterRegistryModelosIa } from '@/lib/filters/filters-modelos-ia';
 import { SplitView } from '@/components/views/SplitView';
-import { ViewToggle, type ViewMode } from '@/components/views/ViewToggle';
-import { KanbanBoard, type KanbanItem, type KanbanColumn } from '@/components/views/KanbanBoard';
+import { KanbanBoard, type KanbanColumn, type KanbanItem } from '@/components/views/KanbanBoard';
 import { ModelCard } from '@/components/lm-models/ModelCard';
 import { ModelsKanbanCard } from '@/components/lm-models/ModelsKanbanCard';
 import { ModelsListView } from '@/components/lm-models/ModelsListView';
-import { updateLmModelDisplayOrderAction } from '@/app/actions/lm-models';
+import {
+  createLmModelAction,
+  deleteLmModelAction,
+  updateLmModelDisplayOrderAction,
+} from '@/app/actions/lm-models';
+import { useModelosIaFilters, type ModelWithProvider } from '@/hooks/useModelosIaFilters';
 import type { LmModel, LmProvider } from '@/types/agents';
 
 interface ModelsIaContentProps {
@@ -49,17 +51,12 @@ interface FormData {
   max_tokens?: number;
 }
 
-export function ModelsIaContent({
-  initialModels,
-  initialProviders,
-}: ModelsIaContentProps) {
-  const [models, setModels] = useState(initialModels);
-  const [selectedModel, setSelectedModel] = useState<LmModel | null>(null);
+export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaContentProps) {
+  const [models, setModels] = useState<ModelWithProvider[]>(initialModels);
+  const [selectedModel, setSelectedModel] = useState<ModelWithProvider | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [modelToDelete, setModelToDelete] = useState<ModelWithProvider | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [selectedProvider, setSelectedProvider] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'kanban'>('grid');
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -69,38 +66,45 @@ export function ModelsIaContent({
     max_tokens: undefined,
   });
 
-  // KPIs
+  const {
+    filters,
+    search,
+    viewMode,
+    setViewMode,
+    filteredData,
+    setSearch,
+    updateFilter,
+    resetAllFilters,
+    registry,
+  } = useModelosIaFilters(models, initialProviders);
+
+  const filteredModels = useMemo(
+    () =>
+      [...filteredData].sort((a, b) => {
+        const orderA = a.display_order ?? 100;
+        const orderB = b.display_order ?? 100;
+        if (orderA !== orderB) return orderA - orderB;
+        return a.name.localeCompare(b.name, 'pt-BR');
+      }),
+    [filteredData],
+  );
+
+  const selectedProviderFilters = useMemo(
+    () => (Array.isArray(filters.provider_id) ? (filters.provider_id as string[]) : []),
+    [filters.provider_id],
+  );
+
   const kpis = useMemo(
     () => ({
       total: models.length,
       byProvider:
-        selectedProvider && selectedProvider !== 'all'
-          ? models.filter((m) => m.provider_id === selectedProvider).length
+        selectedProviderFilters.length === 1
+          ? models.filter((m) => m.provider_id === selectedProviderFilters[0]).length
           : 0,
-      unique_providers: new Set(models.map((m) => m.provider_id)).size,
+      uniqueProviders: new Set(models.map((m) => m.provider_id)).size,
     }),
-    [models, selectedProvider]
+    [models, selectedProviderFilters],
   );
-
-  // Filtrar modelos
-  const filteredModels = useMemo(() => {
-    return models
-      .filter((model) => {
-        const searchLower = search.toLowerCase();
-        const matchesSearch =
-          model.name.toLowerCase().includes(searchLower) ||
-          model.model_id.toLowerCase().includes(searchLower);
-        const matchesProvider =
-          selectedProvider === 'all' || model.provider_id === selectedProvider;
-        return matchesSearch && matchesProvider;
-      })
-      .sort((a, b) => {
-        // Sort by display_order (ascending), with default value of 100
-        const orderA = a.display_order ?? 100;
-        const orderB = b.display_order ?? 100;
-        return orderA - orderB;
-      });
-  }, [models, search, selectedProvider]);
 
   const resetForm = useCallback(() => {
     setFormData({
@@ -112,63 +116,149 @@ export function ModelsIaContent({
     });
   }, []);
 
-  // ===== KANBAN LOGIC =====
-  // Build dynamic columns based on providers (1 column per provider)
-  const kanbanColumns: KanbanColumn[] = useMemo(() => {
-    const providers = initialProviders.filter((p) =>
-      models.some((m) => m.provider_id === p.id)
-    );
-    return providers.map((provider) => ({
-      id: provider.id,
-      title: `${provider.icon_emoji || '🤖'} ${provider.name}`,
-      color: 'blue', // Default color
-    }));
-  }, [initialProviders, models]);
-
-  // Transform models to Kanban items
-  const kanbanItems: KanbanItem[] = useMemo(() => {
-    return filteredModels.map((model) => ({
-      id: model.id,
-      title: model.name,
-      subtitle: model.model_id,
-      status: model.provider_id,
-      metadata: {
-        tier: model.tier || 'balanced',
-      },
-    }));
-  }, [filteredModels]);
-
-  // Handle drag-drop reordering (update display_order)
-  const handleKanbanStatusChange = async (itemId: string | number, newStatus: string) => {
-    const modelId = String(itemId);
-    const model = models.find((m) => m.id === modelId);
-    if (!model) return;
-
-    const newDisplayOrder = (model.display_order ?? 100) + 1;
-
-    toast.loading('Atualizando ordem...');
-    try {
-      const result = await updateLmModelDisplayOrderAction(modelId, newDisplayOrder);
-      if (result.success) {
-        // Update local state
-        setModels((prev) =>
-          prev.map((m) =>
-            m.id === modelId ? { ...m, provider_id: newStatus, display_order: newDisplayOrder } : m
-          )
-        );
-        toast.success('Ordem atualizada!');
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar ordem:', error);
-      toast.error('Erro ao atualizar ordem');
+  const handleCreate = useCallback(async () => {
+    if (!formData.provider_id) {
+      toast.error('Selecione o fornecedor do modelo.');
+      return;
     }
-  };
+
+    if (!formData.name.trim() || !formData.model_id.trim()) {
+      toast.error('Nome e Model ID sao obrigatorios.');
+      return;
+    }
+
+    const toastId = toast.loading('Criando modelo...');
+    setIsLoading(true);
+
+    try {
+      const result = await createLmModelAction({
+        provider_id: formData.provider_id,
+        name: formData.name.trim(),
+        model_id: formData.model_id.trim(),
+        docs_url: formData.docs_url.trim() || undefined,
+        max_tokens: formData.max_tokens,
+        is_active: true,
+        is_system: false,
+      });
+
+      if (!result.success || !result.data) {
+        toast.error(result.message, { id: toastId });
+        return;
+      }
+
+      const provider = initialProviders.find((item) => item.id === result.data?.provider_id);
+      const modelWithProvider: ModelWithProvider = {
+        ...result.data,
+        lm_providers: provider,
+      };
+
+      setModels((prev) => [...prev, modelWithProvider]);
+      setSelectedModel(modelWithProvider);
+      setIsCreateDialogOpen(false);
+      resetForm();
+      toast.success(result.message, { id: toastId });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Erro ao criar modelo.', { id: toastId });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [formData, initialProviders, resetForm]);
+
+  const handleDelete = useCallback(async () => {
+    if (!modelToDelete) return;
+
+    const toastId = toast.loading('Excluindo modelo...');
+
+    try {
+      const result = await deleteLmModelAction(modelToDelete.id);
+
+      if (!result.success) {
+        toast.error(result.message, { id: toastId });
+        return;
+      }
+
+      setModels((prev) => prev.filter((model) => model.id !== modelToDelete.id));
+      setSelectedModel((prev) => (prev?.id === modelToDelete.id ? null : prev));
+      setModelToDelete(null);
+      toast.success(result.message, { id: toastId });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Erro ao excluir modelo.', { id: toastId });
+    }
+  }, [modelToDelete]);
+
+  const kanbanColumns: KanbanColumn[] = useMemo(() => {
+    const providerIds = new Set(filteredModels.map((model) => model.provider_id));
+
+    return initialProviders
+      .filter((provider) => providerIds.has(provider.id))
+      .map((provider) => ({
+        id: provider.id,
+        title: `${provider.icon_emoji || 'AI'} ${provider.name}`,
+        color: 'blue',
+      }));
+  }, [filteredModels, initialProviders]);
+
+  const kanbanItems: KanbanItem[] = useMemo(
+    () =>
+      filteredModels.map((model) => ({
+        id: model.id,
+        title: model.name,
+        subtitle: model.model_id,
+        status: model.provider_id,
+        metadata: {
+          tier: model.tier || 'balanced',
+        },
+      })),
+    [filteredModels],
+  );
+
+  const handleKanbanStatusChange = useCallback(
+    async (itemId: string | number, newStatus: string) => {
+      const modelId = String(itemId);
+      const model = models.find((item) => item.id === modelId);
+      if (!model) return;
+
+      const newDisplayOrder = (model.display_order ?? 100) + 1;
+      const toastId = toast.loading('Atualizando ordem e fornecedor...');
+
+      try {
+        const result = await updateLmModelDisplayOrderAction(modelId, newDisplayOrder);
+
+        if (!result.success) {
+          toast.error(result.message, { id: toastId });
+          return;
+        }
+
+        const provider = initialProviders.find((item) => item.id === newStatus);
+
+        setModels((prev) =>
+          prev.map((item) =>
+            item.id === modelId
+              ? { ...item, provider_id: newStatus, display_order: newDisplayOrder, lm_providers: provider }
+              : item,
+          ),
+        );
+
+        setSelectedModel((prev) =>
+          prev?.id === modelId
+            ? { ...prev, provider_id: newStatus, display_order: newDisplayOrder, lm_providers: provider }
+            : prev,
+        );
+
+        toast.success('Modelo atualizado com sucesso.', { id: toastId });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Erro ao atualizar modelo.', { id: toastId });
+      }
+    },
+    [initialProviders, models],
+  );
 
   const handleBulkToggleActive = useCallback(async (modelIds: string[], isActive: boolean) => {
+    const toastId = toast.loading(isActive ? 'Ativando modelos...' : 'Desativando modelos...');
+
     try {
       setIsBulkUpdating(true);
+
       const response = await fetch('/api/lm-models/bulk-update', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -176,133 +266,107 @@ export function ModelsIaContent({
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao atualizar modelos');
+        throw new Error('Falha ao atualizar modelos em lote.');
       }
 
       const updated = await response.json();
+
       setModels((prevModels) =>
-        prevModels.map((m) =>
-          updated.ids.includes(m.id) ? { ...m, is_active: isActive } : m
-        )
+        prevModels.map((model) =>
+          updated.ids.includes(model.id) ? { ...model, is_active: isActive } : model,
+        ),
+      );
+
+      setSelectedModel((prev) =>
+        prev && updated.ids.includes(prev.id) ? { ...prev, is_active: isActive } : prev,
       );
 
       toast.success(
-        `${updated.ids.length} modelo${updated.ids.length !== 1 ? 's' : ''} ${isActive ? 'ativado' : 'desativado'}`
+        `${updated.ids.length} modelo${updated.ids.length !== 1 ? 's' : ''} ${isActive ? 'ativado(s)' : 'desativado(s)'}.`,
+        { id: toastId },
       );
     } catch (error) {
-      console.error('Erro ao atualizar modelos:', error);
-      toast.error('Erro ao atualizar modelos');
+      toast.error(error instanceof Error ? error.message : 'Erro ao atualizar modelos.', { id: toastId });
     } finally {
       setIsBulkUpdating(false);
     }
   }, []);
 
-  // TODO: Implementar ações (create, delete)
+  const listAnnouncement = `Lista com ${filteredModels.length} modelos.`;
 
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <DashboardHeader
-          title="Gestão 360° de Modelos IA"
-          subtitle="Visualize, organize e gerencie todos os modelos de IA dos seus fornecedores"
+          title="Gestao 360 de Modelos IA"
+          subtitle="Visualize, organize e gerencie modelos de IA por fornecedor"
         />
         <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Novo Modelo
         </Button>
       </div>
 
-      {/* KPIs */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {listAnnouncement}
+      </p>
+
       {models.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <KPICard
-            icon={Database}
-            title="Total de Modelos"
-            value={kpis.total}
-            trend={{ value: '0', positive: false }}
-          />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <KPICard icon={Database} title="Total de Modelos" value={kpis.total} trend={{ value: '0', positive: false }} />
           <KPICard
             icon={Zap}
-            title={
-              selectedProvider && selectedProvider !== 'all'
-                ? 'Modelos do Fornecedor'
-                : 'Fornecedores'
-            }
-            value={
-              selectedProvider && selectedProvider !== 'all'
-                ? kpis.byProvider
-                : kpis.unique_providers
-            }
+            title={selectedProviderFilters.length === 1 ? 'Modelos do Fornecedor' : 'Fornecedores'}
+            value={selectedProviderFilters.length === 1 ? kpis.byProvider : kpis.uniqueProviders}
             trend={{ value: '0', positive: false }}
           />
-          <KPICard
-            icon={Plus}
-            title="Filtrados"
-            value={filteredModels.length}
-            trend={{ value: '0', positive: true }}
-          />
+          <KPICard icon={Plus} title="Filtrados" value={filteredModels.length} trend={{ value: '0', positive: true }} />
         </div>
       )}
 
-      {/* Info Card */}
       <Card className="border-blue-200 bg-blue-50">
         <CardHeader>
-          <CardTitle className="text-sm">📚 Sobre Modelos IA</CardTitle>
+          <CardTitle className="text-sm">Sobre Modelos IA</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
           <p>
-            Modelos IA são os componentes principais dos Fornecedores IA. Cada modelo tem
-            configurações únicas (tamanho de contexto, documentação, etc.) e pode ser usado por
-            diferentes tipos de agentes.
+            Modelos IA representam as configuracoes operacionais dos fornecedores. Use filtros,
+            kanban e lista para manter catalogo padronizado e priorizado.
           </p>
         </CardContent>
       </Card>
 
-      {/* Filtros */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <FilterBar
-            moduleId={filterRegistryModelosIa.moduleId}
-            filters={filterRegistryModelosIa}
-            onFiltersChange={() => {}}
-            onSearchChange={setSearch}
-            onViewModeChange={(mode) => setViewMode(mode as 'grid' | 'list' | 'kanban')}
-            initialFilters={{}}
-            initialSearch={search}
-            initialViewMode="grid"
-            currentFilters={{}}
-            currentSearch={search}
-            currentViewMode={viewMode}
-            onUpdateFilter={() => {}}
-          />
-        </div>
+      <FilterBar
+        moduleId="modelos-ia"
+        filters={registry}
+        onFiltersChange={(newFilters) => {
+          Object.entries(newFilters).forEach(([key, value]) => {
+            if (filters[key] !== value) {
+              updateFilter(key, value);
+            }
+          });
+        }}
+        onSearchChange={setSearch}
+        onViewModeChange={setViewMode}
+        initialFilters={filters}
+        initialSearch={search}
+        initialViewMode={viewMode}
+        currentFilters={filters}
+        currentSearch={search}
+        currentViewMode={viewMode}
+        onUpdateFilter={updateFilter}
+        onResetFilters={() => {
+          resetAllFilters();
+          setSearch('');
+        }}
+      />
 
-        {/* Provider Filter */}
-        <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-          <SelectTrigger className="w-full md:w-64">
-            <SelectValue placeholder="Filtrar por fornecedor..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os fornecedores</SelectItem>
-            {initialProviders.map((provider) => (
-              <SelectItem key={provider.id} value={provider.id}>
-                {provider.icon_emoji} {provider.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Models Grid/List/Kanban */}
       {filteredModels.length === 0 ? (
         <Card>
           <CardContent className="pb-12 pt-12">
             <div className="text-center">
               <p className="mb-4 text-muted-foreground">
-                {models.length === 0
-                  ? 'Nenhum modelo criado ainda'
-                  : 'Nenhum resultado encontrado'}
+                {models.length === 0 ? 'Nenhum modelo criado ainda' : 'Nenhum resultado encontrado'}
               </p>
             </div>
           </CardContent>
@@ -314,17 +378,20 @@ export function ModelsIaContent({
             items={kanbanItems}
             selectedId={selectedModel?.id}
             onItemClick={(item) => {
-              const model = models.find((m) => m.id === item.id);
-              if (model) setSelectedModel(model);
+              const model = models.find((entry) => entry.id === item.id);
+              if (model) {
+                setSelectedModel(model);
+              }
             }}
             onStatusChange={handleKanbanStatusChange}
             renderItemContent={(item) => {
-              const model = models.find((m) => m.id === item.id);
+              const model = models.find((entry) => entry.id === item.id);
               if (!model) return null;
-              const provider = initialProviders.find((p) => p.id === model.provider_id);
+
+              const provider = initialProviders.find((entry) => entry.id === model.provider_id);
               return <ModelsKanbanCard model={model} provider={provider} />;
             }}
-            emptyMessage="Nenhum modelo disponível no Kanban"
+            emptyMessage="Nenhum modelo disponivel no Kanban"
           />
         </div>
       ) : viewMode === 'list' ? (
@@ -332,8 +399,10 @@ export function ModelsIaContent({
           models={filteredModels}
           providers={initialProviders}
           onSelectModel={(modelId) => {
-            const model = models.find((m) => m.id === modelId);
-            if (model) setSelectedModel(model);
+            const model = models.find((entry) => entry.id === modelId);
+            if (model) {
+              setSelectedModel(model);
+            }
           }}
           onBulkToggleActive={handleBulkToggleActive}
           isLoading={isBulkUpdating}
@@ -346,14 +415,17 @@ export function ModelsIaContent({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
               {filteredModels.map((model) => (
                 <ModelCard
                   key={model.id}
                   model={model}
-                  provider={model.lm_providers as any}
+                  provider={model.lm_providers}
                   isSelected={selectedModel?.id === model.id}
                   onSelect={setSelectedModel}
+                  onDelete={(_, target) => {
+                    setModelToDelete(target as ModelWithProvider);
+                  }}
                 />
               ))}
             </div>
@@ -361,7 +433,6 @@ export function ModelsIaContent({
         </Card>
       )}
 
-      {/* SplitView - Modelo Details */}
       {selectedModel && (
         <SplitView
           isOpen={!!selectedModel}
@@ -372,7 +443,7 @@ export function ModelsIaContent({
         >
           <div className="space-y-6">
             <div>
-              <h3 className="text-sm font-semibold mb-2">Informações Gerais</h3>
+              <h3 className="mb-2 text-sm font-semibold">Informacoes Gerais</h3>
               <dl className="space-y-2 text-sm">
                 <div>
                   <dt className="text-muted-foreground">Nome:</dt>
@@ -384,10 +455,8 @@ export function ModelsIaContent({
                 </div>
                 {selectedModel.max_tokens != null && (
                   <div>
-                    <dt className="text-muted-foreground">Máx. Tokens:</dt>
-                    <dd className="font-medium">
-                      {selectedModel.max_tokens.toLocaleString('pt-BR')} tokens
-                    </dd>
+                    <dt className="text-muted-foreground">Max. Tokens:</dt>
+                    <dd className="font-medium">{selectedModel.max_tokens.toLocaleString('pt-BR')} tokens</dd>
                   </div>
                 )}
               </dl>
@@ -395,37 +464,56 @@ export function ModelsIaContent({
 
             {selectedModel.docs_url && (
               <div>
-                <h3 className="text-sm font-semibold mb-2">Documentação</h3>
+                <h3 className="mb-2 text-sm font-semibold">Documentacao</h3>
                 <a
                   href={selectedModel.docs_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary underline text-sm"
+                  className="text-sm text-primary underline"
                 >
-                  Ver documentação →
+                  Ver documentacao
                 </a>
               </div>
+            )}
+
+            {!selectedModel.is_system && (
+              <Button
+                variant="destructive"
+                onClick={() => setModelToDelete(selectedModel)}
+                className="w-full"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Excluir Modelo
+              </Button>
             )}
           </div>
         </SplitView>
       )}
 
-      {/* Create Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+      <Dialog
+        open={isCreateDialogOpen}
+        onOpenChange={(open) => {
+          setIsCreateDialogOpen(open);
+          if (!open) {
+            resetForm();
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Novo Modelo IA</DialogTitle>
             <DialogDescription>
-              Crie um novo modelo adicionando informações do provedor de IA.
+              Crie um novo modelo vinculando ao fornecedor e parametros basicos.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
               <Label>Fornecedor</Label>
-              <Select value={formData.provider_id} onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, provider_id: value }))
-              }>
+              <Select
+                value={formData.provider_id}
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, provider_id: value }))}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um fornecedor..." />
                 </SelectTrigger>
@@ -444,7 +532,7 @@ export function ModelsIaContent({
               <Input
                 placeholder="Ex: GPT-4 Turbo"
                 value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
               />
             </div>
 
@@ -453,33 +541,29 @@ export function ModelsIaContent({
               <Input
                 placeholder="Ex: gpt-4-turbo-preview"
                 value={formData.model_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, model_id: e.target.value }))
-                }
+                onChange={(event) => setFormData((prev) => ({ ...prev, model_id: event.target.value }))}
               />
             </div>
 
             <div>
-              <Label>URL da Documentação (opcional)</Label>
+              <Label>URL de Documentacao (opcional)</Label>
               <Input
                 placeholder="https://..."
                 value={formData.docs_url}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, docs_url: e.target.value }))
-                }
+                onChange={(event) => setFormData((prev) => ({ ...prev, docs_url: event.target.value }))}
               />
             </div>
 
             <div>
-              <Label>Máx. Tokens (opcional)</Label>
+              <Label>Max. Tokens (opcional)</Label>
               <Input
                 type="number"
                 placeholder="Ex: 8000"
                 value={formData.max_tokens ?? ''}
-                onChange={(e) =>
+                onChange={(event) =>
                   setFormData((prev) => ({
                     ...prev,
-                    max_tokens: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                    max_tokens: event.target.value ? parseInt(event.target.value, 10) : undefined,
                   }))
                 }
               />
@@ -490,10 +574,28 @@ export function ModelsIaContent({
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button disabled={isLoading} onClick={() => {
-              toast.info('Funcionalidade em desenvolvimento');
-            }}>
+            <Button disabled={isLoading} onClick={handleCreate}>
               {isLoading ? 'Criando...' : 'Criar Modelo'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!modelToDelete} onOpenChange={(open) => !open && setModelToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar exclusao</DialogTitle>
+            <DialogDescription>
+              Deseja realmente excluir o modelo {modelToDelete?.name}? Esta acao nao pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setModelToDelete(null)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Excluir
             </Button>
           </DialogFooter>
         </DialogContent>

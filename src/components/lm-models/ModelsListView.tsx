@@ -1,19 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { ChevronDown, ChevronUp, Trash2, Power } from 'lucide-react';
+import { ChevronDown, ChevronUp, Power } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import type { LmModel, LmProvider } from '@/types/agents';
 
 interface ModelsListViewProps {
@@ -61,9 +54,6 @@ export function ModelsListView({
   const [sortBy, setSortBy] = React.useState<'name' | 'provider' | 'tier' | 'context'>('name');
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
-  const [filterTier, setFilterTier] = React.useState<string>('all');
-  const [filterProvider, setFilterProvider] = React.useState<string>('all');
-  const [filterStatus, setFilterStatus] = React.useState<string>('all');
 
   const toggleSelect = (modelId: string) => {
     const newSelected = new Set(selectedIds);
@@ -84,20 +74,7 @@ export function ModelsListView({
   };
 
   const filteredModels = React.useMemo(() => {
-    let filtered = [...models];
-
-    if (filterTier !== 'all') {
-      filtered = filtered.filter((m) => m.tier === filterTier);
-    }
-
-    if (filterProvider !== 'all') {
-      filtered = filtered.filter((m) => m.provider_id === filterProvider);
-    }
-
-    if (filterStatus !== 'all') {
-      const isActive = filterStatus === 'active';
-      filtered = filtered.filter((m) => m.is_active === isActive);
-    }
+    const filtered = [...models];
 
     filtered.sort((a, b) => {
       let comparison = 0;
@@ -118,7 +95,7 @@ export function ModelsListView({
     });
 
     return filtered;
-  }, [models, sortBy, sortDirection, filterTier, filterProvider, filterStatus, providers]);
+  }, [models, sortBy, sortDirection, providers]);
 
   const SortHeader = ({
     column,
@@ -166,48 +143,7 @@ export function ModelsListView({
 
   return (
     <div className="w-full space-y-4">
-      {/* Filtros */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Select value={filterTier} onValueChange={setFilterTier}>
-          <SelectTrigger className="text-xs">
-            <SelectValue placeholder="Filtrar por tier..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os tiers</SelectItem>
-            <SelectItem value="entry">Entry</SelectItem>
-            <SelectItem value="balanced">Balanced</SelectItem>
-            <SelectItem value="pro">Pro</SelectItem>
-            <SelectItem value="flagship">Flagship</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={filterProvider} onValueChange={setFilterProvider}>
-          <SelectTrigger className="text-xs">
-            <SelectValue placeholder="Filtrar por fornecedor..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os fornecedores</SelectItem>
-            {providers.map((provider) => (
-              <SelectItem key={provider.id} value={provider.id}>
-                {provider.icon_emoji} {provider.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="text-xs">
-            <SelectValue placeholder="Filtrar por status..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os status</SelectItem>
-            <SelectItem value="active">Ativo</SelectItem>
-            <SelectItem value="inactive">Inativo</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Ações em massa */}
+      {/* Acoes em massa */}
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-lg">
           <span className="text-xs font-medium text-muted-foreground">
@@ -424,3 +360,5 @@ export function ModelsListView({
     </div>
   );
 }
+
+

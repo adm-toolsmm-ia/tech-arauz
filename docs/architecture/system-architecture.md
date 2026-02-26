@@ -181,7 +181,14 @@ Foi definido um padrao formal de arquitetura e design para novos modulos/tabelas
 
 Este padrao passa a ser gate de entrega para novas stories de modulo/feature.
 
-## 10. Proximos passos para o workflow brownfield-discovery
+## 10. Governanca de seguranca e observabilidade
+
+Documentos operacionais adicionados para governanca continua:
+
+- Matriz de autorizacao DB x API: `docs/architecture/authorization-matrix.md`
+- Politica de retencao de logs: `docs/architecture/log-retention-policy.md`
+
+## 11. Proximos passos para o workflow brownfield-discovery
 
 Com a Fase 1 concluida, os proximos artefatos esperados no workflow sao:
 

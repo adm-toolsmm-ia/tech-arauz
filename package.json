@@ -14,6 +14,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "typecheck": "tsc --noEmit",
+    "audit:rls": "node ./scripts/ci/check-rls-audit.mjs",
     "sync:ide": "node .aios-core/infrastructure/scripts/ide-sync/index.js sync",
     "sync:ide:check": "node .aios-core/infrastructure/scripts/ide-sync/index.js validate --strict",
     "sync": "powershell -ExecutionPolicy Bypass -File ./scripts/sync.ps1",

@@ -1,22 +1,37 @@
 /**
- * Filter Definitions - LM Providers Module (Auxiliares)
- * Configuração centralizada de filtros para o módulo de Provedores de LM
- *
- * Campos de busca: name, slug, description
+ * Filter definitions - LM Providers module.
  */
 
-import { LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, Power, Lock } from 'lucide-react';
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
-/**
- * Filter Definitions para Provedores de LM
- * Módulo auxiliar: apenas busca global (sem quick filters na v1)
- */
-export const filterDefinitionsLmProviders: FilterDefinition[] = [];
+export const filterDefinitionsLmProviders: FilterDefinition[] = [
+  {
+    id: 'is_active',
+    label: 'Status',
+    type: 'select',
+    options: [
+      { value: true, label: 'Ativo' },
+      { value: false, label: 'Inativo' },
+    ],
+    quickFilter: true,
+    icon: Power,
+    description: 'Filtrar por status de ativacao',
+  },
+  {
+    id: 'is_system',
+    label: 'Origem',
+    type: 'select',
+    options: [
+      { value: true, label: 'Sistema' },
+      { value: false, label: 'Customizado' },
+    ],
+    quickFilter: true,
+    icon: Lock,
+    description: 'Filtrar provedores de sistema ou customizados',
+  },
+];
 
-/**
- * Filter Registry para o módulo LM Providers
- */
 export const filterRegistryLmProviders: FilterRegistry = {
   moduleId: 'lm-providers',
   filters: filterDefinitionsLmProviders,
@@ -27,7 +42,4 @@ export const filterRegistryLmProviders: FilterRegistry = {
   ],
 };
 
-/**
- * Campos de busca (search)
- */
 export const searchFieldsLmProviders = ['name', 'slug', 'description'];

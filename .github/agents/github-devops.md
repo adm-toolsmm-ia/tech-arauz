@@ -1,18 +1,6 @@
 # Agent Redirect: github-devops → devops
 
-**DEPRECATED:** This agent has been renamed/merged.
-
-Use `@devops` instead.
-
----
-
-## Redirect Details
-
-| Property | Value |
-|----------|-------|
-| Old ID | @github-devops |
-| New ID | @devops |
-| Status | Deprecated |
+> **DEPRECATED:** This agent has been renamed/merged. Use `@devops` instead.
 
 ---
 *AIOS Redirect - Synced automatically*

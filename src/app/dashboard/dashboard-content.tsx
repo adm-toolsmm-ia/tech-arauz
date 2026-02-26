@@ -36,6 +36,8 @@ import {
   priorityStyles,
   priorityLabels,
 } from '@/lib/constants/phase-labels';
+import { getOverdueData, isConsideredActive } from '@/lib/domain/project-health';
+import { isHighPriorityProject } from '@/lib/domain/project-priority';
 
 interface Profile {
   id: string;
@@ -82,37 +84,6 @@ interface DashboardContentProps {
   isLoading?: boolean;
 }
 
-function getOverdueData(
-  project: UIProject,
-  referenceDate = new Date(),
-): { isOverdue: boolean; maxDays: number } {
-  const status = (project.status || '').trim().toLowerCase();
-  if (status === 'concluído' || status === 'cancelado') return { isOverdue: false, maxDays: 0 };
-
-  const datesToCheck = [project.end_date, project.prazo_cronograma, project.prazo_aprovador]
-    .filter(Boolean)
-    .map((d) => new Date(d as string));
-
-  if (datesToCheck.length === 0) return { isOverdue: false, maxDays: 0 };
-
-  const refMidnight = new Date(referenceDate);
-  refMidnight.setHours(0, 0, 0, 0);
-
-  let maxDays = 0;
-  let isOverdue = false;
-
-  datesToCheck.forEach((d) => {
-    if (d < refMidnight) {
-      isOverdue = true;
-      const diffTime = Math.abs(refMidnight.getTime() - d.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > maxDays) maxDays = diffDays;
-    }
-  });
-
-  return { isOverdue, maxDays };
-}
-
 export function DashboardContent({
   user,
   profile,
@@ -126,11 +97,6 @@ export function DashboardContent({
 
   // ─── KPI Calculations (manager-focused) ───
   const now = React.useMemo(() => new Date(), []);
-
-  const isConsideredActive = (statusStr: string) => {
-    const s = (statusStr || '').trim().toLowerCase();
-    return s !== 'cancelado' && s !== 'concluído';
-  };
 
   const totalProjects = chartProjects.length;
   const coreActiveCount = chartProjects.filter((p) => isConsideredActive(p.status)).length;
@@ -170,19 +136,7 @@ export function DashboardContent({
     return { count, maxDays };
   }, [projects, now]);
 
-  const highPriorityCount = chartProjects.filter((p) => {
-    if (!isConsideredActive(p.status)) return false;
-    const prio = (p.prioridade || '').toLowerCase();
-    const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
-    const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
-    return (
-      prio === 'urgente' ||
-      prio === 'alta' ||
-      p.importancia_especial ||
-      isEstrategicoAlto ||
-      isOperacionalAlto
-    );
-  }).length;
+  const highPriorityCount = chartProjects.filter((p) => isHighPriorityProject(p)).length;
 
   const specialCount = chartProjects.filter(
     (p) => p.importancia_especial && isConsideredActive(p.status),
@@ -236,19 +190,7 @@ export function DashboardContent({
       case 'overdue':
         return projects.filter((p) => getOverdueData(p, now).isOverdue);
       case 'high_priority':
-        return projects.filter((p) => {
-          if (!isConsideredActive(p.status)) return false;
-          const prio = (p.priority || '').toLowerCase();
-          const isEstrategicoAlto = (p.impacto_estrategico || '').toLowerCase() === 'alto';
-          const isOperacionalAlto = (p.impacto_operacional || '').toLowerCase() === 'alto';
-          return (
-            prio === 'urgente' ||
-            prio === 'alta' ||
-            p.importancia_especial ||
-            isEstrategicoAlto ||
-            isOperacionalAlto
-          );
-        });
+        return projects.filter((p) => isHighPriorityProject(p));
       case 'special':
         return projects.filter((p) => p.importancia_especial && isConsideredActive(p.status));
       case 'by_status':
@@ -289,6 +231,10 @@ export function DashboardContent({
     setSelectedProject(project);
   };
 
+  const activeFilterMessage = activeFilter
+    ? `Filtro ${activeFilter.label} com ${filteredProjects.length} projetos.`
+    : 'Nenhum filtro KPI ativo.';
+
   return (
     <div className="flex flex-col">
       <DashboardHeader
@@ -297,6 +243,10 @@ export function DashboardContent({
       />
 
       <div className="flex-1 space-y-6 p-6">
+        <p className="sr-only" role="status" aria-live="polite">
+          {activeFilterMessage}
+        </p>
+
         {/* KPIs Row 1: Core Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (

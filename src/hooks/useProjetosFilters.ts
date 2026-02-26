@@ -1,9 +1,6 @@
 /**
  * useProjetosFilters Hook
- * Module-specific filter management for Projetos
- *
- * IMPORTANTE: Os campos de filtro usam nomes UI (após transformação),
- * NÃO nomes do banco de dados.
+ * Module-specific filter state and filtering rules for projetos.
  */
 
 'use client';
@@ -16,11 +13,12 @@ import {
 } from '@/lib/filters/filters-projetos';
 import { applyFilters, buildFilterOptions } from '@/lib/filters/filter-utils';
 import { useFilterState } from '@/hooks/useFilterState';
-import { FilterState } from '@/lib/filters/filter-types';
 import { phaseLabels } from '@/lib/constants/phase-labels';
+import { normalizePhaseSlug } from '@/lib/domain/project-phase';
+import { getOverdueData } from '@/lib/domain/project-health';
 
 /**
- * Project data interface (campos UI após transformação)
+ * Project data interface (UI fields after transform).
  */
 export interface ProjetosData {
   id: string;
@@ -68,98 +66,77 @@ export interface ProjetosData {
   histories?: any[];
   approvers?: any[];
   budgets?: any[];
-  // Computed fields
   sem_movimentacao?: boolean;
   atrasado?: boolean;
 }
 
 /**
- * Normaliza fase para slug (mesmo padrão usado no Kanban)
- */
-function normalizeFaseSlug(fase: string | null | undefined): string {
-  if (!fase) return '';
-  return fase
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-}
-
-/**
- * Hook for managing Projetos filters with data
+ * Hook for managing Projetos filters with data.
  */
 export function useProjetosFilters(projects: ProjetosData[]) {
-  // Update filter definitions with dynamic options from actual data
   const definitions = useMemo(() => {
     return filterDefinitionsProjetos.map((def) => {
-      // fase_atual: opções dinâmicas baseadas nos dados reais + phaseLabels
       if (def.id === 'fase_atual') {
-        const faseMap = new Map<string, string>();
-        projects.forEach((p) => {
-          if (p.fase_atual) {
-            const slug = normalizeFaseSlug(p.fase_atual);
-            const label = phaseLabels[slug] || p.fase_atual;
-            faseMap.set(slug, label);
-          }
+        const phaseMap = new Map<string, string>();
+
+        projects.forEach((project) => {
+          if (!project.fase_atual) return;
+
+          const slug = normalizePhaseSlug(project.fase_atual);
+          const label = phaseLabels[slug] || project.fase_atual;
+          phaseMap.set(slug, label);
         });
+
         return {
           ...def,
-          options: Array.from(faseMap.entries())
+          options: Array.from(phaseMap.entries())
             .map(([value, label]) => ({ value, label }))
             .sort((a, b) => a.label.localeCompare(b.label, 'pt-BR')),
         };
       }
 
-      // status: opções dinâmicas dos dados reais
       if (def.id === 'status') {
         return {
           ...def,
-          options: buildFilterOptions(projects, 'status', (v) => v || 'Sem Status'),
+          options: buildFilterOptions(projects, 'status', (value) => value || 'Sem status'),
         };
       }
 
-      // responsible: opções dinâmicas dos dados reais
       if (def.id === 'responsible') {
         return {
           ...def,
-          options: buildFilterOptions(projects, 'responsible', (v) => v || 'Sem Responsável'),
+          options: buildFilterOptions(projects, 'responsible', (value) => value || 'Sem responsavel'),
         };
       }
 
-      // area: opções dinâmicas dos dados reais
       if (def.id === 'area') {
         return {
           ...def,
-          options: buildFilterOptions(projects, 'area', (v) => v || 'Sem Área'),
+          options: buildFilterOptions(projects, 'area', (value) => value || 'Sem area'),
         };
       }
 
-      // priority: opções dinâmicas dos dados reais
       if (def.id === 'priority') {
         return {
           ...def,
-          options: buildFilterOptions(projects, 'priority', (v) => v || 'Sem Prioridade'),
+          options: buildFilterOptions(projects, 'priority', (value) => value || 'Sem prioridade'),
         };
       }
 
-      // category: opções dinâmicas dos dados reais
       if (def.id === 'category') {
         return {
           ...def,
-          options: buildFilterOptions(projects, 'category', (v) => v || 'Sem Categoria'),
+          options: buildFilterOptions(projects, 'category', (value) => value || 'Sem categoria'),
         };
       }
 
-      // impacto_estrategico: opções dinâmicas dos dados reais
       if (def.id === 'impacto_estrategico') {
         return {
           ...def,
           options: buildFilterOptions(
             projects,
             'impacto_estrategico',
-            (v) => v || 'Sem Impacto Definido',
+            (value) => value || 'Sem impacto definido',
           ),
         };
       }
@@ -168,42 +145,39 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     });
   }, [projects]);
 
-  // Pre-compute campos computed (sem_movimentacao, atrasado)
   const projectsWithComputed = useMemo(() => {
     const now = new Date();
-    const nowMidnight = new Date(now);
-    nowMidnight.setHours(0, 0, 0, 0);
 
-    return projects.map((p) => {
-      // Sem Movimentação: Em execução > 7 dias sem movimentação
-      let sem_movimentacao = false;
-      if ((p.status || '').trim().toLowerCase() === 'em execução') {
-        const lastMove = p.data_movimentacao || p.last_update || p.updated_at;
+    return projects.map((project) => {
+      let semMovimentacao = false;
+      const normalizedStatus = (project.status || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      if (normalizedStatus === 'em execucao') {
+        const lastMove = project.data_movimentacao || project.last_update || project.updated_at;
+
         if (!lastMove) {
-          sem_movimentacao = true;
+          semMovimentacao = true;
         } else {
           const diffTime = now.getTime() - new Date(lastMove).getTime();
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          sem_movimentacao = diffDays > 7;
+          semMovimentacao = diffDays > 7;
         }
       }
 
-      // Atrasado: Prazo vencido e não concluído/cancelado
-      let atrasado = false;
-      const status = (p.status || '').trim().toLowerCase();
-      if (status !== 'concluído' && status !== 'cancelado') {
-        const datesToCheck = [p.end_date, p.prazo_cronograma, p.prazo_aprovador]
-          .filter(Boolean)
-          .map((d) => new Date(d as string));
+      const atrasado = getOverdueData(project, now).isOverdue;
 
-        atrasado = datesToCheck.some((d) => d < nowMidnight);
-      }
-
-      return { ...p, sem_movimentacao, atrasado };
+      return {
+        ...project,
+        sem_movimentacao: semMovimentacao,
+        atrasado,
+      };
     });
   }, [projects]);
 
-  // Use centralized filter state management
   const filterState = useFilterState({
     moduleId: 'projetos',
     definitions,
@@ -213,43 +187,40 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     },
   });
 
-  // Custom filter logic para fase_atual + campos boolean (sem_movimentacao, importancia_especial, atrasado)
   const filteredData = useMemo(() => {
     const faseFilter = filterState.filters.fase_atual;
     const hasFaseFilter = Array.isArray(faseFilter) && faseFilter.length > 0;
 
-    // 1. Aplicar filtro de fase separadamente (porque usa slug normalizado)
-    let data = projectsWithComputed; // ✅ Usar projectsWithComputed
+    let data = projectsWithComputed;
+
     if (hasFaseFilter) {
-      data = data.filter((p) => {
-        const slug = normalizeFaseSlug(p.fase_atual);
+      data = data.filter((project) => {
+        const slug = normalizePhaseSlug(project.fase_atual);
         return faseFilter.includes(slug);
       });
     }
 
-    // 2. Aplicar filtros boolean especiais (importancia_especial, sem_movimentacao, atrasado)
-    const importanciaFilter = filterState.filters.importancia_especial;
-    if (importanciaFilter === 'true') {
-      data = data.filter((p) => p.importancia_especial === true);
-    } else if (importanciaFilter === 'false') {
-      data = data.filter((p) => !p.importancia_especial);
+    const importanceFilter = filterState.filters.importancia_especial;
+    if (importanceFilter === 'true') {
+      data = data.filter((project) => project.importancia_especial === true);
+    } else if (importanceFilter === 'false') {
+      data = data.filter((project) => !project.importancia_especial);
     }
 
-    const semMovFilter = filterState.filters.sem_movimentacao;
-    if (semMovFilter === 'true') {
-      data = data.filter((p) => p.sem_movimentacao === true);
-    } else if (semMovFilter === 'false') {
-      data = data.filter((p) => !p.sem_movimentacao);
+    const withoutMovementFilter = filterState.filters.sem_movimentacao;
+    if (withoutMovementFilter === 'true') {
+      data = data.filter((project) => project.sem_movimentacao === true);
+    } else if (withoutMovementFilter === 'false') {
+      data = data.filter((project) => !project.sem_movimentacao);
     }
 
-    const atrasadoFilter = filterState.filters.atrasado;
-    if (atrasadoFilter === 'true') {
-      data = data.filter((p) => p.atrasado === true);
-    } else if (atrasadoFilter === 'false') {
-      data = data.filter((p) => !p.atrasado);
+    const overdueFilter = filterState.filters.atrasado;
+    if (overdueFilter === 'true') {
+      data = data.filter((project) => project.atrasado === true);
+    } else if (overdueFilter === 'false') {
+      data = data.filter((project) => !project.atrasado);
     }
 
-    // 3. Aplicar demais filtros (excluindo os já aplicados)
     const otherFilters = { ...filterState.filters };
     delete otherFilters.fase_atual;
     delete otherFilters.importancia_especial;
@@ -265,14 +236,12 @@ export function useProjetosFilters(projects: ProjetosData[]) {
   }, [projectsWithComputed, filterState.filters, filterState.search]);
 
   return {
-    // State
     filters: filterState.filters,
     search: filterState.search,
     viewMode: filterState.viewMode,
     definitions: filterState.definitions,
     filteredData,
 
-    // Actions
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,
     setViewMode: filterState.setViewMode,
@@ -280,15 +249,13 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     resetAllFilters: filterState.resetAllFilters,
     clearFilters: filterState.clearFilters,
 
-    // Metadata
     activeFilterCount: filterState.activeFilterCount,
     hasActiveFilters: filterState.hasActiveFilters,
     isFiltersEmpty: filterState.isFiltersEmpty,
 
-    // Registry (para usar em FilterBar) - com definitions dinâmicas
     registry: {
       ...filterRegistryProjetos,
-      filters: definitions, // ✅ Definitions com options dinâmicas
+      filters: definitions,
     },
   };
 }

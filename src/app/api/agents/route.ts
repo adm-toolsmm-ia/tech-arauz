@@ -5,6 +5,15 @@ import { createClient } from '@/lib/supabase/server';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
+function logProxyError(operation: 'GET' | 'POST', error: unknown) {
+  const err = error instanceof Error ? error : new Error(String(error));
+  console.error(`[agents/${operation}] Proxy error`, {
+    message: err.message,
+    stack: err.stack,
+    ai_service_url: AI_SERVICE_URL,
+  });
+}
+
 export async function GET(request: Request) {
   const supabase = await createClient();
 
@@ -58,7 +67,7 @@ export async function GET(request: Request) {
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('[agents/GET] Proxy error:', error);
+    logProxyError('GET', error);
     return NextResponse.json({ error: 'AI service unavailable' }, { status: 503 });
   }
 }
@@ -116,7 +125,7 @@ export async function POST(request: Request) {
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('[agents/POST] Proxy error:', error);
+    logProxyError('POST', error);
     return NextResponse.json({ error: 'AI service unavailable' }, { status: 503 });
   }
 }

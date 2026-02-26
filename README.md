@@ -1,130 +1,166 @@
-# Tech Araúz
+DOCUMENTO FUNDACIONAL — PORTAL TECH — V1
+Contexto + Metas + Diretrizes de Instalação para AIOS (brownfield-first)
 
-> Sistema de Gestão 360° de TI, Inovação e Projetos para o escritório Araúz.
+Resumo executivo
 
-## Visão Geral
+- Produto em estágio avançado de prototipagem, com contexto histórico limpo.
+- Plataforma multi-tenant de governança de projetos e tecnologia, preparada para IA nativa.
+- Primeiro locatário ativo: escritório jurídico (outros domínios virão).
+- Canais operacionais: e-mail, WhatsApp, Microsoft Teams e integração a ERP via API.
+- Prioridade: instalar a AIOS e iniciar o fluxo brownfield discovery para mapear o estado real do protótipo e estabelecer governança orientada a eventos.
 
-O **Portal Tech Arauz** centraliza a gestão de projetos, solicitações e métricas de TI, integrando-se com o ERP Espaider para sincronização automática de dados.
+1) Premissas do projeto
 
-**Status atual**: 🚀 **Fase de Evolução/Implementação**
-O sistema já conta com integração funcional com ERP, Dashboard de métricas, Gestão de Projetos (Kanban/Lista) e Gestão de Usuários.
+- Multi-tenant estrito: segregação lógica por locatário, sem mistura de dados, decisões e artefatos sempre atribuídos ao respectivo contexto.
+- Orientação a eventos: inteligência e automação reagem a eventos; dados estáticos não bastam.
+- ERP como fonte de verdade para finanças/metadados acordados; Portal como fonte de verdade para governança de projetos.
+- Rastreamento e auditabilidade: toda decisão automatizada deve ser justificável e observável.
+- Projeto é vitrine tecnológica; qualidade de engenharia e clareza executiva são não-negociáveis.
 
----
+1) Missão e posicionamento
 
-## 🤖 Arquitetura AIOS (AI-Orchestrated System)
+- Entregar governança visual executiva, operação eficiente e evolução arquitetural contínua, com IA nativa e replicável para múltiplos domínios (jurídico, financeiro, RH, operação).
+- Não é apenas “um painel”; é a base de governança e evolução do escritório.
 
-Este projeto utiliza **Synkra AIOS**, um meta-framework que orquestra agentes AI especializados para gerenciar fluxos de desenvolvimento complexos.
+1) Princípios orientadores (usar e citar ao recomendar)
 
-### 📐 Fonte de Verdade AIOS
+1. Simplicidade efetiva: não criar complexidade desnecessária.
+2. Automação útil: toda automação deve reduzir fricção operacional.
+3. Clareza acima de tudo: IA deve aumentar sinal, não ruído.
+4. Governança primeiro: decisões controladas e auditáveis superam experimentação solta.
+5. Replicabilidade: tudo deve poder ser levado a outros domínios sem recomeçar do zero.
 
-| Documento | Caminho | O que define |
-|-----------|---------|--------------|
-| **Constituição** (6 regras inegociáveis) | [`.aios-core/constitution.md`](.aios-core/constitution.md) | Regras que NUNCA podem ser quebradas |
-| **Agentes** (Personas e permissões) | [`.aios-core/development/agents/`](.aios-core/development/agents/) | Especialistas: @dev, @qa, @architect, @pm, @devops, etc. |
-| **Tasks & Workflows** (Receitas executáveis) | [`.aios-core/development/tasks/`](.aios-core/development/tasks/) | Procedimentos passo-a-passo para cada tipo de trabalho |
-| **Skills técnicas** | [`.agent/skills/`](.agent/skills/) | Receitas de especialidade (React, RLS, OWASP, Espaider...) |
-| **Memória histórica** | [`.agent/memory/`](.agent/memory/) | Logs de implementações anteriores (aprendizado acumulado) |
-| **Decisões arquiteturais** | [`.ai/decision-logs-index.md`](.ai/decision-logs-index.md) | ADRs (por que cada decisão foi tomada) |
-| **Regras de projeto** | [`.claude/rules/`](.claude/rules/) | Agent Authority, Story Lifecycle, Workflow Execution, CodeRabbit, IDS |
+1) Escopo inicial (o que é / o que não é)
+É
 
-### 🎯 Fluxo Padrão de Atendimento
+- Governança executiva de portfólio (projetos, riscos, marcos, aprovações, responsáveis, saúde).
+- Inteligência operacional com agentes focados em PMO, diretoria e documentação.
+- Plataforma replicável, com integradores por canal e reconciliação com ERP.
 
-```text
-Você → @aios-master (analisa + monta equipe) → agentes especialistas → plano de ação conjunto
-```
+Não é
 
-**Como ativar:**
+- Solução monolítica rígida.
+- Coleção de dashboards sem governança.
+- Execução autônoma sem aprovação e trilha de auditoria.
+- Reescrita do ERP ou dependência total dele para governança.
 
-- Agente: `@nome-do-agente` (exemplo: `@dev`, `@architect`, `@qa`)
-- Comando: `*comando-do-agente` (exemplo: `*develop`, `*validate-story`)
-- Mestre: `@aios-master` (orquestra automaticamente)
+1) Canais e integrações (como adaptadores de evento)
 
-### 👥 Equipe de Especialistas
+- E-mail, WhatsApp, Microsoft Teams: entrada/saída de mensagens, notificações, aprovações e resumos executivos.
+- ERP via API: importação/retorno de dados necessários à governança; reconciliação e idempotência como regra.
+- Cada canal deve definir autenticação, normalização, deduplicação, limites e estratégia de retry (sem exigir detalhes de implementação neste momento).
 
-| Agente | Expertise | Quando usar |
-|--------|-----------|-------------|
-| `@aios-master` | Orquestração | Ponto de entrada para demandas complexas |
-| `@pm` (Morgan) | Product Management | PRD, epics, roadmap |
-| `@sm` (River) | Scrum Master | Stories, sprint planning |
-| `@po` (Pax) | Product Owner | Validação de stories, priorização |
-| `@architect` (Aria) | Arquitetura | Design de sistemas, ADRs, decisões técnicas |
-| `@data-engineer` (Dara) | Banco de Dados | Supabase, RLS, migrations, Espaider, queries |
-| `@dev` (Dex) | Implementação | Código, debug, APIs, testes unitários |
-| `@frontend` | UI/React | Components, Next.js, Tailwind, design system |
-| `@mobile` | App Mobile | React Native, Expo, iOS/Android |
-| `@qa` (Quinn) | Quality Assurance | Testes E2E, quality gates, validação de critérios |
-| `@security` | Segurança | OWASP, RLS audit, vulnerabilidades |
-| `@devops` (Gage) | **ÚNICO** para git push | CI/CD, releases, infrastructure |
-| `@analyst` | Pesquisa | Brainstorming, discovery, análise |
-| `@ux-design-expert` | UX/Design | Wireframes, design system, research |
+1) Camadas de IA previstas
 
----
+- Assistência: resumos, alertas, documentação.
+- Análise: riscos, gargalos, tendências.
+- Recomendação: ação proposta com responsável, justificativa, impacto e prioridade.
+- Execução controlada: disparo de workflows sob regras e aprovações explícitas.
 
-## 🧠 Contexto do Projeto (Regras de Negócio)
+1) Métricas prioritárias (para instrumentação inicial)
 
-A documentação oficial de regras de negócio e requisitos reside EXCLUSIVAMENTE em `.context/`:
+- Percentual de projetos dentro do prazo.
+- Tempo médio por etapa.
+- Tempo médio de aprovação.
+- Ocorrência de atrasos recorrentes.
+- Taxa de retrabalho.
+- Volume de follow-up manual.
+- Tempo gasto em reuniões.
+- Confiabilidade de sincronização com ERP (sucesso, latência, reprocessos).
 
-```text
-.context/
-├── 00-MASTER.md              # 👈 COMECE AQUI (Ponto de Entrada Único)
-├── 01-foundation/            # Visão, Glossário e Escopo
-├── 02-rules/                 # Regras de Negócio, Requisitos e Rotinas
-└── 03-specs/                 # Especificações Técnicas e ADRs
-```
+1) Instalação AIOS — abordagem brownfield-first
+Objetivo
 
-> **Atenção:** Qualquer documentação fora desta estrutura (antiga pasta `docs`) foi migrada ou removida para garantir uma única fonte de verdade.
+- Mapear o que existe, o que funciona e onde estão lacunas, gerando um inventário claro do protótipo e um plano de evolução governado por eventos.
 
----
+Premissas de execução
 
-## 🚀 Como Executar
+- Sem ações irreversíveis.
+- Sem suposições ocultas: listar premissas quando necessário.
+- Versionar decisões e políticas da própria AIOS.
+- Toda sugestão deve referenciar um princípio orientador.
 
-1. **Instalar dependências:**
+Entregáveis do primeiro ciclo (contrato de saída)
 
-   ```bash
-   npm install
-   ```
+1. Confirmação de entendimento
+   - 5–10 pontos objetivos sobre o que o sistema é e não é.
+2. Perguntas críticas (até 7)
+   - Apenas o essencial para destravar decisões de arquitetura/operacional imediatas.
+3. Mapa de agentes
+   - Agentes previstos, propósito, gatilhos (eventos), entradas/saídas e políticas de aprovação.
+4. Modelo de eventos prioritário
+   - Lista priorizada de eventos-alvo com propósito e fonte (ERP / canais / interface / serviços).
+5. Plano de integração por canal
+   - Estratégia de conexão, tipos de mensagem, responsabilidades, limites e política de retries.
+6. Guardrails de governança
+   - Aprovações exigidas, auditoria mínima, limites multi-tenant, lista “não construir agora”.
+7. Roadmap 30/60/90
+   - Objetivos, marcos, riscos, dependências e critérios de conclusão verificáveis.
+8. Métricas e instrumentação
+   - Onde e como coletar; frequência; pontos de observabilidade mínimos.
+9. Quick wins (3 itens)
+   - Alto impacto, baixo esforço, com risco e dependências mapeados.
 
-2. **Configurar ambiente:**
+Critérios de sucesso do primeiro ciclo
 
-   Copie `.env.example` para `.env.local` e preencha as chaves (Supabase, Espaider Token).
+- Todos os entregáveis claros, acionáveis e vinculados aos princípios.
+- Lacunas mapeadas e decisões pendentes explícitas.
+- Nenhuma recomendação que cruze limites de governança ou multi-tenant.
 
-3. **Rodar servidor de desenvolvimento:**
+1) Perguntas críticas que a AIOS deve fazer (máx. 7)
 
-   ```bash
-   npm run dev
-   ```
+- Escopo atual do portfólio: quais tipos de projetos/processos estão dentro/fora no curto prazo?
+- Regras de aprovação: quais decisões exigem validação humana obrigatória e em quais canais?
+- Prioridade de canais: por onde devem fluir alertas críticos e aprovações executivas inicialmente?
+- Dependências ERP: quais dados precisam ser conciliados no dia a dia da governança?
+- Tolerância a risco: quais automações podem operar em modo sugerido vs. acionamento controlado?
+- Padrão de relatórios executivos: frequência, profundidade e formato preferidos?
+- Limites por locatário: quais políticas variam por contexto e quais são padrão global?
 
-4. **Rodar testes:**
+1) “Não construir agora” (para evitar deriva e overengineering)
 
-   ```bash
-   npm run test
-   ```
+- Geração de conteúdo criativo fora do escopo de governança.
+- Novas integrações de comunicação além das três priorizadas.
+- Autonomia total de agentes sem aprovação explícita.
+- Reescrita ou substituição do ERP.
+- Dashboards genéricos sem vínculo a eventos, métricas e decisões.
 
-5. **Comandos de DX:**
-   - `npm run sync`: Sincroniza mudanças com GitHub (commit + push + rebase)
-   - `npm run db:apply`: Aplica migrations do Supabase (idempotente)
+1) Guardrails operacionais
 
----
+- A qualidade de decisão importa mais que velocidade: priorizar segurança e auditabilidade.
+- Qualquer execução automática deve ter modo de simulação e/ou aprovação prévia.
+- Segregar responsabilidades por locatário e por função de agente.
+- Observabilidade mínima ativa: métricas essenciais, logs e alertas de falha/latência.
+- Resiliência: desenho para reprocessamentos seguros e reconciliação com sistemas externos.
 
-## 📂 Estrutura do Projeto
+1) Sinais de prontidão para evoluir além do discovery
 
-```text
-tech-arauz/
-├── .agent/              # Configurações dos Agentes AI
-├── .aios-core/          # Framework AIOS (constituição, agentes, tasks, workflows)
-├── .context/            # Regras de Negócio ([Leia aqui](.context/README.md))
-├── src/                 # Código Fonte ([Leia aqui](src/README.md))
-│   ├── app/             # Frontend (Next.js App Router)
-│   ├── components/      # UI Components (Shadcn/UI)
-│   ├── integrations/    # Integrações Externas (Espaider API)
-│   │   └── espaider/
-│   │       └── references/ # Mocks e Docs Técnicos da API
-│   └── lib/             # Utilitários e Core Logic
-├── supabase/            # Banco de Dados & Migrations ([Leia aqui](supabase/README.md))
-└── README.md            # Este arquivo
-```
+- Inventário do protótipo compreendido e validado.
+- Modelo de eventos priorizado com clareza de fontes e decisões associadas.
+- Plano por canal acordado.
+- Guardrails aprovados.
+- Roadmap 30/60/90 aceito.
 
----
+1) Expectativa de atuação da AIOS (modo de resposta)
+
+- Idioma: pt-BR.
+- Formato: respostas objetivas, estruturadas pelos itens do contrato de saída.
+- Explicitar suposições e referências ao princípio orientador relevante.
+- Evitar raciocínio interno; focar em decisões, riscos e próximos passos.
+- Após ingestão deste documento, responder: “Pronta para Brownfield Discovery” e iniciar pelo item 1 do contrato de saída.
+
+1) Objetivos estratégicos do fundador (para calibragem de prioridade)
+
+- Demonstrar arquitetura moderna e IA aplicada com impacto mensurável.
+- Provar eficiência operacional e clareza executiva.
+- Ser referência tecnológica interna e base para expansão de escopo/autoridade.
+- Tratar o projeto como produto de alto padrão.
+
+1) Visão de longo prazo
+
+- Evoluir de governança de projetos para plataforma de transformação digital replicável no escritório, preservando simplicidade efetiva, governança forte e orientação a eventos.
+
+— Fim do Documento —
 
 ## 📄 Licença
 

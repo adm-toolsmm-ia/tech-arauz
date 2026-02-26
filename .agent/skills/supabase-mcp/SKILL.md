@@ -186,7 +186,7 @@ VALUES (
 - [ ] `execute_sql("SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public'")` — RLS habilitado
 - [ ] `get_advisors(security)` — sem warnings de RLS ausente
 - [ ] Índices confirmados via `execute_sql("SELECT indexname FROM pg_indexes WHERE schemaname = 'public'")`
-- [ ] `IMPLEMENTATIONS.md` atualizado com status "Aplicado" + data + evidência
+- [ ] Documentação em `supabase/docs/` atualizada com status "Aplicado" + data + evidência
 
 ### Após Migration 004 (espaider_apis)
 
@@ -257,7 +257,6 @@ SELECT id, email FROM auth.users;
 
 ## Referências
 
-- **ADR Stack**: `.context/03-specs/adr/2026-02-ADR-001-stack-tecnica.md`
 - **Schema atual**: `supabase/migrations/`
-- **Documentação**: `supabase/README.md`
+- **Documentação**: `supabase/README.md`, `supabase/docs/`
 - **Supabase MCP Docs**: <https://supabase.com/docs/guides/getting-started/mcp>

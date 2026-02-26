@@ -22,8 +22,8 @@ Este projeto usa o **Supabase MCP Server**.
 - Não confie apenas em `console.log`.
 
 ## 4. Contexto do Negócio
-- Leia `.context/00-MASTER.md` para entender as Regras de Negócio.
-- Não assuma funcionalidades que não estejam documentadas lá.
+- Use o README na raiz, `supabase/docs/`, `configs/project.yaml` e a documentação AIOS para regras de negócio e estrutura.
+- Não assuma funcionalidades que não estejam documentadas.
 
 ## 5. Estrutura de Pastas
 - `src/` contém READMEs explicativos (`src/README.md`).

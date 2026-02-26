@@ -13,7 +13,9 @@ Write-Host "Branch atual: $branch"
 # Pull rebase (falha se a branch ainda não existir no remoto — nesse caso só faz push -u)
 # Git escreve progresso em stderr; capturar 2>&1 evita que PowerShell trate como erro.
 Write-Host "Atualizando (pull origin $branch --rebase)..."
-$null = git pull origin $branch --rebase 2>&1
+$prevErr = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+git pull origin $branch --rebase 2>&1 | Out-Null
+$ErrorActionPreference = $prevErr
 if ($LASTEXITCODE -ne 0) {
     $refExists = git ls-remote origin $branch 2>&1
     if (-not $refExists) {

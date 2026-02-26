@@ -33,17 +33,15 @@ Impede leitura parcial (`limit`/`offset`) em arquivos protegidos:
 **Comportamento:** BLOQUEIA (exit 2)
 
 Exige documentação aprovada antes de criar código em paths protegidos:
-- `supabase/functions/` → requer doc em `docs/architecture/` ou `docs/approved-plans/`
+- `supabase/functions/` → requer doc de arquitetura aprovada (conforme estrutura do projeto)
 - `supabase/migrations/` → requer doc ou permite edição de arquivo existente
 
 ### 3. write-path-validation.py
 **Trigger:** `Write|Edit`
 **Comportamento:** AVISA (exit 0 + stderr)
 
-Avisa quando documentos parecem estar no path errado:
-- Sessions/handoffs → `docs/sessions/YYYY-MM/`
-- Architecture → `docs/architecture/`
-- Guides → `docs/guides/`
+Avisa quando documentos parecem estar no path errado (conforme estrutura definida pelo projeto/AIOS):
+- Sessions/handoffs e docs de arquitetura/guides conforme convenção do repositório.
 
 ### 4. sql-governance.py
 **Trigger:** `Bash`
@@ -166,4 +164,4 @@ Para adicionar novo hook:
 ---
 
 *Criado: 2026-01-24*
-*Arquitetura: docs/architecture/claude-md-governance-system.md*
+*Arquitetura: governança definida pelo projeto/AIOS.*

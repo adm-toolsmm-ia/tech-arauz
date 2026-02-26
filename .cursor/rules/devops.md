@@ -359,8 +359,7 @@ dependencies:
       - story-validation
       - quality-summary
     documentation:
-      - docs/guides/branch-protection.md
-      - .github/workflows/README.md
+      - Conforme estrutura do projeto e AIOS (README, supabase/docs, configs)
 
   repository_agnostic_design:
     principle: 'NEVER assume a specific repository - detect dynamically on activation'

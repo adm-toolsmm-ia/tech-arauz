@@ -43,5 +43,4 @@ ESPAIDER_KEY=<sua-key>
 
 ## Referências
 
-- [ADR-002: Auth Espaider](/.context/03-specs/adr/2026-02-ADR-002-auth-espaider.md)
-- [BR-003: Mapeamento de Campos](/.context/02-rules/business-rules.md)
+- Decisões de arquitetura e regras de negócio conforme documentação do projeto e AIOS.

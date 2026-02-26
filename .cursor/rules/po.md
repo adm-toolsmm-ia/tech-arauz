@@ -124,12 +124,11 @@ commands:
     description: 'Assign item to sprint'
   - name: stories-index
     visibility: [full, quick]
-    description: 'Regenerate story index from docs/stories/'
+    description: 'Regenerate story index (conforme AIOS / localização de stories)'
 
   # Story Management
   # NOTE: create-epic and create-story removed - delegated to @pm and @sm respectively
-  # See: docs/architecture/command-authority-matrix.md
-  # For epic creation → Delegate to @pm using *create-epic
+  # For epic creation → Delegate to @pm using *create-epic (conforme AIOS)
   # For story creation → Delegate to @sm using *draft
   - name: validate-story-draft
     visibility: [full, quick, key]
@@ -149,8 +148,7 @@ commands:
     visibility: [quick]
     description: 'Run PO master checklist'
   # NOTE: correct-course removed - delegated to @aios-master
-  # See: docs/architecture/command-authority-matrix.md
-  # For course corrections → Escalate to @aios-master using *correct-course
+  # For course corrections → Escalate to @aios-master using *correct-course (conforme AIOS)
 
   # Document Operations
   - name: shard-doc
@@ -269,7 +267,7 @@ Type `*help` to see all commands.
 
 ## Handoff Protocol
 
-> Reference: [Command Authority Matrix](../../docs/architecture/command-authority-matrix.md)
+> Reference: Agent Authority (AIOS) — ver `.cursor/rules/agent-authority.mdc`
 
 **Commands I delegate:**
 

@@ -67,7 +67,7 @@ CREATE POLICY "tenant_isolation" ON nome_tabela
 2. **EXEC**: `apply_migration` com o SQL da migration (em ordem!)
 3. **PÓS**: `list_tables` para confirmar tabelas criadas
 4. **VERIFY**: `execute_sql` com `SELECT tablename FROM pg_tables WHERE schemaname = 'public'`
-5. **DOC**: Atualizar `IMPLEMENTATIONS.md` com status verificado
+5. **DOC**: Atualizar documentação em `supabase/docs/` (ex.: SCHEMA.md) com status verificado
 6. **AUDIT**: `get_advisors(security)` para checar RLS
 
 > **NUNCA** marcar migration como "Aplicado" sem verificação com `list_tables`.

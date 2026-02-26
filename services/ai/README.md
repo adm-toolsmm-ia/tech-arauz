@@ -87,12 +87,9 @@ A camada de instrumentação fornece:
 - **Logs JSON**: estruturados com campos essenciais (latency, tokens, cost, status)
 - **PII Redaction**: emails, telefones, CPFs, API keys mascarados automaticamente
 
-Para configuração completa, variáveis de ambiente e troubleshooting, ver:
-**[docs/observability.md](../../docs/observability.md)**
+Para configuração completa, variáveis de ambiente e troubleshooting, ver documentação do projeto e AIOS.
 
 ## Referências
 
-- [ADR-001: Stack Técnica](/.context/03-specs/adr/2026-02-ADR-001-stack-tecnica.md)
-- [Observability Guide](../../docs/observability.md)
 - [LangGraph Docs](https://langchain-ai.github.io/langgraph/)
 - [LangSmith Docs](https://docs.smith.langchain.com/)

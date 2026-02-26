@@ -1,8 +1,9 @@
 # ==============================================================================
-# Tech Arauz - Project Configuration
+# Tech Arauz - Project Configuration (fonte de verdade do projeto)
 # ==============================================================================
-# Este arquivo centraliza todas as configurações do projeto.
-# Última atualização: 2026-02-07
+# Centraliza: projeto, stack, integrações, design_system, coding_standards.
+# Regras de IDE (ex.: Cursor) são adapters que apontam para este arquivo e
+# para .aios-core/ (AIOS). Última atualização: 2026-02-25
 # ==============================================================================
 
 project:
@@ -145,6 +146,59 @@ timeline:
       weeks: 1
     - name: "UAT"
       weeks: 1
+
+# ------------------------------------------------------------------------------
+# Design System (ADR-003) — catálogo de componentes UI (genéricos, sem dados de módulo)
+# ------------------------------------------------------------------------------
+# Kanban: componente KanbanBoard é genérico; colunas e status vêm do contexto de
+# cada módulo (ex.: Projetos usa projectStatusColumns; outros módulos definem seus
+# presets). Cores/labels de status por módulo ficam no código do módulo (ex. phase-labels).
+design_system:
+  layout:
+    - id: AppSidebar
+      description: Navegação lateral (usar sempre em layouts)
+    - id: DashboardHeader
+      description: Header de página (título + dark mode)
+  dashboard:
+    - id: KPICard
+      description: Cards de métricas
+  views:
+    - id: KanbanBoard
+      description: Board Kanban genérico; colunas/status definidos por módulo
+    - id: ViewToggle
+      description: Alternar Kanban/Lista
+    - id: SplitView
+      description: Visão 360° lateral
+
+# ------------------------------------------------------------------------------
+# Padrões de código — estrutura e convenções (fonte de verdade)
+# ------------------------------------------------------------------------------
+coding_standards:
+  nextjs:
+    router: app
+    components:
+      ui: "src/components/ui/"
+      layout: "src/components/layout/"
+      dashboard: "src/components/dashboard/"
+      views: "src/components/views/"
+    page_pattern: "Server Component + Client Component (page.tsx + *-content.tsx)"
+  python:
+    base_path: "services/ai/"
+    stack: ["LangGraph", "LangChain", "LangSmith"]
+  supabase:
+    rls_required: true
+    tenant_column: "tenant_id"
+    roles: ["admin", "user", "viewer"]
+    migrations_path: "supabase/migrations/"
+  quality_gates:
+    order: ["lint", "typecheck", "test", "sync:ide:check"]
+    shell_chain: ";"
+    shell_forbidden: "&&"
+  commits:
+    format: "type(scope): description"
+    types: ["feat", "fix", "docs", "refactor", "test", "chore", "ci"]
+    code_lang: "en"
+    docs_lang: "pt"
 
 # ------------------------------------------------------------------------------
 # Team

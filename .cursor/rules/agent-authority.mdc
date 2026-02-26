@@ -1,12 +1,12 @@
 ---
-description: Agent Authority — Delegação e limites por agente AIOS (fonte: .aios-core/constitution.md)
+description: Agent Authority — Delegação e limites por agente AIOS (Constituição AIOS)
 globs: "**/*"
 alwaysApply: true
 ---
 
 # Agent Authority — AIOS
 
-Fonte: [.aios-core/constitution.md](.aios-core/constitution.md) Article II
+Fonte: Constituição AIOS (Article II) — engenharia e arquitetura em `.aios-core/`
 
 ## @devops — Autoridade EXCLUSIVA
 

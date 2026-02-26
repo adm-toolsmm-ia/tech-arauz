@@ -3,6 +3,10 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import {
+  encryptIntegrationToken,
+  hasIntegrationTokenSecret,
+} from '@/lib/security/integration-token';
 
 const TENANT_ARAUZ_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -38,13 +42,17 @@ export async function POST() {
 
   // 2. Use service client to bypass RLS
   const serviceClient = createServiceClient();
+  const tenantId = profile.tenant_id || TENANT_ARAUZ_ID;
+  const envToken = process.env.ESPAIDER_TOKEN?.trim();
+  const tokenToStore =
+    envToken && hasIntegrationTokenSecret() ? encryptIntegrationToken(envToken) : 'PREENCHER_TOKEN';
 
   try {
     // 3. Check if API already exists
     const { data: existing } = await serviceClient
       .from('espaider_apis')
       .select('id, nome')
-      .eq('tenant_id', TENANT_ARAUZ_ID)
+      .eq('tenant_id', tenantId)
       .eq('identificador', 'BI_SOLICITACOES_SUPORTEESPAIDER')
       .single();
 
@@ -60,10 +68,10 @@ export async function POST() {
     const { data: newApi, error } = await serviceClient
       .from('espaider_apis')
       .insert({
-        tenant_id: TENANT_ARAUZ_ID,
+        tenant_id: tenantId,
         nome: 'API Projetos Espaider',
         base_url: 'https://espaider.com.br/Arauz/WCF/WCFExportaDados/WCFExportaDados.svc',
-        token: process.env.ESPAIDER_TOKEN || 'PREENCHER_TOKEN',
+        token: tokenToStore,
         identificador: 'BI_SOLICITACOES_SUPORTEESPAIDER',
         tipo: 'projetos',
         is_active: true,
@@ -80,7 +88,7 @@ export async function POST() {
     // 5. Ensure user profile has correct tenant_id
     const { error: profileError } = await serviceClient
       .from('profiles')
-      .update({ tenant_id: TENANT_ARAUZ_ID })
+      .update({ tenant_id: tenantId })
       .eq('id', user.id);
 
     if (profileError) {

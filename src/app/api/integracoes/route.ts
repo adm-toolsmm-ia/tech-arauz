@@ -2,6 +2,27 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import {
+  encryptIntegrationToken,
+  hasIntegrationTokenSecret,
+} from '@/lib/security/integration-token';
+
+type IntegracaoPayload = {
+  id?: string;
+  nome?: string;
+  base_url?: string;
+  token?: string;
+  identificador?: string;
+  tipo?: string;
+  is_active?: boolean;
+};
+
+function buildTokenForStorage(token: string | undefined): string | null {
+  const normalized = typeof token === 'string' ? token.trim() : '';
+  if (!normalized) return 'PREENCHER_TOKEN';
+  if (!hasIntegrationTokenSecret()) return null;
+  return encryptIntegrationToken(normalized);
+}
 
 /**
  * GET /api/integracoes - List all APIs for the user's tenant
@@ -19,12 +40,11 @@ export async function GET() {
 
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Não autenticado. Faça login para continuar.' },
+        { error: 'Nao autenticado. Faca login para continuar.' },
         { status: 401 },
       );
     }
 
-    // Get user profile for tenant_id and role
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('tenant_id, role')
@@ -33,19 +53,21 @@ export async function GET() {
 
     if (profileError || !profile) {
       console.error('[GET /api/integracoes] Profile error:', profileError?.message);
-      return NextResponse.json({ error: 'Erro ao carregar perfil do usuário.' }, { status: 500 });
+      return NextResponse.json({ error: 'Erro ao carregar perfil do usuario.' }, { status: 500 });
     }
 
     if (!['admin', 'user'].includes(profile.role)) {
       return NextResponse.json(
-        { error: `Sem permissão. Role "${profile.role}" não tem acesso a integrações.` },
+        { error: `Sem permissao. Role "${profile.role}" nao tem acesso a integracoes.` },
         { status: 403 },
       );
     }
 
     const { data, error } = await supabase
       .from('espaider_apis')
-      .select('*')
+      .select(
+        'id, tenant_id, nome, identificador, tipo, is_active, base_url, last_sync_at, last_sync_status, created_at, updated_at',
+      )
       .eq('tenant_id', profile.tenant_id)
       .order('tipo');
 
@@ -74,7 +96,7 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
+      return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
     }
 
     const { data: profile } = await supabase
@@ -90,13 +112,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = (await req.json()) as IntegracaoPayload;
     const { nome, identificador, tipo, is_active } = body;
 
     if (!nome || !identificador) {
       return NextResponse.json(
-        { error: 'Nome e Identificador são obrigatórios.' },
+        { error: 'Nome e Identificador sao obrigatorios.' },
         { status: 400 },
+      );
+    }
+
+    const tokenToStore = buildTokenForStorage(body.token);
+    if (!tokenToStore) {
+      return NextResponse.json(
+        {
+          error:
+            'INTEGRATION_TOKEN_SECRET nao configurado. Configure o segredo para salvar tokens de integracao com criptografia.',
+        },
+        { status: 500 },
       );
     }
 
@@ -106,12 +139,14 @@ export async function POST(req: NextRequest) {
         tenant_id: profile.tenant_id,
         nome,
         base_url: body.base_url || process.env.ESPAIDER_BASE_URL,
-        token: body.token || process.env.ESPAIDER_TOKEN,
+        token: tokenToStore,
         identificador,
         tipo: tipo || 'projetos',
         is_active: is_active ?? true,
       })
-      .select()
+      .select(
+        'id, tenant_id, nome, identificador, tipo, is_active, base_url, last_sync_at, last_sync_status, created_at, updated_at',
+      )
       .single();
 
     if (error) {
@@ -139,7 +174,7 @@ export async function PUT(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
+      return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
     }
 
     const { data: profile } = await supabase
@@ -155,19 +190,43 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const { id, nome, base_url, token, identificador, tipo, is_active } = body;
+    const body = (await req.json()) as IntegracaoPayload;
+    const { id, nome, base_url, identificador, tipo, is_active } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'ID obrigatório.' }, { status: 400 });
+      return NextResponse.json({ error: 'ID obrigatorio.' }, { status: 400 });
+    }
+
+    const updates: Record<string, unknown> = {
+      nome,
+      base_url,
+      identificador,
+      tipo,
+      is_active,
+    };
+
+    if (Object.prototype.hasOwnProperty.call(body, 'token')) {
+      const tokenToStore = buildTokenForStorage(body.token);
+      if (!tokenToStore) {
+        return NextResponse.json(
+          {
+            error:
+              'INTEGRATION_TOKEN_SECRET nao configurado. Configure o segredo para atualizar tokens de integracao com criptografia.',
+          },
+          { status: 500 },
+        );
+      }
+      updates.token = tokenToStore;
     }
 
     const { data, error } = await supabase
       .from('espaider_apis')
-      .update({ nome, base_url, token, identificador, tipo, is_active })
+      .update(updates)
       .eq('id', id)
       .eq('tenant_id', profile.tenant_id)
-      .select()
+      .select(
+        'id, tenant_id, nome, identificador, tipo, is_active, base_url, last_sync_at, last_sync_status, created_at, updated_at',
+      )
       .single();
 
     if (error) {
@@ -195,7 +254,7 @@ export async function DELETE(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
+      return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 });
     }
 
     const { data: profile } = await supabase
@@ -213,7 +272,7 @@ export async function DELETE(req: NextRequest) {
 
     const id = req.nextUrl.searchParams.get('id');
     if (!id) {
-      return NextResponse.json({ error: 'ID obrigatório.' }, { status: 400 });
+      return NextResponse.json({ error: 'ID obrigatorio.' }, { status: 400 });
     }
 
     const { error } = await supabase
@@ -234,3 +293,4 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
   }
 }
+

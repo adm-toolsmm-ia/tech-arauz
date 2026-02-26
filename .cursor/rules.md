@@ -27,6 +27,9 @@ You are working with Synkra AIOS, an AI-Orchestrated System for Full Stack Devel
 - Verify type checking: `npm run typecheck`
 - Add tests for new features
 
+### Shell / Terminal (Windows)
+Este projeto usa PowerShell. **Nunca use `&&`** nos comandos — use `;` para encadear. Não use comandos Unix (`head`, `tail`, `grep` como cmd, `cat`, `ls`); use equivalentes PowerShell. Ver `.cursor/rules/project.mdc` e `.agent/skills/powershell-windows/SKILL.md`.
+
 ## AIOS Framework Structure
 
 ```

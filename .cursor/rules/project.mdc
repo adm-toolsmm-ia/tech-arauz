@@ -32,6 +32,7 @@ Ao implementar: consulte `configs/project.yaml` para componentes canônicos, sta
 
 - **Quality gates**: `npm run lint` ; `npm run typecheck` ; `npm test` ; `npm run sync:ide:check` (PowerShell: usar `;`, não `&&`). Ordem e regras completas em `configs/project.yaml` → `coding_standards.quality_gates`.
 - **Shell**: Padrões AIOS (encadeamento com `;` no PowerShell). Detalhe em `.aios-core` quando disponível.
+- **Shell Windows**: O terminal é PowerShell. **Nunca usar `&&`** — no Windows dá erro (não existe no PowerShell 5.x); usar sempre `;` para encadear (ex.: `npm run lint ; npm run typecheck`). Não usar comandos Unix (`head`, `tail`, `grep` como comando, `cat`, `ls`, etc.); usar equivalentes em `.agent/skills/powershell-windows/SKILL.md`.
 - **Commits**: Conventional (`type(scope): description`), inglês para código. Detalhe em `configs/project.yaml` → `coding_standards.commits`.
 - **Segurança**: Sem secrets em código; env vars para credenciais; inputs validados; queries parametrizadas.
 - **Markdown**: Linha em branco entre cabeçalho e lista/parágrafo (MD022/MD032). Aplica-se a `.ai/`, memórias e docs gerados por agentes.

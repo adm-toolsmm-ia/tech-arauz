@@ -41,6 +41,30 @@ Este arquivo define as instrucoes do projeto para o Codex CLI.
 - `npm run validate:agents`
 <!-- AIOS-MANAGED-END: commands -->
 
+## Shell / Terminal (Windows)
+
+Projeto usa PowerShell no Windows. Ao gerar comandos no terminal:
+- **Nunca use `&&`** — use `;` para encadear (ex.: `npm run lint ; npm run typecheck`).
+- **Nunca use comandos Unix** (`head`, `tail`, `grep` como cmd, `cat`, `ls`); use PowerShell: `Select-Object -First N`, `Get-ChildItem`, `Get-Content`. Ver `configs/project.yaml` e `.agent/skills/powershell-windows/SKILL.md`.
+
+## Module Engineering Standard (Obrigatorio)
+
+Para qualquer nova tabela/modulo/pagina, seguir obrigatoriamente:
+
+- `docs/architecture/module-standards.md`
+
+Baseline oficial de engenharia e UX:
+
+- modulo `projetos`
+
+Gate minimo por story:
+
+- arquitetura multi-tenant + RLS na tabela
+- `page.tsx` server com auth guard
+- `*-content.tsx` com DashboardHeader + KPIs + FilterBar + view principal
+- SplitView para detalhe + Dialog para criar/editar
+- checklist e file list da story atualizados antes de concluir
+
 <!-- AIOS-MANAGED-START: shortcuts -->
 ## Agent Shortcuts
 

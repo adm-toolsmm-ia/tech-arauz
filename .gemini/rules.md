@@ -20,6 +20,12 @@ Este arquivo define as instrucoes do projeto para Gemini CLI neste repositorio.
 - Atualize checklist e file list da story antes de concluir
 <!-- AIOS-MANAGED-END: quality -->
 
+## Shell / Terminal (Windows)
+
+Este projeto usa PowerShell no Windows. Ao gerar ou executar comandos no terminal:
+- **Nunca use `&&`** — use `;` para encadear (ex.: `npm run lint ; npm run typecheck`).
+- **Nunca use comandos Unix** (`head`, `tail`, `grep` como cmd, `cat`, `ls`); use PowerShell: `Select-Object -First N`, `Get-ChildItem`, `Get-Content`. Ver `configs/project.yaml` e `.agent/skills/powershell-windows/SKILL.md`.
+
 <!-- AIOS-MANAGED-START: codebase -->
 ## Project Map
 

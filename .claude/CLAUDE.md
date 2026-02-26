@@ -328,6 +328,11 @@ npm run trace -- workflow-name
 - Batch file reads/writes when processing multiple files
 - Prefer editing existing files over creating new ones
 
+### Shell / Terminal (Windows — obrigatório)
+Este projeto usa **PowerShell** no Windows. Ao sugerir ou executar comandos no terminal:
+- **Nunca use `&&`** — gera erro no PowerShell 5.x; use sempre `;` para encadear (ex.: `npm run lint ; npm run typecheck`).
+- **Nunca use comandos Unix** (`head`, `tail`, `grep` como comando, `cat`, `ls`); use equivalentes PowerShell: primeiros N → `Select-Object -First N`, listar → `Get-ChildItem`, conteúdo → `Get-Content`. Detalhes: `configs/project.yaml` (shell_chain, shell_forbidden) e `.agent/skills/powershell-windows/SKILL.md`.
+
 ### Session Management
 - Track story progress throughout the session
 - Update checkboxes immediately after completing tasks

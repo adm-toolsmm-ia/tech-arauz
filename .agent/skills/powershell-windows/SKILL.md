@@ -23,7 +23,37 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 ---
 
-## 2. Unicode/Emoji Restriction
+## 2. Unix vs PowerShell (CRITICAL on Windows)
+
+**Rule:** On Windows the shell is PowerShell. Do not use Unix commands — they are not available and cause "term not recognized" errors.
+
+### CRITICAL: Never use `&&`
+
+In Bash, `&&` chains commands (run second only if first succeeds). In **Windows PowerShell 5.x** (default on Windows), `&&` is **not supported** and produces a syntax/operator error. Always use `;` to chain commands in this project (see `configs/project.yaml` → `shell_forbidden: "&&"`).
+
+| ❌ Wrong (fails on Windows) | ✅ Correct |
+|-----------------------------|-----------|
+| `npm run lint && npm run typecheck` | `npm run lint ; npm run typecheck` |
+| `cd src ; npm run build && npm run test` | `cd src ; npm run build ; npm run test` |
+
+**Rule:** When suggesting or generating terminal commands for this repo, never use `&&`. Use `;` only.
+
+---
+
+| Unix (Bash) | PowerShell equivalent |
+|-------------|------------------------|
+| `head -n 50` | `Select-Object -First 50` |
+| `tail -n 50` | `Select-Object -Last 50` |
+| `cat file` | `Get-Content file` |
+| `ls` | `Get-ChildItem` |
+| `grep "x"` (command) | `Select-String "x"` or use the Cursor **Grep** tool |
+| `cmd1 && cmd2` | `cmd1 ; cmd2` (or run separately) |
+
+Example: to list first 50 items from a pipeline use `... | Select-Object -First 50`, not `... | head -50`.
+
+---
+
+## 3. Unicode/Emoji Restriction
 
 ### CRITICAL: No Unicode in Scripts
 
@@ -39,7 +69,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 ---
 
-## 3. Null Check Patterns
+## 4. Null Check Patterns
 
 ### Always Check Before Access
 
@@ -50,7 +80,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 ---
 
-## 4. String Interpolation
+## 5. String Interpolation
 
 ### Complex Expressions
 
@@ -66,7 +96,7 @@ Write-Output "Value: $value"
 
 ---
 
-## 5. Error Handling
+## 6. Error Handling
 
 ### ErrorActionPreference
 
@@ -84,7 +114,7 @@ Write-Output "Value: $value"
 
 ---
 
-## 6. File Paths
+## 7. File Paths
 
 ### Windows Path Rules
 
@@ -98,7 +128,7 @@ Write-Output "Value: $value"
 
 ---
 
-## 7. Array Operations
+## 8. Array Operations
 
 ### Correct Patterns
 
@@ -110,7 +140,7 @@ Write-Output "Value: $value"
 
 ---
 
-## 8. JSON Operations
+## 9. JSON Operations
 
 ### CRITICAL: Depth Parameter
 
@@ -129,7 +159,7 @@ Write-Output "Value: $value"
 
 ---
 
-## 9. Common Errors
+## 10. Common Errors
 
 | Error Message | Cause | Fix |
 |---------------|-------|-----|
@@ -140,7 +170,7 @@ Write-Output "Value: $value"
 
 ---
 
-## 10. Script Template
+## 11. Script Template
 
 ```powershell
 # Strict mode

@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     # Supabase
     supabase_url: str = Field(default="", alias="SUPABASE_URL")
     supabase_service_key: str = Field(default="", alias="SUPABASE_SERVICE_KEY")
+    supabase_jwt_secret: str = Field(default="", alias="SUPABASE_JWT_SECRET")
 
     # Next.js
     nextjs_api_url: str = Field(

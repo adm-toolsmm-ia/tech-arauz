@@ -3,7 +3,6 @@ API Routes para o serviço AI
 """
 
 import logging
-import os
 import uuid
 from datetime import datetime, timedelta
 from typing import Optional
@@ -12,6 +11,7 @@ import jwt
 from fastapi import APIRouter, HTTPException, Query, Request, Depends
 from pydantic import BaseModel
 from supabase import AsyncClient
+from app.config import get_settings
 
 from app.instrumentation import (
     BudgetExceededError,
@@ -32,13 +32,18 @@ from app.agents.service import AgentService, AgentServiceError
 router = APIRouter()
 logger = logging.getLogger("obs.routes")
 
-# JWT Configuration
-SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "super-secret-jwt-token-change-me")
-
-
 # =============================================================================
 # JWT & Auth Helpers
 # =============================================================================
+
+
+def get_jwt_secret() -> str:
+    """Resolve JWT secret from settings, without insecure fallback."""
+    secret = get_settings().supabase_jwt_secret
+    if not secret:
+        logger.error("SUPABASE_JWT_SECRET is not configured")
+        raise HTTPException(status_code=500, detail="Server auth is not configured")
+    return secret
 
 
 async def get_token_data(request: Request) -> dict:
@@ -51,7 +56,7 @@ async def get_token_data(request: Request) -> dict:
     token = auth_header.split(" ")[1]
     
     try:
-        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"])
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=["HS256"])
         user_id = payload.get("sub")
         
         # Get tenant_id from app_metadata
@@ -68,11 +73,11 @@ async def get_token_data(request: Request) -> dict:
             "role": payload.get("role", "user"),
             "email": payload.get("email"),
         }
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError as e:
         logger.warning("JWT validation failed: %s", str(e))
         raise HTTPException(status_code=401, detail="Invalid token")
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
 
 
 async def get_supabase_client(request: Request) -> AsyncClient:
@@ -420,8 +425,10 @@ async def list_traces(
     status: Optional[str] = Query(None, description="Filter by status"),
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=50),
+    token_data: dict = Depends(get_token_data),
 ) -> dict:
     """Lista traces recentes com paginação e filtros."""
+    logger.debug("Listing traces for user %s", token_data["user_id"])
     filtered = MOCK_TRACES
 
     if agent_id:
@@ -444,8 +451,9 @@ async def list_traces(
 
 
 @router.get("/traces/{trace_id}")
-async def get_trace(trace_id: str) -> dict:
+async def get_trace(trace_id: str, token_data: dict = Depends(get_token_data)) -> dict:
     """Retorna detalhes de um trace específico."""
+    logger.debug("Fetching trace %s for user %s", trace_id, token_data["user_id"])
     for trace in MOCK_TRACES:
         if trace.id == trace_id:
             return trace.model_dump()
@@ -459,14 +467,19 @@ async def get_budget_status(
     session_id: str | None = None,
     user_id: str | None = None,
     agent_id: str | None = None,
+    token_data: dict = Depends(get_token_data),
 ) -> dict:
     """Return current budget usage and remaining limits."""
+    current_user_id = token_data["user_id"]
+    if user_id and user_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Cannot query budget for another user")
+
     bm = get_budget_manager()
     spent = bm.get_spent(
-        session_id=session_id, user_id=user_id, agent_id=agent_id,
+        session_id=session_id, user_id=current_user_id, agent_id=agent_id,
     )
     remaining = bm.get_remaining(
-        session_id=session_id, user_id=user_id, agent_id=agent_id,
+        session_id=session_id, user_id=current_user_id, agent_id=agent_id,
     )
 
     # Aggregate totals from mock data

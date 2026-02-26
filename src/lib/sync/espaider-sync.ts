@@ -16,6 +16,10 @@ import type { EspaiderDataset, SyncLogEntry, SyncLogLevel } from '@/integrations
 import { exportarDados, buscarFilhos } from '@/integrations/espaider/client';
 import { generateRequestId } from '@/integrations/espaider/config';
 import {
+  decryptIntegrationToken,
+  isEncryptedIntegrationToken,
+} from '@/lib/security/integration-token';
+import {
   mapearProjeto,
   mapearEntrega,
   mapearCronograma,
@@ -64,6 +68,23 @@ interface EspaiderApiRow {
   is_active: boolean;
 }
 
+export function resolveApiToken(rawToken: string | null | undefined): string {
+  if (!rawToken || rawToken === 'PREENCHER_TOKEN') {
+    return process.env.ESPAIDER_TOKEN || '';
+  }
+
+  if (!isEncryptedIntegrationToken(rawToken)) {
+    return rawToken;
+  }
+
+  try {
+    return decryptIntegrationToken(rawToken);
+  } catch (err) {
+    console.error('[sync] failed to decrypt API token, falling back to env token');
+    return process.env.ESPAIDER_TOKEN || '';
+  }
+}
+
 /**
  * Load active API configs from espaider_apis table for a given tenant.
  * Falls back to environment variables if no rows found.
@@ -81,10 +102,8 @@ async function loadApiConfigs(
   const map = new Map<string, EspaiderApiRow>();
   if (!error && data) {
     for (const row of data) {
-      // Fallback to env vars for placeholder or missing credentials
-      if (row.token === 'PREENCHER_TOKEN' || !row.token) {
-        row.token = process.env.ESPAIDER_TOKEN || row.token;
-      }
+      // Resolve token from encrypted/plaintext storage with env fallback.
+      row.token = resolveApiToken(row.token);
       if (!row.base_url) {
         row.base_url = process.env.ESPAIDER_BASE_URL || row.base_url;
       }

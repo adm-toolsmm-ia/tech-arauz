@@ -26,6 +26,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifecycle do app - setup e teardown."""
     settings = get_settings()
 
+    if not settings.supabase_jwt_secret:
+        logger.critical("SUPABASE_JWT_SECRET is required to start AI service")
+        raise RuntimeError("Missing required environment variable: SUPABASE_JWT_SECRET")
+
     # Initialize observability (tracing + structured logging)
     init_observability()
 

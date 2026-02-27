@@ -1,6 +1,6 @@
 # Story 2.1 - Documentar Design System e Tokens
 
-Status: Ready
+Status: Done
 Epic: UX-EPIC-01
 Prioridade: Alta
 Sprint: 1
@@ -34,15 +34,15 @@ para garantir consistencia visual e acelerar implementacao de novas features.
 
 ## Tasks
 
-- [ ] Auditar `tailwind.config.ts` e `globals.css` para extrair inventario completo de tokens
-- [ ] Criar `docs/design-system.md` com secoes: Cores, Tipografia, Espacamento, Sombras, Animacoes, Componentes
-- [ ] Documentar paleta semantica com tabela de mapeamento (nome → HSL → uso)
-- [ ] Documentar padroes de componentes base (25 primitivos shadcn + custom)
-- [ ] Criar secao "Layout Blueprint" referenciando module-standards.md
-- [ ] Criar secao "Microinteracoes" com padroes de loading/success/error/empty
-- [ ] Consolidar `dark-mode.css` em `globals.css` e remover arquivo duplicado
-- [ ] Unificar estrategia de seletor dark mode (escolher `.dark` OU `[data-theme]`, nao ambos)
-- [ ] Validar que dark mode funciona corretamente apos consolidacao
+- [x] Auditar `tailwind.config.ts` e `globals.css` para extrair inventario completo de tokens
+- [x] Criar `docs/design-system.md` com secoes: Cores, Tipografia, Espacamento, Sombras, Animacoes, Componentes
+- [x] Documentar paleta semantica com tabela de mapeamento (nome → HSL → uso)
+- [x] Documentar padroes de componentes base (25 primitivos shadcn + custom)
+- [x] Criar secao "Layout Blueprint" referenciando module-standards.md
+- [x] Criar secao "Microinteracoes" com padroes de loading/success/error/empty
+- [x] Consolidar `dark-mode.css` em `globals.css` e remover arquivo duplicado
+- [x] Unificar estrategia de seletor dark mode (escolher `.dark` OU `[data-theme]`, nao ambos)
+- [x] Validar que dark mode funciona corretamente apos consolidacao
 
 ## Testes
 
@@ -76,6 +76,7 @@ para garantir consistencia visual e acelerar implementacao de novas features.
 |------|---------|-------------|--------|
 | 2026-02-27 | 1.0 | Story criada | Orion (aios-master) |
 | 2026-02-27 | 1.1 | PO validation: added Executor, Dev Notes, Change Log | Pax (po) |
+| 2026-02-27 | 2.0 | Implementation: design-system.md created, dark-mode.css consolidated and removed, 154 tests passing | Dex (dev) |
 
 ## Dependencies
 

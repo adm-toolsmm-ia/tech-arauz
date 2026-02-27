@@ -1,6 +1,6 @@
 # Story 2.2 - Criar ErrorBoundary e Padroes de Estado
 
-Status: Ready for Review
+Status: Done
 Epic: UX-EPIC-01
 Prioridade: Critica
 Sprint: 1

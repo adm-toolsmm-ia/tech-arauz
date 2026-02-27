@@ -68,8 +68,8 @@ Elevar o portal Tech Arauz para nota 10/10 em UX/UI, Design System, engenharia f
 
 ## Execucao
 
-- [ ] Story 2.1 concluida
-- [ ] Story 2.2 concluida
+- [x] Story 2.1 concluida
+- [x] Story 2.2 concluida
 - [ ] Story 2.3 concluida
 - [ ] Story 2.4 concluida
 - [ ] Story 2.5 concluida

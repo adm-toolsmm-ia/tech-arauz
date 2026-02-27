@@ -1,6 +1,6 @@
 # Story 2.3 - Formalizar Jornadas por Persona
 
-Status: Ready
+Status: Done
 Epic: UX-EPIC-01
 Prioridade: Media-Alta
 Sprint: 1
@@ -34,14 +34,14 @@ para tomar decisoes de UX baseadas em dados e necessidades reais dos usuarios.
 
 ## Tasks
 
-- [ ] Definir 3 personas com base nos modulos do portal (Dashboard=Diretoria, Projetos/Cronogramas=Operacao, Integracoes/Cadastros=Admin)
-- [ ] Mapear jornada principal de Diretoria (Dashboard → KPIs → drill-down → decisao)
-- [ ] Mapear jornada principal de Operacao (Projetos → filtros → kanban → cockpit → acoes)
-- [ ] Mapear jornada principal de Admin (Integracoes → sync → logs → config → usuarios)
-- [ ] Identificar pontos de dor por persona (ex: muitos cliques, informacao escondida, feedback lento)
-- [ ] Definir metricas de sucesso (cliques ate objetivo, tempo de tarefa, taxa de erro)
-- [ ] Priorizar gaps de UX por impacto (tabela persona × gap × severidade)
-- [ ] Criar `docs/ux/personas.md` com todo o conteudo
+- [x] Definir 3 personas com base nos modulos do portal (Dashboard=Diretoria, Projetos/Cronogramas=Operacao, Integracoes/Cadastros=Admin)
+- [x] Mapear jornada principal de Diretoria (Dashboard → KPIs → drill-down → decisao)
+- [x] Mapear jornada principal de Operacao (Projetos → filtros → kanban → cockpit → acoes)
+- [x] Mapear jornada principal de Admin (Integracoes → sync → logs → config → usuarios)
+- [x] Identificar pontos de dor por persona (ex: muitos cliques, informacao escondida, feedback lento)
+- [x] Definir metricas de sucesso (cliques ate objetivo, tempo de tarefa, taxa de erro)
+- [x] Priorizar gaps de UX por impacto (tabela persona × gap × severidade)
+- [x] Criar `docs/ux/personas.md` com todo o conteudo
 
 ## Testes
 
@@ -74,6 +74,7 @@ para tomar decisoes de UX baseadas em dados e necessidades reais dos usuarios.
 |------|---------|-------------|--------|
 | 2026-02-27 | 1.0 | Story criada | Orion (aios-master) |
 | 2026-02-27 | 1.1 | PO validation: added Executor, Dev Notes, Change Log | Pax (po) |
+| 2026-02-27 | 2.0 | Implementation: 3 personas, 3 journeys, pain points, metrics, 9 UX gaps prioritized | Dex (dev) |
 
 ## Dependencies
 

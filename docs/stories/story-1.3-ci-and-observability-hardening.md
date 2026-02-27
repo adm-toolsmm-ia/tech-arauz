@@ -1,6 +1,6 @@
 # Story 1.3 - CI and Observability Hardening
 
-Status: Ready for Review  
+Status: Done  
 Epic: TD-EPIC-01  
 Prioridade: Alta
 

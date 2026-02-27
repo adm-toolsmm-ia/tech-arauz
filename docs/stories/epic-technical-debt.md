@@ -4,6 +4,8 @@ Epic ID: TD-EPIC-01
 Data: 2026-02-26  
 Base: `docs/prd/technical-debt-assessment.md`
 
+Status: Done  
+
 ## Objetivo
 
 Reduzir risco tecnico critico/alto em seguranca, isolamento multi-tenant, qualidade de entrega e manutenibilidade de frontend.
@@ -40,3 +42,9 @@ Reduzir risco tecnico critico/alto em seguranca, isolamento multi-tenant, qualid
 1. `story-1.1-hardening-rls-and-secrets.md`
 2. `story-1.2-refactor-front-domain-and-components.md`
 3. `story-1.3-ci-and-observability-hardening.md`
+
+## Execucao concluida
+
+- [x] Story 1.1 concluida
+- [x] Story 1.2 concluida
+- [x] Story 1.3 concluida

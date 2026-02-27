@@ -1,6 +1,6 @@
 # Story 1.1 - Hardening RLS and Secrets
 
-Status: Ready for Review  
+Status: Done  
 Epic: TD-EPIC-01  
 Prioridade: Critica
 

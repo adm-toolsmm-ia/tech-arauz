@@ -1,6 +1,6 @@
 # Story 1.2 - Refactor Front Domain and Components
 
-Status: Ready for Review  
+Status: Done  
 Epic: TD-EPIC-01  
 Prioridade: Alta
 

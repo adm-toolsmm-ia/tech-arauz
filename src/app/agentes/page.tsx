@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { dbAgentsToUI, type DBAgent } from '@/lib/transformers/agent';
 import type { LmProvider } from '@/types/agents';
 import { AgentsContent } from './agentes-content';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 export default async function AgentsPage() {
   const supabase = await createClient();
@@ -36,5 +37,9 @@ export default async function AgentsPage() {
   const uiAgents = ((agents as DBAgent[]) || []).map((a) => dbAgentsToUI([a])[0]);
   const lmProviders = (providers as LmProvider[]) || [];
 
-  return <AgentsContent agents={uiAgents} providers={lmProviders} />;
+  return (
+    <ErrorBoundary label="Agentes">
+      <AgentsContent agents={uiAgents} providers={lmProviders} />
+    </ErrorBoundary>
+  );
 }

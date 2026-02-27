@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { dbProjectToUI } from '@/lib/transformers/project';
 import type { DBProject } from '@/lib/transformers/project';
 import { ProjectsContent } from './projects-content';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 export default async function ProjectsPage() {
   const supabase = await createClient();
@@ -37,5 +38,9 @@ export default async function ProjectsPage() {
   // Transform DB rows to UI format
   const uiProjects = ((projects as DBProject[]) || []).map(dbProjectToUI);
 
-  return <ProjectsContent projects={uiProjects} />;
+  return (
+    <ErrorBoundary label="Projetos">
+      <ProjectsContent projects={uiProjects} />
+    </ErrorBoundary>
+  );
 }

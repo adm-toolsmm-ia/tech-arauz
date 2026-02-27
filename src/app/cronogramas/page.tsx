@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { CronogramasContent } from './cronogramas-content';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 export default async function CronogramasPage() {
   const supabase = await createClient();
@@ -30,5 +31,9 @@ export default async function CronogramasPage() {
     console.error('Error fetching schedules:', error);
   }
 
-  return <CronogramasContent schedules={schedules || []} />;
+  return (
+    <ErrorBoundary label="Cronogramas">
+      <CronogramasContent schedules={schedules || []} />
+    </ErrorBoundary>
+  );
 }

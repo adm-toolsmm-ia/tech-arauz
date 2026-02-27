@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, DM_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -28,7 +29,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${inter.variable} ${dmSans.variable} font-sans antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <ErrorBoundary label="App">
+            {children}
+          </ErrorBoundary>
+        </Providers>
       </body>
     </html>
   );

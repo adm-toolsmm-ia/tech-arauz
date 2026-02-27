@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { dbProjectToUI } from '@/lib/transformers/project';
 import type { DBProject } from '@/lib/transformers/project';
 import { DashboardContent } from './dashboard-content';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -53,11 +54,13 @@ export default async function DashboardPage() {
   }));
 
   return (
-    <DashboardContent
-      user={user}
-      profile={profile}
-      projects={projects}
-      chartProjects={chartProjects}
-    />
+    <ErrorBoundary label="Dashboard">
+      <DashboardContent
+        user={user}
+        profile={profile}
+        projects={projects}
+        chartProjects={chartProjects}
+      />
+    </ErrorBoundary>
   );
 }

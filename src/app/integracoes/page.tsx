@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { IntegracoesContent } from './integracoes-content';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 export default async function IntegracoesPage() {
   const supabase = await createClient();
@@ -20,5 +21,9 @@ export default async function IntegracoesPage() {
     .eq('id', user.id)
     .single();
 
-  return <IntegracoesContent userRole={profile?.role ?? 'viewer'} />;
+  return (
+    <ErrorBoundary label="Integracoes">
+      <IntegracoesContent userRole={profile?.role ?? 'viewer'} />
+    </ErrorBoundary>
+  );
 }

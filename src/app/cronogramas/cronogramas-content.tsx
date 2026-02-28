@@ -13,7 +13,6 @@ import { isWithinRange, isSameDay } from '@/lib/domain/schedule-status';
 import { CronogramasKPIBar } from './components/CronogramasKPIBar';
 import { CronogramaFilters } from './components/CronogramaFilters';
 import { CronogramaCalendar } from './components/CronogramaCalendar';
-import { CronogramaList } from './components/CronogramaList';
 import { CronogramaKanbanView } from './components/CronogramaKanbanView';
 import { CronogramaTableView } from './components/CronogramaTableView';
 import { CronogramaCockpit, SelectedDayPanel } from './components/CronogramaCockpit';
@@ -197,22 +196,6 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
                   onActivityClick={setSelectedSchedule}
                 />
               </div>
-            </ErrorBoundary>
-          )}
-
-          {/* Activity Card Grid (Agenda mode only) */}
-          {viewMode === 'agenda' && (
-            <ErrorBoundary label="Lista Cronogramas">
-              <CronogramaList
-                schedules={schedules}
-                allFilteredSchedules={finalFilteredSchedules}
-                projectIds={projectIds}
-                viewMode={viewMode}
-                calendarPeriod={calendarPeriod as 'day' | 'week' | 'month'}
-                currentDate={currentDate}
-                getSchedulesForDate={getSchedulesForDate}
-                onActivityClick={setSelectedSchedule}
-              />
             </ErrorBoundary>
           )}
 

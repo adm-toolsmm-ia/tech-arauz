@@ -21,7 +21,6 @@ import {
   PROJECT_COLORS_LIGHT,
   getProjectColorIndex,
 } from '@/lib/domain/schedule-status';
-import { ActivityCard } from './CronogramaList';
 
 interface CalendarProps {
   currentDate: Date;
@@ -471,14 +470,49 @@ function DayView({
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {schedules.map((schedule) => (
-                <ActivityCard
-                  key={schedule.id}
-                  schedule={schedule}
-                  projectIds={projectIds}
-                  onClick={() => onActivityClick(schedule)}
-                />
-              ))}
+              {schedules.map((schedule) => {
+                const colorIdx = getProjectColorIndex(schedule.project_id, projectIds);
+                return (
+                  <Card
+                    key={schedule.id}
+                    role="button"
+                    tabIndex={0}
+                    className="cursor-pointer border-l-4 transition-colors hover:bg-muted/50"
+                    style={{ borderLeftColor: PROJECT_COLORS[colorIdx] }}
+                    onClick={() => onActivityClick(schedule)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onActivityClick(schedule);
+                      }
+                    }}
+                  >
+                    <CardContent className="p-3">
+                      <p className="truncate text-sm font-medium">{schedule.atividade || 'Sem nome'}</p>
+                      {schedule.responsavel && (
+                        <p className="truncate text-[11px] text-muted-foreground">
+                          {schedule.responsavel}
+                        </p>
+                      )}
+                      {schedule.data_prazo && (
+                        <div className="mt-2 flex items-center gap-1">
+                          <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                            {new Date(schedule.data_prazo).toLocaleDateString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                            })}
+                          </Badge>
+                          {schedule.atrasado && (
+                            <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+                              Atrasado
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@ import { Inter, DM_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { SkipNavigation } from '@/components/a11y/SkipNavigation';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -30,7 +31,10 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${inter.variable} ${dmSans.variable} font-sans antialiased`}>
         <Providers>
-          <ErrorBoundary label="App">{children}</ErrorBoundary>
+          <SkipNavigation />
+          <ErrorBoundary label="App">
+            <div id="main-content">{children}</div>
+          </ErrorBoundary>
         </Providers>
       </body>
     </html>

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { toast } from 'sonner';
+import { feedback } from '@/lib/feedback';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { type ViewMode } from '@/components/views/ViewToggle';
 import { SplitView } from '@/components/views/SplitView';
@@ -130,16 +130,16 @@ export function ProjectsContent({
 
   const handleSync = async () => {
     setIsSyncing(true);
-    toast.info('Iniciando sincronização com Espaider...');
+    feedback.info('Iniciando sincronização com Espaider...');
     try {
       const result = await syncEspaiderAction();
       if (result.success) {
-        toast.success(result.message);
+        feedback.success(result.message);
       } else {
-        toast.error(result.message);
+        feedback.error(result.message);
       }
     } catch {
-      toast.error('Erro inesperado na sincronização. Tente novamente.');
+      feedback.error('Erro inesperado na sincronização. Tente novamente.');
     } finally {
       setIsSyncing(false);
     }

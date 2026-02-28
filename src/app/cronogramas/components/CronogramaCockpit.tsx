@@ -37,10 +37,10 @@ export function CronogramaCockpit({
         onClose={onClose}
         project={selectedSchedule?.project || undefined}
         projectSchedules={allSchedules.filter((s) => s.project_id === selectedSchedule?.project_id)}
-        projectDeliveries={[]}
-        projectHistories={[]}
-        projectApprovers={[]}
-        projectBudgets={[]}
+        projectDeliveries={selectedSchedule?.project?.deliveries || []}
+        projectHistories={selectedSchedule?.project?.histories || []}
+        projectApprovers={selectedSchedule?.project?.approvers || []}
+        projectBudgets={selectedSchedule?.project?.budgets || []}
       />
     </SplitView>
   );

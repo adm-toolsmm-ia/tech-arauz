@@ -79,15 +79,15 @@ export function ScheduleCockpit({
   return (
     <div className="space-y-6 overflow-y-auto">
       {/* Tabs */}
-      <Tabs defaultValue="detalhes-cronograma" className="w-full">
+      <Tabs defaultValue="atividade" className="w-full">
         <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
-          {/* TAB 1: Detalhes Cronograma (padrão ao abrir) */}
+          {/* TAB 1: Atividade (padrão ao abrir) */}
           <TabsTrigger
-            value="detalhes-cronograma"
+            value="atividade"
             className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
             <Calendar className="mr-2 size-4" />
-            Detalhes Cronograma
+            Atividade
           </TabsTrigger>
 
           {/* TAB 2: Detalhes (do Projeto) */}
@@ -174,8 +174,8 @@ export function ScheduleCockpit({
 
         {/* Content */}
         <div className="p-4">
-          {/* TAB: Detalhes Cronograma (PRIMEIRO e PADRÃO) */}
-          <TabsContent value="detalhes-cronograma" className="mt-4 space-y-4">
+          {/* TAB: Atividade (PRIMEIRO e PADRÃO) */}
+          <TabsContent value="atividade" className="mt-4 space-y-4">
             {/* Status */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">

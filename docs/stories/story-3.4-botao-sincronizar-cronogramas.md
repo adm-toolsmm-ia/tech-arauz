@@ -150,5 +150,75 @@ return (
 
 ## File List
 
-- `src/app/cronogramas/cronogramas-content.tsx` (MODIFICAR — adicionar isSyncing, handleSync, passar props)
-- `src/app/cronogramas/components/CronogramaFilters.tsx` (MODIFICAR — adicionar props isSyncing/onSync e botão)
+- `src/app/cronogramas/cronogramas-content.tsx` (MODIFICADO — adicionar isSyncing, handleSync, passar props)
+- `src/app/cronogramas/components/CronogramaFilters.tsx` (MODIFICADO — adicionar props isSyncing/onSync e botão)
+
+---
+
+## Dev Agent Record
+
+### Checklist de Implementação
+
+- [x] Imports adicionados: `feedback` e `syncEspaiderAction`
+- [x] Estado `isSyncing` adicionado em cronogramas-content.tsx
+- [x] Função `handleSync()` implementada com try-catch
+- [x] Props `isSyncing` e `onSync` passadas ao CronogramaFilters
+- [x] Componente CronogramaFilters atualizado com imports (RefreshCw, Loader2, Button)
+- [x] Props interface atualizada: `isSyncing: boolean` e `onSync: () => void`
+- [x] Layout refatorado: flex container com FilterBar à esquerda + botão à direita
+- [x] Botão com ícones dinâmicos (RefreshCw idle / Loader2 animado)
+- [x] Botão desabilitado durante sincronização
+- [x] Feedback toast integrado (info/success/error)
+
+### Completion Notes
+
+**2026-02-28 — @dev**
+
+**Padrão de Sincronização Replicado com Sucesso**
+
+1. **cronogramas-content.tsx**:
+   - Adicionado imports: `feedback` (para toast) e `syncEspaiderAction` (Server Action)
+   - Adicionado estado: `const [isSyncing, setIsSyncing] = React.useState(false)`
+   - Implementado handler: `handleSync()` com:
+     - `setIsSyncing(true)` no início
+     - `feedback.info()` ao iniciar
+     - Chamada assíncrona a `syncEspaiderAction()`
+     - `feedback.success()` ou `feedback.error()` conforme resultado
+     - `finally { setIsSyncing(false) }` para limpar estado
+   - Props passadas ao CronogramaFilters: `isSyncing={isSyncing}` e `onSync={handleSync}`
+
+2. **CronogramaFilters.tsx**:
+   - Adicionado imports: `RefreshCw`, `Loader2` (lucide-react), `Button` (shadcn/ui)
+   - Props interface expandida: `isSyncing: boolean` e `onSync: () => void`
+   - Layout refatorado: De `<div className="shrink-0 border-b bg-background px-6 py-4">` para:
+     - Wrapper: `<div className="flex items-start gap-3">`
+     - FilterBar container: `<div className="min-w-0 flex-1">` (sem padding direto)
+     - Botão ao lado: `<Button>` com `mt-4 shrink-0`
+   - Botão com lógica de loading:
+     - Ícone: Loader2 com `animate-spin` quando `isSyncing`, RefreshCw caso contrário
+     - Texto: "Sincronizando..." quando ativo, "Sincronizar" quando idle
+     - Estado: `disabled={isSyncing}`
+     - Accessibility: `<span className="sr-only sm:not-sr-only">` para mostrar texto em telas maiores
+
+3. **Padrão Idêntico ao ProjectsFilters**:
+   - ✅ Mesma estrutura de wrapper flex
+   - ✅ Mesmos ícones e animação
+   - ✅ Mesma lógica de disabled state
+   - ✅ Mesmos feedback toasts
+   - ✅ Reusa mesma `syncEspaiderAction()` do módulo Projetos
+
+### Change Log
+
+- **cronogramas-content.tsx**:
+  - Adicionado imports: `feedback`, `syncEspaiderAction`
+  - Adicionado estado: `isSyncing`
+  - Adicionado handler: `handleSync()`
+  - Adicionadas props ao CronogramaFilters: `isSyncing`, `onSync`
+
+- **CronogramaFilters.tsx**:
+  - Adicionado imports: `RefreshCw`, `Loader2`, `Button`
+  - Expandida props interface: `isSyncing`, `onSync`
+  - Refatorado layout: flex container com FilterBar + botão
+  - Adicionado botão "Sincronizar" com lógica de loading
+
+### Status: Ready for Review ✅

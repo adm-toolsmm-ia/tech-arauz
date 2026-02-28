@@ -189,7 +189,99 @@ E atualizar `defaultValue` do `Tabs`:
 
 ## File List
 
-- `src/app/cronogramas/page.tsx` (MODIFICAR — expandir query com relações do projeto)
-- `src/hooks/useCronogramasFilters.ts` (MODIFICAR — atualizar tipo CronogramaData.project)
-- `src/app/cronogramas/components/CronogramaCockpit.tsx` (MODIFICAR — passar dados reais ao ScheduleCockpit)
-- `src/components/cronogramas/ScheduleCockpit.tsx` (MODIFICAR — renomear tab "Atividade" e defaultValue)
+- `src/app/cronogramas/page.tsx` (MODIFICADO — expandir query com relações do projeto)
+- `src/hooks/useCronogramasFilters.ts` (MODIFICADO — atualizar tipo CronogramaData.project)
+- `src/app/cronogramas/components/CronogramaCockpit.tsx` (MODIFICADO — passar dados reais ao ScheduleCockpit)
+- `src/components/cronogramas/ScheduleCockpit.tsx` (MODIFICADO — renomear tab "Atividade" e defaultValue)
+
+---
+
+## Dev Agent Record
+
+### Checklist de Implementação
+
+- [x] Query expandido em cronogramas/page.tsx com nested selects de project_histories, project_approvers, project_budgets, project_deliveries
+- [x] Tipo CronogramaData.project expandido com arrays de histories, approvers, budgets, deliveries
+- [x] CronogramaCockpit.tsx atualizado para passar dados reais do projeto
+- [x] Props projectDeliveries, projectHistories, projectApprovers, projectBudgets recebem valores reais
+- [x] Primeira tab renomeada de "Detalhes Cronograma" para "Atividade"
+- [x] defaultValue do Tabs atualizado para "atividade"
+- [x] TabsContent value atualizado para "atividade"
+- [x] Tabs Entregas, Histórico, Aprovadores, Orçamentos populadas com dados reais
+- [x] Lint passou sem novos erros
+- [x] Nenhuma regressão nas demais funcionalidades
+
+### Completion Notes
+
+**2026-02-28 — @dev**
+
+**Implementação da Visão 360° com Dados Reais do Projeto**
+
+1. **cronogramas/page.tsx** — Query Expandido:
+   - Expandido nested select do campo `project` para incluir:
+     - `histories:project_histories(id, type, from, to, step_from, step_to, message, date)`
+     - `approvers:project_approvers(id, type, responsible)`
+     - `budgets:project_budgets(id, value, supplier, date, currency)`
+     - `deliveries:project_deliveries(id, description, deadline, completed)`
+   - Query agora retorna schedules com dados completos do projeto
+
+2. **useCronogramasFilters.ts** — Tipo Expandido:
+   - Campo `project` agora inclui 4 novos arrays de relações:
+     - `histories?`: Array com id, type, from, to, step_from, step_to, message, date
+     - `approvers?`: Array com id, type, responsible
+     - `budgets?`: Array com id, value, supplier, date, currency
+     - `deliveries?`: Array com id, description, deadline, completed
+   - Tipos totalmente tipados com TypeScript
+
+3. **CronogramaCockpit.tsx** — Propagação de Dados:
+   - Props `projectDeliveries`, `projectHistories`, `projectApprovers`, `projectBudgets`
+   - Substituem valores de `selectedSchedule?.project?.{field} || []`
+   - Anteriormente: arrays vazios hardcoded `[]`
+   - Agora: dados reais do projeto ou array vazio se não houver relações
+
+4. **ScheduleCockpit.tsx** — Renomeação de Tab:
+   - Primeira tab:
+     - Antes: `value="detalhes-cronograma"`, label "Detalhes Cronograma"
+     - Depois: `value="atividade"`, label "Atividade"
+   - `Tabs` defaultValue:
+     - Antes: `defaultValue="detalhes-cronograma"`
+     - Depois: `defaultValue="atividade"`
+   - `TabsContent` value:
+     - Antes: `value="detalhes-cronograma"`
+     - Depois: `value="atividade"`
+
+### Impacto Funcional
+
+- ✅ **Tab Entregas**: Exibe projetos.deliveries (ou "Nenhuma entrega")
+- ✅ **Tab Histórico**: Exibe projetos.histories (ou "Nenhum histórico")
+- ✅ **Tab Aprovadores**: Exibe projetos.approvers (ou "Nenhum aprovador")
+- ✅ **Tab Orçamentos**: Exibe projetos.budgets (ou "Nenhum orçamento")
+- ✅ **Tab Atividade**: Renomeada, primeiro tab, padrão ao abrir
+- ✅ **SplitView**: Mostra visão 360° completa do cronograma + projeto vinculado
+
+### Performance Notes
+
+- Query retorna dados de projeto duplicados por cronograma (esperado para volume atual)
+- Monitorar latência com grande volume de dados (possível otimização futura: buscar projetos únicos separadamente)
+- Nomes de tabelas verificados: `project_histories`, `project_approvers`, `project_budgets`, `project_deliveries`
+
+### Change Log
+
+- **cronogramas/page.tsx**:
+  - Expandido nested select do campo `project`
+  - Incluídas relações: histories, approvers, budgets, deliveries
+
+- **useCronogramasFilters.ts**:
+  - Tipo `CronogramaData.project` expandido
+  - Adicionados 4 arrays tipados de relações
+
+- **CronogramaCockpit.tsx**:
+  - Substituídos arrays vazios por dados reais do projeto
+  - Props agora recebem: `selectedSchedule?.project?.{field} || []`
+
+- **ScheduleCockpit.tsx**:
+  - Renomeada primeira tab: "Atividade"
+  - Atualizado `defaultValue` para "atividade"
+  - Atualizado `TabsContent value` para "atividade"
+
+### Status: Ready for Review ✅

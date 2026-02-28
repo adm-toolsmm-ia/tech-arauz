@@ -102,12 +102,42 @@ export function addDays(date: Date, days: number): Date {
   return result;
 }
 
+/** Get start of ISO-8601 week (Monday) */
 export function getWeekStart(date: Date): Date {
   const d = new Date(date);
   const day = d.getDay();
-  d.setDate(d.getDate() - day);
+  d.setDate(d.getDate() - ((day + 6) % 7));
   d.setHours(0, 0, 0, 0);
   return d;
+}
+
+/** Get end of ISO-8601 week (Sunday) */
+export function getWeekEnd(date: Date): Date {
+  const start = getWeekStart(date);
+  start.setDate(start.getDate() + 6);
+  start.setHours(23, 59, 59, 999);
+  return start;
+}
+
+// ---------- Schedule Kanban Mapping (Story 2.15) ----------
+
+export type ScheduleKanbanColumn = 'pendente' | 'em_execucao' | 'atrasada' | 'concluida';
+
+export const SCHEDULE_KANBAN_COLUMNS: { key: ScheduleKanbanColumn; label: string }[] = [
+  { key: 'pendente', label: 'Pendente' },
+  { key: 'em_execucao', label: 'Em Execução' },
+  { key: 'atrasada', label: 'Atrasada' },
+  { key: 'concluida', label: 'Concluída' },
+];
+
+/** Map schedule status + atrasado to Kanban column */
+export function getKanbanColumn(status: string | null | undefined, atrasado: boolean): ScheduleKanbanColumn {
+  const s = (status || '').trim().toLowerCase();
+  if (s === 'concluído' || s === 'concluido') return 'concluida';
+  if (s === 'cancelado') return 'concluida';
+  if (atrasado) return 'atrasada';
+  if (s === 'em_execucao' || s === 'em execução' || s === 'em andamento' || s === 'iniciada') return 'em_execucao';
+  return 'pendente';
 }
 
 // ---------- Constants ----------

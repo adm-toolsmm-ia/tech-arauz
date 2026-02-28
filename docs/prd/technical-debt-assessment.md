@@ -1,98 +1,232 @@
-# Technical Debt Assessment - FINAL
+# Technical Debt Assessment — FINAL
 
-Data: 2026-02-26  
-Versao: 1.0  
+Data: 2026-02-28
+Versão: 2.0 (PRD UX/UI 2026)
 Gate QA: APPROVED
+Orquestração: @aios-master (Orion) — Brownfield Discovery
+PRD: Padronização UX/UI + Cronogramas Read-Only + Tecnologia & IA
+
+---
 
 ## Executive Summary
 
-- Total de debitos consolidados: **18**
-- Criticos: **4**
-- Altos: **9**
-- Medios: **5**
-- Esforco estimado: **~274 horas**
+- Gaps identificados vs PRD: **35**
+- Bloqueantes (decisão de produto): **2** (resolvidos com defaults do PRD)
+- Críticos/Altos: **22**
+- Médios/Baixos: **13**
+- Esforço total estimado: **~250 horas**
+- Timeline recomendada: **4 sprints**
 
-## 1. Inventario consolidado
+### Decisões tomadas (defaults do PRD)
 
-### 1.1 Sistema (validado por architect)
+| Decisão                                                         | Resolução                                                                       | Justificativa                                                      |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| DP-01: Campos `prioridade`, `progresso`, `etiquetas[]` ausentes | **Omitir.** Tabela/Kanban com 7 colunas. Usar `atrasado` como badge de urgência | Campos não existem na API Espaider (confirmado por @data-engineer) |
+| DP-02: DnD em Projetos Kanban                                   | **Desabilitar.** Kanban somente visual                                          | PRD: "somente leitura" (confirmado por @ux-design-expert)          |
+| DP-03: Status mapping para Kanban                               | Pendente → Colunas Kanban: Pendente, Em Execução, Atrasada, Concluída           | Baseado em domínio + `atrasado` boolean                            |
 
-| ID | Debito | Severidade | Horas | Prioridade |
-|---|---|---|---:|---|
-| SYS-01 | Drift arquitetura declarada x implementada | Alta | 12 | Alta |
-| SYS-02 | Endpoints AI sem JWT obrigatorio | Critica | 8 | Critica |
-| SYS-03 | Default inseguro de JWT secret | Critica | 4 | Critica |
-| SYS-04 | Tenant hardcoded em runtime/rotas | Alta | 16 | Alta |
-| SYS-05 | Componentes frontend grandes/acoplados | Alta | 40 | Alta |
-| SYS-06 | Cobertura de testes desigual | Alta | 32 | Alta |
-| SYS-07 | CI sem `typecheck` dedicado | Media | 4 | Media |
+---
 
-### 1.2 Database (validado por data-engineer)
+## 1. Inventário consolidado
 
-| ID | Debito | Severidade | Horas | Prioridade |
-|---|---|---|---:|---|
-| DB-01 | Historico de regressao RLS em child tables/logs | Critica | 20 | Critica |
-| DB-02 | Segredo persistido em texto (`espaider_apis.token`) | Alta | 12 | Alta |
-| DB-03 | Hardcode de tenant em scripts/migrations | Alta | 10 | Alta |
-| DB-04 | Campos de dominio sem padrao forte | Media | 24 | Media |
-| DB-05 | Retencao de logs nao formalizada | Media | 12 | Media |
-| DB-06 | Sem monitoramento de crescimento/bloat de logs | Media | 8 | Media |
-| DB-07 | Sem baseline de restore/recovery drill | Alta | 14 | Alta |
+### 1.1 Database (validado por @data-engineer)
 
-### 1.3 Frontend/UX (validado por ux-design-expert)
+| ID    | Débito                                                     | Severidade | Horas | Sprint |
+| ----- | ---------------------------------------------------------- | ---------- | ----: | ------ |
+| DB-01 | Histórico de regressão RLS em child tables (ciclo 016→027) | Crítica    |    20 | 4      |
+| DB-02 | Token sensível em `espaider_apis.token`                    | Alta       |    12 | 4      |
+| DB-03 | Tenant hardcoded em seeds/código                           | Alta       |    10 | 4      |
+| DB-04 | Auth dividida entre DB e app sem matriz documentada        | Alta       |     8 | 4      |
+| DB-06 | Sem índice em `project_schedules(data_inicio, data_fim)`   | Alta       |     4 | 1      |
+| DB-07 | Status mapping (API → UI) não documentado                  | Alta       |     4 | 1      |
+| DB-09 | Sem política de retenção para logs                         | Média      |    12 | 4      |
+| DB-10 | Sem baseline de restore/recovery drill                     | Alta       |    14 | 4      |
+| DB-11 | Migrations com sobreposição (sem snapshot consolidado)     | Média      |     8 | 4      |
+| DB-12 | Campos de domínio sem constraints                          | Média      |    16 | 4      |
 
-| ID | Debito | Severidade | Horas | Prioridade |
-|---|---|---|---:|---|
-| UX-01 | Regras duplicadas entre telas | Alta | 16 | Alta |
-| UX-02 | Baseline de acessibilidade ausente | Alta | 20 | Alta |
-| UX-03 | Camada de dados heterogenea | Media | 18 | Media |
-| UX-04 | Jornadas por persona nao formalizadas | Media | 10 | Media |
-| UX-05 | Componentes extensos dificultam evolucao UX | Alta | 24 | Alta |
-| UX-06 | Feedback async sem padrao unico | Media | 10 | Media |
+### 1.2 Cronogramas — Read-Only (validado por @ux-design-expert)
 
-## 2. Matriz final de priorizacao
+| ID     | Débito                                             | Severidade | Horas | Sprint |
+| ------ | -------------------------------------------------- | ---------- | ----: | ------ |
+| UX-C01 | Banner ERP ausente                                 | Alta       |     4 | 1      |
+| UX-C02 | Kanban não implementado                            | Alta       |    12 | 2      |
+| UX-C03 | Lista renderiza cards (não tabela)                 | Alta       |    10 | 2      |
+| UX-C04 | Bug `getWeekStart()` — semana no domingo           | Alta       |     2 | 1      |
+| UX-C05 | Layout de container inconsistente                  | Média      |     3 | 3      |
+| UX-C08 | Filtros com labels em inglês                       | Média      |     2 | 3      |
+| UX-C09 | Exclusão de concluídos por padrão                  | Alta       |     3 | 2      |
+| UX-C10 | Atalhos "incluir concluídos" ausentes              | Alta       |     4 | 2      |
+| UX-C11 | Indicador de urgência (usar `atrasado` como badge) | Média      |     3 | 2      |
 
-## Onda 1 - Critico imediato (Sprint 1)
-- SYS-02, SYS-03, DB-01, DB-02
-- Objetivo: eliminar risco de seguranca/isolamento
+### 1.3 Projetos — Read-Only (validado por @ux-design-expert)
 
-## Onda 2 - Alta prioridade estrutural (Sprint 2)
-- SYS-04, SYS-06, DB-03, DB-07, UX-01
-- Objetivo: estabilizar fundacao de multi-tenant e qualidade
+| ID     | Débito                                         | Severidade | Horas | Sprint |
+| ------ | ---------------------------------------------- | ---------- | ----: | ------ |
+| UX-P01 | Banner ERP ausente                             | Alta       |     2 | 1      |
+| UX-P02 | DnD no Kanban altera dados (desabilitar)       | Alta       |     4 | 2      |
+| UX-P03 | Botão "Sincronizar" renomear para "Recarregar" | Média      |     2 | 2      |
+| UX-P04 | Subtítulo diz "gerencie"                       | Baixa      |     1 | 3      |
+| UX-P05 | Tooltip "somente leitura" ausente              | Média      |     2 | 2      |
 
-## Onda 3 - Qualidade de entrega e UX (Sprint 3)
-- SYS-05, UX-02, UX-05, UX-06, SYS-07
-- Objetivo: reduzir custo de manutencao e regressao
+### 1.4 Sidebar/Navegação
 
-## Onda 4 - Governanca de dados/operacao (Sprint 4)
-- DB-04, DB-05, DB-06, UX-03, UX-04
-- Objetivo: consolidar padroes de longo prazo
+| ID     | Débito                              | Severidade | Horas | Sprint |
+| ------ | ----------------------------------- | ---------- | ----: | ------ |
+| SYS-01 | Grupo "Tecnologia & IA" inexistente | Alta       |     4 | 1      |
 
-## 3. Dependencias de execucao
+### 1.5 Agentes AI — CRUD (validado por @ux-design-expert)
 
-1. Hardening de seguranca antecede refatoracao ampla.
-2. Testes de autorizacao e RLS devem estar ativos antes de mudancas de schema sensivel.
-3. Extracao de regras de dominio precede modularizacao de UI para evitar retrabalho.
+| ID     | Débito                                 | Severidade | Horas | Sprint |
+| ------ | -------------------------------------- | ---------- | ----: | ------ |
+| UX-A01 | Filtros ad-hoc (não usa FilterBar)     | Alta       |     8 | 2      |
+| UX-A02 | Kanban manual (não usa KanbanBoard)    | Média      |     6 | 3      |
+| SYS-06 | Kanban por status (PRD exige por Tipo) | Média      |     8 | 2      |
 
-## 4. Riscos e mitigacoes (QA consolidado)
+### 1.6 Cadastros Auxiliares (validado por @ux-design-expert)
 
-| Risco | Mitigacao |
-|---|---|
-| Regressao de isolamento tenant | Testes SQL RLS no CI + revisao obrigatoria de policy |
-| Interrupcao de sync por mudanca de secrets | Rollout em duas fases com fallback |
-| Quebra funcional em refatoracao UI | Testes de regressao por fluxo critico |
-| Dificuldade de observacao de incidentes | Logs estruturados + alertas |
+| ID     | Débito                                          | Severidade | Horas | Sprint |
+| ------ | ----------------------------------------------- | ---------- | ----: | ------ |
+| UX-T01 | Título "Provedores de LM" vs "Fornecedores IA"  | Alta       |     1 | 1      |
+| UX-T03 | Modelos sem Cockpit dedicado                    | Média      |     6 | 3      |
+| UX-T04 | Bug: Kanban Modelos muda provider sem persistir | Alta       |     3 | 3      |
+| UX-T07 | DashboardHeader sem prop `actions`              | Média      |     4 | 3      |
 
-## 5. Criterios de sucesso
+### 1.7 UX Universal (validado por @ux-design-expert e @qa)
 
-1. Nenhum endpoint critico exposto sem autenticacao/autorizacao.
-2. RLS validado automaticamente em pipeline.
-3. Fluxos criticos (dashboard/projetos/sync) cobertos por testes de regressao.
-4. Componentes principais modularizados com reducao de complexidade.
-5. Operacao de sync com segredo protegido e trilha de auditoria clara.
+| ID     | Débito                              | Severidade | Horas | Sprint |
+| ------ | ----------------------------------- | ---------- | ----: | ------ |
+| UX-U01 | Baseline acessibilidade WCAG AA     | Alta       |    16 | 3      |
+| UX-U02 | Feedback async sem padrão           | Média      |     6 | 3      |
+| UX-U03 | Empty/loading/error inconsistentes  | Média      |     8 | 3      |
+| UX-U04 | Feature flags para novas views      | Média      |     6 | 2      |
+| SYS-05 | Paginação server-side (Cronogramas) | Alta       |    12 | 2      |
 
-## 6. Proximos passos
+---
 
-1. Aprovar backlog priorizado.
-2. Criar epic de execucao.
-3. Quebrar em stories com AC e testes por onda.
+## 2. Plano de execução por sprint
 
+### Sprint 1 — Fundação (Semana 1-2)
+
+**Objetivo:** Criar base para implementação PRD. Quick wins + desbloqueios.
+
+| ID           | Tarefa                                                        | Horas   | Agente         |
+| ------------ | ------------------------------------------------------------- | ------- | -------------- |
+| DB-06        | Criar índices de período em `project_schedules`               | 4       | @dev           |
+| DB-07        | Documentar status mapping (query banco real)                  | 4       | @data-engineer |
+| SYS-01       | Sidebar: reorganizar grupos                                   | 4       | @dev           |
+| UX-C01/P01   | Criar `ErpReadOnlyBanner` + inserir em Cronogramas e Projetos | 6       | @dev           |
+| UX-C04       | Fix bug `getWeekStart()`                                      | 2       | @dev           |
+| UX-T01       | Corrigir título "Fornecedores IA"                             | 1       | @dev           |
+| **Subtotal** |                                                               | **21h** |                |
+
+### Sprint 2 — Core PRD (Semana 3-4)
+
+**Objetivo:** Implementar requisitos centrais do PRD.
+
+| ID           | Tarefa                                     | Horas   | Agente  |
+| ------------ | ------------------------------------------ | ------- | ------- |
+| UX-C02       | Kanban Cronogramas (read-only, sem DnD)    | 12      | @dev    |
+| UX-C03       | Tabela Cronogramas (7 colunas, ordenação)  | 10      | @dev    |
+| SYS-05       | Paginação server-side Cronogramas          | 12      | @dev    |
+| UX-C09/C10   | Exclusão de concluídos + atalhos toggle    | 7       | @dev    |
+| UX-C11       | Badge urgência (`atrasado`)                | 3       | @dev    |
+| UX-P02       | Desabilitar DnD em Projetos                | 4       | @dev    |
+| UX-P03/P05   | Renomear "Sincronizar" + tooltip read-only | 4       | @dev    |
+| UX-A01       | Migrar filtros de Agentes para FilterBar   | 8       | @dev    |
+| SYS-06       | Kanban de Agentes por Tipo                 | 8       | @dev    |
+| UX-U04       | Feature flags para novas views             | 6       | @devops |
+| **Subtotal** |                                            | **74h** |         |
+
+### Sprint 3 — Qualidade e consistência (Semana 5-6)
+
+**Objetivo:** Padronizar UX, a11y, e resolver inconsistências.
+
+| ID           | Tarefa                                    | Horas   | Agente     |
+| ------------ | ----------------------------------------- | ------- | ---------- |
+| UX-U01       | Baseline acessibilidade WCAG AA           | 16      | @dev + @qa |
+| UX-U02       | Padrão feedback async (sonner + inline)   | 6       | @dev       |
+| UX-U03       | Padronizar empty/loading/error states     | 8       | @dev       |
+| UX-A02       | Migrar Kanban Agentes para KanbanBoard    | 6       | @dev       |
+| UX-T03       | Criar ModelCockpit dedicado               | 6       | @dev       |
+| UX-T04       | Fix bug DnD Modelos                       | 3       | @dev       |
+| UX-T07       | DashboardHeader prop `actions`            | 4       | @dev       |
+| UX-C05       | Fix layout container Cronogramas          | 3       | @dev       |
+| UX-C08/P04   | Internacionalizar labels + ajustar textos | 3       | @dev       |
+| **Subtotal** |                                           | **55h** |            |
+
+### Sprint 4 — Segurança e governança (Semana 7-8)
+
+**Objetivo:** Resolver dívida técnica de segurança e governança DB.
+
+| ID           | Tarefa                             | Horas    | Agente                |
+| ------------ | ---------------------------------- | -------- | --------------------- |
+| DB-01        | RLS test suite automatizada no CI  | 20       | @data-engineer + @qa  |
+| DB-02        | Token handling (secret manager)    | 12       | @dev + @data-engineer |
+| DB-03        | Remover tenant hardcode            | 10       | @dev                  |
+| DB-04        | Documentar matriz de autorização   | 8        | @data-engineer        |
+| DB-10        | Baseline restore/recovery          | 14       | @data-engineer        |
+| DB-09        | Política de retenção de logs       | 12       | @data-engineer        |
+| DB-11        | Snapshot consolidado de migrations | 8        | @data-engineer        |
+| DB-12        | Constraints em campos de domínio   | 16       | @data-engineer        |
+| **Subtotal** |                                    | **100h** |                       |
+
+---
+
+## 3. Dependências de execução
+
+```mermaid
+graph TD
+    DB06[DB-06: Índices de período] --> SYS05[SYS-05: Paginação]
+    DB06 --> UXC03[UX-C03: Tabela]
+    DB07[DB-07: Status mapping] --> UXC02[UX-C02: Kanban Cronogramas]
+    UXC01[UX-C01: Banner ERP] --> UXP01[UX-P01: Banner Projetos]
+    UXC09[UX-C09: Exclusão concluídos] --> UXC10[UX-C10: Atalhos toggle]
+    UXU04[UX-U04: Feature flags] --> UXC02
+    UXU04 --> UXC03
+    UXA01[UX-A01: FilterBar Agentes] --> SYS06[SYS-06: Kanban por Tipo]
+```
+
+**Regra:** Nenhuma task do Sprint 2 deve começar sem as tasks do Sprint 1 concluídas.
+
+---
+
+## 4. Riscos e mitigações (consolidado QA)
+
+| Risco                                        | Probabilidade | Mitigação                                  |
+| -------------------------------------------- | ------------- | ------------------------------------------ |
+| Regressão de RLS ao criar migrations         | Média         | `audit_all_rls_policies()` no CI           |
+| Status inconsistentes entre ERP e UI         | Alta          | Mapping documentado + fallback visual      |
+| Refatoração quebrar funcionalidade existente | Média         | Testes de regressão em Projetos (baseline) |
+| Paginação alterar comportamento de filtros   | Média         | Filtros via URL params; testar combinações |
+| Feature flags exporem WIP                    | Baixa         | Flag por módulo no middleware              |
+| Exclusão de concluídos confundir usuários    | Média         | Toggle visível + tooltip "X ocultos"       |
+
+---
+
+## 5. Critérios de sucesso
+
+1. ✅ Cronogramas: Agenda + Kanban + Lista funcionais, 100% read-only, com banner ERP
+2. ✅ Cronogramas: Interseção de período correta (bordas inclusivas, semana ISO-8601)
+3. ✅ Cronogramas: Concluídos ocultos por padrão com atalhos toggle
+4. ✅ Cronogramas: Paginação server-side com índices
+5. ✅ Projetos: DnD desabilitado, banner ERP, sem ações de mutação
+6. ✅ Sidebar: "Tecnologia & IA" + "Tabelas Auxiliares" conforme PRD
+7. ✅ Agentes AI: Kanban por Tipo, FilterBar padrão, CRUD operacional
+8. ✅ Acessibilidade: WCAG AA nas telas-alvo
+9. ✅ Testes: 80% cobertura novos componentes, E2E para read-only e período
+10. ✅ Segurança: RLS validado no CI, token protegido
+
+---
+
+## 6. Próximos passos
+
+1. Aprovar backlog priorizado (este documento)
+2. Criar epic de execução (@pm — Phase 10)
+3. Quebrar em stories com AC e testes por sprint (@pm — Phase 10)
+4. Iniciar Sprint 1 com @dev
+
+---
+
+*Documento gerado em 2026-02-28 por @architect — Brownfield Discovery Phase 8*
+*Consolidação final incorporando reviews de @data-engineer, @ux-design-expert e @qa*
+*Gate QA: APPROVED*

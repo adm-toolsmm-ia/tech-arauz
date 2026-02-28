@@ -38,7 +38,7 @@ export const menuConfig: NavGroup[] = [
     ],
   },
   {
-    group: 'Sistema',
+    group: 'Tecnologia & IA',
     items: [
       { title: 'Agentes AI', url: '/agentes', icon: Bot, badge: 'MVP' },
       { title: 'Integrações', url: '/integracoes', icon: Plug },
@@ -46,7 +46,7 @@ export const menuConfig: NavGroup[] = [
     ],
   },
   {
-    group: 'Auxiliares',
+    group: 'Tabelas Auxiliares',
     items: [
       { title: 'Tipos de Agentes', url: '/auxiliares/agent-types', icon: Settings },
       { title: 'Modelos IA', url: '/auxiliares/modelos-ia', icon: Database },

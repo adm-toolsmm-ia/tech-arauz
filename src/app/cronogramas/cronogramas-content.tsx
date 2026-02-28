@@ -5,6 +5,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { useCronogramasFilters, CronogramaData } from '@/hooks/useCronogramasFilters';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { ErpReadOnlyBanner } from '@/components/shared/erp-readonly-banner';
 import type { KpiFilterName } from '@/lib/domain/schedule-kpi';
 import { filterByKpi } from '@/lib/domain/schedule-kpi';
 import { isWithinRange, isSameDay } from '@/lib/domain/schedule-status';
@@ -103,8 +104,12 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
       <div className="flex w-full min-w-0 max-w-full flex-col overflow-hidden">
         <DashboardHeader
           title="Cronogramas"
-          subtitle="Visualize todos os cronogramas de projetos"
+          subtitle="Atividades importadas do ERP Espaider"
         />
+
+        <div className="px-6 pt-4">
+          <ErpReadOnlyBanner variant="page" />
+        </div>
 
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           {/* Filters */}

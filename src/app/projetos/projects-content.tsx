@@ -9,6 +9,7 @@ import { ProjectCockpit } from '@/components/project';
 import { syncEspaiderAction } from '@/app/actions/sync';
 import { useProjetosFilters } from '@/hooks/useProjetosFilters';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { ErpReadOnlyBanner } from '@/components/shared/erp-readonly-banner';
 import type { ProjectKpiFilterName } from '@/lib/domain/project-kpi';
 import { filterByProjectKpi } from '@/lib/domain/project-kpi';
 
@@ -163,8 +164,12 @@ export function ProjectsContent({
     <div className="flex flex-col">
       <DashboardHeader
         title="Gestão de Projetos"
-        subtitle="Visualize e gerencie todos os projetos do Espaider"
+        subtitle="Visualize todos os projetos importados do Espaider"
       />
+
+      <div className="px-6 pt-4">
+        <ErpReadOnlyBanner variant="page" />
+      </div>
 
       <div className="flex-1 space-y-6 p-6">
         <p className="sr-only" role="status" aria-live="polite">

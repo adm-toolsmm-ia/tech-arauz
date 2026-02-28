@@ -202,3 +202,112 @@ tenants (1) ---- (N) lm_providers ---- (N) lm_models
 - 028-030: schema de agentes AI + tipos/templates
 - 031-038: provedores/modelos LLM e curadoria 360 (tier, custo, ordem, contexto)
 
+---
+
+## 8. PRD UX/UI 2026 — Respostas para @architect (Phase 2 Addendum)
+
+Data: 2026-02-28
+Contexto: Brownfield Discovery para PRD "Padronizacao UX/UI com Projetos/Cronogramas somente leitura + Gestao de Tecnologia & IA"
+
+### Pergunta 1: Quais valores reais de status existem em project_schedules?
+
+**Coluna `status`**: TEXT livre, sem CHECK constraint nem enum.
+Valores vem do Espaider via `mapearCronograma()` que mapeia o campo `STATUS`.
+
+Valores conhecidos no dominio (via `schedule-status.ts`):
+- `"cancelado"` e `"concluído"` sao tratados como inativos por `isConsideredActive()`
+- Todos os outros valores sao tratados como "ativos"
+- **Nao ha dicionario fechado no banco** — depende dos valores do ERP
+
+**Recomendacao**: Criar migration com `COMMENT ON COLUMN project_schedules.status` documentando valores conhecidos. NAO adicionar CHECK constraint (dados vem do ERP e podem variar).
+
+### Pergunta 2: Campos prioridade/progresso_percentual na API Espaider?
+
+**Analise do mapper.ts** (`CAMPOS_CRONOGRAMA`):
+- `PRIORIDADE` **NAO existe** em cronogramas — so existe em `CAMPOS_PROJETOS`, `CAMPOS_ENTREGAS`, `CAMPOS_REQUISITOS`
+- `PROGRESSO` / `PROGRESSOPERCENTUAL` **NAO existe em nenhum dataset** do Espaider
+
+**Consequencia para o PRD**:
+- Coluna "Prioridade" no Kanban/Lista de cronogramas: **impossivel sem dados** (campo nao existe na API)
+- Barra de progresso: **impossivel** (campo nao existe)
+- Alternativa viavel: usar `atrasado` (boolean) como indicador de progresso/urgencia
+
+### Pergunta 3: Indices em data_inicio/data_fim de project_schedules?
+
+**Estado atual**: **NAO existem indices dedicados** em `data_inicio` nem `data_fim`.
+
+Indices existentes em project_schedules (migration 010):
+- `idx_schedules_fase_atividade` (fase_atividade)
+- `idx_schedules_atrasado` (partial: WHERE atrasado = true)
+- `idx_schedules_setor` (setor_responsavel)
+
+**Impacto critico**: Queries de intersecao de periodo (`start <= P.data_fim AND end >= P.data_inicio`) para Agenda/Kanban farao full table scan.
+
+**Recomendacao**: Criar migration com:
+```sql
+CREATE INDEX idx_schedules_data_inicio ON project_schedules (data_inicio);
+CREATE INDEX idx_schedules_data_fim ON project_schedules (data_fim);
+CREATE INDEX idx_schedules_status ON project_schedules (status);
+-- Composite para queries de periodo com filtro de tenant:
+CREATE INDEX idx_schedules_tenant_dates ON project_schedules (tenant_id, data_inicio, data_fim);
+```
+
+### Pergunta 4: updated_at confiavel para "Atualizado as"?
+
+**SIM** — Confiavel para exibicao.
+
+Evidencia (migration 001):
+```sql
+CREATE OR REPLACE FUNCTION handle_updated_at()
+RETURNS TRIGGER AS $$ BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END; $$ LANGUAGE plpgsql;
+```
+Trigger aplicado em TODAS as tabelas: `projects`, `project_schedules`, `project_deliveries`, etc.
+
+**Semantica**: `updated_at` reflete o ultimo UPDATE no banco local (sync do Espaider), NAO a data de alteracao no ERP. Para o PRD, isso e adequado pois o banner diz "Fonte: ERP — somente leitura" e o timestamp mostra quando o dado foi sincronizado.
+
+### Pergunta 5: Timestamp de ultima sync em integration_log_entries?
+
+**Duas opcoes viaveis**:
+
+1. **`sync_logs.completed_at`** (melhor para "ultima sync global"):
+   - `SELECT completed_at FROM sync_logs WHERE status = 'completed' ORDER BY completed_at DESC LIMIT 1`
+   - Retorna o timestamp de conclusao do ultimo sync bem-sucedido
+
+2. **`integration_log_entries.logged_at`** (melhor para "ultima atividade"):
+   - `SELECT MAX(logged_at) FROM integration_log_entries WHERE dataset = 'Cronogramas'`
+   - Permite granularidade por dataset
+
+**Recomendacao para o PRD**: Usar `sync_logs.completed_at` para o banner global e `integration_log_entries.logged_at` para timestamps por modulo.
+
+### Gaps vs PRD (campos ausentes em project_schedules)
+
+| Campo PRD | Status DB | Origem |
+|-----------|-----------|--------|
+| prioridade | NAO EXISTE | Espaider nao envia para cronogramas |
+| progresso_percentual | NAO EXISTE | Espaider nao tem esse campo |
+| etiquetas[] | NAO EXISTE | Seria feature local (requer CRUD, conflita com read-only) |
+| responsavel | EXISTE | `responsavel` TEXT |
+| fase_atividade | EXISTE | `fase_atividade` TEXT |
+| atrasado | EXISTE | `atrasado` BOOLEAN |
+| data_inicio | EXISTE | `data_inicio` TIMESTAMP |
+| data_fim | EXISTE | `data_fim` TIMESTAMP |
+| data_prazo | EXISTE | `data_prazo` TIMESTAMP |
+| setor_responsavel | EXISTE | `setor_responsavel` TEXT |
+
+### Bug identificado: getWeekStart() inicia no Domingo
+
+`src/lib/domain/schedule-status.ts` linha 106-111:
+```typescript
+export function getWeekStart(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - day); // BUG: Sunday=0, subtrai 0 no domingo
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+```
+PRD exige ISO-8601 (segunda-feira). Fix: `d.setDate(d.getDate() - ((day + 6) % 7))`
+

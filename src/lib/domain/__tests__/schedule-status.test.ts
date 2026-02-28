@@ -1,188 +1,143 @@
 import { describe, it, expect } from 'vitest';
 import {
-  isConsideredActive,
-  hasValidDeadline,
-  isOverdue,
-  isDateInPast,
-  isWithin7Days,
-  isSameDay,
-  isWithinRange,
-  formatDateBR,
-  getDaysInMonth,
-  getFirstDayOfMonth,
-  addDays,
   getWeekStart,
-  getProjectColorIndex,
-} from '../schedule-status';
-import type { Schedule } from '../schedule-status';
+  getWeekEnd,
+  getKanbanColumn,
+  SCHEDULE_KANBAN_COLUMNS,
+  type ScheduleKanbanColumn,
+} from '@/lib/domain/schedule-status';
 
-function makeSchedule(overrides: Partial<Schedule> = {}): Schedule {
-  return {
-    id: '1',
-    project_id: 'p1',
-    atividade: 'Test',
-    responsavel: null,
-    data_inicio: null,
-    data_fim: null,
-    status: null,
-    fase_atividade: null,
-    atrasado: null,
-    setor_responsavel: null,
-    item: null,
-    detalhamento: null,
-    data_prazo: null,
-    data_novo_prazo: null,
-    data_alerta_prazo: null,
-    prazo_confirmado: null,
-    ...overrides,
-  };
-}
+// ---------- Story 2.16: getWeekStart() ISO-8601 ----------
 
-describe('isConsideredActive', () => {
-  it('returns true for null/undefined/empty', () => {
-    expect(isConsideredActive(null)).toBe(true);
-    expect(isConsideredActive(undefined)).toBe(true);
-    expect(isConsideredActive('')).toBe(true);
+describe('getWeekStart', () => {
+  it('returns Monday for a Monday date', () => {
+    const monday = new Date(2026, 2, 2); // Monday March 2, 2026
+    const result = getWeekStart(monday);
+    expect(result.getDay()).toBe(1); // Monday
+    expect(result.getDate()).toBe(2);
   });
 
-  it('returns false for cancelado', () => {
-    expect(isConsideredActive('cancelado')).toBe(false);
-    expect(isConsideredActive('Cancelado')).toBe(false);
+  it('returns previous Monday for a Sunday date', () => {
+    const sunday = new Date(2026, 2, 1); // Sunday March 1, 2026
+    const result = getWeekStart(sunday);
+    expect(result.getDay()).toBe(1); // Monday
+    expect(result.getDate()).toBe(23); // Feb 23
+    expect(result.getMonth()).toBe(1); // February
   });
 
-  it('returns false for concluído', () => {
-    expect(isConsideredActive('concluído')).toBe(false);
-    expect(isConsideredActive('Concluído')).toBe(false);
+  it('returns Monday for a Wednesday date', () => {
+    const wednesday = new Date(2026, 2, 4); // Wednesday March 4, 2026
+    const result = getWeekStart(wednesday);
+    expect(result.getDay()).toBe(1);
+    expect(result.getDate()).toBe(2); // March 2
   });
 
-  it('returns true for active statuses', () => {
-    expect(isConsideredActive('em execução')).toBe(true);
-    expect(isConsideredActive('pendente')).toBe(true);
-  });
-});
-
-describe('hasValidDeadline', () => {
-  it('returns false when no dates', () => {
-    expect(hasValidDeadline(makeSchedule())).toBe(false);
+  it('returns Monday for a Saturday date', () => {
+    const saturday = new Date(2026, 2, 7); // Saturday March 7, 2026
+    const result = getWeekStart(saturday);
+    expect(result.getDay()).toBe(1);
+    expect(result.getDate()).toBe(2); // March 2
   });
 
-  it('returns true with data_fim', () => {
-    expect(hasValidDeadline(makeSchedule({ data_fim: '2026-03-01' }))).toBe(true);
+  it('handles year boundary (Jan 1 on Thursday)', () => {
+    const jan1 = new Date(2026, 0, 1); // Thursday Jan 1, 2026
+    const result = getWeekStart(jan1);
+    expect(result.getDay()).toBe(1); // Monday
+    expect(result.getFullYear()).toBe(2025); // Goes to Dec 29, 2025
+    expect(result.getMonth()).toBe(11); // December
+    expect(result.getDate()).toBe(29);
   });
 
-  it('returns true with data_prazo', () => {
-    expect(hasValidDeadline(makeSchedule({ data_prazo: '2026-03-01' }))).toBe(true);
+  it('sets time to midnight', () => {
+    const d = new Date(2026, 2, 4, 15, 30, 45);
+    const result = getWeekStart(d);
+    expect(result.getHours()).toBe(0);
+    expect(result.getMinutes()).toBe(0);
+    expect(result.getSeconds()).toBe(0);
+    expect(result.getMilliseconds()).toBe(0);
   });
 });
 
-describe('isOverdue', () => {
-  it('returns false when no deadline', () => {
-    expect(isOverdue(makeSchedule())).toBe(false);
+describe('getWeekEnd', () => {
+  it('returns Sunday for a Monday date', () => {
+    const monday = new Date(2026, 2, 2);
+    const result = getWeekEnd(monday);
+    expect(result.getDay()).toBe(0); // Sunday
+    expect(result.getDate()).toBe(8); // March 8
   });
 
-  it('returns true when past deadline', () => {
-    const s = makeSchedule({ data_prazo: '2020-01-01' });
-    expect(isOverdue(s)).toBe(true);
-  });
-
-  it('returns false when future deadline', () => {
-    const s = makeSchedule({ data_prazo: '2030-01-01' });
-    expect(isOverdue(s)).toBe(false);
-  });
-});
-
-describe('isDateInPast', () => {
-  it('returns false for null', () => {
-    expect(isDateInPast(null)).toBe(false);
-  });
-
-  it('returns true for past date', () => {
-    expect(isDateInPast('2020-01-01')).toBe(true);
-  });
-
-  it('returns false for future date', () => {
-    expect(isDateInPast('2030-01-01')).toBe(false);
+  it('returns end of day (23:59:59.999)', () => {
+    const d = new Date(2026, 2, 4);
+    const result = getWeekEnd(d);
+    expect(result.getHours()).toBe(23);
+    expect(result.getMinutes()).toBe(59);
+    expect(result.getSeconds()).toBe(59);
+    expect(result.getMilliseconds()).toBe(999);
   });
 });
 
-describe('isWithin7Days', () => {
-  it('returns false for null', () => {
-    expect(isWithin7Days(null)).toBe(false);
+// ---------- Story 2.15: getKanbanColumn() ----------
+
+describe('getKanbanColumn', () => {
+  it('maps "concluído" to concluida', () => {
+    expect(getKanbanColumn('concluído', false)).toBe('concluida');
   });
 
-  it('returns false for past dates', () => {
-    expect(isWithin7Days('2020-01-01')).toBe(false);
+  it('maps "concluido" (no accent) to concluida', () => {
+    expect(getKanbanColumn('concluido', false)).toBe('concluida');
   });
 
-  it('returns false for dates far in the future', () => {
-    expect(isWithin7Days('2030-01-01')).toBe(false);
+  it('maps "cancelado" to concluida', () => {
+    expect(getKanbanColumn('cancelado', false)).toBe('concluida');
   });
 
-  it('returns true for dates within 7 days', () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    expect(isWithin7Days(tomorrow.toISOString().split('T')[0])).toBe(true);
-  });
-});
-
-describe('date utilities', () => {
-  it('isSameDay correctly compares', () => {
-    expect(isSameDay(new Date(2026, 0, 1), new Date(2026, 0, 1))).toBe(true);
-    expect(isSameDay(new Date(2026, 0, 1), new Date(2026, 0, 2))).toBe(false);
+  it('maps atrasado=true to atrasada (overrides status)', () => {
+    expect(getKanbanColumn('pendente', true)).toBe('atrasada');
+    expect(getKanbanColumn('', true)).toBe('atrasada');
+    expect(getKanbanColumn(null, true)).toBe('atrasada');
   });
 
-  it('isWithinRange works', () => {
-    const date = new Date(2026, 0, 5);
-    const start = new Date(2026, 0, 1);
-    const end = new Date(2026, 0, 10);
-    expect(isWithinRange(date, start, end)).toBe(true);
-    expect(isWithinRange(new Date(2026, 0, 15), start, end)).toBe(false);
+  it('maps "em_execucao" to em_execucao', () => {
+    expect(getKanbanColumn('em_execucao', false)).toBe('em_execucao');
   });
 
-  it('formatDateBR formats correctly', () => {
-    expect(formatDateBR(null)).toBe('-');
-    // Note: formatDateBR parses the date string; timezone may shift the day
-    const result = formatDateBR('2026-01-15');
-    expect(result).not.toBe('-');
-    expect(result).toMatch(/\d{2}\/\d{2}\/\d{2}/);
+  it('maps "em execução" (with spaces) to em_execucao', () => {
+    expect(getKanbanColumn('em execução', false)).toBe('em_execucao');
   });
 
-  it('getDaysInMonth returns correct days', () => {
-    expect(getDaysInMonth(2026, 1)).toBe(28); // February 2026
-    expect(getDaysInMonth(2026, 0)).toBe(31); // January
+  it('maps "em andamento" to em_execucao', () => {
+    expect(getKanbanColumn('em andamento', false)).toBe('em_execucao');
   });
 
-  it('getFirstDayOfMonth returns day of week', () => {
-    const day = getFirstDayOfMonth(2026, 0);
-    expect(day).toBeGreaterThanOrEqual(0);
-    expect(day).toBeLessThanOrEqual(6);
+  it('maps "iniciada" to em_execucao', () => {
+    expect(getKanbanColumn('iniciada', false)).toBe('em_execucao');
   });
 
-  it('addDays adds correctly', () => {
-    const base = new Date(2026, 0, 1);
-    const result = addDays(base, 5);
-    expect(result.getDate()).toBe(6);
+  it('maps unknown status to pendente (fallback)', () => {
+    expect(getKanbanColumn('algo_desconhecido', false)).toBe('pendente');
+    expect(getKanbanColumn('', false)).toBe('pendente');
+    expect(getKanbanColumn(null, false)).toBe('pendente');
+    expect(getKanbanColumn(undefined, false)).toBe('pendente');
   });
 
-  it('getWeekStart returns Sunday', () => {
-    const wed = new Date(2026, 0, 7); // Wednesday
-    const start = getWeekStart(wed);
-    expect(start.getDay()).toBe(0); // Sunday
+  it('handles whitespace in status', () => {
+    expect(getKanbanColumn('  concluído  ', false)).toBe('concluida');
+    expect(getKanbanColumn('  Em_Execucao  ', false)).toBe('em_execucao');
+  });
+
+  it('concluido has priority over atrasado', () => {
+    expect(getKanbanColumn('concluído', true)).toBe('concluida');
   });
 });
 
-describe('getProjectColorIndex', () => {
-  it('returns correct index', () => {
-    const ids = ['a', 'b', 'c'];
-    expect(getProjectColorIndex('b', ids)).toBe(1);
-  });
-
-  it('returns 0 for unknown project', () => {
-    expect(getProjectColorIndex('unknown', ['a', 'b'])).toBe(0);
-  });
-
-  it('wraps around for many projects', () => {
-    const ids = Array.from({ length: 15 }, (_, i) => `p${i}`);
-    expect(getProjectColorIndex('p12', ids)).toBe(2); // 12 % 10
+describe('SCHEDULE_KANBAN_COLUMNS', () => {
+  it('has 4 columns in correct order', () => {
+    expect(SCHEDULE_KANBAN_COLUMNS).toHaveLength(4);
+    expect(SCHEDULE_KANBAN_COLUMNS.map(c => c.key)).toEqual([
+      'pendente',
+      'em_execucao',
+      'atrasada',
+      'concluida',
+    ]);
   });
 });

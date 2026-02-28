@@ -31,7 +31,42 @@ Definir retencao de logs para diagnostico operacional, conformidade minima e con
   - crescimento anormal de volume de logs
   - falha em jobs de retenção
 
-## 5. Critério de revisão
+## 5. Execução da purga
+
+### Manual (CLI)
+
+```bash
+# Preview do que seria deletado (sem executar)
+npm run db:purge-logs -- --dry
+
+# Executar purga
+npm run db:purge-logs
+
+# Ver apenas estatísticas de volume
+npm run db:purge-logs -- --stats
+```
+
+Requer `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` no ambiente.
+
+### SQL direto (Supabase SQL Editor)
+
+```sql
+-- Preview
+SELECT * FROM purge_old_logs(TRUE);
+
+-- Executar
+SELECT * FROM purge_old_logs(FALSE);
+
+-- Estatísticas de volume
+SELECT * FROM log_volume_stats();
+```
+
+### Agendamento recomendado
+
+- **Vercel Cron** (futuro): endpoint `/api/cron/purge-logs` com schedule `0 3 * * *`
+- **Manual**: executar `npm run db:purge-logs` semanalmente até volume justificar automação
+
+## 6. Critério de revisão
 
 - Revisão trimestral da política.
 - Ajuste de prazos por requisitos legais/compliance e capacidade de storage.

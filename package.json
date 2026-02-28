@@ -16,13 +16,15 @@
     "typecheck": "tsc --noEmit",
     "a11y:check": "next lint --max-warnings=0",
     "audit:rls": "node ./scripts/ci/check-rls-audit.mjs",
+    "audit:secrets": "node ./scripts/ci/check-env-secrets.mjs",
     "sync:ide": "node .aios-core/infrastructure/scripts/ide-sync/index.js sync",
     "sync:ide:check": "node .aios-core/infrastructure/scripts/ide-sync/index.js validate --strict",
     "sync": "powershell -ExecutionPolicy Bypass -File ./scripts/sync.ps1",
     "sync:commit": "powershell -ExecutionPolicy Bypass -File ./scripts/git-commit.ps1",
     "sync:push": "powershell -ExecutionPolicy Bypass -File ./scripts/git-push.ps1",
     "sync:pr": "powershell -ExecutionPolicy Bypass -File ./scripts/git-pr.ps1",
-    "db:apply": "npx supabase db push"
+    "db:apply": "npx supabase db push",
+    "db:purge-logs": "node ./scripts/db/run-log-retention.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -40,7 +40,10 @@ jobs:
       run: npm run test -- --coverage --reporter=json --outputFile=coverage/coverage-summary.json
       continue-on-error: false
 
-    - name: Validate Supabase secrets for RLS audit
+    - name: Audit NEXT_PUBLIC secrets exposure
+      run: npm run audit:secrets
+
+    - name: Validate required secrets for RLS audit
       if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
       run: |
         if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
@@ -49,6 +52,10 @@ jobs:
         fi
         if [ -z "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ]; then
           echo "Missing required secret: SUPABASE_SERVICE_ROLE_KEY"
+          exit 1
+        fi
+        if [ -z "${{ secrets.INTEGRATION_TOKEN_SECRET }}" ]; then
+          echo "Missing required secret: INTEGRATION_TOKEN_SECRET"
           exit 1
         fi
 

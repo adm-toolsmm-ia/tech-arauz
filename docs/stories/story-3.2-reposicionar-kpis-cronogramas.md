@@ -6,7 +6,7 @@ Sprint: 5 — Padronização de UI
 Agente: @dev
 Esforço: 1h
 Prioridade: Alta (Quick Win)
-Status: Draft
+Status: Ready for Review
 
 ## Como usuário
 
@@ -112,4 +112,56 @@ Header → ErpReadOnlyBanner → KPIs → Filtros → Calendário/Kanban/Lista
 
 ## File List
 
-- `src/app/cronogramas/cronogramas-content.tsx` (MODIFICAR — reorganizar hierarquia JSX)
+- `src/app/cronogramas/cronogramas-content.tsx` (MODIFICADO — reorganizado para KPIs acima de filtros)
+
+---
+
+## Dev Agent Record
+
+### Checklist de Implementação
+
+- [x] `CronogramasKPIBar` renderizado ANTES de `CronogramaFilters`
+- [x] KPIs visíveis acima da barra de filtros
+- [x] Container com `flex-1 space-y-6 p-6` centraliza padding
+- [x] Barra de filtros em posição correta na hierarquia
+- [x] KPIs clicáveis funcionando corretamente
+- [x] Calendário, Kanban e Lista renderizando sem regressão
+- [x] Padding duplicado removido de Kanban e Lista views
+
+### Completion Notes
+
+**2026-02-28 — @dev**
+
+**Refatoração de Layout — KPIs Repositionados**
+
+1. **Reorganização da hierarquia JSX**: Movido o `CronogramasKPIBar` para ANTES do `CronogramaFilters`, alinhando com o padrão `ProjectsContent`.
+
+2. **Estrutura anterior (incorreta)**:
+   ```
+   Header → Banner → Filters → [ScrollDiv] → KPIs → Content
+   ```
+
+3. **Estrutura nova (correta)**:
+   ```
+   Header → Banner → [Container p-6] → KPIs → Filters → Content
+   ```
+
+4. **Remoção da div scrollável**: Eliminada a `div className="flex-1 overflow-y-auto p-6"` que envolvida apenas KPIs. Agora todo o conteúdo está em um container unificado `className="flex-1 space-y-6 p-6"`.
+
+5. **Limpeza de padding duplicado**: Removidas as divs com `className="px-6"` que envolviam Kanban e Lista views, evitando padding duplicado.
+
+6. **Resultado**: Layout consistente com módulo Projetos, follow-up Story 3.1 (que removeu a duplicação visual).
+
+### Change Log
+
+- **cronogramas-content.tsx**:
+  - Reorganizado hierarquia JSX (KPIs antes dos Filters)
+  - Removido div scrollável intermediária
+  - Removido padding duplicado em Kanban/Lista views
+  - Mantida toda a funcionalidade de filtros e views
+
+### Visual Impact
+
+- ✅ KPIs agora visíveis ANTES de selecionar filtros (melhor UX)
+- ✅ Consistência visual com módulo Projetos (baseline)
+- ✅ Sem regressão em nenhuma view (agenda, kanban, lista)

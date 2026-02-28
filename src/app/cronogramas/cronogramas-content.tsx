@@ -112,8 +112,17 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           <ErpReadOnlyBanner variant="page" />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          {/* Filters */}
+        <div className="flex-1 space-y-6 p-6">
+          {/* KPIs — now BEFORE filters */}
+          <ErrorBoundary label="KPIs Cronogramas">
+            <CronogramasKPIBar
+              schedules={schedules}
+              activeKpiFilter={activeKpiFilter}
+              onKpiClick={handleKpiClick}
+            />
+          </ErrorBoundary>
+
+          {/* Filters — now AFTER KPIs */}
           <CronogramaFilters
             registry={registry}
             filters={filters}
@@ -132,17 +141,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             }
           />
 
-          {/* Scrollable Content */}
-          <div className="flex-1 space-y-6 overflow-y-auto p-6">
-            {/* KPIs */}
-            <ErrorBoundary label="KPIs Cronogramas">
-              <CronogramasKPIBar
-                schedules={schedules}
-                activeKpiFilter={activeKpiFilter}
-                onKpiClick={handleKpiClick}
-              />
-            </ErrorBoundary>
-          </div>
+          {/* Content Views */}
 
           {/* Calendar Views (Agenda mode) */}
           {viewMode === 'agenda' && (
@@ -177,25 +176,21 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           {/* Kanban View (read-only) */}
           {viewMode === 'kanban' && (
             <ErrorBoundary label="Kanban Cronogramas">
-              <div className="px-6">
-                <CronogramaKanbanView
-                  schedules={finalFilteredSchedules}
-                  projectIds={projectIds}
-                  onActivityClick={setSelectedSchedule}
-                />
-              </div>
+              <CronogramaKanbanView
+                schedules={finalFilteredSchedules}
+                projectIds={projectIds}
+                onActivityClick={setSelectedSchedule}
+              />
             </ErrorBoundary>
           )}
 
           {/* Table View (Lista — 7 columns) */}
           {viewMode === 'lista' && (
             <ErrorBoundary label="Tabela Cronogramas">
-              <div className="px-6">
-                <CronogramaTableView
-                  schedules={finalFilteredSchedules}
-                  onActivityClick={setSelectedSchedule}
-                />
-              </div>
+              <CronogramaTableView
+                schedules={finalFilteredSchedules}
+                onActivityClick={setSelectedSchedule}
+              />
             </ErrorBoundary>
           )}
 

@@ -1,38 +1,23 @@
 'use client';
 
 import * as React from 'react';
-import {
-  FolderOpen,
-  Clock,
-  TrendingUp,
-  RefreshCw,
-  Loader2,
-  CheckCircle2,
-  Star,
-  PlayCircle,
-} from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
-import { KPICard } from '@/components/dashboard/KPICard';
 import { type ViewMode } from '@/components/views/ViewToggle';
-import { KanbanBoard, type KanbanItem } from '@/components/views/KanbanBoard';
-import { ProjectListView } from '@/components/views/ProjectListView';
 import { SplitView } from '@/components/views/SplitView';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { syncEspaiderAction } from '@/app/actions/sync';
-import { updateProjectStatusAction } from '@/app/actions/projects';
 import { ProjectCockpit } from '@/components/project';
-import { ProjectKanbanCard } from '@/components/project/ProjectKanbanCard';
-import { phaseLabels, phaseColors, phaseOrder, bannedPhases } from '@/lib/constants/phase-labels';
-import { SkeletonKanbanCard, SkeletonTableRow } from '@/components/ui/skeletons';
-import { FilterBar } from '@/components/filters/FilterBar';
+import { syncEspaiderAction } from '@/app/actions/sync';
 import { useProjetosFilters } from '@/hooks/useProjetosFilters';
-import { getOverdueData, isConsideredActive } from '@/lib/domain/project-health';
-import { normalizePhaseSlug } from '@/lib/domain/project-phase';
-import { isHighPriorityProject } from '@/lib/domain/project-priority';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import type { ProjectKpiFilterName } from '@/lib/domain/project-kpi';
+import { filterByProjectKpi } from '@/lib/domain/project-kpi';
+
+import { ProjectsKPIBar } from './components/ProjectsKPIBar';
+import { ProjectsFilters } from './components/ProjectsFilters';
+import { ProjectsKanbanView } from './components/ProjectsKanbanView';
+import { ProjectsListViewWrapper } from './components/ProjectsListView';
+
+// ---------- Types ----------
 
 interface Project {
   id: string;
@@ -40,7 +25,6 @@ interface Project {
   project_name: string;
   status: string;
   original_status?: string | null;
-  /** Fase atual do projeto - usado para agrupar Kanban (Migration 009) */
   fase_atual?: string | null;
   prazo_fase?: string | null;
   area?: string | null;
@@ -54,7 +38,6 @@ interface Project {
   solucao_aplicada?: string | null;
   data_encerramento?: string | null;
   data_inicio_aprovacao?: string | null;
-  // === Visão 360 (Migration 014) ===
   trm_espaider?: string | null;
   tipo_chamado?: string | null;
   tipo_assunto?: string | null;
@@ -90,34 +73,10 @@ interface Project {
     setor_responsavel?: string | null;
     item?: string | null;
   }>;
-  deliveries?: Array<{
-    id: string;
-    description: string;
-    deadline: string;
-    completed: boolean;
-  }>;
-  histories?: Array<{
-    id: string;
-    type: string;
-    from: string;
-    to: string;
-    step_from: string;
-    step_to: string;
-    message: string;
-    date: string;
-  }>;
-  approvers?: Array<{
-    id: string;
-    type: string;
-    responsible: string;
-  }>;
-  budgets?: Array<{
-    id: string;
-    value: number;
-    supplier: string;
-    date: string;
-    currency: string;
-  }>;
+  deliveries?: Array<{ id: string; description: string; deadline: string; completed: boolean }>;
+  histories?: Array<{ id: string; type: string; from: string; to: string; step_from: string; step_to: string; message: string; date: string }>;
+  approvers?: Array<{ id: string; type: string; responsible: string }>;
+  budgets?: Array<{ id: string; value: number; supplier: string; date: string; currency: string }>;
 }
 
 interface ProjectsContentProps {
@@ -125,312 +84,48 @@ interface ProjectsContentProps {
   isLoading?: boolean;
 }
 
-export function ProjectsContent({
-  projects: initialProjects,
-  isLoading = false,
-}: ProjectsContentProps) {
+// ---------- Main Orchestrator ----------
+
+export function ProjectsContent({ projects: initialProjects, isLoading = false }: ProjectsContentProps) {
   const [projects, setProjects] = React.useState<Project[]>(initialProjects);
   const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
   const [isSyncing, setIsSyncing] = React.useState(false);
-  const [activeKpiFilter, setActiveKpiFilter] = React.useState<string | null>(null);
-
-  // Simple state for view mode (Kanban/Lista)
+  const [activeKpiFilter, setActiveKpiFilter] = React.useState<ProjectKpiFilterName | null>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('kanban');
 
-  // ✨ NEW: Hook para gerenciar filtros com dados filtrados
   const {
-    filters,
-    search,
-    viewMode: filterViewMode,
-    filteredData,
-    updateFilter,
-    setSearch,
-    setViewMode: setFilterViewMode,
-    resetAllFilters,
-    registry,
+    filters, search, viewMode: filterViewMode, filteredData,
+    updateFilter, setSearch, setViewMode: setFilterViewMode, resetAllFilters, registry,
   } = useProjetosFilters(projects);
 
-  // Usar filter view mode se disponível, caso contrário usar old viewMode
   const activeViewMode = filterViewMode || viewMode;
   const handleViewModeChange = (mode: string) => {
     setFilterViewMode(mode);
     setViewMode(mode as ViewMode);
   };
-  React.useEffect(() => {
-    setProjects(initialProjects);
-  }, [initialProjects]);
+
+  React.useEffect(() => { setProjects(initialProjects); }, [initialProjects]);
 
   const handleSync = async () => {
     setIsSyncing(true);
     toast.info('Iniciando sincronização com Espaider...');
     try {
       const result = await syncEspaiderAction();
-      if (result.success) {
-        toast.success(result.message);
-      } else {
-        toast.error(result.message);
-      }
-    } catch {
-      toast.error('Erro inesperado na sincronização. Tente novamente.');
-    } finally {
-      setIsSyncing(false);
-    }
+      if (result.success) { toast.success(result.message); } else { toast.error(result.message); }
+    } catch { toast.error('Erro inesperado na sincronização. Tente novamente.'); }
+    finally { setIsSyncing(false); }
   };
 
-  // ===== CALCULATE KPIs (GERENCIAL) =====
-
-  // KPI 1: Em Execução (status = em execução)
-  const inExecutionProjects = React.useMemo(() => {
-    return projects.filter((p) => (p.status || '').trim().toLowerCase() === 'em execução').length;
-  }, [projects]);
-
-  const inHomologationCount = React.useMemo(
-    () =>
-      projects.filter((p) => {
-        if (!isConsideredActive(p.status)) return false;
-        const fase = (p.fase_atual || '').toLowerCase();
-        const aprovador = (p.aprovador_atual || '').toLowerCase();
-        return fase.includes('homolog') || aprovador.includes('homolog');
-      }).length,
-    [projects],
-  );
-
-  const inProductionCount = React.useMemo(
-    () =>
-      projects.filter((p) => {
-        if (!isConsideredActive(p.status)) return false;
-        const fase = (p.fase_atual || '').toLowerCase();
-        const aprovador = (p.aprovador_atual || '').toLowerCase();
-        return fase.includes('prod') || aprovador.includes('prod');
-      }).length,
-    [projects],
-  );
-
-  // KPI 2: Atrasados
-  const overdueProjectsInfo = React.useMemo(() => {
-    let count = 0;
-    let maxDays = 0;
-    const now = new Date();
-    projects.forEach((p) => {
-      const { isOverdue, maxDays: pMaxDays } = getOverdueData(p, now);
-      if (isOverdue) {
-        count++;
-        if (pMaxDays > maxDays) maxDays = pMaxDays;
-      }
-    });
-    return { count, maxDays };
-  }, [projects]);
-
-  // KPI 3: Alta Prioridade
-  const highPriorityCount = React.useMemo(
-    () => projects.filter((p) => isHighPriorityProject(p)).length,
-    [projects],
-  );
-
-  // KPI 4: Importância Especial
-  const specialCount = React.useMemo(
-    () => projects.filter((p) => p.importancia_especial && isConsideredActive(p.status)).length,
-    [projects],
-  );
-  const specialCompletedCount = React.useMemo(
-    () =>
-      projects.filter(
-        (p) => p.importancia_especial && (p.status || '').trim().toLowerCase() === 'concluído',
-      ).length,
-    [projects],
-  );
-
-  // KPI 5: Projetos Recentes
-  const recentProjectsCount = React.useMemo(() => {
-    const now = new Date();
-    return projects.filter((p) => {
-      const s = (p.status || '').trim().toLowerCase();
-      if (s !== 'iniciado' && s !== 'em execução' && s !== 'concluído') return false;
-
-      const lastMove = p.updated_at || p.data_movimentacao || p.last_update;
-      if (!lastMove) return false;
-
-      const diffTime = now.getTime() - new Date(lastMove).getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays >= 0 && diffDays <= 7;
-    }).length;
-  }, [projects]);
-
-  // KPI 6: Sem Movimentação
-  const withoutMovementCount = React.useMemo(() => {
-    const now = new Date();
-    return projects.filter((p) => {
-      if ((p.status || '').trim().toLowerCase() !== 'em execução') return false;
-      const lastMove = p.updated_at || p.data_movimentacao || p.last_update;
-      if (!lastMove) return true; // Sem data = estagnado
-      const diffTime = now.getTime() - new Date(lastMove).getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 7;
-    }).length;
-  }, [projects]);
-
-  const handleKpiClick = (filterName: string) => {
+  const handleKpiClick = (filterName: ProjectKpiFilterName) => {
     setActiveKpiFilter((prev) => (prev === filterName ? null : filterName));
   };
 
-  const finalFilteredData = React.useMemo(() => {
-    if (!activeKpiFilter) return filteredData;
-    const now = new Date();
-    return filteredData.filter((p) => {
-      switch (activeKpiFilter) {
-        case 'em_execucao':
-          return (p.status || '').trim().toLowerCase() === 'em execução';
-        case 'atrasados':
-          return getOverdueData(p, now).isOverdue;
-        case 'alta_prioridade': {
-          return isHighPriorityProject(p);
-        }
-        case 'importancia_especial':
-          return p.importancia_especial && isConsideredActive(p.status);
-        case 'recentes': {
-          const s = (p.status || '').trim().toLowerCase();
-          if (s !== 'iniciado' && s !== 'em execução' && s !== 'concluído') return false;
-          const lastMove = p.updated_at || p.data_movimentacao || p.last_update;
-          if (!lastMove) return false;
-          const diffTime = now.getTime() - new Date(lastMove).getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          return diffDays >= 0 && diffDays <= 7;
-        }
-        case 'sem_movimentacao': {
-          if ((p.status || '').trim().toLowerCase() !== 'em execução') return false;
-          const lastMove = p.updated_at || p.data_movimentacao || p.last_update;
-          if (!lastMove) return true;
-          const diffTime = now.getTime() - new Date(lastMove).getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          return diffDays > 7;
-        }
-        default:
-          return true;
-      }
-    });
-  }, [filteredData, activeKpiFilter]);
+  const finalFilteredData = React.useMemo(
+    () => filterByProjectKpi(filteredData, activeKpiFilter) as typeof filteredData,
+    [filteredData, activeKpiFilter],
+  );
 
-  // Stable sorted list of project IDs for color assignment
   const projectIds = React.useMemo(() => projects.map((p) => p.id).sort(), [projects]);
-
-  // Transform to Kanban items
-  // IMPORTANTE: Usa fase_atual para agrupamento, não status!
-  const kanbanItems: KanbanItem[] = finalFilteredData.map((p) => ({
-    id: p.id,
-    title: p.project_name,
-    subtitle: p.espaider_code,
-    value: p.total_value ? `R$ ${p.total_value.toLocaleString('pt-BR')}` : undefined,
-    priority: (p.priority as KanbanItem['priority']) || 'normal',
-    // Usa fase_atual para agrupamento, fallback para status se fase_atual não existir
-    status: normalizePhaseSlug(p.fase_atual) || normalizePhaseSlug(p.status) || 'fila_projetos',
-    metadata: {
-      ...(p.mensagem_movimentacao ? { mensagem: p.mensagem_movimentacao } : {}),
-      ...(p.last_update ? { data_movimentacao: p.last_update } : {}),
-    },
-  }));
-
-  // Calculate dynamic columns based on FASE (not status)
-  const dynamicColumns = React.useMemo(() => {
-    // Extrai fases únicas (usa fase_atual, fallback para status)
-    const existingPhases = Array.from(
-      new Set(
-        projects.map(
-          (p) => normalizePhaseSlug(p.fase_atual) || normalizePhaseSlug(p.status) || 'fila_projetos',
-        ),
-      ),
-    );
-
-    // Combine phases (only show phases that actually exist, excluding banned)
-    const phases = Array.from(new Set(existingPhases)).filter(
-      (p) => !(bannedPhases as readonly string[]).includes(p),
-    );
-
-    const sortedPhases = phases.sort((a, b) => {
-      const indexA = (phaseOrder as readonly string[]).indexOf(a);
-      const indexB = (phaseOrder as readonly string[]).indexOf(b);
-
-      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-      if (indexA !== -1) return -1;
-      if (indexB !== -1) return 1;
-      return a.localeCompare(b);
-    });
-
-    return sortedPhases.map((phase) => {
-      // Tenta encontrar o título original da fase de um projeto
-      const project = projects.find(
-        (p) => normalizePhaseSlug(p.fase_atual) === phase || normalizePhaseSlug(p.status) === phase,
-      );
-      const originalTitle = project?.fase_atual || project?.aprovador_atual;
-
-      // Formata o título: usa label conhecido, ou título original, ou formata o slug
-      let title = phaseLabels[phase as keyof typeof phaseLabels];
-      if (!title && originalTitle) {
-        title = originalTitle;
-      }
-      if (!title) {
-        title = phase
-          .split('_')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-      }
-
-      return {
-        id: phase,
-        title: title,
-        color: phaseColors[phase] || 'blue',
-      };
-    });
-  }, [projects]);
-
-  // Handle drag-and-drop phase change (optimistic update)
-  // NOTA: Agora atualiza fase_atual ao invés de status
-  const handleStatusChange = async (itemId: string | number, newPhase: string) => {
-    const projectId = String(itemId);
-    const oldProject = projects.find((p) => p.id === projectId);
-    if (!oldProject) return;
-
-    const oldFase = oldProject.fase_atual;
-    const oldStatus = oldProject.status;
-
-    // Optimistic update: immediately move card in UI
-    // Atualiza fase_atual (para agrupamento visual) e mantém status original
-    setProjects((prev) =>
-      prev.map((p) => (p.id === projectId ? { ...p, fase_atual: newPhase } : p)),
-    );
-    toast.info('Atualizando fase...');
-
-    try {
-      // TODO: Criar nova action updateProjectPhaseAction para atualizar fase_atual
-      // Por enquanto, usa a action de status existente
-      const result = await updateProjectStatusAction(projectId, newPhase);
-      if (result.success) {
-        toast.success(result.message);
-      } else {
-        // Revert on failure
-        setProjects((prev) =>
-          prev.map((p) =>
-            p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p,
-          ),
-        );
-        toast.error(result.message);
-      }
-    } catch {
-      // Revert on error
-      setProjects((prev) =>
-        prev.map((p) =>
-          p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p,
-        ),
-      );
-      toast.error('Erro inesperado ao atualizar fase.');
-    }
-  };
-
-  const handleItemClick = (item: KanbanItem) => {
-    const project = projects.find((p) => p.id === item.id);
-    if (project) {
-      setSelectedProject(project);
-    }
-  };
 
   const listAnnouncement = activeKpiFilter
     ? `Filtro ativo com ${finalFilteredData.length} projetos.`
@@ -444,159 +139,52 @@ export function ProjectsContent({
       />
 
       <div className="flex-1 space-y-6 p-6">
-        <p className="sr-only" role="status" aria-live="polite">
-          {listAnnouncement}
-        </p>
+        <p className="sr-only" role="status" aria-live="polite">{listAnnouncement}</p>
 
-        {/* KPIs (Gerencial) */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-          <KPICard
-            title="Em Execução"
-            value={inExecutionProjects}
-            icon={PlayCircle}
-            subtitle={`${inHomologationCount} homologação • ${inProductionCount} produção`}
-            active={activeKpiFilter === 'em_execucao'}
-            onClick={() => handleKpiClick('em_execucao')}
+        {/* KPIs */}
+        <ErrorBoundary label="KPIs Projetos">
+          <ProjectsKPIBar
+            projects={projects}
+            activeKpiFilter={activeKpiFilter}
+            onKpiClick={handleKpiClick}
           />
-          <KPICard
-            title="Atrasados"
-            value={overdueProjectsInfo.count}
-            icon={Clock}
-            subtitle={`Maior atraso: ${overdueProjectsInfo.maxDays} dias`}
-            active={activeKpiFilter === 'atrasados'}
-            onClick={() => handleKpiClick('atrasados')}
-          />
-          <KPICard
-            title="Alta Prioridade"
-            value={highPriorityCount}
-            icon={TrendingUp}
-            subtitle="Urgente + Alta + Estratégico"
-            active={activeKpiFilter === 'alta_prioridade'}
-            onClick={() => handleKpiClick('alta_prioridade')}
-          />
-          <KPICard
-            title="Importância Especial"
-            value={specialCount}
-            icon={Star}
-            subtitle={`${specialCompletedCount} já concluídos`}
-            active={activeKpiFilter === 'importancia_especial'}
-            onClick={() => handleKpiClick('importancia_especial')}
-          />
-          <KPICard
-            title="Projetos Recentes"
-            value={recentProjectsCount}
-            icon={CheckCircle2}
-            subtitle="Movimentados em ≤ 7 dias"
-            active={activeKpiFilter === 'recentes'}
-            onClick={() => handleKpiClick('recentes')}
-          />
-          <KPICard
-            title="S/ Movimentação"
-            value={withoutMovementCount}
-            icon={FolderOpen}
-            subtitle="Em exec > 7 dias s/ mover"
-            active={activeKpiFilter === 'sem_movimentacao'}
-            onClick={() => handleKpiClick('sem_movimentacao')}
-          />
-        </div>
+        </ErrorBoundary>
 
-        {/* FilterBar: busca + quick filters + view mode + sync */}
-        <div className="flex items-start gap-3">
-          <div className="min-w-0 flex-1">
-            <FilterBar
-              moduleId="projetos"
-              filters={registry}
-              onFiltersChange={(newFilters) => {
-                Object.entries(newFilters).forEach(([key, value]) => {
-                  if (filters[key] !== value) {
-                    updateFilter(key, value);
-                  }
-                });
-              }}
-              onSearchChange={setSearch}
-              onViewModeChange={handleViewModeChange}
-              initialFilters={filters}
-              initialSearch={search}
-              initialViewMode={activeViewMode}
-              currentFilters={filters}
-              currentSearch={search}
-              currentViewMode={activeViewMode}
-              onUpdateFilter={updateFilter}
-              onResetFilters={() => {
-                resetAllFilters();
-                setSearch('');
-              }}
+        {/* Filters + Sync */}
+        <ProjectsFilters
+          registry={registry}
+          filters={filters}
+          search={search}
+          viewMode={activeViewMode}
+          isSyncing={isSyncing}
+          onUpdateFilter={updateFilter}
+          onResetFilters={() => { resetAllFilters(); setSearch(''); }}
+          onSearchChange={setSearch}
+          onViewModeChange={handleViewModeChange}
+          onSync={handleSync}
+        />
+
+        {/* Content: Kanban or List */}
+        <ErrorBoundary label="Projetos View">
+          {activeViewMode === 'kanban' ? (
+            <ProjectsKanbanView
+              projects={finalFilteredData as unknown as Project[]}
+              allProjects={projects}
+              filteredData={filteredData as unknown as Project[]}
+              isLoading={isLoading}
+              selectedProjectId={selectedProject?.id}
+              projectIds={projectIds}
+              onItemClick={(p) => setSelectedProject(p as Project)}
+              onProjectsUpdate={setProjects as React.Dispatch<React.SetStateAction<Project[]>>}
             />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSync}
-            disabled={isSyncing}
-            className="mt-4 shrink-0 text-muted-foreground hover:text-foreground"
-          >
-            {isSyncing ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-4 w-4" />
-            )}
-            <span className="sr-only sm:not-sr-only">
-              {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
-            </span>
-          </Button>
-        </div>
-
-        {/* Content */}
-        {isLoading ? (
-          viewMode === 'kanban' ? (
-            <div className="grid auto-cols-[280px] grid-flow-col gap-4 overflow-x-auto pb-4">
-              {Array.from({ length: 3 }).map((_, col) => (
-                <div key={col} className="space-y-3 rounded-lg border bg-muted/20 p-3">
-                  <div className="h-6 w-24 animate-pulse rounded bg-muted" />
-                  {Array.from({ length: 2 }).map((_, row) => (
-                    <SkeletonKanbanCard key={row} />
-                  ))}
-                </div>
-              ))}
-            </div>
           ) : (
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <tbody>
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <SkeletonTableRow key={i} />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        ) : viewMode === 'kanban' ? (
-          <KanbanBoard
-            columns={dynamicColumns}
-            items={kanbanItems}
-            selectedId={selectedProject?.id}
-            onItemClick={handleItemClick}
-            onStatusChange={handleStatusChange}
-            renderItemContent={(item) => {
-              const project = filteredData.find((p) => p.id === item.id);
-              if (!project) return null;
-              return <ProjectKanbanCard project={project as Project} projectIds={projectIds} />;
-            }}
-            emptyMessage="Nenhum projeto encontrado. Sincronize com o Espaider para importar projetos."
-          />
-        ) : (
-          <ProjectListView
-            projects={finalFilteredData}
-            onSelectProject={(projectId) => {
-              const project = finalFilteredData.find((p) => p.id === projectId);
-              if (project) setSelectedProject(project as Project);
-            }}
-          />
-        )}
+            <ProjectsListViewWrapper
+              projects={finalFilteredData as unknown as Project[]}
+              isLoading={isLoading}
+              onSelectProject={(p) => setSelectedProject(p as Project)}
+            />
+          )}
+        </ErrorBoundary>
 
         {/* Split View - 360° Cockpit */}
         <SplitView
@@ -618,7 +206,6 @@ export function ProjectsContent({
                 project_name: selectedProject.project_name,
                 status: selectedProject.status,
                 original_status: selectedProject.original_status,
-                // Novos campos (Migration 009)
                 fase_atual: selectedProject.fase_atual,
                 prazo_fase: selectedProject.prazo_fase,
                 area: selectedProject.area,
@@ -632,7 +219,6 @@ export function ProjectsContent({
                 solucao_aplicada: selectedProject.solucao_aplicada,
                 data_encerramento: selectedProject.data_encerramento,
                 data_inicio_aprovacao: selectedProject.data_inicio_aprovacao,
-                // === Visão 360 (Migration 014) ===
                 trm_espaider: selectedProject.trm_espaider,
                 tipo_chamado: selectedProject.tipo_chamado,
                 tipo_assunto: selectedProject.tipo_assunto,
@@ -653,45 +239,23 @@ export function ProjectsContent({
                 category: selectedProject.category || null,
               }}
               schedules={(selectedProject.schedules || []).map((s) => ({
-                id: s.id,
-                atividade: s.atividade,
-                responsavel: s.responsavel,
-                data_inicio: s.data_inicio,
-                data_fim: s.data_fim,
-                data_prazo: s.data_prazo,
-                status: s.status,
-                fase_atividade: s.fase_atividade,
-                atrasado: s.atrasado,
-                setor_responsavel: s.setor_responsavel,
-                item: s.item,
+                id: s.id, atividade: s.atividade, responsavel: s.responsavel,
+                data_inicio: s.data_inicio, data_fim: s.data_fim, data_prazo: s.data_prazo,
+                status: s.status, fase_atividade: s.fase_atividade, atrasado: s.atrasado,
+                setor_responsavel: s.setor_responsavel, item: s.item,
               }))}
               deliveries={(selectedProject.deliveries || []).map((d) => ({
-                id: d.id,
-                description: d.description,
-                deadline: d.deadline,
-                completed: d.completed,
+                id: d.id, description: d.description, deadline: d.deadline, completed: d.completed,
               }))}
               histories={(selectedProject.histories || []).map((h) => ({
-                id: h.id,
-                type: h.type,
-                from: h.from,
-                to: h.to,
-                step_from: h.step_from,
-                step_to: h.step_to,
-                message: h.message,
-                date: h.date,
+                id: h.id, type: h.type, from: h.from, to: h.to,
+                step_from: h.step_from, step_to: h.step_to, message: h.message, date: h.date,
               }))}
               approvers={(selectedProject.approvers || []).map((a) => ({
-                id: a.id,
-                type: a.type,
-                responsible: a.responsible,
+                id: a.id, type: a.type, responsible: a.responsible,
               }))}
               budgets={(selectedProject.budgets || []).map((b) => ({
-                id: b.id,
-                value: b.value,
-                supplier: b.supplier,
-                date: b.date,
-                currency: b.currency,
+                id: b.id, value: b.value, supplier: b.supplier, date: b.date, currency: b.currency,
               }))}
               onSync={handleSync}
               isSyncing={isSyncing}
@@ -702,460 +266,3 @@ export function ProjectsContent({
     </div>
   );
 }
-
-// Format relative date helper
-function formatRelativeDate(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return 'Hoje';
-    if (diffDays === 1) return 'Ontem';
-    if (diffDays < 7) return `há ${diffDays} dias`;
-    if (diffDays < 30) return `há ${Math.floor(diffDays / 7)} sem.`;
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-  } catch {
-    return '';
-  }
-}
-
-// Impact badge helper
-function ImpactBadge({ level }: { level: string | null | undefined }) {
-  if (!level) return <span className="text-xs text-muted-foreground">-</span>;
-  const colors: Record<string, string> = {
-    alto: 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300',
-    medio: 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300',
-    baixo: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300',
-    normal: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300',
-  };
-  const key = level
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-medium ${colors[key] || colors.normal}`}
-    >
-      {level}
-    </span>
-  );
-}
-
-/**
- * Normaliza fase_atual para slug de coluna Kanban
- */
-// Project List Component (Enhanced Grid)
-function ProjectList({
-  projects,
-  onItemClick,
-}: {
-  projects: Project[];
-  onItemClick: (project: Project) => void;
-}) {
-  const [sortField, setSortField] = React.useState<string>('project_name');
-  const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
-
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDir('asc');
-    }
-  };
-
-  const sortedProjects = React.useMemo(() => {
-    return [...projects].sort((a, b) => {
-      const getValue = (p: Project) => {
-        switch (sortField) {
-          case 'project_name':
-            return p.project_name || '';
-          case 'area':
-            return p.area || '';
-          case 'responsible':
-            return p.responsible || '';
-          case 'fase_atual':
-            return p.fase_atual || '';
-          case 'priority':
-            return p.priority || '';
-          case 'end_date':
-            return p.end_date || '';
-          case 'impacto_operacional':
-            return p.impacto_operacional || '';
-          case 'impacto_estrategico':
-            return p.impacto_estrategico || '';
-          case 'status':
-            return p.status || '';
-          default:
-            return '';
-        }
-      };
-      const valA = getValue(a);
-      const valB = getValue(b);
-      const cmp = valA.localeCompare(valB, 'pt-BR');
-      return sortDir === 'asc' ? cmp : -cmp;
-    });
-  }, [projects, sortField, sortDir]);
-
-  if (projects.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-lg font-medium">Nenhum projeto encontrado</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {/* Mensagem atualizada para explicar filtro de concluídos */}
-            Verifique se há filtros ativos ou sincronize com o Espaider.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const SortHeader = ({
-    field,
-    children,
-    className = '',
-  }: {
-    field: string;
-    children: React.ReactNode;
-    className?: string;
-  }) => {
-    const isSorted = sortField === field;
-
-    return (
-      <th
-        className={`cursor-pointer select-none px-3 py-2.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
-        onClick={() => handleSort(field)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleSort(field);
-          }
-        }}
-        aria-sort={isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
-        tabIndex={0}
-        role="columnheader"
-      >
-        <span className="flex items-center gap-1">
-          {children}
-          {sortField === field && (
-            <span className="text-primary">{sortDir === 'asc' ? '↑' : '↓'}</span>
-          )}
-        </span>
-      </th>
-    );
-  };
-
-  const isOverdue = (dateStr: string | null | undefined) => {
-    if (!dateStr) return false;
-    try {
-      return new Date(dateStr) < new Date();
-    } catch {
-      return false;
-    }
-  };
-
-  return (
-    <Card>
-      <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b bg-muted/30">
-              <tr>
-                <SortHeader field="project_name" className="min-w-[200px]">
-                  Projeto
-                </SortHeader>
-                <SortHeader field="area">Área</SortHeader>
-                <SortHeader field="responsible">Responsável</SortHeader>
-                <SortHeader field="fase_atual">Fase</SortHeader>
-                <SortHeader field="priority">Prioridade</SortHeader>
-                <SortHeader field="end_date">Prazo</SortHeader>
-                <SortHeader field="impacto_operacional">Imp. Operacional</SortHeader>
-                <SortHeader field="impacto_estrategico">Imp. Estratégico</SortHeader>
-                <th className="min-w-[180px] px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">
-                  Última Mensagem
-                </th>
-                <SortHeader field="status">Status</SortHeader>
-              </tr>
-            </thead>
-            <tbody className="divide-y [&>tr:nth-child(even)]:bg-muted/20">
-              {sortedProjects.map((project) => {
-                const faseSlug = normalizePhaseSlug(project.fase_atual);
-                const statusSlug = normalizePhaseSlug(project.status); // Reuse same normalization for simplicity
-
-                // Now uses shared phaseLabels from @/lib/constants/phase-labels
-
-                const faseLabel = phaseLabels[faseSlug] || project.fase_atual || '-';
-
-                return (
-                  <tr
-                    key={project.id}
-                    className="cursor-pointer transition-colors hover:bg-muted/50"
-                    onClick={() => onItemClick(project)}
-                  >
-                    <td className="px-3 py-3">
-                      <p className="line-clamp-1 text-sm font-medium">{project.project_name}</p>
-                      <p className="font-mono text-[11px] text-muted-foreground">
-                        {project.espaider_code}
-                      </p>
-                    </td>
-                    <td className="px-3 py-3">
-                      <span className="text-xs text-muted-foreground">{project.area || '-'}</span>
-                    </td>
-                    <td className="px-3 py-3">
-                      <span className="text-xs">{project.responsible || '-'}</span>
-                    </td>
-                    <td className="px-3 py-3">
-                      <span className="text-xs font-medium">{faseLabel}</span>
-                    </td>
-                    <td className="px-3 py-3">
-                      {project.priority ? (
-                        <span
-                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${
-                            project.priority === 'urgente'
-                              ? 'border-red-100 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                              : project.priority === 'alta'
-                                ? 'border-orange-100 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
-                                : 'border-blue-100 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
-                          }`}
-                        >
-                          {project.priority}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">-</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-3 tabular-nums">
-                      {project.end_date ? (
-                        <span
-                          className={`text-xs ${isOverdue(project.end_date) && project.status !== 'concluido' ? 'font-medium text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}
-                        >
-                          {new Date(project.end_date).toLocaleDateString('pt-BR', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: '2-digit',
-                          })}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">-</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-3">
-                      <ImpactBadge level={project.impacto_operacional} />
-                    </td>
-                    <td className="px-3 py-3">
-                      <ImpactBadge level={project.impacto_estrategico} />
-                    </td>
-                    <td className="px-3 py-3">
-                      {project.mensagem_movimentacao ? (
-                        <div>
-                          <p
-                            className="line-clamp-1 text-[11px] text-muted-foreground"
-                            title={project.mensagem_movimentacao}
-                          >
-                            {project.mensagem_movimentacao}
-                          </p>
-                          {project.last_update && (
-                            <p className="text-[10px] text-muted-foreground/60">
-                              {formatRelativeDate(project.last_update)}
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">-</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-3">
-                      <StatusBadge status={statusSlug} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Project Detail Component (360° View)
-function ProjectDetail({
-  project,
-  onSync,
-  isSyncing,
-}: {
-  project: Project;
-  onSync?: () => void;
-  isSyncing?: boolean;
-}) {
-  return (
-    <Tabs defaultValue="resumo" className="w-full">
-      <TabsList className="w-full justify-start">
-        <TabsTrigger value="resumo">Resumo</TabsTrigger>
-        <TabsTrigger value="cronogramas">Cronogramas</TabsTrigger>
-        <TabsTrigger value="entregas">Entregas</TabsTrigger>
-        <TabsTrigger value="acoes">Ações</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="resumo" className="space-y-4 pt-4">
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-muted-foreground">Nome do Projeto</label>
-            <p className="font-medium">{project.project_name}</p>
-          </div>
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-muted-foreground">Código Espaider</label>
-            <p>{project.espaider_code}</p>
-          </div>
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-muted-foreground">Status</label>
-            <StatusBadge status={project.status} />
-          </div>
-          {project.total_value && (
-            <div className="grid gap-2">
-              <label className="text-sm font-medium text-muted-foreground">Valor Total</label>
-              <p className="text-lg font-semibold text-primary">
-                R$ {project.total_value.toLocaleString('pt-BR')}
-              </p>
-            </div>
-          )}
-          {project.responsible && (
-            <div className="grid gap-2">
-              <label className="text-sm font-medium text-muted-foreground">Responsável</label>
-              <p>{project.responsible}</p>
-            </div>
-          )}
-        </div>
-      </TabsContent>
-
-      <TabsContent value="cronogramas" className="pt-4">
-        {project.schedules && project.schedules.length > 0 ? (
-          <div className="space-y-3">
-            {project.schedules.map((schedule) => (
-              <Card key={schedule.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{schedule.atividade || 'Sem nome'}</p>
-                      {schedule.responsavel && (
-                        <p className="text-sm text-muted-foreground">{schedule.responsavel}</p>
-                      )}
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      {schedule.status && <Badge variant="secondary">{schedule.status}</Badge>}
-                      {schedule.data_fim && (
-                        <span className="text-xs text-muted-foreground">
-                          Previsão: {new Date(schedule.data_fim).toLocaleDateString('pt-BR')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <EmptyState message="Nenhum cronograma encontrado" />
-        )}
-      </TabsContent>
-
-      <TabsContent value="entregas" className="pt-4">
-        {project.deliveries && project.deliveries.length > 0 ? (
-          <div className="space-y-3">
-            {project.deliveries.map((delivery) => (
-              <Card key={delivery.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{delivery.description}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Prazo: {new Date(delivery.deadline).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                    <Badge variant={delivery.completed ? 'success' : 'secondary'}>
-                      {delivery.completed ? 'Concluída' : 'Pendente'}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <EmptyState message="Nenhuma entrega encontrada" />
-        )}
-      </TabsContent>
-
-      <TabsContent value="acoes" className="pt-4">
-        <div className="space-y-3">
-          <Button className="w-full" variant="outline" onClick={onSync} disabled={isSyncing}>
-            {isSyncing ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-4 w-4" />
-            )}
-            {isSyncing ? 'Sincronizando...' : 'Sincronizar com Espaider'}
-          </Button>
-          <p className="pt-2 text-center text-xs text-muted-foreground">
-            Projetos são gerenciados no Espaider. Use a sincronização para atualizar os dados.
-          </p>
-        </div>
-      </TabsContent>
-    </Tabs>
-  );
-}
-
-// Empty State Component
-function EmptyState({ message }: { message: string }) {
-  return <div className="py-8 text-center text-sm text-muted-foreground">{message}</div>;
-}
-
-// Status Badge Component
-function StatusBadge({ status }: { status: string }) {
-  const statusStyles: Record<string, string> = {
-    projeto_futuro: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    fila_projetos: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    em_aprovacao: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-    em_execucao: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    execucao_homologacao:
-      'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    execucao_producao: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    em_homologacao: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
-    validacao_homologacao: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
-    validacao_producao: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
-    concluido: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    monitoramento_producao: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    cancelado: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-    suspenso: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300',
-  };
-
-  const statusLabels: Record<string, string> = {
-    projeto_futuro: 'Futuro',
-    fila_projetos: 'Fila de Projetos',
-    em_aprovacao: 'Em Aprovação',
-    em_execucao: 'Em Execução',
-    execucao_homologacao: 'Exec - Homolog',
-    execucao_producao: 'Exec - Produção',
-    em_homologacao: 'Em Homologação',
-    validacao_homologacao: 'Valid - Homolog',
-    validacao_producao: 'Valid - Produção',
-    concluido: 'Concluído',
-    monitoramento_producao: 'Monitoramento',
-    cancelado: 'Cancelado',
-    suspenso: 'Suspenso',
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status] || statusStyles.projeto_futuro
-      }`}
-    >
-      {statusLabels[status] || status}
-    </span>
-  );
-}
-
-

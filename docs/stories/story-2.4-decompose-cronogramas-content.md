@@ -1,6 +1,6 @@
 # Story 2.4 - Decompor cronogramas-content
 
-Status: Ready
+Status: Done
 Epic: UX-EPIC-01
 Prioridade: Alta
 Sprint: 2
@@ -36,17 +36,17 @@ para facilitar manutencao, testes e evolucao incremental de UX.
 
 ## Tasks
 
-- [ ] Mapear responsabilidades dentro de cronogramas-content (KPIs, filtros, calendario, lista, cockpit, estado)
-- [ ] Criar `src/app/cronogramas/components/CronogramasKPIBar.tsx`
-- [ ] Criar `src/app/cronogramas/components/CronogramaCalendar.tsx`
-- [ ] Criar `src/app/cronogramas/components/CronogramaList.tsx`
-- [ ] Criar `src/app/cronogramas/components/CronogramaFilters.tsx`
-- [ ] Criar `src/app/cronogramas/components/CronogramaCockpit.tsx`
-- [ ] Extrair logica de dominio para `src/lib/domain/schedule-status.ts`
-- [ ] Extrair logica de dominio para `src/lib/domain/schedule-kpi.ts`
-- [ ] Refatorar `cronogramas-content.tsx` para orquestrar subcomponentes
-- [ ] Validar que nenhuma funcionalidade foi perdida
-- [ ] Aplicar ErrorBoundary nos subcomponentes
+- [x] Mapear responsabilidades dentro de cronogramas-content (KPIs, filtros, calendario, lista, cockpit, estado)
+- [x] Criar `src/app/cronogramas/components/CronogramasKPIBar.tsx`
+- [x] Criar `src/app/cronogramas/components/CronogramaCalendar.tsx`
+- [x] Criar `src/app/cronogramas/components/CronogramaList.tsx`
+- [x] Criar `src/app/cronogramas/components/CronogramaFilters.tsx`
+- [x] Criar `src/app/cronogramas/components/CronogramaCockpit.tsx`
+- [x] Extrair logica de dominio para `src/lib/domain/schedule-status.ts`
+- [x] Extrair logica de dominio para `src/lib/domain/schedule-kpi.ts`
+- [x] Refatorar `cronogramas-content.tsx` para orquestrar subcomponentes
+- [x] Validar que nenhuma funcionalidade foi perdida
+- [x] Aplicar ErrorBoundary nos subcomponentes
 
 ## Testes
 
@@ -95,6 +95,7 @@ para facilitar manutencao, testes e evolucao incremental de UX.
 |------|---------|-------------|--------|
 | 2026-02-27 | 1.0 | Story criada | Orion (aios-master) |
 | 2026-02-27 | 1.1 | PO validation: added Executor, Dev Notes, Change Log | Pax (po) |
+| 2026-02-27 | 2.0 | Implementation: 1,263 LOC → 170 LOC orchestrator + 5 subcomponents + 2 domain modules, 194 tests passing | Dex (dev) |
 
 ## Dependencies
 

@@ -328,10 +328,31 @@ npm run trace -- workflow-name
 - Batch file reads/writes when processing multiple files
 - Prefer editing existing files over creating new ones
 
-### Shell / Terminal (Windows — obrigatório)
-Este projeto usa **PowerShell** no Windows. Ao sugerir ou executar comandos no terminal:
-- **Nunca use `&&`** — gera erro no PowerShell 5.x; use sempre `;` para encadear (ex.: `npm run lint ; npm run typecheck`).
-- **Nunca use comandos Unix** (`head`, `tail`, `grep` como comando, `cat`, `ls`); use equivalentes PowerShell: primeiros N → `Select-Object -First N`, listar → `Get-ChildItem`, conteúdo → `Get-Content`. Detalhes: `configs/project.yaml` (shell_chain, shell_forbidden) e `.agent/skills/powershell-windows/SKILL.md`.
+### Shell / Terminal (Windows — Dual Context Model)
+
+⚠️ **IMPORTANTE**: Existem DOIS contextos diferentes no Windows:
+
+#### Contexto 1: VOCÊ (Humano) no Terminal
+Este projeto OBRIGATORIAMENTE usa **PowerShell** quando você executa comandos manualmente:
+- **Nunca use `&&`** — gera erro no PowerShell 5.x; use sempre `;` para encadear (ex.: `npm run lint ; npm run typecheck`)
+- **Nunca use comandos Unix** (`head`, `tail`, `grep`, `cat`, `ls`); use equivalentes PowerShell: `Select-Object -First N`, `Get-ChildItem`, `Get-Content`
+- Detalhes: `configs/project.yaml` (shell_chain, shell_forbidden) e `.agent/skills/powershell-windows/SKILL.md`
+
+#### Contexto 2: CLAUDE CODE (Automação)
+Claude Code no Windows **PODE APENAS** usar Bash via Git Bash (MSYS2), não PowerShell nativo:
+- A ferramenta Bash executa em ambiente Unix/Bash, não PowerShell
+- **ISSO É UMA LIMITAÇÃO DO CLAUDE CODE, NÃO DO PROJETO**
+- Solução: Use ferramentas dedicadas (Read, Write, Edit, Glob, Grep) em vez de Bash quando possível
+- Se Bash for necessário: Sempre quote Windows paths com espaços (ex.: `"C:\Users\Gabriel Cristofolini\..."`)
+- Nunca use `&&`, use `;` mesmo em Bash (para compatibilidade humana posterior)
+- Detalhes: `.claude/rules/bash-windows-quirks.md`
+
+#### Resumo
+| Contexto | Shell | Regras | Ferramenta |
+|----------|-------|--------|-----------|
+| Você digita | PowerShell | Nunca `&&`, `;` sempre | Terminal/Shell |
+| Claude Code | Bash (MSYS2) | Sempre quote paths, `;` não `&&` | Ferramenta Bash |
+| Arquivo ops | N/A | N/A | Read/Write/Edit/Glob/Grep |
 
 ### Session Management
 - Track story progress throughout the session

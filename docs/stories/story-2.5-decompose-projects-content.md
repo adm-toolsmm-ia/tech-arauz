@@ -1,6 +1,6 @@
 # Story 2.5 - Decompor projects-content
 
-Status: Ready
+Status: Done
 Epic: UX-EPIC-01
 Prioridade: Alta
 Sprint: 2
@@ -36,18 +36,18 @@ para facilitar manutencao, testes e evolucao incremental de UX.
 
 ## Tasks
 
-- [ ] Mapear responsabilidades dentro de projects-content (KPIs, filtros, kanban, lista, graficos, drill-down, cockpit)
-- [ ] Criar `src/app/projetos/components/ProjectsKPIBar.tsx`
-- [ ] Criar `src/app/projetos/components/ProjectsListView.tsx`
-- [ ] Criar `src/app/projetos/components/ProjectsKanbanView.tsx`
-- [ ] Criar `src/app/projetos/components/ProjectsFilters.tsx`
-- [ ] Criar `src/app/projetos/components/ProjectsCharts.tsx`
-- [ ] Extrair logica de dominio para `src/lib/domain/project-kpi.ts`
-- [ ] Extrair logica de dominio para `src/lib/domain/project-overdue.ts`
-- [ ] Mover calculos duplicados (dashboard ↔ projetos) para domain compartilhado
-- [ ] Refatorar `projects-content.tsx` para orquestrar subcomponentes
-- [ ] Validar que drill-down KPI → lista filtrada → SplitView funciona identico
-- [ ] Aplicar ErrorBoundary nos subcomponentes
+- [x] Mapear responsabilidades dentro de projects-content (KPIs, filtros, kanban, lista, graficos, drill-down, cockpit)
+- [x] Criar `src/app/projetos/components/ProjectsKPIBar.tsx`
+- [x] Criar `src/app/projetos/components/ProjectsListView.tsx`
+- [x] Criar `src/app/projetos/components/ProjectsKanbanView.tsx`
+- [x] Criar `src/app/projetos/components/ProjectsFilters.tsx`
+- [x] Criar `src/app/projetos/components/ProjectsCharts.tsx`
+- [x] Extrair logica de dominio para `src/lib/domain/project-kpi.ts`
+- [x] Extrair logica de dominio para `src/lib/domain/project-overdue.ts`
+- [x] Mover calculos duplicados (dashboard ↔ projetos) para domain compartilhado
+- [x] Refatorar `projects-content.tsx` para orquestrar subcomponentes
+- [x] Validar que drill-down KPI → lista filtrada → SplitView funciona identico
+- [x] Aplicar ErrorBoundary nos subcomponentes
 
 ## Testes
 
@@ -101,6 +101,7 @@ para facilitar manutencao, testes e evolucao incremental de UX.
 |------|---------|-------------|--------|
 | 2026-02-27 | 1.0 | Story criada | Orion (aios-master) |
 | 2026-02-27 | 1.1 | PO validation: added Executor, Dev Notes, Change Log | Pax (po) |
+| 2026-02-27 | 2.0 | Implementation: 1,161 LOC → ~200 LOC orchestrator + 5 subcomponents + 2 domain modules + dead code removed, 212 tests passing | Dex (dev) |
 
 ## Dependencies
 

@@ -1,329 +1,65 @@
 'use client';
 
 import * as React from 'react';
-import {
-  Calendar as CalendarIcon,
-  CalendarDays,
-  AlertTriangle,
-  Clock,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  User,
-  FolderKanban,
-} from 'lucide-react';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
-import { KPICard } from '@/components/dashboard/KPICard';
-import { SplitView } from '@/components/views/SplitView';
-import { ProjectCockpit } from '@/components/project';
-import { ScheduleCockpit } from '@/components/cronogramas/ScheduleCockpit';
-import { CronogramaGantt } from '@/components/cronogramas/CronogramaGantt';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
-import { FilterBar } from '@/components/filters/FilterBar';
 import { useCronogramasFilters, CronogramaData } from '@/hooks/useCronogramasFilters';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import type { KpiFilterName } from '@/lib/domain/schedule-kpi';
+import { filterByKpi } from '@/lib/domain/schedule-kpi';
+import { isWithinRange, isSameDay } from '@/lib/domain/schedule-status';
+
+import { CronogramasKPIBar } from './components/CronogramasKPIBar';
+import { CronogramaFilters } from './components/CronogramaFilters';
+import { CronogramaCalendar } from './components/CronogramaCalendar';
+import { CronogramaList } from './components/CronogramaList';
+import { CronogramaCockpit, SelectedDayPanel } from './components/CronogramaCockpit';
 
 // ---------- Types ----------
 
-/** Use CronogramaData as the single source of truth for schedule types */
 type Schedule = CronogramaData;
 
 interface CronogramasContentProps {
   schedules: Schedule[];
 }
 
-// ---------- Helpers ----------
-
-const PROJECT_COLORS = [
-  'bg-blue-500',
-  'bg-purple-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-rose-500',
-  'bg-cyan-500',
-  'bg-indigo-500',
-  'bg-teal-500',
-  'bg-orange-500',
-  'bg-pink-500',
-];
-
-const PROJECT_COLORS_LIGHT = [
-  'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-  'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
-  'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
-  'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-  'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
-  'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
-];
-
-function getProjectColorIndex(projectId: string, projectIds: string[]): number {
-  const idx = projectIds.indexOf(projectId);
-  return idx >= 0 ? idx % PROJECT_COLORS.length : 0;
-}
-
-function isSameDay(d1: Date, d2: Date): boolean {
-  return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
-  );
-}
-
-function isWithinRange(date: Date, start: Date, end: Date): boolean {
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-  const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
-  const e = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
-  return d >= s && d <= e;
-}
-
-function formatDateBR(dateStr: string | null): string {
-  if (!dateStr) return '-';
-  try {
-    return new Date(dateStr).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: '2-digit',
-    });
-  } catch {
-    return '-';
-  }
-}
-
-function getDaysInMonth(year: number, month: number): number {
-  return new Date(year, month + 1, 0).getDate();
-}
-
-function getFirstDayOfMonth(year: number, month: number): number {
-  return new Date(year, month, 1).getDay();
-}
-
-function addDays(date: Date, days: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-}
-
-function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  d.setDate(d.getDate() - day);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function isDateInPast(dateStr: string | null): boolean {
-  if (!dateStr) return false;
-  try {
-    const d = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return d < today;
-  } catch {
-    return false;
-  }
-}
-
-function isWithin7Days(dateStr: string | null): boolean {
-  if (!dateStr) return false;
-  try {
-    const d = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const in7 = addDays(today, 7);
-    return d >= today && d <= in7;
-  } catch {
-    return false;
-  }
-}
-
-// ✨ NEW HELPERS (From Round 6 Logic)
-function isConsideredActive(statusStr: string | null | undefined) {
-  const s = (statusStr || '').trim().toLowerCase();
-  return s !== 'cancelado' && s !== 'concluído';
-}
-
-function hasValidDeadline(s: Schedule) {
-  return !!(s.data_fim || s.data_prazo);
-}
-
-function isOverdue(s: Schedule, refDate: Date = new Date()) {
-  const dateStr = s.data_prazo || s.data_fim;
-  if (!dateStr) return false;
-  const d = new Date(dateStr);
-  const refMidnight = new Date(refDate);
-  refMidnight.setHours(0, 0, 0, 0);
-  return d < refMidnight;
-}
-
-const MONTH_NAMES = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-];
-
-const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-// ---------- Main Component ----------
+// ---------- Main Orchestrator ----------
 
 export function CronogramasContent({ schedules }: CronogramasContentProps) {
   const {
     filters,
     search,
     viewMode,
-    calendarPeriod, // ✨ CENTRALIZADO: período único
-    agendaPeriod, // Backward compat (equals calendarPeriod)
+    calendarPeriod,
     filteredData,
     updateFilter,
     setSearch,
     setViewMode,
-    setCalendarPeriod, // ✨ NOVO: setter centralizado
-    setAgendaPeriod, // Backward compat (chama setCalendarPeriod)
+    setCalendarPeriod,
     resetAllFilters,
     registry,
   } = useCronogramasFilters(schedules);
 
-  // Use filtered schedules from hook
-  const filteredSchedules = filteredData;
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
   const [selectedSchedule, setSelectedSchedule] = React.useState<Schedule | null>(null);
+  const [activeKpiFilter, setActiveKpiFilter] = React.useState<KpiFilterName | null>(null);
 
-  // Dashboard KPI Toggle State
-  const [activeKpiFilter, setActiveKpiFilter] = React.useState<string | null>(null);
-
-  // Unique project IDs for consistent coloring (usa dados filtrados)
+  // Unique project IDs for consistent coloring
   const projectIds = React.useMemo(() => {
-    const ids = Array.from(new Set(filteredSchedules.map((s) => s.project_id)));
+    const ids = Array.from(new Set(filteredData.map((s) => s.project_id)));
     return ids.sort();
-  }, [filteredSchedules]);
+  }, [filteredData]);
 
-  // ✨ ROUND 6 KPI CALCULATIONS
-  const pendingSchedulesCount = React.useMemo(() => {
-    return schedules.filter(
-      (s) =>
-        isConsideredActive(s.project?.status) &&
-        isConsideredActive(s.status) &&
-        hasValidDeadline(s),
-    ).length;
-  }, [schedules]);
+  // Apply KPI filter on top of filtered data
+  const finalFilteredSchedules = React.useMemo(
+    () => filterByKpi(filteredData, activeKpiFilter),
+    [filteredData, activeKpiFilter],
+  );
 
-  const inExecutionSchedulesCount = React.useMemo(() => {
-    return schedules.filter(
-      (s) =>
-        (s.project?.status || '').trim().toLowerCase() === 'em execução' &&
-        isConsideredActive(s.status) &&
-        hasValidDeadline(s),
-    ).length;
-  }, [schedules]);
-
-  const overdueSchedulesInfo = React.useMemo(() => {
-    let count = 0;
-    let maxDays = 0;
-    const now = new Date();
-    const refMidnight = new Date(now);
-    refMidnight.setHours(0, 0, 0, 0);
-
-    schedules.forEach((s) => {
-      if (
-        isConsideredActive(s.project?.status) &&
-        isConsideredActive(s.status) &&
-        hasValidDeadline(s) &&
-        isOverdue(s, now)
-      ) {
-        count++;
-        const d = new Date(s.data_prazo || (s.data_fim as string));
-        const diffTime = Math.abs(refMidnight.getTime() - d.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays > maxDays) maxDays = diffDays;
-      }
-    });
-    return { count, maxDays };
-  }, [schedules]);
-
-  const nearDeadlineCountUpdated = React.useMemo(() => {
-    return schedules.filter(
-      (s) =>
-        isConsideredActive(s.project?.status) &&
-        isConsideredActive(s.status) &&
-        hasValidDeadline(s) &&
-        isWithin7Days(s.data_prazo || s.data_fim),
-    ).length;
-  }, [schedules]);
-
-  const missingDeadlineCount = React.useMemo(() => {
-    return schedules.filter(
-      (s) =>
-        isConsideredActive(s.project?.status) &&
-        isConsideredActive(s.status) &&
-        !hasValidDeadline(s),
-    ).length;
-  }, [schedules]);
-
-  // The active Filter Interceptor
-  const handleKpiClick = (filterName: string) => {
+  const handleKpiClick = (filterName: KpiFilterName) => {
     setActiveKpiFilter((prev) => (prev === filterName ? null : filterName));
   };
-
-  const finalFilteredSchedules = React.useMemo(() => {
-    if (!activeKpiFilter) return filteredData;
-    const now = new Date();
-
-    return filteredData.filter((s) => {
-      switch (activeKpiFilter) {
-        case 'pendentes':
-          return (
-            isConsideredActive(s.project?.status) &&
-            isConsideredActive(s.status) &&
-            hasValidDeadline(s)
-          );
-        case 'em_execucao':
-          return (
-            (s.project?.status || '').trim().toLowerCase() === 'em execução' &&
-            isConsideredActive(s.status) &&
-            hasValidDeadline(s)
-          );
-        case 'atrasados':
-          return (
-            isConsideredActive(s.project?.status) &&
-            isConsideredActive(s.status) &&
-            hasValidDeadline(s) &&
-            isOverdue(s, now)
-          );
-        case 'proximos_vencer':
-          return (
-            isConsideredActive(s.project?.status) &&
-            isConsideredActive(s.status) &&
-            hasValidDeadline(s) &&
-            isWithin7Days(s.data_prazo || s.data_fim)
-          );
-        case 'sem_prazo':
-          return (
-            isConsideredActive(s.project?.status) &&
-            isConsideredActive(s.status) &&
-            !hasValidDeadline(s)
-          );
-        default:
-          return true;
-      }
-    });
-  }, [filteredData, activeKpiFilter]);
 
   // Navigation
   const navigateMonth = (direction: number) => {
@@ -340,9 +76,11 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
     setSelectedDay(null);
   };
 
-  const goToToday = () => {
-    setCurrentDate(new Date());
-    setSelectedDay(new Date());
+  const navigateDay = (direction: number) => {
+    const d = new Date(currentDate);
+    d.setDate(d.getDate() + direction);
+    setCurrentDate(d);
+    setSelectedDay(null);
   };
 
   // Get schedules for a specific date
@@ -351,10 +89,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
       return finalFilteredSchedules.filter((s) => {
         const start = s.data_inicio ? new Date(s.data_inicio) : null;
         const end = s.data_fim ? new Date(s.data_fim) : null;
-
-        if (start && end) {
-          return isWithinRange(date, start, end);
-        }
+        if (start && end) return isWithinRange(date, start, end);
         if (start) return isSameDay(date, start);
         if (end) return isSameDay(date, end);
         return false;
@@ -372,136 +107,54 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
         />
 
         <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-          {/* FilterBar: DEVE FICAR NO TOPO, FORA DO SCROLL */}
-          <div className="border-b bg-background px-6 py-4 shrink-0">
-            <FilterBar
-              moduleId="cronogramas"
-              filters={registry}
-              onFiltersChange={(newFilters) => {
-                Object.entries(newFilters).forEach(([key, value]) => {
-                  if (filters[key] !== value) {
-                    updateFilter(key, value);
-                  }
-                });
-              }}
-              onUpdateFilter={updateFilter}
-              onResetFilters={() => {
-                resetAllFilters();
-                setSearch('');
-              }}
-              onSearchChange={setSearch}
-              onViewModeChange={setViewMode}
-              onAgendaPeriodChange={(period) => setCalendarPeriod(period as 'day' | 'week' | 'month')}
-              initialFilters={filters}
-              initialSearch={search}
-              initialViewMode={viewMode}
-              initialAgendaPeriod={calendarPeriod}
-              currentFilters={filters}
-              currentSearch={search}
-              currentViewMode={viewMode}
-              currentAgendaPeriod={calendarPeriod}
-            />
-          </div>
+          {/* Filters */}
+          <CronogramaFilters
+            registry={registry}
+            filters={filters}
+            search={search}
+            viewMode={viewMode}
+            calendarPeriod={calendarPeriod}
+            onUpdateFilter={updateFilter}
+            onResetFilters={() => {
+              resetAllFilters();
+              setSearch('');
+            }}
+            onSearchChange={setSearch}
+            onViewModeChange={setViewMode}
+            onCalendarPeriodChange={(period) => setCalendarPeriod(period as 'day' | 'week' | 'month')}
+          />
 
-          {/* Content: SCROLLABLE AREA */}
+          {/* Scrollable Content */}
           <div className="flex-1 space-y-6 overflow-y-auto p-6">
-            {/* KPIs Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-              <KPICard
-                title="Atividades Pendentes"
-                value={pendingSchedulesCount}
-                icon={CalendarDays}
-                subtitle="Vinculados a proj. ativos"
-                active={activeKpiFilter === 'pendentes'}
-                onClick={() => handleKpiClick('pendentes')}
+            {/* KPIs */}
+            <ErrorBoundary label="KPIs Cronogramas">
+              <CronogramasKPIBar
+                schedules={schedules}
+                activeKpiFilter={activeKpiFilter}
+                onKpiClick={handleKpiClick}
               />
-              <KPICard
-                title="Em Execução"
-                value={inExecutionSchedulesCount}
-                icon={Clock}
-                subtitle="Operação ativa em campo"
-                active={activeKpiFilter === 'em_execucao'}
-                onClick={() => handleKpiClick('em_execucao')}
-              />
-              <KPICard
-                title="Atrasadas"
-                value={overdueSchedulesInfo.count}
-                icon={AlertTriangle}
-                className={
-                  overdueSchedulesInfo.count > 0
-                    ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500'
-                    : ''
-                }
-                subtitle={
-                  overdueSchedulesInfo.count > 0
-                    ? `Maior atraso: ${overdueSchedulesInfo.maxDays} dias`
-                    : 'Nenhuma atividade atrasada'
-                }
-                active={activeKpiFilter === 'atrasados'}
-                onClick={() => handleKpiClick('atrasados')}
-              />
-              <KPICard
-                title="Próximas do Prazo"
-                value={nearDeadlineCountUpdated}
-                icon={CheckCircle2}
-                subtitle="Vencimentos em ≤ 7 dias"
-                active={activeKpiFilter === 'proximos_vencer'}
-                onClick={() => handleKpiClick('proximos_vencer')}
-              />
-              <KPICard
-                title="Data Ausente"
-                value={missingDeadlineCount}
-                icon={AlertTriangle}
-                className={
-                  missingDeadlineCount > 0
-                    ? '[&_[class*=bg-primary]]:bg-amber-500/10 [&_svg]:text-amber-500'
-                    : ''
-                }
-                subtitle="Necessitam preencher prazo"
-                active={activeKpiFilter === 'sem_prazo'}
-                onClick={() => handleKpiClick('sem_prazo')}
-              />
-            </div>
+            </ErrorBoundary>
           </div>
 
-          {/* Seção de visualização: Agenda (Dia/Semana/Mês) | Lista */}
-          {/* ⚠️ GANTT REMOVIDO TEMPORARIAMENTE - Será re-habilitado no futuro após configuração */}
-          {viewMode === 'agenda' ? (
-            calendarPeriod === 'month' ? (
-              <MonthView
+          {/* Calendar Views (Agenda mode) */}
+          {viewMode === 'agenda' && (
+            <ErrorBoundary label="Calendario Cronogramas">
+              <CronogramaCalendar
                 currentDate={currentDate}
                 selectedDay={selectedDay}
+                calendarPeriod={calendarPeriod as 'day' | 'week' | 'month'}
+                projectIds={projectIds}
+                getSchedulesForDate={getSchedulesForDate}
                 onSelectDay={setSelectedDay}
-                onNavigate={navigateMonth}
-                getSchedulesForDate={getSchedulesForDate}
-                projectIds={projectIds}
-              />
-            ) : calendarPeriod === 'week' ? (
-              <WeekView
-                currentDate={currentDate}
-                selectedDay={selectedDay}
-                onSelectDay={setSelectedDay}
-                onNavigate={navigateWeek}
-                getSchedulesForDate={getSchedulesForDate}
-                projectIds={projectIds}
-              />
-            ) : (
-              <DayView
-                currentDate={currentDate}
-                onNavigate={(dir) => {
-                  const d = new Date(currentDate);
-                  d.setDate(d.getDate() + dir);
-                  setCurrentDate(d);
-                  setSelectedDay(null);
-                }}
-                getSchedulesForDate={getSchedulesForDate}
-                projectIds={projectIds}
+                onNavigateMonth={navigateMonth}
+                onNavigateWeek={navigateWeek}
+                onNavigateDay={navigateDay}
                 onActivityClick={setSelectedSchedule}
               />
-            )
-          ) : null}
+            </ErrorBoundary>
+          )}
 
-          {/* Selected Day Activities (Agenda Mês ou Semana) */}
+          {/* Selected Day Activities */}
           {selectedDay && viewMode === 'agenda' && (calendarPeriod === 'month' || calendarPeriod === 'week') && (
             <SelectedDayPanel
               date={selectedDay}
@@ -511,753 +164,28 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             />
           )}
 
-          {/* Activity List - responde ao período centralizado ou mostra todas conforme view */}
-          {(() => {
-            // Determinar qual lista exibir conforme o período
-            let displaySchedules: Schedule[] = finalFilteredSchedules;
-            let periodLabel = '';
-
-            if (viewMode === 'agenda' && (calendarPeriod === 'day' || calendarPeriod === 'week' || calendarPeriod === 'month')) {
-              // Quando em Agenda, exibir apenas atividades do período selecionado
-              displaySchedules = getSchedulesForDate(currentDate) as Schedule[];
-              
-              if (calendarPeriod === 'day') {
-                periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', {
-                  weekday: 'long',
-                  day: '2-digit',
-                  month: 'long',
-                })}`;
-              } else if (calendarPeriod === 'week') {
-                const weekStart = getWeekStart(currentDate);
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 6);
-                periodLabel = ` — Semana de ${weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} a ${weekEnd.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}`;
-              } else if (calendarPeriod === 'month') {
-                periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`;
-              }
-            } else if (viewMode === 'lista' && (calendarPeriod === 'day' || calendarPeriod === 'week' || calendarPeriod === 'month')) {
-              // ✨ NOVO: Quando em Lista, também filtrar por período
-              displaySchedules = getSchedulesForDate(currentDate) as Schedule[];
-              
-              if (calendarPeriod === 'day') {
-                periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', {
-                  weekday: 'long',
-                  day: '2-digit',
-                  month: 'long',
-                })}`;
-              } else if (calendarPeriod === 'week') {
-                const weekStart = getWeekStart(currentDate);
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 6);
-                periodLabel = ` — Semana de ${weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} a ${weekEnd.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}`;
-              } else if (calendarPeriod === 'month') {
-                periodLabel = ` — ${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`;
-              }
-            }
-
-            return (
-              <div className={cn('space-y-3', viewMode === 'lista' && 'mt-0')}>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">
-                    Todas as Atividades{periodLabel}
-                    <span className="ml-2 text-sm font-normal text-muted-foreground">
-                      ({displaySchedules.length})
-                    </span>
-                  </h2>
-                </div>
-                <div
-                  className={cn(
-                    'grid gap-3',
-                    viewMode === 'lista'
-                      ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                      : 'md:grid-cols-2 xl:grid-cols-3',
-                  )}
-                >
-                  {displaySchedules.length === 0 ? (
-                    <div className="col-span-full py-12 text-center">
-                      <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                      <h3 className="mt-4 text-lg font-medium">Nenhuma atividade encontrada</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Ajuste os filtros ou sincronize os dados do Espaider.
-                      </p>
-                    </div>
-                  ) : (
-                    displaySchedules.map((schedule) => (
-                      <ActivityCard
-                        key={schedule.id}
-                        schedule={schedule}
-                        projectIds={projectIds}
-                        onClick={() => setSelectedSchedule(schedule)}
-                      />
-                    ))
-                  )}
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* SplitView for Schedule Details */}
-          <SplitView
-            isOpen={!!selectedSchedule}
-            onClose={() => setSelectedSchedule(null)}
-            title={selectedSchedule?.atividade || 'Cronograma'}
-            subtitle={selectedSchedule?.project?.titulo || undefined}
-            width="wide"
-          >
-            <ScheduleCockpit
-              schedule={selectedSchedule}
-              onClose={() => setSelectedSchedule(null)}
-              project={selectedSchedule?.project || undefined}
-              projectSchedules={schedules.filter(s => s.project_id === selectedSchedule?.project_id)}
-              projectDeliveries={[]}
-              projectHistories={[]}
-              projectApprovers={[]}
-              projectBudgets={[]}
+          {/* Activity List */}
+          <ErrorBoundary label="Lista Cronogramas">
+            <CronogramaList
+              schedules={schedules}
+              allFilteredSchedules={finalFilteredSchedules}
+              projectIds={projectIds}
+              viewMode={viewMode}
+              calendarPeriod={calendarPeriod as 'day' | 'week' | 'month'}
+              currentDate={currentDate}
+              getSchedulesForDate={getSchedulesForDate}
+              onActivityClick={setSelectedSchedule}
             />
-          </SplitView>
+          </ErrorBoundary>
+
+          {/* Schedule Detail (SplitView) */}
+          <CronogramaCockpit
+            selectedSchedule={selectedSchedule}
+            allSchedules={schedules}
+            onClose={() => setSelectedSchedule(null)}
+          />
         </div>
       </div>
     </TooltipProvider>
-  );
-}
-
-// ---------- Month View ----------
-
-function MonthView({
-  currentDate,
-  selectedDay,
-  onSelectDay,
-  onNavigate,
-  getSchedulesForDate,
-  projectIds,
-}: {
-  currentDate: Date;
-  selectedDay: Date | null;
-  onSelectDay: (d: Date) => void;
-  onNavigate: (dir: number) => void;
-  getSchedulesForDate: (d: Date) => Schedule[];
-  projectIds: string[];
-}) {
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  const daysInMonth = getDaysInMonth(year, month);
-  const firstDay = getFirstDayOfMonth(year, month);
-  const today = new Date();
-
-  // Build calendar grid
-  const cells: (Date | null)[] = [];
-  for (let i = 0; i < firstDay; i++) {
-    cells.push(null);
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    cells.push(new Date(year, month, d));
-  }
-  // Pad to complete last week
-  while (cells.length % 7 !== 0) {
-    cells.push(null);
-  }
-
-  return (
-    <Card className="shadow-soft">
-      <CardContent className="p-4 sm:p-6">
-        {/* Header with navigation */}
-        <div className="mb-6 flex items-center justify-between">
-          <Button variant="ghost" size="icon" onClick={() => onNavigate(-1)} className="h-8 w-8">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <h3 className="text-base font-semibold">
-            {MONTH_NAMES[month]} {year}
-          </h3>
-          <Button variant="ghost" size="icon" onClick={() => onNavigate(1)} className="h-8 w-8">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Day headers */}
-        <div className="mb-2 grid grid-cols-7 gap-1">
-          {DAY_NAMES.map((name) => (
-            <div key={name} className="py-1 text-center text-xs font-medium text-muted-foreground">
-              {name}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1">
-          {cells.map((date, idx) => {
-            if (!date) {
-              return <div key={`empty-${idx}`} className="aspect-square" />;
-            }
-
-            const daySchedules = getSchedulesForDate(date);
-            const isToday = isSameDay(date, today);
-            const isSelected = selectedDay ? isSameDay(date, selectedDay) : false;
-            const hasDelayed = daySchedules.some((s) => s.atrasado === true);
-            const maxDots = 4;
-
-            return (
-              <Popover key={date.toISOString()}>
-                <PopoverTrigger asChild>
-                  <button
-                    onClick={() => onSelectDay(date)}
-                    className={cn(
-                      'relative flex aspect-square flex-col items-center justify-start gap-0.5 rounded-lg p-1 text-sm transition-all',
-                      'hover:bg-accent/60 focus:outline-none focus:ring-2 focus:ring-ring/50',
-                      isToday && 'bg-accent font-bold',
-                      isSelected && 'bg-primary/5 ring-2 ring-primary',
-                      hasDelayed &&
-                        daySchedules.length > 0 &&
-                        'ring-1 ring-red-300 dark:ring-red-700',
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'mt-0.5 text-xs leading-none',
-                        isToday &&
-                          'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
-                        !isToday && date.getMonth() !== month && 'text-muted-foreground/50',
-                      )}
-                    >
-                      {date.getDate()}
-                    </span>
-                    {daySchedules.length > 0 && (
-                      <div className="mb-0.5 mt-auto flex flex-wrap justify-center gap-0.5">
-                        {daySchedules.slice(0, maxDots).map((s) => {
-                          const colorIdx = getProjectColorIndex(s.project_id, projectIds);
-                          return (
-                            <Tooltip key={s.id}>
-                              <TooltipTrigger asChild>
-                                <div
-                                  className={cn(
-                                    'h-1.5 w-1.5 rounded-full',
-                                    s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
-                                  )}
-                                />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-[200px]">
-                                <p className="text-xs font-medium">{s.atividade || 'Sem nome'}</p>
-                                <p className="text-[10px] text-muted-foreground">
-                                  {s.project?.titulo || 'Projeto'}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          );
-                        })}
-                        {daySchedules.length > maxDots && (
-                          <span className="text-[8px] leading-none text-muted-foreground">
-                            +{daySchedules.length - maxDots}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </button>
-                </PopoverTrigger>
-                {daySchedules.length > 0 && (
-                  <PopoverContent className="w-80 p-3" side="right" align="start">
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-muted-foreground">
-                        {date.toLocaleDateString('pt-BR', {
-                          weekday: 'long',
-                          day: '2-digit',
-                          month: 'long',
-                        })}
-                      </p>
-                      <div className="max-h-60 space-y-4 overflow-y-auto">
-                        {/* Group schedules by Project */}
-                        {Array.from(
-                          daySchedules.reduce((acc, s) => {
-                            const projectName = s.project?.titulo || 'Sem Projeto';
-                            if (!acc.has(projectName)) acc.set(projectName, []);
-                            acc.get(projectName)!.push(s);
-                            return acc;
-                          }, new Map<string, Schedule[]>()),
-                        ).map(([projectName, projSchedules]) => (
-                          <div key={projectName} className="space-y-1.5">
-                            <h4 className="line-clamp-1 border-b pb-1 text-[11px] font-bold uppercase text-foreground/80">
-                              {projectName}
-                            </h4>
-                            {projSchedules.map((s) => {
-                              const colorIdx = getProjectColorIndex(s.project_id, projectIds);
-                              return (
-                                <div
-                                  key={s.id}
-                                  className="flex cursor-pointer items-start gap-2 rounded p-1.5 transition-colors hover:bg-muted/50"
-                                  onClick={() => onSelectDay(date)}
-                                >
-                                  <div
-                                    className={cn(
-                                      'mt-1.5 h-2 w-2 shrink-0 rounded-full',
-                                      s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
-                                    )}
-                                  />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-medium">
-                                      {s.atividade || 'Sem nome'}
-                                    </p>
-                                  </div>
-                                  {s.atrasado && (
-                                    <Badge
-                                      variant="destructive"
-                                      className="h-4 shrink-0 px-1 text-[9px]"
-                                    >
-                                      Atrasado
-                                    </Badge>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </PopoverContent>
-                )}
-              </Popover>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ---------- Week View ----------
-
-function WeekView({
-  currentDate,
-  selectedDay,
-  onSelectDay,
-  onNavigate,
-  getSchedulesForDate,
-  projectIds,
-}: {
-  currentDate: Date;
-  selectedDay: Date | null;
-  onSelectDay: (d: Date) => void;
-  onNavigate: (dir: number) => void;
-  getSchedulesForDate: (d: Date) => Schedule[];
-  projectIds: string[];
-}) {
-  const weekStart = getWeekStart(currentDate);
-  const today = new Date();
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-
-  return (
-    <Card className="shadow-soft">
-      <CardContent className="p-4 sm:p-6">
-        {/* Header with navigation */}
-        <div className="mb-6 flex items-center justify-between">
-          <Button variant="ghost" size="icon" onClick={() => onNavigate(-1)} className="h-8 w-8">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <h3 className="text-base font-semibold">
-            {weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-            {' - '}
-            {addDays(weekStart, 6).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-            })}
-          </h3>
-          <Button variant="ghost" size="icon" onClick={() => onNavigate(1)} className="h-8 w-8">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Week grid */}
-        <div className="grid grid-cols-7 gap-2">
-          {days.map((date) => {
-            const daySchedules = getSchedulesForDate(date);
-            const isToday = isSameDay(date, today);
-            const isSelected = selectedDay ? isSameDay(date, selectedDay) : false;
-            const hasDelayed = daySchedules.some((s) => s.atrasado === true);
-
-            return (
-              <button
-                key={date.toISOString()}
-                onClick={() => onSelectDay(date)}
-                className={cn(
-                  'flex min-h-[120px] flex-col rounded-lg border p-2 transition-all',
-                  'hover:border-primary/50 hover:bg-accent/30 focus:outline-none focus:ring-2 focus:ring-ring/50',
-                  isToday && 'border-primary bg-primary/5 shadow-sm',
-                  isSelected && 'ring-2 ring-primary',
-                  hasDelayed && 'border-red-300 dark:border-red-700',
-                )}
-              >
-                {isToday && <div className="mb-1 h-0.5 w-full rounded-full bg-primary" />}
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className={cn('text-xs font-medium', isToday && 'font-bold text-primary')}>
-                    {DAY_NAMES[date.getDay()]}
-                  </span>
-                  <span
-                    className={cn(
-                      'text-xs',
-                      isToday
-                        ? 'flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {date.getDate()}
-                  </span>
-                </div>
-                <div className="flex-1 space-y-0.5 overflow-hidden">
-                  {daySchedules.slice(0, 3).map((s) => {
-                    const colorIdx = getProjectColorIndex(s.project_id, projectIds);
-                    return (
-                      <Tooltip key={s.id}>
-                        <TooltipTrigger asChild>
-                          <div
-                            className={cn(
-                              'truncate rounded px-1 py-0.5 text-[10px] font-medium',
-                              s.atrasado
-                                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                                : PROJECT_COLORS_LIGHT[colorIdx],
-                            )}
-                          >
-                            {s.atividade || 'Sem nome'}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[240px]">
-                          <p className="text-xs font-medium">{s.atividade || 'Sem nome'}</p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {s.project?.titulo || 'Projeto'}
-                          </p>
-                          {s.responsavel && (
-                            <p className="text-[10px] text-muted-foreground">
-                              Resp: {s.responsavel}
-                            </p>
-                          )}
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
-                  {daySchedules.length > 3 && (
-                    <p className="text-center text-[9px] text-muted-foreground">
-                      +{daySchedules.length - 3} mais
-                    </p>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ---------- Day View ----------
-
-function DayView({
-  currentDate,
-  onNavigate,
-  getSchedulesForDate,
-  projectIds,
-  onActivityClick,
-}: {
-  currentDate: Date;
-  onNavigate: (dir: number) => void;
-  getSchedulesForDate: (d: Date) => Schedule[];
-  projectIds: string[];
-  onActivityClick: (s: Schedule) => void;
-}) {
-  const schedules = getSchedulesForDate(currentDate);
-
-  return (
-    <Card className="min-h-[400px] w-full shadow-soft">
-      <CardContent className="flex h-full flex-col p-4 sm:p-6">
-        {/* Header with navigation */}
-        <div className="mb-6 flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onNavigate(-1)}
-            className="h-8 w-8 hover:bg-accent/60"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex flex-col items-center">
-            <h3 className="text-xl font-bold tracking-tight">
-              {currentDate.toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </h3>
-            <span className="text-sm font-medium capitalize text-muted-foreground">
-              {currentDate.toLocaleDateString('pt-BR', { weekday: 'long' })}
-            </span>
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onNavigate(1)}
-            className="h-8 w-8 hover:bg-accent/60"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="scrollbar-thin flex-1 overflow-y-auto pr-2">
-          {schedules.length === 0 ? (
-            <div className="flex h-[200px] flex-col items-center justify-center text-center">
-              <CalendarDays className="mb-2 h-10 w-10 text-muted-foreground/30" />
-              <p className="font-medium text-muted-foreground">
-                Nenhuma pauta ou atividade para este dia.
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {schedules.map((schedule) => (
-                <ActivityCard
-                  key={schedule.id}
-                  schedule={schedule}
-                  projectIds={projectIds}
-                  onClick={() => onActivityClick(schedule)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ---------- Selected Day Panel ----------
-
-function SelectedDayPanel({
-  date,
-  schedules,
-  projectIds,
-  onActivityClick,
-}: {
-  date: Date;
-  schedules: Schedule[];
-  projectIds: string[];
-  onActivityClick: (s: Schedule) => void;
-}) {
-  if (schedules.length === 0) {
-    return (
-      <Card className="animate-in slide-in-from-top-2">
-        <CardContent className="py-12 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/50">
-            <CalendarDays className="h-8 w-8 text-muted-foreground/40" />
-          </div>
-          <h3 className="mt-4 text-sm font-medium text-foreground">Nenhuma atividade</h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Não há atividades programadas para{' '}
-            {date.toLocaleDateString('pt-BR', {
-              weekday: 'long',
-              day: '2-digit',
-              month: 'long',
-            })}
-          </p>
-          <p className="mt-3 text-xs text-muted-foreground/70">
-            Selecione outro dia no calendário ou ajuste os filtros.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="animate-in slide-in-from-top-2">
-      <CardContent className="p-4">
-        <div className="mb-4 flex items-center gap-2">
-          <CalendarIcon className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold">
-            {date.toLocaleDateString('pt-BR', {
-              weekday: 'long',
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-            })}
-          </h3>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {schedules.length} {schedules.length === 1 ? 'atividade' : 'atividades'}
-          </Badge>
-        </div>
-        <div className="space-y-2">
-          {schedules.map((s) => {
-            const colorIdx = getProjectColorIndex(s.project_id, projectIds);
-            return (
-              <div
-                key={s.id}
-                className="flex cursor-pointer items-center gap-3 rounded-lg border bg-card p-2.5 transition-colors hover:bg-muted/50"
-                onClick={() => onActivityClick(s)}
-              >
-                <div
-                  className={cn(
-                    'h-8 w-1 shrink-0 rounded-full',
-                    s.atrasado ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
-                  )}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{s.atividade || 'Sem nome'}</p>
-                  <div className="mt-0.5 flex items-center gap-2">
-                    <span className="truncate text-[11px] text-muted-foreground">
-                      {s.project?.titulo || 'Projeto'}
-                    </span>
-                    {s.responsavel && (
-                      <>
-                        <span className="text-muted-foreground/50">|</span>
-                        <span className="truncate text-[11px] text-muted-foreground">
-                          {s.responsavel}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  {s.atrasado && (
-                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
-                      Atrasado
-                    </Badge>
-                  )}
-                  <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                    {s.status || 'Pendente'}
-                  </Badge>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ---------- Activity Card ----------
-
-function ActivityCard({
-  schedule,
-  projectIds,
-  onClick,
-}: {
-  schedule: Schedule;
-  projectIds: string[];
-  onClick: () => void;
-}) {
-  const colorIdx = getProjectColorIndex(schedule.project_id, projectIds);
-  const effectiveDeadline = schedule.data_novo_prazo || schedule.data_prazo || schedule.data_fim;
-  const isOverdue = schedule.atrasado === true;
-  const isNearDeadline = !isOverdue && isWithin7Days(effectiveDeadline);
-
-  return (
-    <Card
-      className={cn(
-        'cursor-pointer shadow-soft transition-all duration-300 hover:shadow-card-hover',
-        'animate-scale-in hover:-translate-y-0.5',
-        isOverdue && 'border-red-300 dark:border-red-800',
-      )}
-      onClick={onClick}
-    >
-      <CardContent className="p-4">
-        {/* Top bar with color indicator */}
-        <div className="flex items-start gap-3">
-          <div
-            className={cn(
-              'h-full min-h-[40px] w-1 shrink-0 rounded-full',
-              isOverdue ? 'bg-red-500' : PROJECT_COLORS[colorIdx],
-            )}
-          />
-          <div className="min-w-0 flex-1 space-y-2.5">
-            {/* Activity name */}
-            <div>
-              <div className="flex items-start justify-between gap-2">
-                <h4 className="line-clamp-2 text-sm font-semibold leading-tight">
-                  {schedule.atividade || 'Sem nome'}
-                </h4>
-                <div className="flex shrink-0 items-center gap-1">
-                  {isOverdue && (
-                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
-                      <AlertTriangle className="mr-0.5 h-3 w-3" />
-                      Atrasado
-                    </Badge>
-                  )}
-                  {isNearDeadline && (
-                    <Badge className="h-5 border-0 bg-amber-100 px-1.5 text-[10px] text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                      <Clock className="mr-0.5 h-3 w-3" />
-                      Prazo
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Project tag */}
-            <div className="flex items-center gap-1.5">
-              <FolderKanban className="h-3 w-3 shrink-0 text-muted-foreground" />
-              <span className="truncate text-[11px] text-muted-foreground">
-                {schedule.project?.titulo || 'Projeto'}
-              </span>
-            </div>
-
-            {/* Details */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-              {schedule.responsavel && (
-                <div className="flex items-center gap-1.5">
-                  <User className="h-3 w-3 shrink-0 text-muted-foreground" />
-                  <span className="truncate text-[11px] text-muted-foreground">
-                    {schedule.responsavel}
-                  </span>
-                </div>
-              )}
-              {schedule.setor_responsavel && (
-                <div className="flex items-center gap-1.5">
-                  <span className="truncate text-[11px] text-muted-foreground">
-                    {schedule.setor_responsavel}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Dates row */}
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-              {schedule.data_inicio && (
-                <span>
-                  Início:{' '}
-                  <span className="font-medium text-foreground/80">
-                    {formatDateBR(schedule.data_inicio)}
-                  </span>
-                </span>
-              )}
-              {schedule.data_fim && (
-                <span>
-                  Fim:{' '}
-                  <span className="font-medium text-foreground/80">
-                    {formatDateBR(schedule.data_fim)}
-                  </span>
-                </span>
-              )}
-              {schedule.data_prazo && (
-                <span className={isOverdue ? 'text-red-500 dark:text-red-400' : ''}>
-                  Prazo: <span className="font-medium">{formatDateBR(schedule.data_prazo)}</span>
-                </span>
-              )}
-              {schedule.data_novo_prazo && (
-                <span className="text-amber-600 dark:text-amber-400">
-                  Novo Prazo:{' '}
-                  <span className="font-medium">{formatDateBR(schedule.data_novo_prazo)}</span>
-                </span>
-              )}
-            </div>
-
-            {/* Status badge */}
-            <div className="flex items-center gap-1.5 pt-0.5">
-              <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                {schedule.status || 'Pendente'}
-              </Badge>
-              {schedule.fase_atividade && (
-                <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
-                  {schedule.fase_atividade}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

@@ -37,6 +37,7 @@ import {
 } from '@/app/actions/lm-models';
 import { useModelosIaFilters, type ModelWithProvider } from '@/hooks/useModelosIaFilters';
 import type { LmModel, LmProvider } from '@/types/agents';
+import { computeModelKpis } from '@/lib/domain/lm-model-rules';
 
 interface ModelsIaContentProps {
   initialModels: (LmModel & { lm_providers: LmProvider })[];
@@ -94,15 +95,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
     [filters.provider_id],
   );
 
+  // KPIs (domain-extracted)
   const kpis = useMemo(
-    () => ({
-      total: models.length,
-      byProvider:
-        selectedProviderFilters.length === 1
-          ? models.filter((m) => m.provider_id === selectedProviderFilters[0]).length
-          : 0,
-      uniqueProviders: new Set(models.map((m) => m.provider_id)).size,
-    }),
+    () => computeModelKpis(models, selectedProviderFilters),
     [models, selectedProviderFilters],
   );
 

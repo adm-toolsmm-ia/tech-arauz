@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import type { UIAgent } from '@/lib/transformers/agent';
 import type { LmProvider } from '@/types/agents';
+import { computeAgentKpis, filterAgents, getUniqueAgentTypes } from '@/lib/domain/agent-rules';
 
 interface AgentsContentProps {
   agents: UIAgent[];
@@ -41,44 +42,17 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  // KPIs
-  const kpis = useMemo(
-    () => ({
-      total: agents.length,
-      draft: agents.filter((a) => a.status === 'draft').length,
-      published: agents.filter((a) => a.status === 'published').length,
-      deprecated: agents.filter((a) => a.status === 'deprecated').length,
-    }),
-    [agents]
+  // KPIs (domain-extracted)
+  const kpis = useMemo(() => computeAgentKpis(agents), [agents]);
+
+  // Apply filters & search (domain-extracted)
+  const filtered = useMemo(
+    () => filterAgents(agents, { statusFilter, typeFilter, searchTerm }),
+    [agents, statusFilter, typeFilter, searchTerm],
   );
 
-  // Apply filters & search
-  const filtered = useMemo(() => {
-    return agents.filter((agent) => {
-      if (statusFilter !== 'all' && agent.status !== statusFilter) return false;
-      if (typeFilter !== 'all' && agent.agentType !== typeFilter) return false;
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        return (
-          agent.name.toLowerCase().includes(term) ||
-          agent.slug.toLowerCase().includes(term) ||
-          agent.description?.toLowerCase().includes(term)
-        );
-      }
-      return true;
-    });
-  }, [agents, statusFilter, typeFilter, searchTerm]);
-
-  // Unique types for filter dropdown
-  const uniqueTypes = useMemo(() => {
-    const types: string[] = [];
-    agents.forEach((a) => {
-      if (!types.includes(a.agentType)) {
-        types.push(a.agentType);
-      }
-    });
-    return types.sort();
-  }, [agents]);
+  // Unique types for filter dropdown (domain-extracted)
+  const uniqueTypes = useMemo(() => getUniqueAgentTypes(agents), [agents]);
 
   // Handle refresh
   const handleRefresh = useCallback(async () => {

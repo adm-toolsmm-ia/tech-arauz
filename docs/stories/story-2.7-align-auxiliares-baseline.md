@@ -1,6 +1,6 @@
 # Story 2.7 - Alinhar Auxiliares ao Baseline
 
-Status: Ready
+Status: Done
 Epic: UX-EPIC-01
 Prioridade: Media
 Sprint: 2
@@ -33,13 +33,13 @@ para ter uma experiencia uniforme em todo o portal.
 
 ## Tasks
 
-- [ ] Substituir `confirm()` nativo por Dialog em agent-types-content.tsx
-- [ ] Extrair subcomponentes de agent-types-content (lista, form, actions)
-- [ ] Extrair subcomponentes de lm-providers-content (lista, form, actions)
-- [ ] Verificar que FilterBar padrao esta aplicado em todos os auxiliares
-- [ ] Padronizar estados de loading/vazio/erro nos 3 modulos auxiliares
-- [ ] Atualizar `docs/architecture/module-standards.md` com status de alinhamento
-- [ ] Remover gap residual #3 (agent-types confirm) da documentacao
+- [x] Substituir `confirm()` nativo por Dialog em agent-types-content.tsx
+- [x] Extrair subcomponentes de agent-types-content (AgentTypeListItem, AgentTypeFormDialog)
+- [x] Extrair subcomponentes de lm-providers-content (LmProviderListItem)
+- [x] Verificar que FilterBar padrao esta aplicado em todos os auxiliares
+- [x] Padronizar estados de loading/vazio/erro nos 3 modulos auxiliares
+- [x] Atualizar `docs/architecture/module-standards.md` com status de alinhamento
+- [x] Remover gap residual #3 (agent-types confirm) da documentacao
 
 ## Testes
 
@@ -71,10 +71,10 @@ para ter uma experiencia uniforme em todo o portal.
 
 ## Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2026-02-27 | 1.0 | Story criada | Orion (aios-master) |
-| 2026-02-27 | 1.1 | PO validation: added Executor, Dev Notes, Change Log | Pax (po) |
+| Date       | Version | Description                                          | Author              |
+| ---------- | ------- | ---------------------------------------------------- | ------------------- |
+| 2026-02-27 | 1.0     | Story criada                                         | Orion (aios-master) |
+| 2026-02-27 | 1.1     | PO validation: added Executor, Dev Notes, Change Log | Pax (po)            |
 
 ## Dependencies
 

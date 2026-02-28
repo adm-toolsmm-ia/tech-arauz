@@ -38,6 +38,7 @@ import {
 } from '@/lib/constants/phase-labels';
 import { getOverdueData, isConsideredActive } from '@/lib/domain/project-health';
 import { isHighPriorityProject } from '@/lib/domain/project-priority';
+import { computeDashboardKpis } from '@/lib/domain/kpi-calculations';
 
 interface Profile {
   id: string;
@@ -95,83 +96,30 @@ export function DashboardContent({
   const [selectedProject, setSelectedProject] = React.useState<UIProject | null>(null);
   const filteredListRef = React.useRef<HTMLDivElement>(null);
 
-  // ─── KPI Calculations (manager-focused) ───
+  // ─── KPI Calculations (domain-extracted) ───
   const now = React.useMemo(() => new Date(), []);
 
-  const totalProjects = chartProjects.length;
-  const coreActiveCount = chartProjects.filter((p) => isConsideredActive(p.status)).length;
+  const kpis = React.useMemo(() => computeDashboardKpis(chartProjects), [chartProjects]);
 
-  const activeProjects = chartProjects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'em execução',
-  ).length;
+  const {
+    totalProjects,
+    coreActiveCount,
+    activeProjects,
+    completedProjects,
+    inHomologationCount,
+    inProductionCount,
+    overdueCount,
+    overdueMaxDays,
+    highPriorityCount,
+    specialActiveCount: specialCount,
+    specialCompletedCount,
+    completedThisMonth,
+    completedLastMonth,
+    completionRate: _completionRate,
+    topAreas,
+  } = kpis;
 
-  const completedProjects = chartProjects.filter(
-    (p) => (p.status || '').trim().toLowerCase() === 'concluído',
-  ).length;
-
-  const inHomologationCount = projects.filter((p) => {
-    if (!isConsideredActive(p.status)) return false;
-    const fase = (p.fase_atual || '').toLowerCase();
-    const aprovador = (p.aprovador_atual || '').toLowerCase();
-    return fase.includes('homolog') || aprovador.includes('homolog');
-  }).length;
-
-  const inProductionCount = projects.filter((p) => {
-    if (!isConsideredActive(p.status)) return false;
-    const fase = (p.fase_atual || '').toLowerCase();
-    const aprovador = (p.aprovador_atual || '').toLowerCase();
-    return fase.includes('prod') || aprovador.includes('prod');
-  }).length;
-
-  const overdueProjectsInfo = React.useMemo(() => {
-    let count = 0;
-    let maxDays = 0;
-    projects.forEach((p) => {
-      const { isOverdue, maxDays: pMaxDays } = getOverdueData(p, now);
-      if (isOverdue) {
-        count++;
-        if (pMaxDays > maxDays) maxDays = pMaxDays;
-      }
-    });
-    return { count, maxDays };
-  }, [projects, now]);
-
-  const highPriorityCount = chartProjects.filter((p) => isHighPriorityProject(p)).length;
-
-  const specialCount = chartProjects.filter(
-    (p) => p.importancia_especial && isConsideredActive(p.status),
-  ).length;
-  const specialCompletedCount = chartProjects.filter(
-    (p) => p.importancia_especial && (p.status || '').trim().toLowerCase() === 'concluído',
-  ).length;
-
-  // Completion rate this month
-  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthKey = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
-
-  const completedThisMonth = chartProjects.filter(
-    (p) =>
-      (p.status || '').trim().toLowerCase() === 'concluído' &&
-      p.data_encerramento?.startsWith(thisMonth),
-  ).length;
-  const completedLastMonth = chartProjects.filter(
-    (p) =>
-      (p.status || '').trim().toLowerCase() === 'concluído' &&
-      p.data_encerramento?.startsWith(lastMonthKey),
-  ).length;
-
-  // Top areas
-  const areaCounts: Record<string, number> = {};
-  chartProjects.forEach((p) => {
-    const status = (p.status || '').trim().toLowerCase();
-    if (p.area && status !== 'concluído' && status !== 'cancelado') {
-      areaCounts[p.area] = (areaCounts[p.area] || 0) + 1;
-    }
-  });
-  const topAreas = Object.entries(areaCounts)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 3);
+  const overdueProjectsInfo = { count: overdueCount, maxDays: overdueMaxDays };
 
   // ─── Chart Data ───
   const pipelineData = React.useMemo(() => buildPipelineData(chartProjects), [chartProjects]);

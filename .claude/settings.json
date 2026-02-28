@@ -1,3 +1,16 @@
 {
-  "language": "portuguese"
+  "version": "1.0",
+  "language": "portuguese",
+  "denyTools": [],
+  "allowedCommands": {
+    "git": {
+      "workingDirectory": ".",
+      "requireRelativePaths": true
+    }
+  },
+  "rules": [
+    "SEMPRE usar paths relativos (./src, ./components) em comandos bash",
+    "NUNCA usar paths absolutos Windows em bash",
+    "Para git: executar a partir do diretório do projeto usando paths relativos"
+  ]
 }

@@ -1,0 +1,315 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║        SIBLING TOOL CALL ERRORED - Diagrama Visual do Erro                  ║
+║                          27 de Fevereiro de 2026                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+═════════════════════════════════════════════════════════════════════════════
+  PROBLEMA: O Que Causa o Erro
+═════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Cenário: Paralelismo Sem Validação                                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  const [file1, file2, bash] = await Promise.all([                       │
+│    Read("arquivo_que_existe.md"),              ✅ VAI FUNCIONAR         │
+│    Read("arquivo_nao_existe.md"),              ❌ VAI FALHAR            │
+│    Bash("comando que precisa de file2")        ⚠️  VAI DAR ERRO         │
+│  ])                                                                      │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Timeline de Execução:
+
+  T0: Inicia 3 chamadas em paralelo
+      ├─ Read 1: Iniciado ✅
+      ├─ Read 2: Iniciado ✅
+      └─ Bash:   Iniciado ✅
+
+  T1 (~50ms): Read 1 completa
+      └─ ✅ Sucesso! Arquivo encontrado
+
+  T2 (~100ms): Read 2 falha
+      ├─ ❌ ERRO: Arquivo não existe
+      ├─ Sistema marca promise como rejeitada
+      └─ ⚠️ Propaga falha para siblings
+
+  T3 (~150ms): Bash tenta completar
+      ├─ Vê que Read 2 falhou
+      ├─ Não pode continuar
+      └─ ⚠️ "SIBLING TOOL CALL ERRORED"
+         └─ Nota: Não é erro de Bash!
+            É erro de cascata de Read 2
+
+
+═════════════════════════════════════════════════════════════════════════════
+  VISUALIZAÇÃO: Promise.all Comportamento
+═════════════════════════════════════════════════════════════════════════════
+
+Padrão JavaScript Padrão (interno):
+
+┌─────────────────────────────────────────────────────────┐
+│ Promise.all([promise1, promise2, promise3])              │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  promise1: ✅ resolve → sucess                          │
+│  promise2: ❌ reject → ERROR                            │
+│  promise3: ⚠️ (nunca executa)                           │
+│                                                          │
+│  Resultado: Toda a Promise.all falha                    │
+│  Efeito: promise3 recebe "sibling errored"              │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+
+Isto é o comportamento CORRETO do Promise.all:
+- Não executa promises adicionais se uma falha
+- Falha rápido (fail-fast)
+- Previne cascata de erros
+
+
+═════════════════════════════════════════════════════════════════════════════
+  SOLUÇÃO 1: Validação Pré-Paralelo (RECOMENDADA)
+═════════════════════════════════════════════════════════════════════════════
+
+Step 1: Descobrir Recursos (Garantido funcionar)
+┌─────────────────────────────────────────┐
+│ const files = await Glob("docs/**/*.md") │
+│ Result: [file1.md, file2.md, ...]        │
+│ Status: ✅ Garantido que existem        │
+└─────────────────────────────────────────┘
+
+Step 2: Executar em Paralelo (Agora seguro)
+┌──────────────────────────────────────────────────┐
+│ const contents = await Promise.all(               │
+│   files.map(f => Read(f))   ✅ Seguro!          │
+│ )                                                 │
+│ Status: Paralelo sem risco de cascata             │
+└──────────────────────────────────────────────────┘
+
+Step 3: Processar Resultados
+┌────────────────────────────────────────┐
+│ const valid = contents.filter(...)      │
+│ Status: Processamento seguro            │
+└────────────────────────────────────────┘
+
+Diagrama de Fluxo:
+
+   Glob             Read          Filter
+  ┌─────┐         ┌────────┐     ┌────┐
+  │ ✅  │────────>│ Paralelo │───>│ ✅ │
+  └─────┘         │ Seguro  │     └────┘
+                  └────────┘
+
+  Tempo Total: ~100ms (rápido + seguro)
+
+
+═════════════════════════════════════════════════════════════════════════════
+  SOLUÇÃO 2: Error Handling Individual
+═════════════════════════════════════════════════════════════════════════════
+
+Código:
+┌──────────────────────────────────────────────────────┐
+│ const results = await Promise.all([                  │
+│   Read("file1").catch(e => ({ error: e })),         │
+│   Read("file2").catch(e => ({ error: e })),         │
+│   Bash("cmd").catch(e => ({ error: e }))            │
+│ ])                                                    │
+│                                                      │
+│ Resultado: [✅, ❌ com detalhe, ⚠️ completa]        │
+└──────────────────────────────────────────────────────┘
+
+Timeline:
+
+  T0: Inicia 3 calls
+      └─ Todas com .catch
+
+  T1: Read 1 sucede ✅
+
+  T2: Read 2 falha ❌
+      └─ .catch captura erro
+      └─ Retorna { error: ... }
+
+  T3: Bash completa (não falha por causa de Read 2) ✅
+      └─ Porque tem seu próprio .catch
+
+  T4: Promise.all resolve com [✅, ❌, ✅]
+      └─ Você pode ver qual falhou
+
+
+═════════════════════════════════════════════════════════════════════════════
+  SOLUÇÃO 3: Sequencial (Segurança Máxima)
+═════════════════════════════════════════════════════════════════════════════
+
+Código:
+┌──────────────────────────────────┐
+│ const r1 = await Read("file1")   │
+│ const r2 = await Read("file2")   │
+│ const r3 = await Bash("cmd")     │
+└──────────────────────────────────┘
+
+Timeline:
+
+  T0-100ms: Executa Read 1
+            └─ Se falha: para aqui
+            └─ Se sucede: continua
+
+  T100-200ms: Executa Read 2
+              └─ Se falha: para aqui
+              └─ Se sucede: continua
+
+  T200-300ms: Executa Bash
+              └─ Agora tem dados de Read 1 e 2
+
+  Resultado: ✅ 100% confiável
+             ❌ 3x mais lento
+
+
+═════════════════════════════════════════════════════════════════════════════
+  COMPARAÇÃO: Qual Usar?
+═════════════════════════════════════════════════════════════════════════════
+
+┌────────────────┬──────────┬──────────────┬───────────────┐
+│ Abordagem      │ Vel.     │ Confiável    │ Uso Recomendado
+├────────────────┼──────────┼──────────────┼───────────────┤
+│ Validado       │ ⚡⚡ 2x │ ✅ Muito     │ 🎯 PADRÃO
+│ Error Handling │ ⚡⚡ 2x │ ✅ Muito     │ ⚠️ Se crítico
+│ Sequencial     │ ⚡ 3x   │ ✅ Máximo    │ ❌ Fallback
+└────────────────┴──────────┴──────────────┴───────────────┘
+
+Recomendação: Use VALIDADO em 90% dos casos
+
+
+═════════════════════════════════════════════════════════════════════════════
+  CHECKLIST: Como Evitar o Erro
+═════════════════════════════════════════════════════════════════════════════
+
+Antes de usar Promise.all:
+
+  [ ] Todos os recursos existem?
+      └─ ✅ Use Glob para garantir
+
+  [ ] Todos os paths têm quotes? (Windows)
+      └─ ✅ "C:\Users\..." ao invés de C:\Users\...
+
+  [ ] Todos os paths são relativos? (Preferível)
+      └─ ✅ ./src ao invés de C:\...
+
+  [ ] Há tratamento de erro?
+      └─ ✅ .catch() ou try/catch
+
+  [ ] Há validação pré-paralelo?
+      └─ ✅ Glob/Grep/Read com limit antes
+
+
+═════════════════════════════════════════════════════════════════════════════
+  PADRÃO: Implementação Recomendada
+═════════════════════════════════════════════════════════════════════════════
+
+// SEMPRE FAÇA ISTO:
+
+// Step 1: Validar/Descobrir
+const files = await Glob("docs/stories/*.md")
+
+// Step 2: Executar em Paralelo (SEGURO)
+const contents = await Promise.all(
+  files.map(f => Read(f))
+)
+
+// Step 3: Processar
+const processed = contents
+  .filter(c => c.includes("Status:"))
+  .map(c => c.split("\n")[0])
+
+// Result: ✅ Rápido + Seguro + Limpo
+
+
+═════════════════════════════════════════════════════════════════════════════
+  IMPACTO: Se Não Resolver
+═════════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────┐
+│ Workflows Sequenciais (normal)               │
+│ ✅ SEM IMPACTO                               │
+│ └─ Continuam funcionando normalmente         │
+└──────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────┐
+│ Workflows com Paralelismo Simples            │
+│ ⚠️ IMPACTO MODERADO                          │
+│ └─ Cascata de erros confusas                 │
+│ └─ Difícil debugar qual foi o erro real      │
+│ └─ Pode precisar refazer sequencialmente     │
+└──────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────┐
+│ Workflows Complexos (8+ operações paralelas) │
+│ 🔴 IMPACTO ALTO                              │
+│ └─ 1 falha causa cascata em 7 outras         │
+│ └─ Bloqueia workflow inteiro                 │
+│ └─ Requer refazer tudo manualmente           │
+└──────────────────────────────────────────────┘
+
+Exemplo Real de Impacto:
+
+  Cenário: Ler 10 arquivos em paralelo, 1 não existe
+
+  ❌ SEM TRATAMENTO:
+     Read 1: ✅
+     Read 2: ✅
+     Read 3: ❌ (erro)
+     Read 4-10: ⚠️ SIBLING ERRORED (cascata)
+     └─ Vê 10 erros, precisa descobrir qual é o real
+
+  ✅ COM TRATAMENTO:
+     Read 1: ✅
+     Read 2: ✅
+     Read 3: ❌ Arquivo 3 não existe (claro)
+     Read 4-10: ✅ (continuam normalmente)
+     └─ Vê 1 erro, sabe exatamente qual é
+
+
+═════════════════════════════════════════════════════════════════════════════
+  STATUS: Ferramentas
+═════════════════════════════════════════════════════════════════════════════
+
+Todas as ferramentas estão ✅ DISPONÍVEIS e FUNCIONANDO:
+
+✅ Read    - Funciona 100%
+✅ Write   - Funciona 100%
+✅ Edit    - Funciona 100%
+✅ Bash    - Funciona com protocolo correto
+✅ Glob    - Funciona 100%
+✅ Grep    - Funciona 100%
+✅ Task    - Funciona 100%
+✅ Skill   - Funciona 100%
+
+O erro "Sibling Tool Call Errored" NÃO é problema de instalação
+É um padrão de comportamento do Promise.all quando algo falha
+
+
+═════════════════════════════════════════════════════════════════════════════
+  RESUMO FINAL
+═════════════════════════════════════════════════════════════════════════════
+
+✅ Ferramentas: Disponíveis e funcionam
+❌ Precisa instalar: NÃO
+❌ Problema de configuração: NÃO
+⚠️  Problema de padrão de uso: SIM
+
+Solução: Use validação pré-paralelo (Glob) antes de Promise.all
+
+Impacto se não resolver:
+  ├─ Workflows sequenciais: Nenhum
+  ├─ Workflows paralelos simples: Moderado (mensagens confusas)
+  └─ Workflows complexos: Alto (cascata de erros)
+
+Recomendação: Implementar validação pré-paralelo hoje
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+Análise Completa: 27 de fevereiro de 2026
+Status: ✅ Investigado, documentado e com soluções
+Próxima Ação: Implementar validação em workflows paralelos
+

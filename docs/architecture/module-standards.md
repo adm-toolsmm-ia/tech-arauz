@@ -113,12 +113,12 @@ Estrutura minima:
 
 ## 5. Gaps atuais identificados (fornecedores/modelos)
 
-Atualizacao apos hardening da Story 1.2:
+Atualização após Story 2.7 (alinhamento de auxiliares ao baseline):
 
-1. `modelos-ia` foi alinhado ao baseline com `FilterBar` controlado, filtros centralizados, CRUD basico de create/delete e feedback async padronizado.
-2. `lm-providers` foi alinhado com confirmacao de exclusao via `Dialog` (sem `confirm()` nativo) e quick filters de status/origem.
-3. Gap residual: `agent-types` ainda usa `confirm()` nativo para delete e deve seguir o mesmo padrao de dialog.
-4. Gap residual: modulos auxiliares ainda repetem parte do scaffold manual e podem evoluir para um layout base compartilhado.
+1. `modelos-ia` foi alinhado ao baseline com `FilterBar` controlado, filtros centralizados, CRUD básico de create/delete e feedback async padronizado.
+2. `lm-providers` foi alinhado com confirmação de exclusão via `Dialog` (sem `confirm()` nativo) e quick filters de status/origem.
+3. ✅ `agent-types` — gap resolvido na Story 2.7: substituído `confirm()` nativo por Dialog de confirmação padronizado; conteúdo decomposto em subcomponentes (`AgentTypeListItem`, `AgentTypeFormDialog`); arquivo reduzido de 771 para ~290 linhas.
+4. Gap residual: módulos auxiliares ainda repetem parte do scaffold manual e podem evoluir para um layout base compartilhado (próxima oportunidade de refactor).
 
 ## 6. Checklist de entrega para novos modulos (gate de workflow)
 

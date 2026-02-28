@@ -1,6 +1,6 @@
 # Story 2.6 - Extrair Domain Logic Completa
 
-Status: Ready
+Status: Done
 Epic: UX-EPIC-01
 Prioridade: Alta
 Sprint: 2
@@ -99,10 +99,10 @@ para eliminar duplicacoes, garantir consistencia de regras e permitir testes uni
 
 ## Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2026-02-27 | 1.0 | Story criada | Orion (aios-master) |
-| 2026-02-27 | 1.1 | PO validation: added Executor, Dev Notes, Change Log, fixed Story 4.1→2.11 ref | Pax (po) |
+| Date       | Version | Description                                                                    | Author              |
+| ---------- | ------- | ------------------------------------------------------------------------------ | ------------------- |
+| 2026-02-27 | 1.0     | Story criada                                                                   | Orion (aios-master) |
+| 2026-02-27 | 1.1     | PO validation: added Executor, Dev Notes, Change Log, fixed Story 4.1→2.11 ref | Pax (po)            |
 
 ## Dependencies
 

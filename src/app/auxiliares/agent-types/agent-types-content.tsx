@@ -335,7 +335,7 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
               : 'Tente ajustar ou limpar os filtros aplicados.'
           }
           actionLabel={agentTypes.length === 0 ? 'Criar Tipo' : undefined}
-          onAction={agentTypes.length === 0 ? () => setIsCreateDialogOpen(true) : undefined}
+          onAction={agentTypes.length === 0 ? () => setIsFormOpen(true) : undefined}
         />
       ) : viewMode === 'kanban' ? (
         <Card>

@@ -81,20 +81,17 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
   }, []);
 
   // Handle status change
-  const handleStatusChange = useCallback(
-    async (agentId: string, newStatus: string) => {
-      try {
-        await AgentSupabaseService.updateAgent(agentId, { status: newStatus as any });
-        setAgents((prev) =>
-          prev.map((a) => (a.id === agentId ? { ...a, status: newStatus as any } : a))
-        );
-        toast.success('✅ Status atualizado!');
-      } catch (error) {
-        toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-      }
-    },
-    []
-  );
+  const handleStatusChange = useCallback(async (agentId: string, newStatus: string) => {
+    try {
+      await AgentSupabaseService.updateAgent(agentId, { status: newStatus as any });
+      setAgents((prev) =>
+        prev.map((a) => (a.id === agentId ? { ...a, status: newStatus as any } : a)),
+      );
+      toast.success('✅ Status atualizado!');
+    } catch (error) {
+      toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+    }
+  }, []);
 
   return (
     <div className="space-y-6 p-6">
@@ -109,7 +106,7 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
 
       {/* KPIs */}
       {agents.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <KPICard
             icon={Bot}
             title="Total"
@@ -173,7 +170,7 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
             </SelectContent>
           </Select>
 
-          <div className="flex gap-2 ml-auto">
+          <div className="ml-auto flex gap-2">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="sm"
@@ -218,10 +215,10 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
       {/* Content */}
       {filtered.length === 0 ? (
         <Card>
-          <CardContent className="pt-12 pb-12">
+          <CardContent className="pb-12 pt-12">
             <div className="text-center">
-              <Bot className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhum agente encontrado</h3>
+              <Bot className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+              <h3 className="mb-2 text-lg font-medium">Nenhum agente encontrado</h3>
               <p className="text-sm text-muted-foreground">
                 {agents.length === 0
                   ? 'Crie seu primeiro agente para começar!'
@@ -235,7 +232,7 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
           {filtered.map((agent) => (
             <Card
               key={agent.id}
-              className="cursor-pointer hover:shadow-md transition-all"
+              className="cursor-pointer transition-all hover:shadow-md"
               onClick={() => setSelectedAgent(agent)}
             >
               <CardContent className="pt-4">
@@ -244,11 +241,9 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
                     <h3 className="font-semibold">{agent.name}</h3>
                     <p className="text-sm text-muted-foreground">{agent.description}</p>
                   </div>
-                  <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2">
                     <Badge>{agent.agentType}</Badge>
-                    <Badge
-                      variant={agent.status === 'published' ? 'default' : 'secondary'}
-                    >
+                    <Badge variant={agent.status === 'published' ? 'default' : 'secondary'}>
                       {agent.status}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
@@ -263,11 +258,8 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
       ) : viewMode === 'kanban' ? (
         <div className="grid auto-cols-max gap-4 overflow-x-auto pb-4">
           {['draft', 'published', 'deprecated'].map((status) => (
-            <div
-              key={status}
-              className="min-w-[300px] space-y-3 p-3 rounded-lg bg-muted/30"
-            >
-              <h3 className="font-semibold text-sm">
+            <div key={status} className="min-w-[300px] space-y-3 rounded-lg bg-muted/30 p-3">
+              <h3 className="text-sm font-semibold">
                 {status === 'draft' && '📝 Rascunho'}
                 {status === 'published' && '✅ Publicado'}
                 {status === 'deprecated' && '⛔ Deprecado'}
@@ -281,21 +273,19 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
                   .map((agent) => (
                     <Card
                       key={agent.id}
-                      className="cursor-pointer hover:shadow-md transition-all"
+                      className="cursor-pointer transition-all hover:shadow-md"
                       onClick={() => setSelectedAgent(agent)}
                     >
                       <CardContent className="pt-4">
-                        <h4 className="font-semibold text-sm mb-1">{agent.name}</h4>
-                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                        <h4 className="mb-1 text-sm font-semibold">{agent.name}</h4>
+                        <p className="mb-2 line-clamp-2 text-xs text-muted-foreground">
                           {agent.description}
                         </p>
-                        <div className="flex gap-1 flex-wrap">
+                        <div className="flex flex-wrap gap-1">
                           <Badge variant="outline" className="text-xs">
                             {agent.agentType}
                           </Badge>
-                          <Badge className="text-xs">
-                            {agent.modelId}
-                          </Badge>
+                          <Badge className="text-xs">{agent.modelId}</Badge>
                         </div>
                       </CardContent>
                     </Card>
@@ -306,11 +296,11 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
         </div>
       ) : (
         // Grid view (default)
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((agent) => (
             <Card
               key={agent.id}
-              className="cursor-pointer hover:shadow-md transition-all"
+              className="cursor-pointer transition-all hover:shadow-md"
               onClick={() => setSelectedAgent(agent)}
             >
               <CardContent className="pt-6">
@@ -319,9 +309,7 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
                     <h3 className="font-semibold">{agent.name}</h3>
                     <p className="text-xs text-muted-foreground">{agent.slug}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {agent.description}
-                  </p>
+                  <p className="line-clamp-2 text-sm text-muted-foreground">{agent.description}</p>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs">
                       <span>Modelo:</span>
@@ -335,12 +323,10 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
                     </div>
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <Badge
-                      variant={agent.status === 'published' ? 'default' : 'secondary'}
-                    >
+                    <Badge variant={agent.status === 'published' ? 'default' : 'secondary'}>
                       {agent.status}
                     </Badge>
-                    <span className="text-xs text-muted-foreground ml-auto">
+                    <span className="ml-auto text-xs text-muted-foreground">
                       {agent.executionCount} exec
                     </span>
                   </div>

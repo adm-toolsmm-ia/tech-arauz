@@ -34,4 +34,3 @@ describe('project health domain rules', () => {
     expect(result.maxDays).toBe(0);
   });
 });
-

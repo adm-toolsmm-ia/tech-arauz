@@ -9,7 +9,7 @@ export async function PATCH(request: NextRequest) {
     if (!Array.isArray(modelIds) || typeof isActive !== 'boolean') {
       return NextResponse.json(
         { error: 'Invalid request: modelIds must be an array and isActive must be a boolean' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,9 +26,6 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error in bulk update:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

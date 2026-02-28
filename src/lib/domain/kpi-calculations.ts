@@ -51,14 +51,9 @@ export function countCompleted(projects: DashboardProjectLike[]): number {
   return projects.filter((p) => normalizeStatus(p.status) === 'concluído').length;
 }
 
-export function countCompletedInMonth(
-  projects: DashboardProjectLike[],
-  yearMonth: string,
-): number {
+export function countCompletedInMonth(projects: DashboardProjectLike[], yearMonth: string): number {
   return projects.filter(
-    (p) =>
-      normalizeStatus(p.status) === 'concluído' &&
-      p.data_encerramento?.startsWith(yearMonth),
+    (p) => normalizeStatus(p.status) === 'concluído' && p.data_encerramento?.startsWith(yearMonth),
   ).length;
 }
 
@@ -82,10 +77,7 @@ export function computeTopAreas(
     .slice(0, topN);
 }
 
-export function computeCompletionRate(
-  total: number,
-  completed: number,
-): number {
+export function computeCompletionRate(total: number, completed: number): number {
   return total > 0 ? Math.round((completed / total) * 100) : 0;
 }
 
@@ -97,9 +89,7 @@ export function computeDashboardKpis(projects: DashboardProjectLike[]): Dashboar
 
   const totalProjects = projects.length;
   const coreActiveCount = projects.filter((p) => isConsideredActive(p.status)).length;
-  const activeProjects = projects.filter(
-    (p) => normalizeStatus(p.status) === 'em execução',
-  ).length;
+  const activeProjects = projects.filter((p) => normalizeStatus(p.status) === 'em execução').length;
   const completedProjects = countCompleted(projects);
 
   const inHomologationCount = projects.filter((p) => {

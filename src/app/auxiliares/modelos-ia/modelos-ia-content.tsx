@@ -153,7 +153,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
       resetForm();
       toast.success(result.message, { id: toastId });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erro ao criar modelo.', { id: toastId });
+      toast.error(error instanceof Error ? error.message : 'Erro ao criar modelo.', {
+        id: toastId,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -177,7 +179,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
       setModelToDelete(null);
       toast.success(result.message, { id: toastId });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erro ao excluir modelo.', { id: toastId });
+      toast.error(error instanceof Error ? error.message : 'Erro ao excluir modelo.', {
+        id: toastId,
+      });
     }
   }, [modelToDelete]);
 
@@ -229,20 +233,32 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
         setModels((prev) =>
           prev.map((item) =>
             item.id === modelId
-              ? { ...item, provider_id: newStatus, display_order: newDisplayOrder, lm_providers: provider }
+              ? {
+                  ...item,
+                  provider_id: newStatus,
+                  display_order: newDisplayOrder,
+                  lm_providers: provider,
+                }
               : item,
           ),
         );
 
         setSelectedModel((prev) =>
           prev?.id === modelId
-            ? { ...prev, provider_id: newStatus, display_order: newDisplayOrder, lm_providers: provider }
+            ? {
+                ...prev,
+                provider_id: newStatus,
+                display_order: newDisplayOrder,
+                lm_providers: provider,
+              }
             : prev,
         );
 
         toast.success('Modelo atualizado com sucesso.', { id: toastId });
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'Erro ao atualizar modelo.', { id: toastId });
+        toast.error(error instanceof Error ? error.message : 'Erro ao atualizar modelo.', {
+          id: toastId,
+        });
       }
     },
     [initialProviders, models],
@@ -281,7 +297,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
         { id: toastId },
       );
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erro ao atualizar modelos.', { id: toastId });
+      toast.error(error instanceof Error ? error.message : 'Erro ao atualizar modelos.', {
+        id: toastId,
+      });
     } finally {
       setIsBulkUpdating(false);
     }
@@ -308,14 +326,24 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
 
       {models.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <KPICard icon={Database} title="Total de Modelos" value={kpis.total} trend={{ value: '0', positive: false }} />
+          <KPICard
+            icon={Database}
+            title="Total de Modelos"
+            value={kpis.total}
+            trend={{ value: '0', positive: false }}
+          />
           <KPICard
             icon={Zap}
             title={selectedProviderFilters.length === 1 ? 'Modelos do Fornecedor' : 'Fornecedores'}
             value={selectedProviderFilters.length === 1 ? kpis.byProvider : kpis.uniqueProviders}
             trend={{ value: '0', positive: false }}
           />
-          <KPICard icon={Plus} title="Filtrados" value={filteredModels.length} trend={{ value: '0', positive: true }} />
+          <KPICard
+            icon={Plus}
+            title="Filtrados"
+            value={filteredModels.length}
+            trend={{ value: '0', positive: true }}
+          />
         </div>
       )}
 
@@ -451,7 +479,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                 {selectedModel.max_tokens != null && (
                   <div>
                     <dt className="text-muted-foreground">Max. Tokens:</dt>
-                    <dd className="font-medium">{selectedModel.max_tokens.toLocaleString('pt-BR')} tokens</dd>
+                    <dd className="font-medium">
+                      {selectedModel.max_tokens.toLocaleString('pt-BR')} tokens
+                    </dd>
                   </div>
                 )}
               </dl>
@@ -536,7 +566,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
               <Input
                 placeholder="Ex: gpt-4-turbo-preview"
                 value={formData.model_id}
-                onChange={(event) => setFormData((prev) => ({ ...prev, model_id: event.target.value }))}
+                onChange={(event) =>
+                  setFormData((prev) => ({ ...prev, model_id: event.target.value }))
+                }
               />
             </div>
 
@@ -545,7 +577,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
               <Input
                 placeholder="https://..."
                 value={formData.docs_url}
-                onChange={(event) => setFormData((prev) => ({ ...prev, docs_url: event.target.value }))}
+                onChange={(event) =>
+                  setFormData((prev) => ({ ...prev, docs_url: event.target.value }))
+                }
               />
             </div>
 
@@ -581,7 +615,8 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
           <DialogHeader>
             <DialogTitle>Confirmar exclusao</DialogTitle>
             <DialogDescription>
-              Deseja realmente excluir o modelo {modelToDelete?.name}? Esta acao nao pode ser desfeita.
+              Deseja realmente excluir o modelo {modelToDelete?.name}? Esta acao nao pode ser
+              desfeita.
             </DialogDescription>
           </DialogHeader>
 

@@ -19,7 +19,11 @@ interface CronogramaCockpitProps {
   onClose: () => void;
 }
 
-export function CronogramaCockpit({ selectedSchedule, allSchedules, onClose }: CronogramaCockpitProps) {
+export function CronogramaCockpit({
+  selectedSchedule,
+  allSchedules,
+  onClose,
+}: CronogramaCockpitProps) {
   return (
     <SplitView
       isOpen={!!selectedSchedule}
@@ -32,7 +36,7 @@ export function CronogramaCockpit({ selectedSchedule, allSchedules, onClose }: C
         schedule={selectedSchedule}
         onClose={onClose}
         project={selectedSchedule?.project || undefined}
-        projectSchedules={allSchedules.filter(s => s.project_id === selectedSchedule?.project_id)}
+        projectSchedules={allSchedules.filter((s) => s.project_id === selectedSchedule?.project_id)}
         projectDeliveries={[]}
         projectHistories={[]}
         projectApprovers={[]}
@@ -51,7 +55,12 @@ interface SelectedDayPanelProps {
   onActivityClick: (s: Schedule) => void;
 }
 
-export function SelectedDayPanel({ date, schedules, projectIds, onActivityClick }: SelectedDayPanelProps) {
+export function SelectedDayPanel({
+  date,
+  schedules,
+  projectIds,
+  onActivityClick,
+}: SelectedDayPanelProps) {
   if (schedules.length === 0) {
     return (
       <Card className="animate-in slide-in-from-top-2">

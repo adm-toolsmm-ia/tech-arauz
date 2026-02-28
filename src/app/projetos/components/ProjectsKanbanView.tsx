@@ -66,7 +66,8 @@ export function ProjectsKanbanView<T extends KanbanProject>({
     const existingPhases = Array.from(
       new Set(
         allProjects.map(
-          (p) => normalizePhaseSlug(p.fase_atual) || normalizePhaseSlug(p.status) || 'fila_projetos',
+          (p) =>
+            normalizePhaseSlug(p.fase_atual) || normalizePhaseSlug(p.status) || 'fila_projetos',
         ),
       ),
     );
@@ -92,7 +93,10 @@ export function ProjectsKanbanView<T extends KanbanProject>({
       let title = phaseLabels[phase as keyof typeof phaseLabels];
       if (!title && originalTitle) title = originalTitle;
       if (!title) {
-        title = phase.split('_').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        title = phase
+          .split('_')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
       }
       return { id: phase, title, color: phaseColors[phase] || 'blue' };
     });
@@ -118,13 +122,17 @@ export function ProjectsKanbanView<T extends KanbanProject>({
         toast.success(result.message);
       } else {
         onProjectsUpdate((prev) =>
-          prev.map((p) => (p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p)),
+          prev.map((p) =>
+            p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p,
+          ),
         );
         toast.error(result.message);
       }
     } catch {
       onProjectsUpdate((prev) =>
-        prev.map((p) => (p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p)),
+        prev.map((p) =>
+          p.id === projectId ? { ...p, fase_atual: oldFase, status: oldStatus } : p,
+        ),
       );
       toast.error('Erro inesperado ao atualizar fase.');
     }

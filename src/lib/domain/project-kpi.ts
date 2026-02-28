@@ -19,7 +19,11 @@ export interface ProjectForKpi {
   last_update?: string | null;
   priority?: string | null;
   end_date?: string | null;
-  schedules?: Array<{ data_fim?: string | null; data_prazo?: string | null; status: string | null }>;
+  schedules?: Array<{
+    data_fim?: string | null;
+    data_prazo?: string | null;
+    status: string | null;
+  }>;
 }
 
 export type ProjectKpiFilterName =
@@ -75,8 +79,13 @@ export function countHighPriority(projects: ProjectForKpi[]): number {
   return projects.filter((p) => isHighPriorityProject(p)).length;
 }
 
-export function countSpecialImportance(projects: ProjectForKpi[]): { active: number; completed: number } {
-  const active = projects.filter((p) => p.importancia_especial && isConsideredActive(p.status)).length;
+export function countSpecialImportance(projects: ProjectForKpi[]): {
+  active: number;
+  completed: number;
+} {
+  const active = projects.filter(
+    (p) => p.importancia_especial && isConsideredActive(p.status),
+  ).length;
   const completed = projects.filter(
     (p) => p.importancia_especial && (p.status || '').trim().toLowerCase() === 'concluído',
   ).length;

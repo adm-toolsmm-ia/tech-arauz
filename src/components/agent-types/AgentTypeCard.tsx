@@ -30,9 +30,9 @@ export function AgentTypeCard({
       role="button"
       tabIndex={0}
       className={cn(
-        'cursor-pointer relative flex flex-col rounded-lg border transition-colors',
-        'hover:bg-muted/50 p-4',
-        isSelected && 'border-primary bg-primary/5'
+        'relative flex cursor-pointer flex-col rounded-lg border transition-colors',
+        'p-4 hover:bg-muted/50',
+        isSelected && 'border-primary bg-primary/5',
       )}
       onClick={() => onSelect?.(agentType)}
       onKeyDown={(e) => {
@@ -44,7 +44,7 @@ export function AgentTypeCard({
     >
       {/* Barra lateral colorida */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
+        className="absolute bottom-0 left-0 top-0 w-1 rounded-l-lg"
         style={{ backgroundColor: barColor }}
       />
 
@@ -55,12 +55,12 @@ export function AgentTypeCard({
             <div className="flex items-center gap-2">
               <span className="text-2xl">{agentType.icon_emoji || '⚙️'}</span>
               <div className="flex-1">
-                <h3 className="font-semibold text-sm text-foreground">{agentType.name}</h3>
-                <p className="text-xs font-mono text-muted-foreground">{agentType.slug}</p>
+                <h3 className="text-sm font-semibold text-foreground">{agentType.name}</h3>
+                <p className="font-mono text-xs text-muted-foreground">{agentType.slug}</p>
               </div>
             </div>
             {agentType.description && (
-              <p className="text-xs text-muted-foreground line-clamp-2">{agentType.description}</p>
+              <p className="line-clamp-2 text-xs text-muted-foreground">{agentType.description}</p>
             )}
           </div>
         </div>
@@ -83,7 +83,7 @@ export function AgentTypeCard({
         {agentType.default_temperature !== null && agentType.default_temperature !== undefined && (
           <div className="space-y-1 border-t border-border/30 pt-2">
             <p className="text-[10px] text-muted-foreground">Temperatura Padrão:</p>
-            <p className="text-xs text-foreground font-mono">{agentType.default_temperature}</p>
+            <p className="font-mono text-xs text-foreground">{agentType.default_temperature}</p>
           </div>
         )}
 
@@ -92,7 +92,7 @@ export function AgentTypeCard({
           <div className="flex items-center gap-2">
             {agentType.is_system && (
               <Badge variant="outline" className="text-[10px]">
-                <Lock className="h-3 w-3 mr-1" />
+                <Lock className="mr-1 h-3 w-3" />
                 Sistema
               </Badge>
             )}

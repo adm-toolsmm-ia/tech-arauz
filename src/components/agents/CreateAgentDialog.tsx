@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -78,17 +84,22 @@ export function CreateAgentDialog({
   }, [open]);
 
   // Load models for a provider
-  const loadModelsForProvider = useCallback(async (providerId: string) => {
-    if (modelsByProvider[providerId]) return;
-    try {
-      const models = await LmModelsService.listModels(providerId);
-      // Sort models by display_order (ascending) with default value of 100
-      const sortedModels = models.sort((a, b) => (a.display_order ?? 100) - (b.display_order ?? 100));
-      setModelsByProvider((prev) => ({ ...prev, [providerId]: sortedModels }));
-    } catch {
-      toast.error('❌ Erro ao carregar modelos');
-    }
-  }, [modelsByProvider]);
+  const loadModelsForProvider = useCallback(
+    async (providerId: string) => {
+      if (modelsByProvider[providerId]) return;
+      try {
+        const models = await LmModelsService.listModels(providerId);
+        // Sort models by display_order (ascending) with default value of 100
+        const sortedModels = models.sort(
+          (a, b) => (a.display_order ?? 100) - (b.display_order ?? 100),
+        );
+        setModelsByProvider((prev) => ({ ...prev, [providerId]: sortedModels }));
+      } catch {
+        toast.error('❌ Erro ao carregar modelos');
+      }
+    },
+    [modelsByProvider],
+  );
 
   // Preload models for selected provider when dialog opens
   useEffect(() => {
@@ -184,7 +195,7 @@ export function CreateAgentDialog({
         Novo Agente
       </Button>
 
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>✨ Criar Novo Agente AI</DialogTitle>
           <DialogDescription>
@@ -208,7 +219,7 @@ export function CreateAgentDialog({
             </TabsList>
 
             {/* TAB 1: Basic Info */}
-            <TabsContent value="basic" className="space-y-4 mt-4">
+            <TabsContent value="basic" className="mt-4 space-y-4">
               <div>
                 <Label htmlFor="name">Nome do Agente *</Label>
                 <Input
@@ -219,7 +230,7 @@ export function CreateAgentDialog({
                   disabled={isLoading || externalLoading}
                   className={errors.name ? 'border-red-500' : ''}
                 />
-                {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+                {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
               </div>
 
               <div>
@@ -232,7 +243,7 @@ export function CreateAgentDialog({
                   disabled={isLoading || externalLoading}
                   className={errors.slug ? 'border-red-500' : ''}
                 />
-                {errors.slug && <p className="text-xs text-red-500 mt-1">{errors.slug}</p>}
+                {errors.slug && <p className="mt-1 text-xs text-red-500">{errors.slug}</p>}
               </div>
 
               <div>
@@ -241,7 +252,9 @@ export function CreateAgentDialog({
                   id="description"
                   placeholder="Descrição detalhada do que o agente faz..."
                   value={formData.description || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, description: e.target.value }))
+                  }
                   disabled={isLoading || externalLoading}
                   rows={3}
                 />
@@ -252,7 +265,10 @@ export function CreateAgentDialog({
                 <Select
                   value={formData.agent_type_id || 'no-type'}
                   onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, agent_type_id: value === 'no-type' ? undefined : value }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      agent_type_id: value === 'no-type' ? undefined : value,
+                    }))
                   }
                   disabled={isLoading || externalLoading}
                 >
@@ -272,7 +288,7 @@ export function CreateAgentDialog({
             </TabsContent>
 
             {/* TAB 2: LLM Configuration (provedores e modelos do banco) */}
-            <TabsContent value="llm" className="space-y-4 mt-4">
+            <TabsContent value="llm" className="mt-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="provider">Provedor *</Label>
@@ -311,9 +327,7 @@ export function CreateAgentDialog({
                   <Label htmlFor="model-id">Modelo *</Label>
                   <Select
                     value={formData.model_id}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, model_id: value }))
-                    }
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, model_id: value }))}
                     disabled={isLoading || externalLoading}
                   >
                     <SelectTrigger id="model-id">
@@ -324,7 +338,7 @@ export function CreateAgentDialog({
                         const provider = providers.find(
                           (p) => p.slug === (formData.model_provider || 'openai'),
                         );
-                        const models = provider ? modelsByProvider[provider.id] ?? [] : [];
+                        const models = provider ? (modelsByProvider[provider.id] ?? []) : [];
                         if (models.length === 0 && provider) {
                           void loadModelsForProvider(provider.id);
                         }
@@ -332,9 +346,7 @@ export function CreateAgentDialog({
                           <SelectItem key={m.id} value={m.model_id}>
                             <span className="flex items-center gap-2">
                               <span>{m.name}</span>
-                              {m.tier && (
-                                <span className="text-xs opacity-70">[{m.tier}]</span>
-                              )}
+                              {m.tier && <span className="text-xs opacity-70">[{m.tier}]</span>}
                             </span>
                           </SelectItem>
                         ));
@@ -397,7 +409,7 @@ export function CreateAgentDialog({
             </TabsContent>
 
             {/* TAB 3: Persona & Objective */}
-            <TabsContent value="persona" className="space-y-4 mt-4">
+            <TabsContent value="persona" className="mt-4 space-y-4">
               <div>
                 <Label htmlFor="persona">Persona</Label>
                 <Textarea
@@ -427,7 +439,7 @@ export function CreateAgentDialog({
           </Tabs>
 
           {/* Actions */}
-          <div className="flex gap-3 justify-end pt-4 border-t">
+          <div className="flex justify-end gap-3 border-t pt-4">
             <Button
               type="button"
               variant="outline"

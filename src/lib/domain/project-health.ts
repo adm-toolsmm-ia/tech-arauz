@@ -47,4 +47,3 @@ export function getOverdueData(
 
   return { isOverdue, maxDays };
 }
-

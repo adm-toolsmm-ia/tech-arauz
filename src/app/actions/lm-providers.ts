@@ -14,7 +14,10 @@ export interface LmProviderActionResult {
  * Server Action: Create new LM provider
  */
 export async function createLmProviderAction(
-  payload: Omit<LmProvider, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'>,
+  payload: Omit<
+    LmProvider,
+    'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'
+  >,
 ): Promise<LmProviderActionResult> {
   const supabase = await createClient();
 
@@ -55,7 +58,11 @@ export async function createLmProviderAction(
   }
 
   revalidatePath('/auxiliares/lm-providers');
-  return { success: true, message: `Provedor "${created.name}" criado!`, data: created as LmProvider };
+  return {
+    success: true,
+    message: `Provedor "${created.name}" criado!`,
+    data: created as LmProvider,
+  };
 }
 
 /**

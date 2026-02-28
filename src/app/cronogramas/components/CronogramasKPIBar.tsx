@@ -19,12 +19,19 @@ interface CronogramasKPIBarProps {
   onKpiClick: (filterName: KpiFilterName) => void;
 }
 
-export function CronogramasKPIBar({ schedules, activeKpiFilter, onKpiClick }: CronogramasKPIBarProps) {
+export function CronogramasKPIBar({
+  schedules,
+  activeKpiFilter,
+  onKpiClick,
+}: CronogramasKPIBarProps) {
   const pendingCount = React.useMemo(() => countPendingSchedules(schedules), [schedules]);
   const inExecutionCount = React.useMemo(() => countInExecutionSchedules(schedules), [schedules]);
   const overdueInfo = React.useMemo(() => getOverdueSchedulesInfo(schedules), [schedules]);
   const nearDeadlineCount = React.useMemo(() => countNearDeadlineSchedules(schedules), [schedules]);
-  const missingDeadlineCount = React.useMemo(() => countMissingDeadlineSchedules(schedules), [schedules]);
+  const missingDeadlineCount = React.useMemo(
+    () => countMissingDeadlineSchedules(schedules),
+    [schedules],
+  );
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -49,9 +56,7 @@ export function CronogramasKPIBar({ schedules, activeKpiFilter, onKpiClick }: Cr
         value={overdueInfo.count}
         icon={AlertTriangle}
         className={
-          overdueInfo.count > 0
-            ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500'
-            : ''
+          overdueInfo.count > 0 ? '[&_[class*=bg-primary]]:bg-red-500/10 [&_svg]:text-red-500' : ''
         }
         subtitle={
           overdueInfo.count > 0

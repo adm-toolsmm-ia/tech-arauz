@@ -74,7 +74,16 @@ interface Project {
     item?: string | null;
   }>;
   deliveries?: Array<{ id: string; description: string; deadline: string; completed: boolean }>;
-  histories?: Array<{ id: string; type: string; from: string; to: string; step_from: string; step_to: string; message: string; date: string }>;
+  histories?: Array<{
+    id: string;
+    type: string;
+    from: string;
+    to: string;
+    step_from: string;
+    step_to: string;
+    message: string;
+    date: string;
+  }>;
   approvers?: Array<{ id: string; type: string; responsible: string }>;
   budgets?: Array<{ id: string; value: number; supplier: string; date: string; currency: string }>;
 }
@@ -86,7 +95,10 @@ interface ProjectsContentProps {
 
 // ---------- Main Orchestrator ----------
 
-export function ProjectsContent({ projects: initialProjects, isLoading = false }: ProjectsContentProps) {
+export function ProjectsContent({
+  projects: initialProjects,
+  isLoading = false,
+}: ProjectsContentProps) {
   const [projects, setProjects] = React.useState<Project[]>(initialProjects);
   const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
   const [isSyncing, setIsSyncing] = React.useState(false);
@@ -94,8 +106,15 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
   const [viewMode, setViewMode] = React.useState<ViewMode>('kanban');
 
   const {
-    filters, search, viewMode: filterViewMode, filteredData,
-    updateFilter, setSearch, setViewMode: setFilterViewMode, resetAllFilters, registry,
+    filters,
+    search,
+    viewMode: filterViewMode,
+    filteredData,
+    updateFilter,
+    setSearch,
+    setViewMode: setFilterViewMode,
+    resetAllFilters,
+    registry,
   } = useProjetosFilters(projects);
 
   const activeViewMode = filterViewMode || viewMode;
@@ -104,16 +123,25 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
     setViewMode(mode as ViewMode);
   };
 
-  React.useEffect(() => { setProjects(initialProjects); }, [initialProjects]);
+  React.useEffect(() => {
+    setProjects(initialProjects);
+  }, [initialProjects]);
 
   const handleSync = async () => {
     setIsSyncing(true);
     toast.info('Iniciando sincronização com Espaider...');
     try {
       const result = await syncEspaiderAction();
-      if (result.success) { toast.success(result.message); } else { toast.error(result.message); }
-    } catch { toast.error('Erro inesperado na sincronização. Tente novamente.'); }
-    finally { setIsSyncing(false); }
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error('Erro inesperado na sincronização. Tente novamente.');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleKpiClick = (filterName: ProjectKpiFilterName) => {
@@ -139,7 +167,9 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
       />
 
       <div className="flex-1 space-y-6 p-6">
-        <p className="sr-only" role="status" aria-live="polite">{listAnnouncement}</p>
+        <p className="sr-only" role="status" aria-live="polite">
+          {listAnnouncement}
+        </p>
 
         {/* KPIs */}
         <ErrorBoundary label="KPIs Projetos">
@@ -158,7 +188,10 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
           viewMode={activeViewMode}
           isSyncing={isSyncing}
           onUpdateFilter={updateFilter}
-          onResetFilters={() => { resetAllFilters(); setSearch(''); }}
+          onResetFilters={() => {
+            resetAllFilters();
+            setSearch('');
+          }}
           onSearchChange={setSearch}
           onViewModeChange={handleViewModeChange}
           onSync={handleSync}
@@ -239,23 +272,45 @@ export function ProjectsContent({ projects: initialProjects, isLoading = false }
                 category: selectedProject.category || null,
               }}
               schedules={(selectedProject.schedules || []).map((s) => ({
-                id: s.id, atividade: s.atividade, responsavel: s.responsavel,
-                data_inicio: s.data_inicio, data_fim: s.data_fim, data_prazo: s.data_prazo,
-                status: s.status, fase_atividade: s.fase_atividade, atrasado: s.atrasado,
-                setor_responsavel: s.setor_responsavel, item: s.item,
+                id: s.id,
+                atividade: s.atividade,
+                responsavel: s.responsavel,
+                data_inicio: s.data_inicio,
+                data_fim: s.data_fim,
+                data_prazo: s.data_prazo,
+                status: s.status,
+                fase_atividade: s.fase_atividade,
+                atrasado: s.atrasado,
+                setor_responsavel: s.setor_responsavel,
+                item: s.item,
               }))}
               deliveries={(selectedProject.deliveries || []).map((d) => ({
-                id: d.id, description: d.description, deadline: d.deadline, completed: d.completed,
+                id: d.id,
+                description: d.description,
+                deadline: d.deadline,
+                completed: d.completed,
               }))}
               histories={(selectedProject.histories || []).map((h) => ({
-                id: h.id, type: h.type, from: h.from, to: h.to,
-                step_from: h.step_from, step_to: h.step_to, message: h.message, date: h.date,
+                id: h.id,
+                type: h.type,
+                from: h.from,
+                to: h.to,
+                step_from: h.step_from,
+                step_to: h.step_to,
+                message: h.message,
+                date: h.date,
               }))}
               approvers={(selectedProject.approvers || []).map((a) => ({
-                id: a.id, type: a.type, responsible: a.responsible,
+                id: a.id,
+                type: a.type,
+                responsible: a.responsible,
               }))}
               budgets={(selectedProject.budgets || []).map((b) => ({
-                id: b.id, value: b.value, supplier: b.supplier, date: b.date, currency: b.currency,
+                id: b.id,
+                value: b.value,
+                supplier: b.supplier,
+                date: b.date,
+                currency: b.currency,
               }))}
               onSync={handleSync}
               isSyncing={isSyncing}

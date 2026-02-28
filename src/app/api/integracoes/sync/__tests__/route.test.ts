@@ -84,4 +84,3 @@ describe('POST /api/integracoes/sync', () => {
     expect(executeSyncAll).not.toHaveBeenCalled();
   });
 });
-

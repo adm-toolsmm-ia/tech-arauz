@@ -104,4 +104,3 @@ describe('/api/agents proxy route', () => {
     expect(fetchMock.mock.calls[0][1].body).toBe(JSON.stringify(payload));
   });
 });
-

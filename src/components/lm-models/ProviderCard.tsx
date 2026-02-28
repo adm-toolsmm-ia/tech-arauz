@@ -30,32 +30,29 @@ export function ProviderCard({
     <div
       className={cn(
         'relative flex flex-col rounded-lg border transition-colors',
-        'hover:bg-muted/50 p-4',
-        'cursor-default'
+        'p-4 hover:bg-muted/50',
+        'cursor-default',
       )}
     >
       {/* Barra lateral colorida */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
+        className="absolute bottom-0 left-0 top-0 w-1 rounded-l-lg"
         style={{ backgroundColor: provider.color_hex || '#64748B' }}
       />
 
       <div className="flex-1 space-y-3 pl-1">
         {/* SEÇÃO 1: HEADER - Nome + emoji + status */}
         <div className="flex items-start justify-between gap-2">
-          <div className="space-y-0.5 flex-1">
+          <div className="flex-1 space-y-0.5">
             <div className="flex items-center gap-2">
               <span className="text-lg">{provider.icon_emoji || '🤖'}</span>
-              <h3 className="font-semibold text-sm text-foreground">{provider.name}</h3>
+              <h3 className="text-sm font-semibold text-foreground">{provider.name}</h3>
             </div>
-            <p className="text-xs font-mono text-muted-foreground">{provider.slug}</p>
+            <p className="font-mono text-xs text-muted-foreground">{provider.slug}</p>
           </div>
           <Badge
             variant="outline"
-            className={cn(
-              'whitespace-nowrap text-[10px] font-semibold border',
-              statusBadgeColor
-            )}
+            className={cn('whitespace-nowrap border text-[10px] font-semibold', statusBadgeColor)}
           >
             {provider.is_active ? '✅ Ativo' : '⭕ Inativo'}
           </Badge>
@@ -65,7 +62,7 @@ export function ProviderCard({
         {provider.api_endpoint && (
           <div className="space-y-1 border-t border-border/30 pt-2">
             <p className="text-[10px] text-muted-foreground">API Endpoint:</p>
-            <p className="text-xs font-mono text-foreground truncate">{provider.api_endpoint}</p>
+            <p className="truncate font-mono text-xs text-foreground">{provider.api_endpoint}</p>
           </div>
         )}
 
@@ -84,10 +81,7 @@ export function ProviderCard({
                 <li key={model.id} className="flex items-center justify-between text-xs">
                   <span className="truncate text-foreground">{model.name}</span>
                   {model.tier && (
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] ml-1 whitespace-nowrap"
-                    >
+                    <Badge variant="outline" className="ml-1 whitespace-nowrap text-[9px]">
                       {model.tier}
                     </Badge>
                   )}
@@ -99,7 +93,7 @@ export function ProviderCard({
 
         {/* SEÇÃO 5: FOOTER - Ações */}
         <div className="flex items-center justify-between border-t border-border/30 pt-2">
-          <Badge variant="outline" className="text-[10px] bg-blue-50 dark:bg-blue-900/20">
+          <Badge variant="outline" className="bg-blue-50 text-[10px] dark:bg-blue-900/20">
             🔌 Provider
           </Badge>
 

@@ -71,11 +71,7 @@ describe('FilterControl Component', () => {
   describe('Select Control', () => {
     it('renders select control with label and placeholder', () => {
       render(
-        <FilterControl
-          definition={mockSelectDefinition}
-          value={null}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockSelectDefinition} value={null} onChange={mockOnChange} />,
       );
 
       expect(screen.getByText('Status')).toBeInTheDocument();
@@ -83,11 +79,7 @@ describe('FilterControl Component', () => {
 
     it('renders select with proper structure', () => {
       const { container } = render(
-        <FilterControl
-          definition={mockSelectDefinition}
-          value={null}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockSelectDefinition} value={null} onChange={mockOnChange} />,
       );
 
       expect(container.querySelector('label')).toHaveTextContent('Status');
@@ -95,19 +87,11 @@ describe('FilterControl Component', () => {
 
     it('displays selected value when controlled', () => {
       const { rerender } = render(
-        <FilterControl
-          definition={mockSelectDefinition}
-          value={null}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockSelectDefinition} value={null} onChange={mockOnChange} />,
       );
 
       rerender(
-        <FilterControl
-          definition={mockSelectDefinition}
-          value="active"
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockSelectDefinition} value="active" onChange={mockOnChange} />,
       );
 
       expect(screen.getByText('Active')).toBeInTheDocument();
@@ -145,11 +129,7 @@ describe('FilterControl Component', () => {
   describe('Multi-Select Control', () => {
     it('renders multi-select with label', () => {
       render(
-        <FilterControl
-          definition={mockMultiSelectDefinition}
-          value={[]}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockMultiSelectDefinition} value={[]} onChange={mockOnChange} />,
       );
 
       expect(screen.getByText('Tags')).toBeInTheDocument();
@@ -169,11 +149,7 @@ describe('FilterControl Component', () => {
 
     it('shows empty state when no items selected', () => {
       render(
-        <FilterControl
-          definition={mockMultiSelectDefinition}
-          value={[]}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockMultiSelectDefinition} value={[]} onChange={mockOnChange} />,
       );
 
       expect(screen.getByText('Select Tags...')).toBeInTheDocument();
@@ -194,11 +170,7 @@ describe('FilterControl Component', () => {
 
     it('renders popover trigger button', () => {
       render(
-        <FilterControl
-          definition={mockMultiSelectDefinition}
-          value={[]}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockMultiSelectDefinition} value={[]} onChange={mockOnChange} />,
       );
 
       const triggerButton = screen.getByText('Select Tags...');
@@ -251,11 +223,7 @@ describe('FilterControl Component', () => {
   describe('Checkbox Control', () => {
     it('renders checkbox with label', () => {
       render(
-        <FilterControl
-          definition={mockCheckboxDefinition}
-          value={false}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockCheckboxDefinition} value={false} onChange={mockOnChange} />,
       );
 
       expect(screen.getByText('Published')).toBeInTheDocument();
@@ -265,11 +233,7 @@ describe('FilterControl Component', () => {
     it('toggles value when clicked', async () => {
       const user = userEvent.setup();
       render(
-        <FilterControl
-          definition={mockCheckboxDefinition}
-          value={false}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockCheckboxDefinition} value={false} onChange={mockOnChange} />,
       );
 
       const switchElement = screen.getByRole('switch');
@@ -280,22 +244,14 @@ describe('FilterControl Component', () => {
 
     it('displays checked state correctly', () => {
       const { rerender } = render(
-        <FilterControl
-          definition={mockCheckboxDefinition}
-          value={false}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockCheckboxDefinition} value={false} onChange={mockOnChange} />,
       );
 
       let switchElement = screen.getByRole('switch');
       expect(switchElement).not.toHaveAttribute('data-state', 'checked');
 
       rerender(
-        <FilterControl
-          definition={mockCheckboxDefinition}
-          value={true}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockCheckboxDefinition} value={true} onChange={mockOnChange} />,
       );
 
       switchElement = screen.getByRole('switch');
@@ -320,11 +276,7 @@ describe('FilterControl Component', () => {
   describe('Date Range Control', () => {
     it('renders two date inputs with label', () => {
       const { container } = render(
-        <FilterControl
-          definition={mockDateRangeDefinition}
-          value={{}}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockDateRangeDefinition} value={{}} onChange={mockOnChange} />,
       );
 
       expect(screen.getByText('Date Range')).toBeInTheDocument();
@@ -334,11 +286,7 @@ describe('FilterControl Component', () => {
 
     it('displays date label and structure', () => {
       const { container } = render(
-        <FilterControl
-          definition={mockDateRangeDefinition}
-          value={{}}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockDateRangeDefinition} value={{}} onChange={mockOnChange} />,
       );
 
       expect(screen.getByText('Date Range')).toBeInTheDocument();
@@ -355,18 +303,16 @@ describe('FilterControl Component', () => {
         />,
       );
 
-      const inputs = container.querySelectorAll('input[type="date"]') as NodeListOf<HTMLInputElement>;
+      const inputs = container.querySelectorAll(
+        'input[type="date"]',
+      ) as NodeListOf<HTMLInputElement>;
       expect(inputs[0].value).toBe('2026-02-27');
       expect(inputs[1].value).toBe('2026-03-27');
     });
 
     it('renders date inputs with aria labels', () => {
       render(
-        <FilterControl
-          definition={mockDateRangeDefinition}
-          value={{}}
-          onChange={mockOnChange}
-        />,
+        <FilterControl definition={mockDateRangeDefinition} value={{}} onChange={mockOnChange} />,
       );
 
       expect(screen.getByLabelText('Start date')).toBeInTheDocument();
@@ -383,7 +329,9 @@ describe('FilterControl Component', () => {
         />,
       );
 
-      const inputs = container.querySelectorAll('input[type="date"]') as NodeListOf<HTMLInputElement>;
+      const inputs = container.querySelectorAll(
+        'input[type="date"]',
+      ) as NodeListOf<HTMLInputElement>;
       expect(inputs[0]).toBeDisabled();
       expect(inputs[1]).toBeDisabled();
     });
@@ -391,39 +339,21 @@ describe('FilterControl Component', () => {
 
   describe('Slider Control', () => {
     it('renders slider with label', () => {
-      render(
-        <FilterControl
-          definition={mockSliderDefinition}
-          value={5}
-          onChange={mockOnChange}
-        />,
-      );
+      render(<FilterControl definition={mockSliderDefinition} value={5} onChange={mockOnChange} />);
 
       expect(screen.getByText('Priority')).toBeInTheDocument();
       expect(screen.getByRole('slider')).toBeInTheDocument();
     });
 
     it('displays current value', () => {
-      render(
-        <FilterControl
-          definition={mockSliderDefinition}
-          value={7}
-          onChange={mockOnChange}
-        />,
-      );
+      render(<FilterControl definition={mockSliderDefinition} value={7} onChange={mockOnChange} />);
 
       expect(screen.getByText('7')).toBeInTheDocument();
     });
 
     it('calls onChange when slider is moved', async () => {
       const user = userEvent.setup();
-      render(
-        <FilterControl
-          definition={mockSliderDefinition}
-          value={5}
-          onChange={mockOnChange}
-        />,
-      );
+      render(<FilterControl definition={mockSliderDefinition} value={5} onChange={mockOnChange} />);
 
       const slider = screen.getByRole('slider');
       fireEvent.change(slider, { target: { value: 8 } });
@@ -448,13 +378,7 @@ describe('FilterControl Component', () => {
 
   describe('Tags Control', () => {
     it('renders tags control with label', () => {
-      render(
-        <FilterControl
-          definition={mockTagsDefinition}
-          value={[]}
-          onChange={mockOnChange}
-        />,
-      );
+      render(<FilterControl definition={mockTagsDefinition} value={[]} onChange={mockOnChange} />);
 
       expect(screen.getByText('Custom Tags')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('Add tags...')).toBeInTheDocument();
@@ -498,13 +422,7 @@ describe('FilterControl Component', () => {
         ],
       };
 
-      render(
-        <FilterControl
-          definition={dynamicDef}
-          value={null}
-          onChange={mockOnChange}
-        />,
-      );
+      render(<FilterControl definition={dynamicDef} value={null} onChange={mockOnChange} />);
 
       expect(screen.getByText('Status')).toBeInTheDocument();
     });
@@ -512,18 +430,10 @@ describe('FilterControl Component', () => {
     it('handles static options array', () => {
       const staticDef: FilterDefinition = {
         ...mockSelectDefinition,
-        options: [
-          { value: 'static1', label: 'Static 1' },
-        ],
+        options: [{ value: 'static1', label: 'Static 1' }],
       };
 
-      render(
-        <FilterControl
-          definition={staticDef}
-          value={null}
-          onChange={mockOnChange}
-        />,
-      );
+      render(<FilterControl definition={staticDef} value={null} onChange={mockOnChange} />);
 
       expect(screen.getByText('Status')).toBeInTheDocument();
     });
@@ -536,13 +446,7 @@ describe('FilterControl Component', () => {
         sortOptions: true,
       };
 
-      render(
-        <FilterControl
-          definition={sortedDef}
-          value={null}
-          onChange={mockOnChange}
-        />,
-      );
+      render(<FilterControl definition={sortedDef} value={null} onChange={mockOnChange} />);
 
       expect(screen.getByText('Status')).toBeInTheDocument();
     });
@@ -555,13 +459,7 @@ describe('FilterControl Component', () => {
         searchable: true,
       };
 
-      render(
-        <FilterControl
-          definition={searchableDef}
-          value={[]}
-          onChange={mockOnChange}
-        />,
-      );
+      render(<FilterControl definition={searchableDef} value={[]} onChange={mockOnChange} />);
 
       expect(screen.getByText('Tags')).toBeInTheDocument();
     });
@@ -572,13 +470,7 @@ describe('FilterControl Component', () => {
         searchable: false,
       };
 
-      render(
-        <FilterControl
-          definition={unsearchableDef}
-          value={[]}
-          onChange={mockOnChange}
-        />,
-      );
+      render(<FilterControl definition={unsearchableDef} value={[]} onChange={mockOnChange} />);
 
       expect(screen.getByText('Tags')).toBeInTheDocument();
     });

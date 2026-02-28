@@ -1,13 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {
-  CalendarDays,
-  AlertTriangle,
-  Clock,
-  User,
-  FolderKanban,
-} from 'lucide-react';
+import { CalendarDays, AlertTriangle, Clock, User, FolderKanban } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

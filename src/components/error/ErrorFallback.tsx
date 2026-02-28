@@ -20,9 +20,7 @@ export function ErrorFallback({ error, onRetry, label }: ErrorFallbackProps) {
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold">
-              Algo deu errado{label ? ` em ${label}` : ''}
-            </h3>
+            <h3 className="text-lg font-semibold">Algo deu errado{label ? ` em ${label}` : ''}</h3>
             <p className="text-sm text-muted-foreground">
               Ocorreu um erro inesperado. Tente novamente ou volte para a pagina inicial.
             </p>

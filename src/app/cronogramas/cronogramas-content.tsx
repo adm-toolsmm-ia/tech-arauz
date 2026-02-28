@@ -106,7 +106,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           subtitle="Visualize todos os cronogramas de projetos"
         />
 
-        <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           {/* Filters */}
           <CronogramaFilters
             registry={registry}
@@ -121,7 +121,9 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             }}
             onSearchChange={setSearch}
             onViewModeChange={setViewMode}
-            onCalendarPeriodChange={(period) => setCalendarPeriod(period as 'day' | 'week' | 'month')}
+            onCalendarPeriodChange={(period) =>
+              setCalendarPeriod(period as 'day' | 'week' | 'month')
+            }
           />
 
           {/* Scrollable Content */}
@@ -155,14 +157,16 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           )}
 
           {/* Selected Day Activities */}
-          {selectedDay && viewMode === 'agenda' && (calendarPeriod === 'month' || calendarPeriod === 'week') && (
-            <SelectedDayPanel
-              date={selectedDay}
-              schedules={getSchedulesForDate(selectedDay)}
-              projectIds={projectIds}
-              onActivityClick={setSelectedSchedule}
-            />
-          )}
+          {selectedDay &&
+            viewMode === 'agenda' &&
+            (calendarPeriod === 'month' || calendarPeriod === 'week') && (
+              <SelectedDayPanel
+                date={selectedDay}
+                schedules={getSchedulesForDate(selectedDay)}
+                projectIds={projectIds}
+                onActivityClick={setSelectedSchedule}
+              />
+            )}
 
           {/* Activity List */}
           <ErrorBoundary label="Lista Cronogramas">

@@ -27,10 +27,26 @@ const oldDate = new Date(now);
 oldDate.setDate(oldDate.getDate() - 15);
 
 const projects: ProjectForKpi[] = [
-  makeProject({ id: '1', status: 'em execução', priority: 'urgente', updated_at: recentDate.toISOString() }),
-  makeProject({ id: '2', status: 'em execução', fase_atual: 'Homologação', updated_at: oldDate.toISOString() }),
+  makeProject({
+    id: '1',
+    status: 'em execução',
+    priority: 'urgente',
+    updated_at: recentDate.toISOString(),
+  }),
+  makeProject({
+    id: '2',
+    status: 'em execução',
+    fase_atual: 'Homologação',
+    updated_at: oldDate.toISOString(),
+  }),
   makeProject({ id: '3', status: 'concluído', importancia_especial: true }),
-  makeProject({ id: '4', status: 'em execução', importancia_especial: true, end_date: '2020-01-01', updated_at: recentDate.toISOString() }),
+  makeProject({
+    id: '4',
+    status: 'em execução',
+    importancia_especial: true,
+    end_date: '2020-01-01',
+    updated_at: recentDate.toISOString(),
+  }),
   makeProject({ id: '5', status: 'cancelado' }),
 ];
 

@@ -105,7 +105,11 @@ export function useProjetosFilters(projects: ProjetosData[]) {
       if (def.id === 'responsible') {
         return {
           ...def,
-          options: buildFilterOptions(projects, 'responsible', (value) => value || 'Sem responsavel'),
+          options: buildFilterOptions(
+            projects,
+            'responsible',
+            (value) => value || 'Sem responsavel',
+          ),
         };
       }
 

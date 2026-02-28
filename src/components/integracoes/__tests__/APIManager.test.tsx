@@ -60,4 +60,3 @@ describe('APIManager sync flow', () => {
     });
   });
 });
-

@@ -1,15 +1,29 @@
 import { describe, it, expect } from 'vitest';
-import {
-  computeAgentKpis,
-  filterAgents,
-  getUniqueAgentTypes,
-} from '../agent-rules';
+import { computeAgentKpis, filterAgents, getUniqueAgentTypes } from '../agent-rules';
 import type { AgentLike } from '../agent-rules';
 
 const agents: AgentLike[] = [
-  { name: 'Agent A', slug: 'agent-a', status: 'draft', agentType: 'assistant', description: 'First agent' },
-  { name: 'Agent B', slug: 'agent-b', status: 'published', agentType: 'assistant', description: 'Second agent' },
-  { name: 'Agent C', slug: 'agent-c', status: 'published', agentType: 'tool', description: 'Tool agent' },
+  {
+    name: 'Agent A',
+    slug: 'agent-a',
+    status: 'draft',
+    agentType: 'assistant',
+    description: 'First agent',
+  },
+  {
+    name: 'Agent B',
+    slug: 'agent-b',
+    status: 'published',
+    agentType: 'assistant',
+    description: 'Second agent',
+  },
+  {
+    name: 'Agent C',
+    slug: 'agent-c',
+    status: 'published',
+    agentType: 'tool',
+    description: 'Tool agent',
+  },
   { name: 'Agent D', slug: 'agent-d', status: 'deprecated', agentType: 'tool', description: null },
 ];
 

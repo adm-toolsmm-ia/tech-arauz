@@ -20,7 +20,12 @@ const projects: DashboardProjectLike[] = [
   makeProject({ status: 'em execução', area: 'TI', priority: 'urgente' }),
   makeProject({ status: 'em execução', area: 'TI', fase_atual: 'Homologação' }),
   makeProject({ status: 'concluído', area: 'RH', data_encerramento: '2026-02-15' }),
-  makeProject({ status: 'em execução', importancia_especial: true, end_date: '2020-01-01', area: 'Jurídico' }),
+  makeProject({
+    status: 'em execução',
+    importancia_especial: true,
+    end_date: '2020-01-01',
+    area: 'Jurídico',
+  }),
   makeProject({ status: 'cancelado', area: 'TI' }),
   makeProject({ status: 'concluído', importancia_especial: true, data_encerramento: '2026-01-10' }),
 ];

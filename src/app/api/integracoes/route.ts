@@ -293,4 +293,3 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
   }
 }
-

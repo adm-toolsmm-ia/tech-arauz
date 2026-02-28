@@ -145,9 +145,10 @@ export function ModelsListView({
     <div className="w-full space-y-4">
       {/* Acoes em massa */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-lg">
+        <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3">
           <span className="text-xs font-medium text-muted-foreground">
-            {selectedIds.size} modelo{selectedIds.size !== 1 ? 's' : ''} selecionado{selectedIds.size !== 1 ? 's' : ''}
+            {selectedIds.size} modelo{selectedIds.size !== 1 ? 's' : ''} selecionado
+            {selectedIds.size !== 1 ? 's' : ''}
           </span>
           <div className="flex-1" />
           <Button
@@ -161,7 +162,7 @@ export function ModelsListView({
               }
             }}
           >
-            <Power className="h-3.5 w-3.5 mr-1" />
+            <Power className="mr-1 h-3.5 w-3.5" />
             Ativar
           </Button>
           <Button
@@ -175,7 +176,7 @@ export function ModelsListView({
               }
             }}
           >
-            <Power className="h-3.5 w-3.5 mr-1" />
+            <Power className="mr-1 h-3.5 w-3.5" />
             Desativar
           </Button>
         </div>
@@ -189,7 +190,9 @@ export function ModelsListView({
               <tr>
                 <th className="w-8 px-3 py-2 text-left">
                   <Checkbox
-                    checked={selectedIds.size === filteredModels.length && filteredModels.length > 0}
+                    checked={
+                      selectedIds.size === filteredModels.length && filteredModels.length > 0
+                    }
                     onCheckedChange={toggleSelectAll}
                     aria-label="Selecionar tudo"
                   />
@@ -235,16 +238,20 @@ export function ModelsListView({
                       onCheckedChange={() => toggleSelect(model.id)}
                     />
                   </td>
-                  <td className="cursor-pointer px-3 py-2 font-medium text-foreground/90 transition-colors hover:text-primary truncate">
+                  <td className="cursor-pointer truncate px-3 py-2 font-medium text-foreground/90 transition-colors hover:text-primary">
                     <div>
                       <p className="font-semibold">{model.name}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground">{model.model_id}</p>
+                      <p className="font-mono text-[10px] text-muted-foreground">
+                        {model.model_id}
+                      </p>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-foreground/80">
                     <div className="flex items-center gap-2">
                       <span>{getProviderEmoji(model.provider_id, providers)}</span>
-                      <span className="text-xs">{getProviderName(model.provider_id, providers)}</span>
+                      <span className="text-xs">
+                        {getProviderName(model.provider_id, providers)}
+                      </span>
                     </div>
                   </td>
                   <td className="px-3 py-2">
@@ -252,7 +259,7 @@ export function ModelsListView({
                       <Badge
                         variant="outline"
                         className={cn(
-                          'text-[10px] font-semibold border-0',
+                          'border-0 text-[10px] font-semibold',
                           TIER_COLORS[model.tier],
                         )}
                       >
@@ -270,7 +277,7 @@ export function ModelsListView({
                     <Badge
                       variant="outline"
                       className={cn(
-                        'text-[10px] font-semibold border-0',
+                        'border-0 text-[10px] font-semibold',
                         STATUS_COLORS[model.is_active ? 'active' : 'inactive'],
                       )}
                     >
@@ -293,16 +300,20 @@ export function ModelsListView({
             onClick={() => onSelectModel?.(model.id)}
           >
             <CardContent className="p-3">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div role="presentation" className="flex-1 min-w-0" onClick={(e) => e.stopPropagation()}>
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div
+                  role="presentation"
+                  className="min-w-0 flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Checkbox
                     checked={selectedIds.has(model.id)}
                     onCheckedChange={() => toggleSelect(model.id)}
                   />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-foreground truncate">{model.name}</p>
-                  <p className="text-[10px] font-mono text-muted-foreground truncate">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">{model.name}</p>
+                  <p className="truncate font-mono text-[10px] text-muted-foreground">
                     {model.model_id}
                   </p>
                 </div>
@@ -316,14 +327,11 @@ export function ModelsListView({
                   </span>
                 </div>
 
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex flex-wrap gap-2">
                   {model.tier && (
                     <Badge
                       variant="outline"
-                      className={cn(
-                        'text-[10px] font-semibold border-0',
-                        TIER_COLORS[model.tier],
-                      )}
+                      className={cn('border-0 text-[10px] font-semibold', TIER_COLORS[model.tier])}
                     >
                       {model.tier.charAt(0).toUpperCase() + model.tier.slice(1)}
                     </Badge>
@@ -331,7 +339,7 @@ export function ModelsListView({
                   <Badge
                     variant="outline"
                     className={cn(
-                      'text-[10px] font-semibold border-0',
+                      'border-0 text-[10px] font-semibold',
                       STATUS_COLORS[model.is_active ? 'active' : 'inactive'],
                     )}
                   >
@@ -359,7 +367,7 @@ export function ModelsListView({
       {filteredModels.length === 0 && models.length > 0 && (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Nenhum modelo encontrado com os filtros aplicados
             </p>
           </CardContent>
@@ -368,5 +376,3 @@ export function ModelsListView({
     </div>
   );
 }
-
-

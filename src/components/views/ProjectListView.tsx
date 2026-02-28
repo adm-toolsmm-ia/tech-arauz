@@ -225,8 +225,8 @@ export function ProjectListView({
                           'px-3 py-2 text-xs font-medium',
                           isProjectOverdue && 'text-red-600 dark:text-red-400',
                           !isProjectOverdue &&
-                          isDeadlineNear &&
-                          'text-amber-600 dark:text-amber-400',
+                            isDeadlineNear &&
+                            'text-amber-600 dark:text-amber-400',
                         )}
                       >
                         {formatDateBR(project.end_date)}

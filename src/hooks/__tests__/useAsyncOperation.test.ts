@@ -40,9 +40,7 @@ describe('useAsyncOperation', () => {
   });
 
   it('transitions to loading then error', async () => {
-    const { result } = renderHook(() =>
-      useAsyncOperation({ errorToast: false }),
-    );
+    const { result } = renderHook(() => useAsyncOperation({ errorToast: false }));
 
     await act(async () => {
       await result.current.execute(async () => {
@@ -69,9 +67,7 @@ describe('useAsyncOperation', () => {
 
   it('calls onError callback', async () => {
     const onError = vi.fn();
-    const { result } = renderHook(() =>
-      useAsyncOperation({ onError, errorToast: false }),
-    );
+    const { result } = renderHook(() => useAsyncOperation({ onError, errorToast: false }));
 
     await act(async () => {
       await result.current.execute(async () => {
@@ -83,9 +79,7 @@ describe('useAsyncOperation', () => {
   });
 
   it('shows success toast when configured', async () => {
-    const { result } = renderHook(() =>
-      useAsyncOperation({ successToast: 'Operacao concluida' }),
-    );
+    const { result } = renderHook(() => useAsyncOperation({ successToast: 'Operacao concluida' }));
 
     await act(async () => {
       await result.current.execute(async () => 'ok');

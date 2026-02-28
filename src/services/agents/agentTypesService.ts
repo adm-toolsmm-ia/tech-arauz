@@ -30,11 +30,7 @@ export class AgentTypesService {
    * Get single agent type by ID
    */
   static async getAgentType(id: string): Promise<AgentType> {
-    const { data, error } = await supabase
-      .from('agent_types')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = await supabase.from('agent_types').select('*').eq('id', id).single();
 
     if (error) {
       throw new Error(`Failed to fetch agent type: ${error.message}`);
@@ -46,7 +42,9 @@ export class AgentTypesService {
   /**
    * Create new agent type (admin only)
    */
-  static async createAgentType(data: Omit<AgentType, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'>): Promise<AgentType> {
+  static async createAgentType(
+    data: Omit<AgentType, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'>,
+  ): Promise<AgentType> {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -79,7 +77,7 @@ export class AgentTypesService {
    */
   static async updateAgentType(
     id: string,
-    updates: Partial<Omit<AgentType, 'id' | 'tenant_id' | 'created_at' | 'created_by'>>
+    updates: Partial<Omit<AgentType, 'id' | 'tenant_id' | 'created_at' | 'created_by'>>,
   ): Promise<AgentType> {
     const {
       data: { user },

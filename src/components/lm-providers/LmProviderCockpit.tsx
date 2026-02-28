@@ -126,13 +126,13 @@ export function LmProviderCockpit({ provider, models, onModelCreated }: LmProvid
             <InfoField label="Descrição" value={provider.description} />
             <InfoField label="Endpoint da API" value={provider.api_endpoint} />
             {provider.docs_url && (
-              <div className="sm:col-span-2 space-y-1">
+              <div className="space-y-1 sm:col-span-2">
                 <p className="text-xs text-muted-foreground">Documentação</p>
                 <a
                   href={provider.docs_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-primary hover:underline inline-flex items-center gap-1"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
                 >
                   {provider.docs_url}
                   <ExternalLink className="size-3" />
@@ -169,22 +169,18 @@ export function LmProviderCockpit({ provider, models, onModelCreated }: LmProvid
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{model.name}</p>
                         {model.tier && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs font-semibold"
-                          >
+                          <Badge variant="outline" className="text-xs font-semibold">
                             {model.tier === 'entry' && '🚀'}
                             {model.tier === 'balanced' && '⚡'}
                             {model.tier === 'pro' && '💎'}
-                            {model.tier === 'flagship' && '👑'}
-                            {' '}
+                            {model.tier === 'flagship' && '👑'}{' '}
                             {model.tier.charAt(0).toUpperCase() + model.tier.slice(1)}
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs font-mono text-muted-foreground">{model.model_id}</p>
+                      <p className="font-mono text-xs text-muted-foreground">{model.model_id}</p>
                       {model.context_window != null && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           Contexto: {(model.context_window / 1000).toFixed(0)}K tokens
                         </p>
                       )}
@@ -264,15 +260,17 @@ export function LmProviderCockpit({ provider, models, onModelCreated }: LmProvid
                     id="model-docs-url"
                     placeholder="Ex: https://platform.openai.com/docs/models/gpt-4o-mini"
                     value={modelForm.docs_url}
-                    onChange={(e) =>
-                      setModelForm((p) => ({ ...p, docs_url: e.target.value }))
-                    }
+                    onChange={(e) => setModelForm((p) => ({ ...p, docs_url: e.target.value }))}
                     disabled={isLoading}
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCreateModelOpen(false)} disabled={isLoading}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCreateModelOpen(false)}
+                  disabled={isLoading}
+                >
                   Cancelar
                 </Button>
                 <Button onClick={handleCreateModel} disabled={isLoading}>

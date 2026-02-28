@@ -107,7 +107,11 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'responsavel') {
         return {
           ...def,
-          options: buildFilterOptions(activeSchedules, 'responsavel', (v) => v || 'Sem Responsável'),
+          options: buildFilterOptions(
+            activeSchedules,
+            'responsavel',
+            (v) => v || 'Sem Responsável',
+          ),
         };
       }
 
@@ -115,7 +119,11 @@ export function useCronogramasFilters(schedules: CronogramaData[]) {
       if (def.id === 'setor_responsavel') {
         return {
           ...def,
-          options: buildFilterOptions(activeSchedules, 'setor_responsavel', (v) => v || 'Sem Setor'),
+          options: buildFilterOptions(
+            activeSchedules,
+            'setor_responsavel',
+            (v) => v || 'Sem Setor',
+          ),
         };
       }
 

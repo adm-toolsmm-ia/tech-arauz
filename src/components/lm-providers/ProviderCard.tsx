@@ -26,9 +26,9 @@ export function ProviderCard({
       role="button"
       tabIndex={0}
       className={cn(
-        'cursor-pointer relative flex flex-col rounded-lg border transition-colors',
-        'hover:bg-muted/50 p-4',
-        isSelected && 'border-primary bg-primary/5'
+        'relative flex cursor-pointer flex-col rounded-lg border transition-colors',
+        'p-4 hover:bg-muted/50',
+        isSelected && 'border-primary bg-primary/5',
       )}
       onClick={() => onSelect?.(provider)}
       onKeyDown={(e) => {
@@ -40,7 +40,7 @@ export function ProviderCard({
     >
       {/* Barra lateral colorida */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
+        className="absolute bottom-0 left-0 top-0 w-1 rounded-l-lg"
         style={{ backgroundColor: barColor }}
       />
 
@@ -51,12 +51,12 @@ export function ProviderCard({
             <div className="flex items-center gap-2">
               <span className="text-2xl">{provider.icon_emoji || '🤖'}</span>
               <div className="flex-1">
-                <h3 className="font-semibold text-sm text-foreground">{provider.name}</h3>
-                <p className="text-xs font-mono text-muted-foreground">{provider.slug}</p>
+                <h3 className="text-sm font-semibold text-foreground">{provider.name}</h3>
+                <p className="font-mono text-xs text-muted-foreground">{provider.slug}</p>
               </div>
             </div>
             {provider.description && (
-              <p className="text-xs text-muted-foreground line-clamp-2">{provider.description}</p>
+              <p className="line-clamp-2 text-xs text-muted-foreground">{provider.description}</p>
             )}
           </div>
         </div>
@@ -66,7 +66,7 @@ export function ProviderCard({
           <div className="space-y-1 border-t border-border/30 pt-2">
             <p className="text-[10px] text-muted-foreground">Endpoint da API:</p>
             <div className="flex items-center gap-2">
-              <p className="text-xs font-mono text-foreground/70 line-clamp-1">
+              <p className="line-clamp-1 font-mono text-xs text-foreground/70">
                 {provider.api_endpoint}
               </p>
               {provider.docs_url && (
@@ -89,7 +89,7 @@ export function ProviderCard({
           <div className="flex items-center gap-2">
             {provider.is_system && (
               <Badge variant="outline" className="text-[10px]">
-                <Lock className="h-3 w-3 mr-1" />
+                <Lock className="mr-1 h-3 w-3" />
                 Sistema
               </Badge>
             )}

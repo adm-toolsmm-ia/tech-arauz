@@ -8,17 +8,17 @@ import { useEffect } from 'react';
  * NÃO incluído em builds de produção.
  */
 export function AxeProvider({ children }: { children: React.ReactNode }) {
-    useEffect(() => {
-        if (process.env.NODE_ENV !== 'production') {
-            import('@axe-core/react').then(({ default: axe }) => {
-                import('react').then(({ default: React }) => {
-                    import('react-dom').then(({ default: ReactDOM }) => {
-                        void axe(React, ReactDOM, 1000);
-                    });
-                });
-            });
-        }
-    }, []);
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      import('@axe-core/react').then(({ default: axe }) => {
+        import('react').then(({ default: React }) => {
+          import('react-dom').then(({ default: ReactDOM }) => {
+            void axe(React, ReactDOM, 1000);
+          });
+        });
+      });
+    }
+  }, []);
 
-    return <>{children}</>;
+  return <>{children}</>;
 }

@@ -68,8 +68,17 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
     [agentTypes],
   );
 
-  const { filters, search, viewMode, setViewMode, filteredData, setSearch, updateFilter, resetAllFilters, registry } =
-    useAgentTypesFilters(agentTypes);
+  const {
+    filters,
+    search,
+    viewMode,
+    setViewMode,
+    filteredData,
+    setSearch,
+    updateFilter,
+    resetAllFilters,
+    registry,
+  } = useAgentTypesFilters(agentTypes);
 
   const loadModelsForProvider = useCallback(
     async (providerId: string) => {
@@ -112,7 +121,10 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
   }, []);
 
   const handleCreate = useCallback(async () => {
-    if (!formData.name.trim()) { toast.error('❌ Nome é obrigatório'); return; }
+    if (!formData.name.trim()) {
+      toast.error('❌ Nome é obrigatório');
+      return;
+    }
     setIsLoading(true);
     try {
       const result = await createAgentTypeAction({ ...formData, is_system: false });
@@ -133,7 +145,10 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
 
   const handleUpdate = useCallback(async () => {
     if (!editingType) return;
-    if (!formData.name.trim()) { toast.error('❌ Nome é obrigatório'); return; }
+    if (!formData.name.trim()) {
+      toast.error('❌ Nome é obrigatório');
+      return;
+    }
     setIsLoading(true);
     try {
       const result = await updateAgentTypeAction(editingType.id, {
@@ -180,7 +195,10 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
   }, []);
 
   const handleDelete = useCallback((type: AgentType) => {
-    if (type.is_system) { toast.error('❌ Tipos de sistema não podem ser deletados'); return; }
+    if (type.is_system) {
+      toast.error('❌ Tipos de sistema não podem ser deletados');
+      return;
+    }
     setAgentTypeToDelete(type);
   }, []);
 
@@ -205,7 +223,9 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
     try {
       const result = await updateAgentTypeAction(type.id, { is_active: !type.is_active });
       if (result.success) {
-        setAgentTypes((prev) => prev.map((t) => (t.id === type.id ? { ...t, is_active: !t.is_active } : t)));
+        setAgentTypes((prev) =>
+          prev.map((t) => (t.id === type.id ? { ...t, is_active: !t.is_active } : t)),
+        );
         toast.success(`✅ ${result.message}`);
       } else {
         toast.error(`❌ ${result.message}`);
@@ -225,7 +245,10 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
         />
         <Button
           className="gap-2"
-          onClick={() => { resetForm(); setIsFormOpen(true); }}
+          onClick={() => {
+            resetForm();
+            setIsFormOpen(true);
+          }}
         >
           <Plus className="h-4 w-4" />
           Novo Tipo
@@ -234,17 +257,32 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
 
       {/* KPIs */}
       {agentTypes.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <KPICard icon={Plus} title="Total" value={kpis.total} trend={{ value: '0', positive: false }} />
-          <KPICard icon={Plus} title="Ativos" value={kpis.active} trend={{ value: '0', positive: true }} />
-          <KPICard icon={Lock} title="Sistema" value={kpis.system} trend={{ value: '0', positive: false }} />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <KPICard
+            icon={Plus}
+            title="Total"
+            value={kpis.total}
+            trend={{ value: '0', positive: false }}
+          />
+          <KPICard
+            icon={Plus}
+            title="Ativos"
+            value={kpis.active}
+            trend={{ value: '0', positive: true }}
+          />
+          <KPICard
+            icon={Lock}
+            title="Sistema"
+            value={kpis.system}
+            trend={{ value: '0', positive: false }}
+          />
         </div>
       )}
 
       {/* Info Card */}
       <Card className="border-blue-200 bg-blue-50">
         <CardHeader>
-          <div className="text-sm font-semibold flex items-center gap-2">
+          <div className="flex items-center gap-2 text-sm font-semibold">
             <AlertCircle className="h-4 w-4" />
             Sobre Tipos de Agentes
           </div>
@@ -276,7 +314,10 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
         currentSearch={search}
         currentViewMode={viewMode}
         onUpdateFilter={updateFilter}
-        onResetFilters={() => { resetAllFilters(); setSearch(''); }}
+        onResetFilters={() => {
+          resetAllFilters();
+          setSearch('');
+        }}
       />
 
       {/* Results */}
@@ -285,7 +326,9 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
           <CardContent className="pb-12 pt-12">
             <div className="text-center">
               <p className="mb-4 text-muted-foreground">
-                {agentTypes.length === 0 ? 'Nenhum tipo criado ainda' : 'Nenhum resultado encontrado'}
+                {agentTypes.length === 0
+                  ? 'Nenhum tipo criado ainda'
+                  : 'Nenhum resultado encontrado'}
               </p>
             </div>
           </CardContent>
@@ -293,7 +336,9 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
       ) : viewMode === 'kanban' ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{filteredData.length} de {agentTypes.length} tipos</CardTitle>
+            <CardTitle className="text-base">
+              {filteredData.length} de {agentTypes.length} tipos
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <KanbanBoard
@@ -328,7 +373,7 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
                 <div className="space-y-1">
                   <p className="font-medium">{item.title}</p>
                   {item.subtitle && (
-                    <p className="text-xs font-mono text-muted-foreground">{item.subtitle}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{item.subtitle}</p>
                   )}
                 </div>
               )}
@@ -338,7 +383,9 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{filteredData.length} de {agentTypes.length} tipos</CardTitle>
+            <CardTitle className="text-base">
+              {filteredData.length} de {agentTypes.length} tipos
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -368,7 +415,9 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
         {selectedAgentType && (
           <AgentTypeCockpit
             agentType={selectedAgentType}
-            onEdit={!selectedAgentType.is_system ? () => handleOpenEdit(selectedAgentType) : undefined}
+            onEdit={
+              !selectedAgentType.is_system ? () => handleOpenEdit(selectedAgentType) : undefined
+            }
           />
         )}
       </SplitView>
@@ -377,7 +426,10 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
       <AgentTypeFormDialog
         open={isFormOpen}
         onOpenChange={(open) => {
-          if (!open) { resetForm(); setEditingType(null); }
+          if (!open) {
+            resetForm();
+            setEditingType(null);
+          }
           setIsFormOpen(open);
         }}
         editingType={editingType}
@@ -392,12 +444,16 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
       />
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!agentTypeToDelete} onOpenChange={(open) => !open && setAgentTypeToDelete(null)}>
+      <Dialog
+        open={!!agentTypeToDelete}
+        onOpenChange={(open) => !open && setAgentTypeToDelete(null)}
+      >
         <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>Confirmar exclusão</DialogTitle>
             <DialogDescription>
-              Deseja excluir o tipo &quot;{agentTypeToDelete?.name}&quot;? Esta ação não pode ser desfeita.
+              Deseja excluir o tipo &quot;{agentTypeToDelete?.name}&quot;? Esta ação não pode ser
+              desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

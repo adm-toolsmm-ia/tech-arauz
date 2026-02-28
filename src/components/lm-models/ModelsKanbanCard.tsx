@@ -11,10 +11,26 @@ interface ModelsKanbanCardProps {
 
 // Tier configurations (lightweight version)
 const TIER_CONFIG: Record<string, { emoji: string; color: string; label: string }> = {
-  entry: { emoji: '🚀', color: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300', label: 'Entry' },
-  balanced: { emoji: '⚡', color: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300', label: 'Balanced' },
-  pro: { emoji: '💎', color: 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300', label: 'Pro' },
-  flagship: { emoji: '👑', color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300', label: 'Flagship' },
+  entry: {
+    emoji: '🚀',
+    color: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300',
+    label: 'Entry',
+  },
+  balanced: {
+    emoji: '⚡',
+    color: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300',
+    label: 'Balanced',
+  },
+  pro: {
+    emoji: '💎',
+    color: 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300',
+    label: 'Pro',
+  },
+  flagship: {
+    emoji: '👑',
+    color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300',
+    label: 'Flagship',
+  },
 };
 
 function formatTokens(tokens: number | undefined): string {
@@ -32,19 +48,22 @@ export function ModelsKanbanCard({ model, provider }: ModelsKanbanCardProps) {
     <div className="relative flex flex-col space-y-2">
       {/* Barra lateral colorida */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l"
+        className="absolute bottom-0 left-0 top-0 w-1 rounded-l"
         style={{ backgroundColor: barColor }}
       />
 
       <div className="space-y-1.5 pl-2">
         {/* HEADER: Nome + Tier Badge */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-semibold text-foreground line-clamp-2">{model.name}</h4>
-            <p className="text-xs font-mono text-muted-foreground line-clamp-1">{model.model_id}</p>
+          <div className="min-w-0 flex-1">
+            <h4 className="line-clamp-2 text-sm font-semibold text-foreground">{model.name}</h4>
+            <p className="line-clamp-1 font-mono text-xs text-muted-foreground">{model.model_id}</p>
           </div>
           {tierConfig && (
-            <Badge variant="outline" className={cn('text-[10px] font-semibold whitespace-nowrap', tierConfig.color)}>
+            <Badge
+              variant="outline"
+              className={cn('whitespace-nowrap text-[10px] font-semibold', tierConfig.color)}
+            >
               {tierConfig.emoji}
             </Badge>
           )}
@@ -55,22 +74,22 @@ export function ModelsKanbanCard({ model, provider }: ModelsKanbanCardProps) {
           {provider && (
             <div className="flex items-center gap-1.5">
               <span className="text-xs">{provider.icon_emoji || '🤖'}</span>
-              <span className="text-xs font-semibold text-foreground line-clamp-1">{provider.name}</span>
+              <span className="line-clamp-1 text-xs font-semibold text-foreground">
+                {provider.name}
+              </span>
             </div>
           )}
 
           {/* Context Window e Max Tokens */}
           {(model.context_window != null || model.max_tokens != null) && (
-            <div className="text-xs space-y-0.5">
+            <div className="space-y-0.5 text-xs">
               {model.context_window != null && (
                 <p className="text-muted-foreground">
                   📥 {formatTokens(model.context_window)} entrada
                 </p>
               )}
               {model.max_tokens != null && (
-                <p className="text-muted-foreground">
-                  📤 {formatTokens(model.max_tokens)} saída
-                </p>
+                <p className="text-muted-foreground">📤 {formatTokens(model.max_tokens)} saída</p>
               )}
             </div>
           )}

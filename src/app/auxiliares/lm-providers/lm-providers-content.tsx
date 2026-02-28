@@ -172,7 +172,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
       });
       if (result.success) {
         setProviders((prev) =>
-          prev.map((p) => (p.id === provider.id ? { ...p, is_active: !p.is_active } : p))
+          prev.map((p) => (p.id === provider.id ? { ...p, is_active: !p.is_active } : p)),
         );
         toast.success(`✅ ${result.message}`);
       } else {
@@ -246,7 +246,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
 
       {/* KPIs */}
       {providers.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <KPICard
             icon={Zap}
             title="Total"
@@ -271,7 +271,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
       {/* Info Card */}
       <Card className="border-blue-200 bg-blue-50">
         <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
             <AlertCircle className="h-4 w-4" />
             Sobre Fornecedores IA
           </CardTitle>
@@ -279,7 +279,8 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         <CardContent className="text-sm text-muted-foreground">
           <p>
             Fornecedores IA são serviços externos que fornecem modelos de linguagem (como OpenAI,
-            Anthropic, etc.). Cada fornecedor pode ter múltiplos modelos com configurações diferentes.
+            Anthropic, etc.). Cada fornecedor pode ter múltiplos modelos com configurações
+            diferentes.
           </p>
         </CardContent>
       </Card>
@@ -314,7 +315,9 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
           <CardContent className="pb-12 pt-12">
             <div className="text-center">
               <p className="mb-4 text-muted-foreground">
-                {providers.length === 0 ? 'Nenhum provedor criado ainda' : 'Nenhum resultado encontrado'}
+                {providers.length === 0
+                  ? 'Nenhum provedor criado ainda'
+                  : 'Nenhum resultado encontrado'}
               </p>
             </div>
           </CardContent>
@@ -340,7 +343,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                 <div className="space-y-1">
                   <p className="font-medium">{item.title}</p>
                   {item.subtitle && (
-                    <p className="text-xs font-mono text-muted-foreground">{item.subtitle}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{item.subtitle}</p>
                   )}
                 </div>
               )}
@@ -435,9 +438,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                 id="description"
                 placeholder="Descreva este provedor..."
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, description: e.target.value }))
-                }
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 disabled={isLoading}
               />
             </div>
@@ -449,9 +450,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                 id="api_endpoint"
                 placeholder="Ex: https://api.openai.com/v1"
                 value={formData.api_endpoint}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, api_endpoint: e.target.value }))
-                }
+                onChange={(e) => setFormData((prev) => ({ ...prev, api_endpoint: e.target.value }))}
                 disabled={isLoading}
               />
             </div>
@@ -463,9 +462,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                 id="docs_url"
                 placeholder="Ex: https://platform.openai.com/docs"
                 value={formData.docs_url}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, docs_url: e.target.value }))
-                }
+                onChange={(e) => setFormData((prev) => ({ ...prev, docs_url: e.target.value }))}
                 disabled={isLoading}
               />
               <p className="mt-1 text-xs text-muted-foreground">
@@ -483,9 +480,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                     variant={formData.icon_emoji === emoji ? 'default' : 'outline'}
                     size="sm"
                     className="text-xl"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, icon_emoji: emoji }))
-                    }
+                    onClick={() => setFormData((prev) => ({ ...prev, icon_emoji: emoji }))}
                     disabled={isLoading}
                   >
                     {emoji}
@@ -504,15 +499,10 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                     variant={formData.color_hex === color.hex ? 'default' : 'outline'}
                     size="sm"
                     className="justify-start"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, color_hex: color.hex }))
-                    }
+                    onClick={() => setFormData((prev) => ({ ...prev, color_hex: color.hex }))}
                     disabled={isLoading}
                   >
-                    <div
-                      className="w-4 h-4 rounded mr-2"
-                      style={{ backgroundColor: color.hex }}
-                    />
+                    <div className="mr-2 h-4 w-4 rounded" style={{ backgroundColor: color.hex }} />
                     {color.label}
                   </Button>
                 ))}
@@ -561,4 +551,3 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
     </div>
   );
 }
-

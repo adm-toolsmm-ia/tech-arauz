@@ -29,7 +29,7 @@ export function CronogramaFilters({
   onCalendarPeriodChange,
 }: CronogramaFiltersProps) {
   return (
-    <div className="border-b bg-background px-6 py-4 shrink-0">
+    <div className="shrink-0 border-b bg-background px-6 py-4">
       <FilterBar
         moduleId="cronogramas"
         filters={registry}

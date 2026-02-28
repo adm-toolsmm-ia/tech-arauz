@@ -14,14 +14,20 @@ export interface LmModelActionResult {
  * Server Action: Create new LM model
  */
 export async function createLmModelAction(
-  payload: Omit<LmModel, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'>,
+  payload: Omit<
+    LmModel,
+    'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'created_by' | 'updated_by'
+  >,
 ): Promise<LmModelActionResult> {
   const supabase = await createClient();
 
   // Validate tier if present
   const VALID_TIERS = ['entry', 'balanced', 'pro', 'flagship'];
   if (payload.tier && !VALID_TIERS.includes(payload.tier)) {
-    return { success: false, message: `Tier inválido. Valores permitidos: ${VALID_TIERS.join(', ')}` };
+    return {
+      success: false,
+      message: `Tier inválido. Valores permitidos: ${VALID_TIERS.join(', ')}`,
+    };
   }
 
   // Validate display_order if present (should be a positive number)
@@ -243,9 +249,7 @@ export async function bulkUpdateLmModelsActiveAction(
     return { success: false, message: `Erro ao buscar modelos: ${modelsError.message}` };
   }
 
-  const validIds = (models || [])
-    .filter((m) => m.tenant_id === profile.tenant_id)
-    .map((m) => m.id);
+  const validIds = (models || []).filter((m) => m.tenant_id === profile.tenant_id).map((m) => m.id);
 
   if (validIds.length === 0) {
     return { success: false, message: 'Nenhum modelo válido encontrado.' };

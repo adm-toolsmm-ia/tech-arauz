@@ -144,23 +144,40 @@ const TaskListTableDefault = ({
   );
 };
 
-export function CronogramaGantt({ schedules, projectIds, calendarPeriod, onActivityClick }: CronogramaGanttProps) {
+export function CronogramaGantt({
+  schedules,
+  projectIds,
+  calendarPeriod,
+  onActivityClick,
+}: CronogramaGanttProps) {
   const { theme } = useTheme();
   // ✨ CENTRALIZADO: viewMode interno é derivado do calendarPeriod global
-  const initialViewMode = calendarPeriod === 'month' ? ViewMode.Month : calendarPeriod === 'week' ? ViewMode.Week : ViewMode.Day;
+  const initialViewMode =
+    calendarPeriod === 'month'
+      ? ViewMode.Month
+      : calendarPeriod === 'week'
+        ? ViewMode.Week
+        : ViewMode.Day;
   const [viewMode, setViewMode] = React.useState<ViewMode>(initialViewMode);
   const [collapsedIds, setCollapsedIds] = React.useState<string[]>([]);
   const [listWidth, setListWidth] = React.useState<string>('480px');
 
   // ✨ CENTRALIZADO: Sincronizar viewMode quando calendarPeriod muda
   React.useEffect(() => {
-    const newViewMode = calendarPeriod === 'month' ? ViewMode.Month : calendarPeriod === 'week' ? ViewMode.Week : ViewMode.Day;
+    const newViewMode =
+      calendarPeriod === 'month'
+        ? ViewMode.Month
+        : calendarPeriod === 'week'
+          ? ViewMode.Week
+          : ViewMode.Day;
     setViewMode(newViewMode);
   }, [calendarPeriod]);
 
   // Debug: log status values para diagnóstico
   React.useEffect(() => {
-    const uniqueStatuses = Array.from(new Set(schedules.map((s) => s.project?.status).filter(Boolean)));
+    const uniqueStatuses = Array.from(
+      new Set(schedules.map((s) => s.project?.status).filter(Boolean)),
+    );
     if (process.env.NODE_ENV === 'development') {
       console.log('[CronogramaGantt] Project statuses found:', uniqueStatuses);
       console.log('[CronogramaGantt] Total schedules:', schedules.length);
@@ -355,7 +372,8 @@ export function CronogramaGantt({ schedules, projectIds, calendarPeriod, onActiv
           <div className="space-y-2">
             <p>Nenhuma atividade para exibir no formato Gantt.</p>
             <p className="text-xs">
-              Verifique se há projetos com status <strong>iniciado</strong> ou <strong>em execução</strong>.
+              Verifique se há projetos com status <strong>iniciado</strong> ou{' '}
+              <strong>em execução</strong>.
             </p>
           </div>
         </CardContent>

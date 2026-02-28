@@ -43,4 +43,3 @@ describe('integration-token crypto', () => {
     expect(hasIntegrationTokenSecret()).toBe(true);
   });
 });
-

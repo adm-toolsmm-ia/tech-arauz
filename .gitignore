@@ -87,3 +87,6 @@ Thumbs.db
 
 # AIOS Local (AIOS)
 .aios-core/local/
+
+# Claude Code worktrees (temporary isolated branches)
+.claude/worktrees/

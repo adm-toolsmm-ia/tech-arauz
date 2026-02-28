@@ -15,7 +15,10 @@ interface ModelCardProps {
 }
 
 // Tier configurations with colors and emojis
-const TIER_CONFIG: Record<string, { emoji: string; color: string; bgColor: string; label: string }> = {
+const TIER_CONFIG: Record<
+  string,
+  { emoji: string; color: string; bgColor: string; label: string }
+> = {
   entry: {
     emoji: '🚀',
     color: 'text-green-600',
@@ -65,9 +68,9 @@ export function ModelCard({
       role="button"
       tabIndex={0}
       className={cn(
-        'cursor-pointer relative flex flex-col rounded-lg border transition-colors',
-        'hover:bg-muted/50 p-4',
-        isSelected && 'border-primary bg-primary/5'
+        'relative flex cursor-pointer flex-col rounded-lg border transition-colors',
+        'p-4 hover:bg-muted/50',
+        isSelected && 'border-primary bg-primary/5',
       )}
       onClick={() => onSelect?.(model)}
       onKeyDown={(e) => {
@@ -79,16 +82,16 @@ export function ModelCard({
     >
       {/* Barra lateral colorida */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
+        className="absolute bottom-0 left-0 top-0 w-1 rounded-l-lg"
         style={{ backgroundColor: barColor }}
       />
 
       <div className="flex-1 space-y-2 pl-1">
         {/* SEÇÃO 1: HEADER - Nome + Tier Badge */}
         <div className="flex items-start justify-between gap-2">
-          <div className="space-y-0.5 flex-1">
-            <h3 className="font-semibold text-sm text-foreground">{model.name}</h3>
-            <p className="text-xs font-mono text-muted-foreground">{model.model_id}</p>
+          <div className="flex-1 space-y-0.5">
+            <h3 className="text-sm font-semibold text-foreground">{model.name}</h3>
+            <p className="font-mono text-xs text-muted-foreground">{model.model_id}</p>
           </div>
           {tierConfig && (
             <Tooltip>
@@ -96,9 +99,9 @@ export function ModelCard({
                 <Badge
                   variant="outline"
                   className={cn(
-                    'whitespace-nowrap text-[10px] font-semibold border cursor-help',
+                    'cursor-help whitespace-nowrap border text-[10px] font-semibold',
                     tierConfig.bgColor,
-                    tierConfig.color
+                    tierConfig.color,
                   )}
                 >
                   {tierConfig.emoji} {tierConfig.label}
@@ -134,7 +137,7 @@ export function ModelCard({
             <div>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <p className="text-[10px] text-muted-foreground cursor-help border-b border-dashed border-muted-foreground/30">
+                  <p className="cursor-help border-b border-dashed border-muted-foreground/30 text-[10px] text-muted-foreground">
                     Contexto (entrada)
                   </p>
                 </TooltipTrigger>
@@ -142,7 +145,7 @@ export function ModelCard({
                   Máximo de tokens que o modelo pode processar de uma vez
                 </TooltipContent>
               </Tooltip>
-              <p className="text-xs text-foreground font-mono">
+              <p className="font-mono text-xs text-foreground">
                 {formatTokens(model.context_window)} tokens
               </p>
             </div>
@@ -152,7 +155,7 @@ export function ModelCard({
           {model.max_tokens != null && (
             <div>
               <p className="text-[10px] text-muted-foreground">Saída (máx.):</p>
-              <p className="text-xs text-foreground font-mono">
+              <p className="font-mono text-xs text-foreground">
                 {formatTokens(model.max_tokens)} tokens
               </p>
             </div>
@@ -178,7 +181,7 @@ export function ModelCard({
 
         {/* SEÇÃO 4: DOCUMENTAÇÃO */}
         {model.docs_url && (
-          <div className="space-y-1 border-t border-border/30 pt-2 flex items-center gap-2">
+          <div className="flex items-center gap-2 space-y-1 border-t border-border/30 pt-2">
             <p className="text-[10px] text-muted-foreground">Docs:</p>
             <a
               href={model.docs_url}
@@ -187,7 +190,7 @@ export function ModelCard({
               className="flex items-center gap-1"
               onClick={(e) => e.stopPropagation()}
             >
-              <span className="text-xs text-primary underline truncate">Ver documentação</span>
+              <span className="truncate text-xs text-primary underline">Ver documentação</span>
               <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-foreground" />
             </a>
           </div>
@@ -195,7 +198,7 @@ export function ModelCard({
 
         {/* SEÇÃO 5: RODAPÉ - Status + Ações */}
         <div className="flex items-center justify-between border-t border-border/30 pt-2">
-          <Badge variant="outline" className="text-[10px] bg-blue-50 dark:bg-blue-900/20">
+          <Badge variant="outline" className="bg-blue-50 text-[10px] dark:bg-blue-900/20">
             🤖 Modelo IA
           </Badge>
 

@@ -67,7 +67,9 @@ export function ScheduleCockpit({
   if (!schedule) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-sm text-muted-foreground">Selecione um cronograma para visualizar detalhes</p>
+        <p className="text-sm text-muted-foreground">
+          Selecione um cronograma para visualizar detalhes
+        </p>
       </div>
     );
   }
@@ -140,7 +142,9 @@ export function ScheduleCockpit({
             <History className="mr-2 size-4" />
             Histórico
             {projectHistories.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">({projectHistories.length})</span>
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({projectHistories.length})
+              </span>
             )}
           </TabsTrigger>
 
@@ -152,7 +156,9 @@ export function ScheduleCockpit({
             <UserCheck className="mr-2 size-4" />
             Aprovadores
             {projectApprovers.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">({projectApprovers.length})</span>
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({projectApprovers.length})
+              </span>
             )}
           </TabsTrigger>
 
@@ -169,7 +175,7 @@ export function ScheduleCockpit({
         {/* Content */}
         <div className="p-4">
           {/* TAB: Detalhes Cronograma (PRIMEIRO e PADRÃO) */}
-          <TabsContent value="detalhes-cronograma" className="space-y-4 mt-4">
+          <TabsContent value="detalhes-cronograma" className="mt-4 space-y-4">
             {/* Status */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -214,13 +220,13 @@ export function ScheduleCockpit({
                 {schedule.data_inicio && (
                   <div className="rounded-md bg-muted/30 p-2">
                     <p className="text-[11px] text-muted-foreground">Início</p>
-                    <p className="font-medium text-sm">{formatDateBR(schedule.data_inicio)}</p>
+                    <p className="text-sm font-medium">{formatDateBR(schedule.data_inicio)}</p>
                   </div>
                 )}
                 {schedule.data_fim && (
                   <div className="rounded-md bg-muted/30 p-2">
                     <p className="text-[11px] text-muted-foreground">Fim</p>
-                    <p className="font-medium text-sm">{formatDateBR(schedule.data_fim)}</p>
+                    <p className="text-sm font-medium">{formatDateBR(schedule.data_fim)}</p>
                   </div>
                 )}
               </div>
@@ -233,13 +239,13 @@ export function ScheduleCockpit({
                 {schedule.data_prazo && (
                   <div className="rounded-md bg-muted/30 p-2">
                     <p className="text-[11px] text-muted-foreground">Prazo Original</p>
-                    <p className="font-medium text-sm">{formatDateBR(schedule.data_prazo)}</p>
+                    <p className="text-sm font-medium">{formatDateBR(schedule.data_prazo)}</p>
                   </div>
                 )}
                 {schedule.data_novo_prazo && (
                   <div className="rounded-md bg-amber-50 p-2 dark:bg-amber-950/20">
                     <p className="text-[11px] text-amber-600 dark:text-amber-400">Novo Prazo</p>
-                    <p className="font-medium text-sm text-amber-700 dark:text-amber-300">
+                    <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
                       {formatDateBR(schedule.data_novo_prazo)}
                     </p>
                   </div>
@@ -251,7 +257,7 @@ export function ScheduleCockpit({
             {schedule.data_alerta_prazo && (
               <div className="rounded-md bg-orange-50 p-2 dark:bg-orange-950/20">
                 <p className="text-[11px] text-orange-600 dark:text-orange-400">Alerta de Prazo</p>
-                <p className="font-medium text-sm text-orange-700 dark:text-orange-300">
+                <p className="text-sm font-medium text-orange-700 dark:text-orange-300">
                   {formatDateBR(schedule.data_alerta_prazo)}
                 </p>
               </div>
@@ -260,7 +266,9 @@ export function ScheduleCockpit({
             {/* Atrasado */}
             {schedule.atrasado && (
               <div className="rounded-md bg-red-50 p-2 dark:bg-red-950/20">
-                <p className="text-xs font-medium text-red-700 dark:text-red-300">⚠️ ATIVIDADE ATRASADA</p>
+                <p className="text-xs font-medium text-red-700 dark:text-red-300">
+                  ⚠️ ATIVIDADE ATRASADA
+                </p>
               </div>
             )}
 
@@ -268,9 +276,7 @@ export function ScheduleCockpit({
             {(schedule.item || schedule.detalhamento) && (
               <div className="space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">Informações</span>
-                {schedule.item && (
-                  <p className="text-sm">{schedule.item}</p>
-                )}
+                {schedule.item && <p className="text-sm">{schedule.item}</p>}
                 {schedule.detalhamento && (
                   <p className="text-sm text-muted-foreground">{schedule.detalhamento}</p>
                 )}
@@ -279,14 +285,18 @@ export function ScheduleCockpit({
           </TabsContent>
 
           {/* TAB: Detalhes (Projeto) */}
-          <TabsContent value="detalhes" className="space-y-4 mt-4">
+          <TabsContent value="detalhes" className="mt-4 space-y-4">
             {project || schedule.project ? (
               <div className="space-y-4">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Projeto</p>
-                  <p className="text-sm font-medium">{project?.project_name || project?.titulo || schedule.project?.titulo}</p>
+                  <p className="text-sm font-medium">
+                    {project?.project_name || project?.titulo || schedule.project?.titulo}
+                  </p>
                   {(project?.espaider_code || schedule.project?.codigo) && (
-                    <p className="text-[11px] text-muted-foreground">Código: {project?.espaider_code || schedule.project?.codigo}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Código: {project?.espaider_code || schedule.project?.codigo}
+                    </p>
                   )}
                 </div>
 
@@ -312,12 +322,12 @@ export function ScheduleCockpit({
           </TabsContent>
 
           {/* TAB: Anotações */}
-          <TabsContent value="anotacoes" className="space-y-4 mt-4">
+          <TabsContent value="anotacoes" className="mt-4 space-y-4">
             <p className="text-sm text-muted-foreground">Anotações do projeto vinculado</p>
           </TabsContent>
 
           {/* TAB: Entregas */}
-          <TabsContent value="entregas" className="space-y-4 mt-4">
+          <TabsContent value="entregas" className="mt-4 space-y-4">
             {projectDeliveries.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhuma entrega</p>
             ) : (
@@ -332,7 +342,7 @@ export function ScheduleCockpit({
           </TabsContent>
 
           {/* TAB: Orçamentos */}
-          <TabsContent value="orcamentos" className="space-y-4 mt-4">
+          <TabsContent value="orcamentos" className="mt-4 space-y-4">
             {projectBudgets.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhum orçamento</p>
             ) : (
@@ -347,7 +357,7 @@ export function ScheduleCockpit({
           </TabsContent>
 
           {/* TAB: Histórico */}
-          <TabsContent value="historicos" className="space-y-4 mt-4">
+          <TabsContent value="historicos" className="mt-4 space-y-4">
             {projectHistories.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhum histórico</p>
             ) : (
@@ -363,7 +373,7 @@ export function ScheduleCockpit({
           </TabsContent>
 
           {/* TAB: Aprovadores */}
-          <TabsContent value="aprovadores" className="space-y-4 mt-4">
+          <TabsContent value="aprovadores" className="mt-4 space-y-4">
             {projectApprovers.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhum aprovador</p>
             ) : (
@@ -379,11 +389,11 @@ export function ScheduleCockpit({
           </TabsContent>
 
           {/* TAB: Ações */}
-          <TabsContent value="acoes" className="space-y-4 mt-4">
+          <TabsContent value="acoes" className="mt-4 space-y-4">
             <p className="text-sm text-muted-foreground">Ações do projeto vinculado</p>
           </TabsContent>
         </div>
-        </Tabs>
-      </div>
-    );
-  }
+      </Tabs>
+    </div>
+  );
+}

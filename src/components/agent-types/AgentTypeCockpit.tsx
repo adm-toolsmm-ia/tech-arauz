@@ -29,7 +29,7 @@ export function AgentTypeCockpit({ agentType, onEdit }: AgentTypeCockpitProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2">
           <Badge variant={agentType.is_active ? 'default' : 'secondary'}>
             {agentType.is_active ? 'Ativo' : 'Inativo'}
           </Badge>
@@ -54,7 +54,7 @@ export function AgentTypeCockpit({ agentType, onEdit }: AgentTypeCockpitProps) {
         </div>
         <div>
           <h3 className="font-semibold">{agentType.name}</h3>
-          <p className="text-sm font-mono text-muted-foreground">{agentType.slug}</p>
+          <p className="font-mono text-sm text-muted-foreground">{agentType.slug}</p>
         </div>
       </div>
 
@@ -67,11 +67,11 @@ export function AgentTypeCockpit({ agentType, onEdit }: AgentTypeCockpitProps) {
       <Separator />
 
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold flex items-center gap-2">
+        <h4 className="flex items-center gap-2 text-sm font-semibold">
           <Cpu className="size-4" />
           Modelo padrão
         </h4>
-        <p className="text-sm font-mono">{modelDisplay}</p>
+        <p className="font-mono text-sm">{modelDisplay}</p>
         {agentType.default_temperature != null && (
           <InfoField label="Temperatura padrão" value={String(agentType.default_temperature)} />
         )}

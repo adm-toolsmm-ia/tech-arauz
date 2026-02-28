@@ -34,4 +34,3 @@ describe('resolveApiToken', () => {
     expect(resolveApiToken(encrypted)).toBe('secure-token');
   });
 });
-

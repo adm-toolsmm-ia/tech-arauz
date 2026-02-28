@@ -13,7 +13,10 @@ interface CheckboxProps {
 }
 
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ checked = false, onCheckedChange, disabled = false, 'aria-label': ariaLabel, ...props }, ref) => {
+  (
+    { checked = false, onCheckedChange, disabled = false, 'aria-label': ariaLabel, ...props },
+    ref,
+  ) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onCheckedChange?.(e.target.checked);
     };
@@ -32,18 +35,18 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         />
         <div
           className={cn(
-            'h-5 w-5 rounded border-2 border-primary transition-colors flex items-center justify-center',
+            'flex h-5 w-5 items-center justify-center rounded border-2 border-primary transition-colors',
             checked
-              ? 'bg-primary border-primary'
+              ? 'border-primary bg-primary'
               : 'border-border bg-background hover:border-primary/80',
-            disabled && 'opacity-50 cursor-not-allowed'
+            disabled && 'cursor-not-allowed opacity-50',
           )}
         >
           {checked && <Check className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={3} />}
         </div>
       </div>
     );
-  }
+  },
 );
 
 Checkbox.displayName = 'Checkbox';

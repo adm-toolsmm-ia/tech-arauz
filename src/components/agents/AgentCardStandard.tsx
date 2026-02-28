@@ -35,13 +35,7 @@ const getStatusStyle = (status: string) => {
   return statusStyles[status] || statusStyles.draft;
 };
 
-export function AgentCard({
-  agent,
-  isSelected,
-  onSelect,
-  onEdit,
-  onDelete,
-}: AgentCardProps) {
+export function AgentCard({ agent, isSelected, onSelect, onEdit, onDelete }: AgentCardProps) {
   const statusStyle = getStatusStyle(agent.status);
 
   return (
@@ -49,9 +43,9 @@ export function AgentCard({
       role="button"
       tabIndex={0}
       className={cn(
-        'cursor-pointer relative flex flex-col rounded-lg border transition-colors',
-        'hover:bg-muted/50 p-4',
-        isSelected && 'border-primary bg-primary/5'
+        'relative flex cursor-pointer flex-col rounded-lg border transition-colors',
+        'p-4 hover:bg-muted/50',
+        isSelected && 'border-primary bg-primary/5',
       )}
       onClick={() => onSelect?.(agent)}
       onKeyDown={(e) => {
@@ -62,7 +56,7 @@ export function AgentCard({
       }}
     >
       {/* Barra lateral colorida (azul primária) */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg bg-blue-500" />
+      <div className="absolute bottom-0 left-0 top-0 w-1 rounded-l-lg bg-blue-500" />
 
       <div className="flex-1 space-y-2 pl-1">
         {/* SEÇÃO 1: HEADER - Nome + Slug */}
@@ -70,19 +64,19 @@ export function AgentCard({
           <div className="flex items-center gap-2">
             <span className="text-2xl">🤖</span>
             <div className="flex-1">
-              <h3 className="font-semibold text-sm text-foreground">{agent.name}</h3>
-              <p className="text-xs font-mono text-muted-foreground">{agent.slug}</p>
+              <h3 className="text-sm font-semibold text-foreground">{agent.name}</h3>
+              <p className="font-mono text-xs text-muted-foreground">{agent.slug}</p>
             </div>
           </div>
           {agent.description && (
-            <p className="text-xs text-muted-foreground line-clamp-2">{agent.description}</p>
+            <p className="line-clamp-2 text-xs text-muted-foreground">{agent.description}</p>
           )}
         </div>
 
         {/* SEÇÃO 2: TIPO */}
         <div className="space-y-1 border-t border-border/30 pt-2">
           <p className="text-[10px] text-muted-foreground">Tipo:</p>
-          <p className="text-xs text-foreground font-semibold">{agent.agentType}</p>
+          <p className="text-xs font-semibold text-foreground">{agent.agentType}</p>
         </div>
 
         {/* SEÇÃO 3: MODELO + TEMPERATURA (se aplicável) */}
@@ -92,7 +86,7 @@ export function AgentCard({
             <div className="flex items-center gap-2">
               <span className="text-lg">⚡</span>
               <div className="flex-1">
-                <p className="text-xs text-foreground font-mono">{agent.modelId || '-'}</p>
+                <p className="font-mono text-xs text-foreground">{agent.modelId || '-'}</p>
                 {agent.fullConfig?.modelTemperature != null && (
                   <p className="text-xs text-muted-foreground">
                     Temperatura: {agent.fullConfig.modelTemperature}

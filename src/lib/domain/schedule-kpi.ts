@@ -13,15 +13,18 @@ export interface OverdueInfo {
   maxDays: number;
 }
 
-export type KpiFilterName = 'pendentes' | 'em_execucao' | 'atrasados' | 'proximos_vencer' | 'sem_prazo';
+export type KpiFilterName =
+  | 'pendentes'
+  | 'em_execucao'
+  | 'atrasados'
+  | 'proximos_vencer'
+  | 'sem_prazo';
 
 /** Count schedules with active project + active status + valid deadline */
 export function countPendingSchedules(schedules: Schedule[]): number {
   return schedules.filter(
     (s) =>
-      isConsideredActive(s.project?.status) &&
-      isConsideredActive(s.status) &&
-      hasValidDeadline(s),
+      isConsideredActive(s.project?.status) && isConsideredActive(s.status) && hasValidDeadline(s),
   ).length;
 }
 
@@ -75,9 +78,7 @@ export function countNearDeadlineSchedules(schedules: Schedule[]): number {
 export function countMissingDeadlineSchedules(schedules: Schedule[]): number {
   return schedules.filter(
     (s) =>
-      isConsideredActive(s.project?.status) &&
-      isConsideredActive(s.status) &&
-      !hasValidDeadline(s),
+      isConsideredActive(s.project?.status) && isConsideredActive(s.status) && !hasValidDeadline(s),
   ).length;
 }
 

@@ -43,7 +43,7 @@ export function AgentCockpit({ agent, onEdit }: AgentCockpitProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2">
           <Badge variant={agent.status === 'published' ? 'default' : 'secondary'}>
             {agent.status}
           </Badge>
@@ -68,17 +68,17 @@ export function AgentCockpit({ agent, onEdit }: AgentCockpitProps) {
       <Separator />
 
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold flex items-center gap-2">
+        <h4 className="flex items-center gap-2 text-sm font-semibold">
           <Cpu className="size-4" />
           Modelo
         </h4>
-        <p className="text-sm font-mono">{modelDisplay}</p>
+        <p className="font-mono text-sm">{modelDisplay}</p>
       </div>
 
       <Separator />
 
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold flex items-center gap-2">
+        <h4 className="flex items-center gap-2 text-sm font-semibold">
           <PlayCircle className="size-4" />
           Métricas
         </h4>
@@ -94,7 +94,7 @@ export function AgentCockpit({ agent, onEdit }: AgentCockpitProps) {
       <Separator />
 
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold flex items-center gap-2">
+        <h4 className="flex items-center gap-2 text-sm font-semibold">
           <Calendar className="size-4" />
           Datas
         </h4>

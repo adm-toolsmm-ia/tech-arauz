@@ -77,7 +77,13 @@ describe('useModelosIaFilters', () => {
 
     expect(providerFilter?.options).toBeDefined();
     expect(tierFilter?.options).toBeDefined();
-    expect((providerFilter?.options as Array<{ value: string }>).some((o) => o.value === 'provider-openai')).toBe(true);
-    expect((tierFilter?.options as Array<{ value: string }>).some((o) => o.value === 'flagship')).toBe(true);
+    expect(
+      (providerFilter?.options as Array<{ value: string }>).some(
+        (o) => o.value === 'provider-openai',
+      ),
+    ).toBe(true);
+    expect(
+      (tierFilter?.options as Array<{ value: string }>).some((o) => o.value === 'flagship'),
+    ).toBe(true);
   });
 });

@@ -113,7 +113,10 @@ describe('CronogramasContent (Story 2.4 Regression)', () => {
     it('integrates CronogramaCalendar subcomponent for calendar view', () => {
       const { container } = render(<CronogramasContent schedules={mockSchedules} />);
       // Calendar or date-related elements should be accessible
-      expect(container.querySelector('[role="grid"]') || container.querySelector('[role="presentation"]')).toBeTruthy();
+      expect(
+        container.querySelector('[role="grid"]') ||
+          container.querySelector('[role="presentation"]'),
+      ).toBeTruthy();
     });
 
     it('integrates CronogramaList subcomponent for list view', () => {
@@ -121,7 +124,7 @@ describe('CronogramasContent (Story 2.4 Regression)', () => {
       // List-like structure should exist
       expect(
         container.querySelector('[role="list"]') ||
-        container.querySelector('div[class*="flex"][class*="flex-col"]')
+          container.querySelector('div[class*="flex"][class*="flex-col"]'),
       ).toBeTruthy();
     });
 
@@ -149,7 +152,9 @@ describe('CronogramasContent (Story 2.4 Regression)', () => {
     it('supports calendar view mode', () => {
       render(<CronogramasContent schedules={mockSchedules} />);
       // Calendar elements should be accessible
-      expect(screen.queryByText(/calendar/i) || screen.queryByText(/mês/i) || screen.queryByText(/dia/i)).toBeTruthy();
+      expect(
+        screen.queryByText(/calendar/i) || screen.queryByText(/mês/i) || screen.queryByText(/dia/i),
+      ).toBeTruthy();
     });
 
     it('supports list view mode', () => {

@@ -65,11 +65,7 @@ vi.mock('sonner', () => ({
   },
 }));
 
-function buildProject(params: {
-  id: string;
-  name: string;
-  endDate: string;
-}) {
+function buildProject(params: { id: string; name: string; endDate: string }) {
   return {
     id: params.id,
     espaider_code: `P-${params.id}`,

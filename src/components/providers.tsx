@@ -23,9 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <DarkModeProvider>
       <QueryClientProvider client={queryClient}>
-        <AxeProvider>
-          {children}
-        </AxeProvider>
+        <AxeProvider>{children}</AxeProvider>
         <Toaster
           position="bottom-right"
           richColors

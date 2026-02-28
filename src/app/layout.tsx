@@ -30,9 +30,7 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${inter.variable} ${dmSans.variable} font-sans antialiased`}>
         <Providers>
-          <ErrorBoundary label="App">
-            {children}
-          </ErrorBoundary>
+          <ErrorBoundary label="App">{children}</ErrorBoundary>
         </Providers>
       </body>
     </html>

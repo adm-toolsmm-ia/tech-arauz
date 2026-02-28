@@ -141,7 +141,7 @@ export function AgentCard({
         {/* SEÇÃO 3: MODELO PADRÃO */}
         <div className="border-t border-border/30 pt-2">
           <p className="text-[10px] text-muted-foreground">Modelo padrão:</p>
-          <p className="truncate text-xs font-mono text-foreground">{agent.modelId || 'N/A'}</p>
+          <p className="truncate font-mono text-xs text-foreground">{agent.modelId || 'N/A'}</p>
         </div>
 
         {/* SEÇÃO 4: FERRAMENTAS (Tools Count) */}
@@ -163,7 +163,7 @@ export function AgentCard({
         </div>
 
         {/* Info Grid (antigo) */}
-        <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/30 pt-2">
+        <div className="grid grid-cols-2 gap-2 border-t border-border/30 pt-2 text-xs">
           <div>
             <p className="text-muted-foreground">Proprietários</p>
             <p className="truncate">{agent.owners?.[0] || 'N/A'}</p>

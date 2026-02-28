@@ -14,6 +14,8 @@ import { CronogramasKPIBar } from './components/CronogramasKPIBar';
 import { CronogramaFilters } from './components/CronogramaFilters';
 import { CronogramaCalendar } from './components/CronogramaCalendar';
 import { CronogramaList } from './components/CronogramaList';
+import { CronogramaKanbanView } from './components/CronogramaKanbanView';
+import { CronogramaTableView } from './components/CronogramaTableView';
 import { CronogramaCockpit, SelectedDayPanel } from './components/CronogramaCockpit';
 
 // ---------- Types ----------
@@ -173,19 +175,46 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
               />
             )}
 
-          {/* Activity List */}
-          <ErrorBoundary label="Lista Cronogramas">
-            <CronogramaList
-              schedules={schedules}
-              allFilteredSchedules={finalFilteredSchedules}
-              projectIds={projectIds}
-              viewMode={viewMode}
-              calendarPeriod={calendarPeriod as 'day' | 'week' | 'month'}
-              currentDate={currentDate}
-              getSchedulesForDate={getSchedulesForDate}
-              onActivityClick={setSelectedSchedule}
-            />
-          </ErrorBoundary>
+          {/* Kanban View (read-only) */}
+          {viewMode === 'kanban' && (
+            <ErrorBoundary label="Kanban Cronogramas">
+              <div className="px-6">
+                <CronogramaKanbanView
+                  schedules={finalFilteredSchedules}
+                  projectIds={projectIds}
+                  onActivityClick={setSelectedSchedule}
+                />
+              </div>
+            </ErrorBoundary>
+          )}
+
+          {/* Table View (Lista — 7 columns) */}
+          {viewMode === 'lista' && (
+            <ErrorBoundary label="Tabela Cronogramas">
+              <div className="px-6">
+                <CronogramaTableView
+                  schedules={finalFilteredSchedules}
+                  onActivityClick={setSelectedSchedule}
+                />
+              </div>
+            </ErrorBoundary>
+          )}
+
+          {/* Activity Card Grid (Agenda mode only) */}
+          {viewMode === 'agenda' && (
+            <ErrorBoundary label="Lista Cronogramas">
+              <CronogramaList
+                schedules={schedules}
+                allFilteredSchedules={finalFilteredSchedules}
+                projectIds={projectIds}
+                viewMode={viewMode}
+                calendarPeriod={calendarPeriod as 'day' | 'week' | 'month'}
+                currentDate={currentDate}
+                getSchedulesForDate={getSchedulesForDate}
+                onActivityClick={setSelectedSchedule}
+              />
+            </ErrorBoundary>
+          )}
 
           {/* Schedule Detail (SplitView) */}
           <CronogramaCockpit

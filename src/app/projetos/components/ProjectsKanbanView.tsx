@@ -164,7 +164,7 @@ export function ProjectsKanbanView<T extends KanbanProject>({
       items={kanbanItems}
       selectedId={selectedProjectId}
       onItemClick={handleItemClick}
-      onStatusChange={handleStatusChange}
+      readOnly
       renderItemContent={(item) => {
         const project = filteredData.find((p) => p.id === item.id);
         if (!project) return null;

@@ -49,6 +49,10 @@ vi.mock('@/components/project/ProjectKanbanCard', () => ({
   ProjectKanbanCard: () => <div />,
 }));
 
+vi.mock('@/components/shared/erp-readonly-banner', () => ({
+  ErpReadOnlyBanner: () => <div data-testid="erp-readonly-banner" />,
+}));
+
 vi.mock('@/app/actions/sync', () => ({
   syncEspaiderAction: vi.fn(async () => ({ success: true, message: 'ok' })),
 }));

@@ -164,7 +164,11 @@ export const filterRegistryCronogramas: FilterRegistry = {
       icon: CalendarDays,
       default: true,
     },
-    // ⚠️ GANTT REMOVIDO TEMPORARIAMENTE - Será re-habilitado no futuro após configuração
+    {
+      id: 'kanban',
+      label: 'Kanban',
+      icon: LayoutTemplate,
+    },
     {
       id: 'lista',
       label: 'Lista',

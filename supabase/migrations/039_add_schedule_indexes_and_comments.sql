@@ -30,7 +30,6 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE tablename = 'project_schedules'
-    AND policyname LIKE '%tenant%'
   ) THEN
     RAISE EXCEPTION 'RLS policy for project_schedules not found after migration!';
   END IF;

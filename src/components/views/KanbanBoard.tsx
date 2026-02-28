@@ -46,6 +46,7 @@ interface KanbanBoardProps {
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
   emptyMessage?: string;
   className?: string;
+  readOnly?: boolean;
 }
 
 import { priorityStyles } from '@/lib/constants/phase-labels';
@@ -155,15 +156,18 @@ function DraggableCard({
   isSelected,
   onItemClick,
   renderItemContent,
+  readOnly,
 }: {
   item: KanbanItem;
   isSelected?: boolean;
   onItemClick?: (item: KanbanItem) => void;
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
+  readOnly?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: item.id,
     data: { item },
+    disabled: readOnly,
   });
 
   return (
@@ -172,9 +176,9 @@ function DraggableCard({
       className={cn(
         'group relative rounded-lg border border-border/40 bg-card shadow-sm transition-all duration-200',
         'hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md',
-        'cursor-grab active:cursor-grabbing',
+        readOnly ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        'touch-none',
+        !readOnly && 'touch-none',
         isDragging && 'scale-95 opacity-40 shadow-none grayscale',
         isSelected && 'border-primary/30 ring-2 ring-primary ring-offset-1',
       )}
@@ -223,6 +227,7 @@ function DroppableColumn({
   selectedId,
   onItemClick,
   renderItemContent,
+  readOnly,
 }: {
   column: KanbanColumn;
   items: KanbanItem[];
@@ -230,6 +235,7 @@ function DroppableColumn({
   selectedId?: string | number;
   onItemClick?: (item: KanbanItem) => void;
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
+  readOnly?: boolean;
 }) {
   const { setNodeRef } = useDroppable({
     id: column.id,
@@ -244,7 +250,7 @@ function DroppableColumn({
       ref={setNodeRef}
       className={cn(
         'flex h-full flex-col rounded-xl border border-transparent bg-muted/20 transition-all duration-200',
-        isOver && cn('scale-[1.01] border-dashed', dropStateClass),
+        !readOnly && isOver && cn('scale-[1.01] border-dashed', dropStateClass),
       )}
     >
       {/* Header */}
@@ -305,6 +311,7 @@ function DroppableColumn({
                   isSelected={selectedId != null && item.id === selectedId}
                   onItemClick={onItemClick}
                   renderItemContent={renderItemContent}
+                  readOnly={readOnly}
                 />
               ))
             )}
@@ -325,6 +332,7 @@ export function KanbanBoard({
   renderItemContent,
   emptyMessage = 'Nenhum item para exibir',
   className,
+  readOnly = false,
 }: KanbanBoardProps) {
   const [activeItem, setActiveItem] = React.useState<KanbanItem | null>(null);
   const [overColumnId, setOverColumnId] = React.useState<string | null>(null);
@@ -434,6 +442,7 @@ export function KanbanBoard({
             selectedId={selectedId}
             onItemClick={onItemClick}
             renderItemContent={renderItemContent}
+            readOnly={readOnly}
           />
         ))}
       </div>

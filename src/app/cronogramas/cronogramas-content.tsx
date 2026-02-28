@@ -6,6 +6,8 @@ import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { useCronogramasFilters, CronogramaData } from '@/hooks/useCronogramasFilters';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { ErpReadOnlyBanner } from '@/components/shared/erp-readonly-banner';
+import { feedback } from '@/lib/feedback';
+import { syncEspaiderAction } from '@/app/actions/sync';
 import type { KpiFilterName } from '@/lib/domain/schedule-kpi';
 import { filterByKpi } from '@/lib/domain/schedule-kpi';
 import { isWithinRange, isSameDay } from '@/lib/domain/schedule-status';
@@ -46,6 +48,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   const [selectedDay, setSelectedDay] = React.useState<Date | null>(null);
   const [selectedSchedule, setSelectedSchedule] = React.useState<Schedule | null>(null);
   const [activeKpiFilter, setActiveKpiFilter] = React.useState<KpiFilterName | null>(null);
+  const [isSyncing, setIsSyncing] = React.useState(false);
 
   // Unique project IDs for consistent coloring
   const projectIds = React.useMemo(() => {
@@ -61,6 +64,23 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
 
   const handleKpiClick = (filterName: KpiFilterName) => {
     setActiveKpiFilter((prev) => (prev === filterName ? null : filterName));
+  };
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    feedback.info('Iniciando sincronização com Espaider...');
+    try {
+      const result = await syncEspaiderAction();
+      if (result.success) {
+        feedback.success(result.message);
+      } else {
+        feedback.error(result.message);
+      }
+    } catch {
+      feedback.error('Erro inesperado na sincronização. Tente novamente.');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   // Navigation
@@ -129,6 +149,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             search={search}
             viewMode={viewMode}
             calendarPeriod={calendarPeriod}
+            isSyncing={isSyncing}
             onUpdateFilter={updateFilter}
             onResetFilters={() => {
               resetAllFilters();
@@ -139,6 +160,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
             onCalendarPeriodChange={(period) =>
               setCalendarPeriod(period as 'day' | 'week' | 'month')
             }
+            onSync={handleSync}
           />
 
           {/* Content Views */}

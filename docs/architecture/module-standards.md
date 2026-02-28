@@ -134,6 +134,23 @@ Antes de concluir qualquer story de novo modulo/tabela:
 - [ ] Filtros centralizados em hook/registry do modulo
 - [ ] Checklist e file list da story atualizados
 
+## 8. Data Fetching Obrigatorio por Tipo de Operacao
+
+Todo novo modulo ou feature DEVE seguir os padroes definidos em [data-fetching-patterns.md](./data-fetching-patterns.md).
+
+Resumo normativo:
+
+| Tipo de Operacao | Padrao Obrigatorio |
+|-----------------|-------------------|
+| Leitura para renderizacao inicial (SSR) | Server Component + Query Supabase direta |
+| Mutacao / CRUD autenticado | Server Action |
+| Chamada a servico externo (AI, Espaider, webhooks) | API Route |
+| Estado real-time ou dual source | Client Service (Zustand) — requer aprovacao arquitetural |
+
+**Regra de ouro:** Comece sempre pelo padrao mais simples. Adicione complexidade apenas com justificativa tecnica documentada na story.
+
+ADR de referencia: [ADR-005 — Data Fetching Patterns Formais](./adr/ADR-005-data-fetching-patterns.md)
+
 ## 7. Politica para agentes AI
 
 Agentes devem tratar este documento como padrao normativo para qualquer feature de:

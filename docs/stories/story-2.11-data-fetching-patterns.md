@@ -1,6 +1,6 @@
 # Story 2.11 - Formalizar Data Fetching Patterns
 
-Status: Ready
+Status: Ready for Review
 Epic: UX-EPIC-01
 Prioridade: Media-Alta
 Sprint: 4
@@ -37,20 +37,20 @@ para eliminar confusao arquitetural e garantir consistencia em novos modulos.
 
 ## Tasks
 
-- [ ] Mapear padrao de data fetching atual de cada modulo:
+- [x] Mapear padrao de data fetching atual de cada modulo:
   - Dashboard: Server Component query
   - Projetos: Server Component query + Server Actions (CRUD)
   - Cronogramas: Server Component query
   - Integracoes: API Routes
   - Agentes: API Routes (proxy) + Client Services (Zustand)
   - Auxiliares: Server Actions
-- [ ] Definir regras formais por tipo de operacao
-- [ ] Identificar inconsistencias (ex: agents usa dual source — API + Supabase)
-- [ ] Documentar excecoes justificadas (ex: agents precisa de proxy por causa do AI service)
-- [ ] Criar `docs/architecture/data-fetching-patterns.md`
-- [ ] Criar ADR em `docs/architecture/adr/` (ADR-005 ou proximo numero)
-- [ ] Atualizar `module-standards.md` com secao de data fetching obrigatorio
-- [ ] Migrar inconsistencias simples se possivel (sem breaking changes)
+- [x] Definir regras formais por tipo de operacao
+- [x] Identificar inconsistencias (ex: agents usa dual source — API + Supabase)
+- [x] Documentar excecoes justificadas (ex: agents precisa de proxy por causa do AI service)
+- [x] Criar `docs/architecture/data-fetching-patterns.md`
+- [x] Criar ADR em `docs/architecture/adr/` (ADR-005)
+- [x] Atualizar `module-standards.md` com secao de data fetching obrigatorio (secao 8)
+- [x] Migrar inconsistencias simples se possivel — lmModelsService/lmProvidersService documentados como divida tecnica (sem breaking changes)
 
 ## Testes
 
@@ -89,6 +89,7 @@ para eliminar confusao arquitetural e garantir consistencia em novos modulos.
 |------|---------|-------------|--------|
 | 2026-02-27 | 1.0 | Story criada | Orion (aios-master) |
 | 2026-02-27 | 1.1 | PO validation: added Executor, Dev Notes, Change Log | Pax (po) |
+| 2026-02-28 | 1.2 | @architect: criado data-fetching-patterns.md, ADR-005, atualizado module-standards.md | Aria (architect) |
 
 ## Dependencies
 

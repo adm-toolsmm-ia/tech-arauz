@@ -6,7 +6,7 @@ Sprint: 5 — Padronização de UI
 Agente: @dev
 Esforço: 30min
 Prioridade: Alta (Quick Win — 1 linha)
-Status: Draft
+Status: Ready for Review
 
 ## Como usuário
 
@@ -95,4 +95,35 @@ O filtro `fase_atividade` usa `LayoutTemplate` como ícone. Verificar se essa as
 
 ## File List
 
-- `src/lib/filters/filters-cronogramas.ts` (MODIFICAR — trocar ícone kanban de LayoutTemplate para LayoutGrid)
+- `src/lib/filters/filters-cronogramas.ts` (MODIFICADO — ícone kanban trocado para LayoutGrid)
+
+---
+
+## Dev Agent Record
+
+### Checklist de Implementação
+
+- [x] Import de `LayoutGrid` adicionado a `filters-cronogramas.ts`
+- [x] ícone kanban viewMode trocado de `LayoutTemplate` para `LayoutGrid`
+- [x] Import de `LayoutTemplate` mantido (ainda usado em filtro `fase_atividade`)
+- [x] Ícone exibido na FilterBar idêntico ao de Projetos
+- [x] Nenhuma funcionalidade alterada
+- [x] Sem erros esperados em lint/typecheck
+
+### Completion Notes
+
+**2026-02-28 — @dev**
+
+Quick win realizado em 2 minutos:
+
+1. **Adicionado import**: `LayoutGrid` ao import de `lucide-react` (linha 16)
+2. **Trocado ícone**: viewMode `kanban` de `LayoutTemplate` para `LayoutGrid` (linha 171)
+3. **Mantido import**: `LayoutTemplate` continua importado pois ainda é usado no filtro `fase_atividade` (linha 115)
+
+**Resultado**: Ícone Kanban agora visualmente idêntico entre módulos Cronogramas e Projetos ✅
+
+### Change Log
+
+- `src/lib/filters/filters-cronogramas.ts`:
+  - Adicionado import de `LayoutGrid`
+  - Trocado ícone viewMode kanban de `LayoutTemplate` para `LayoutGrid`

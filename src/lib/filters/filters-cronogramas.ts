@@ -13,6 +13,7 @@ import {
   Calendar,
   List,
   CalendarDays,
+  LayoutGrid,
   LayoutTemplate,
   BarChartHorizontal,
   AlertCircle,
@@ -167,7 +168,7 @@ export const filterRegistryCronogramas: FilterRegistry = {
     {
       id: 'kanban',
       label: 'Kanban',
-      icon: LayoutTemplate,
+      icon: LayoutGrid,
     },
     {
       id: 'lista',

@@ -108,12 +108,12 @@ export default function LoginPage() {
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
                   Senha
                 </label>
-                <a
-                  href="#"
+                <button
+                  type="button"
                   className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
                 >
                   Esqueceu a senha?
-                </a>
+                </button>
               </div>
               <input
                 id="password"

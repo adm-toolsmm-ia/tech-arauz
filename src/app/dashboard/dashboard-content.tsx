@@ -224,9 +224,9 @@ export function DashboardContent({
                 trend={
                   completedThisMonth > 0
                     ? {
-                        value: `${completedThisMonth} este mês`,
-                        positive: completedThisMonth >= completedLastMonth,
-                      }
+                      value: `${completedThisMonth} este mês`,
+                      positive: completedThisMonth >= completedLastMonth,
+                    }
                     : undefined
                 }
                 subtitle={completedThisMonth === 0 ? 'Nenhum este mês' : undefined}
@@ -283,14 +283,14 @@ export function DashboardContent({
                 trend={
                   completedThisMonth > completedLastMonth
                     ? {
-                        value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
-                        positive: true,
-                      }
+                      value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
+                      positive: true,
+                    }
                     : completedLastMonth > completedThisMonth
                       ? {
-                          value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
-                          positive: false,
-                        }
+                        value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
+                        positive: false,
+                      }
                       : undefined
                 }
               />
@@ -450,8 +450,16 @@ export function DashboardContent({
                   .map((project) => (
                     <div
                       key={project.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => handleProjectClick(project)}
-                      className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleProjectClick(project);
+                        }
+                      }}
+                      className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex items-center gap-2">
@@ -518,9 +526,8 @@ export function DashboardContent({
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status] || statusStyles.projeto_futuro
-      }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
+        }`}
     >
       {statusLabels[status] || status}
     </span>
@@ -530,9 +537,8 @@ function StatusBadge({ status }: { status: string }) {
 function PriorityBadge({ priority }: { priority: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
-        priorityStyles[priority] || 'bg-gray-100 text-gray-700'
-      }`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${priorityStyles[priority] || 'bg-gray-100 text-gray-700'
+        }`}
     >
       {priorityLabels[priority] || priority}
     </span>

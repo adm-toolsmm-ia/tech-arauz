@@ -218,8 +218,16 @@ export function ModelsListView({
               {filteredModels.map((model) => (
                 <tr
                   key={model.id}
-                  className="transition-colors hover:bg-muted/50"
+                  role="button"
+                  tabIndex={0}
+                  className="cursor-pointer transition-colors hover:bg-muted/50"
                   onClick={() => onSelectModel?.(model.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectModel?.(model.id);
+                    }
+                  }}
                 >
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <Checkbox
@@ -286,7 +294,7 @@ export function ModelsListView({
           >
             <CardContent className="p-3">
               <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex-1 min-w-0" onClick={(e) => e.stopPropagation()}>
+                <div role="presentation" className="flex-1 min-w-0" onClick={(e) => e.stopPropagation()}>
                   <Checkbox
                     checked={selectedIds.has(model.id)}
                     onCheckedChange={() => toggleSelect(model.id)}

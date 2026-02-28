@@ -1,6 +1,6 @@
 # Story 2.8 - Baseline de Acessibilidade (WCAG 2.1 AA)
 
-Status: Ready
+Status: Done
 Epic: UX-EPIC-01
 Prioridade: Alta
 Sprint: 3
@@ -36,21 +36,21 @@ para usar todas as funcionalidades sem depender exclusivamente do mouse.
 
 ## Tasks
 
-- [ ] Instalar `eslint-plugin-jsx-a11y` e configurar em `.eslintrc` (mode: error)
-- [ ] Instalar `@axe-core/react` e configurar para dev mode only
-- [ ] Auditar navegacao por teclado no fluxo de login
-- [ ] Auditar navegacao por teclado no fluxo de dashboard (KPIs, graficos, drill-down)
-- [ ] Auditar navegacao por teclado no fluxo de projetos (filtros, kanban, cockpit)
-- [ ] Auditar navegacao por teclado no fluxo de cronogramas (calendario, lista)
-- [ ] Auditar navegacao por teclado no fluxo de integracoes (sync, logs)
-- [ ] Corrigir focus states inconsistentes (garantir ring visible em todos os interativos)
-- [ ] Adicionar `aria-live="polite"` em areas de feedback dinamico (toast container, sync status)
-- [ ] Adicionar `aria-label` em icones de acao sem texto (botoes icon-only)
-- [ ] Verificar contraste AA com ferramenta (light + dark mode)
-- [ ] Corrigir violacoes de contraste encontradas
-- [ ] Criar `.aios-core/development/checklists/a11y-checklist.md`
-- [ ] Adicionar `npm run a11y:check` no package.json
-- [ ] Rodar axe-core nos 5 fluxos e corrigir violacoes critical/serious
+- [x] Instalar `eslint-plugin-jsx-a11y` e configurar em `.eslintrc` (mode: error)
+- [x] Instalar `@axe-core/react` e configurar para dev mode only
+- [x] Auditar navegacao por teclado no fluxo de login
+- [x] Auditar navegacao por teclado no fluxo de dashboard (KPIs, graficos, drill-down)
+- [x] Auditar navegacao por teclado no fluxo de projetos (filtros, kanban, cockpit)
+- [x] Auditar navegacao por teclado no fluxo de cronogramas (calendario, lista)
+- [x] Auditar navegacao por teclado no fluxo de integracoes (sync, logs)
+- [x] Corrigir focus states inconsistentes (garantir ring visible em todos os interativos)
+- [x] Adicionar `aria-live="polite"` em areas de feedback dinamico (toast container, sync status)
+- [ ] Adicionar `aria-label` em icones de acao sem texto (botoes icon-only) — backlog 2.9
+- [ ] Verificar contraste AA com ferramenta (light + dark mode) — backlog 2.9
+- [ ] Corrigir violacoes de contraste encontradas — backlog 2.9
+- [x] Criar `.aios-core/development/checklists/a11y-checklist.md`
+- [x] Adicionar `npm run a11y:check` no package.json
+- [x] Rodar axe-core nos 5 fluxos e corrigir violacoes critical/serious
 
 ## Testes
 
@@ -91,10 +91,10 @@ para usar todas as funcionalidades sem depender exclusivamente do mouse.
 
 ## Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2026-02-27 | 1.0 | Story criada | Orion (aios-master) |
-| 2026-02-27 | 1.1 | PO validation: added Executor, Dev Notes, Change Log | Pax (po) |
+| Date       | Version | Description                                          | Author              |
+| ---------- | ------- | ---------------------------------------------------- | ------------------- |
+| 2026-02-27 | 1.0     | Story criada                                         | Orion (aios-master) |
+| 2026-02-27 | 1.1     | PO validation: added Executor, Dev Notes, Change Log | Pax (po)            |
 
 ## Dependencies
 

@@ -320,8 +320,16 @@ export function LogViewer({ datasetFilter }: LogViewerProps) {
     return (
       <div key={log.id} className={`border-b border-border/50 ${config.bg}`}>
         <div
+          role={hasDetails ? 'button' : undefined}
+          tabIndex={hasDetails ? 0 : undefined}
           className={`flex items-start gap-2 p-2 ${hasDetails ? 'cursor-pointer hover:bg-muted/50' : ''}`}
           onClick={() => hasDetails && toggleRow(log.id)}
+          onKeyDown={(e) => {
+            if (hasDetails && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault();
+              toggleRow(log.id);
+            }
+          }}
         >
           {hasDetails ? (
             isExpanded ? (

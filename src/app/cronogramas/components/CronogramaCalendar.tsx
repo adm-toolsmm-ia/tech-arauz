@@ -165,15 +165,15 @@ function MonthView({
                       isToday && 'bg-accent font-bold',
                       isSelected && 'bg-primary/5 ring-2 ring-primary',
                       hasDelayed &&
-                        daySchedules.length > 0 &&
-                        'ring-1 ring-red-300 dark:ring-red-700',
+                      daySchedules.length > 0 &&
+                      'ring-1 ring-red-300 dark:ring-red-700',
                     )}
                   >
                     <span
                       className={cn(
                         'mt-0.5 text-xs leading-none',
                         isToday &&
-                          'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
+                        'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
                         !isToday && date.getMonth() !== month && 'text-muted-foreground/50',
                       )}
                     >
@@ -239,8 +239,16 @@ function MonthView({
                               return (
                                 <div
                                   key={s.id}
+                                  role="button"
+                                  tabIndex={0}
                                   className="flex cursor-pointer items-start gap-2 rounded p-1.5 transition-colors hover:bg-muted/50"
                                   onClick={() => onSelectDay(date)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      onSelectDay(date);
+                                    }
+                                  }}
                                 >
                                   <div
                                     className={cn(

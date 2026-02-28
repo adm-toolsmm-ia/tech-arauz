@@ -225,8 +225,8 @@ export function ProjectListView({
                           'px-3 py-2 text-xs font-medium',
                           isProjectOverdue && 'text-red-600 dark:text-red-400',
                           !isProjectOverdue &&
-                            isDeadlineNear &&
-                            'text-amber-600 dark:text-amber-400',
+                          isDeadlineNear &&
+                          'text-amber-600 dark:text-amber-400',
                         )}
                       >
                         {formatDateBR(project.end_date)}
@@ -288,8 +288,16 @@ export function ProjectListView({
             <Card key={project.id} className="cursor-pointer transition-shadow hover:shadow-md">
               <CardContent className="p-3">
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="mb-2 flex items-start justify-between gap-2"
                   onClick={() => onSelectProject?.(project.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectProject?.(project.id);
+                    }
+                  }}
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-mono text-xs text-muted-foreground">

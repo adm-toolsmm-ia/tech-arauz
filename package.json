@@ -14,6 +14,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "typecheck": "tsc --noEmit",
+    "a11y:check": "next lint --max-warnings=0",
     "audit:rls": "node ./scripts/ci/check-rls-audit.mjs",
     "sync:ide": "node .aios-core/infrastructure/scripts/ide-sync/index.js sync",
     "sync:ide:check": "node .aios-core/infrastructure/scripts/ide-sync/index.js validate --strict",
@@ -69,6 +70,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@axe-core/react": "^4.11.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -80,6 +82,7 @@
     "cypress": "^15.10.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "jsdom": "^28.1.0",
     "postcss": "^8.4.0",
     "prettier": "^3.8.1",

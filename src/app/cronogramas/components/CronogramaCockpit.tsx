@@ -99,8 +99,16 @@ export function SelectedDayPanel({ date, schedules, projectIds, onActivityClick 
             return (
               <div
                 key={s.id}
+                role="button"
+                tabIndex={0}
                 className="flex cursor-pointer items-center gap-3 rounded-lg border bg-card p-2.5 transition-colors hover:bg-muted/50"
                 onClick={() => onActivityClick(s)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onActivityClick(s);
+                  }
+                }}
               >
                 <div
                   className={cn(

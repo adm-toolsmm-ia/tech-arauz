@@ -109,7 +109,7 @@ export function AgentTypeCard({
 
           {/* Ações */}
           {!agentType.is_system && (
-            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+            <div role="presentation" className="flex gap-1" onClick={(e) => e.stopPropagation()}>
               {onEdit && (
                 <Button
                   variant="ghost"

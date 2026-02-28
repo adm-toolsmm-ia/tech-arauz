@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Toaster } from 'sonner';
 import { DarkModeProvider } from './providers/DarkModeProvider';
 import { NotificationTester } from './notifications/NotificationTester';
+import { AxeProvider } from './providers/AxeProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -22,7 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <DarkModeProvider>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <AxeProvider>
+          {children}
+        </AxeProvider>
         <Toaster
           position="bottom-right"
           richColors

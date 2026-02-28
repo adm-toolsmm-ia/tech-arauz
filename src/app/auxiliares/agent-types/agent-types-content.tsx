@@ -21,6 +21,7 @@ import {
   deleteAgentTypeAction,
 } from '@/app/actions/agent-types';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useAgentTypesFilters } from '@/hooks/useAgentTypesFilters';
 import { KanbanBoard } from '@/components/views/KanbanBoard';
 import { SplitView } from '@/components/views/SplitView';
@@ -322,17 +323,20 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
 
       {/* Results */}
       {filteredData.length === 0 ? (
-        <Card>
-          <CardContent className="pb-12 pt-12">
-            <div className="text-center">
-              <p className="mb-4 text-muted-foreground">
-                {agentTypes.length === 0
-                  ? 'Nenhum tipo criado ainda'
-                  : 'Nenhum resultado encontrado'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          title={
+            agentTypes.length === 0
+              ? 'Nenhum tipo de agente cadastrado'
+              : 'Nenhum resultado encontrado'
+          }
+          description={
+            agentTypes.length === 0
+              ? 'Crie o primeiro tipo de agente para organizar seus agentes de IA.'
+              : 'Tente ajustar ou limpar os filtros aplicados.'
+          }
+          actionLabel={agentTypes.length === 0 ? 'Criar Tipo' : undefined}
+          onAction={agentTypes.length === 0 ? () => setIsCreateDialogOpen(true) : undefined}
+        />
       ) : viewMode === 'kanban' ? (
         <Card>
           <CardHeader>

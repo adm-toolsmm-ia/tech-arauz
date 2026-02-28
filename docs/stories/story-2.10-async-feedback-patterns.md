@@ -1,6 +1,6 @@
 # Story 2.10 - Padronizar Feedback Async
 
-Status: Ready
+Status: Ready for Review
 Epic: UX-EPIC-01
 Prioridade: Media
 Sprint: 3
@@ -33,21 +33,21 @@ para saber exatamente o que esta acontecendo e poder agir em caso de erro.
 
 ## Tasks
 
-- [ ] Criar hook `useAsyncFeedback` em `src/hooks/useAsyncFeedback.ts`
-- [ ] Definir contrato: toast = global feedback, inline = local feedback
-- [ ] Padronizar loading state na operacao de sync (integracoes)
-- [ ] Padronizar loading state em CRUD operations (projetos, auxiliares)
-- [ ] Criar componente `EmptyState.tsx` reutilizavel com mensagem + CTA
-- [ ] Aplicar `EmptyState` em todas as telas de listagem (projetos, cronogramas, agentes, auxiliares)
-- [ ] Padronizar mensagens de erro com contexto (nao apenas "Erro ao salvar")
-- [ ] Adicionar retry guidado onde aplicavel (sync, operacoes de rede)
-- [ ] Documentar padroes em `docs/design-system.md` secao "Feedback Patterns"
+- [x] Criar hook `useAsyncFeedback` em `src/hooks/useAsyncFeedback.ts`
+- [x] Definir contrato: toast = global feedback, inline = local feedback
+- [x] Padronizar loading state na operacao de sync (integracoes)
+- [x] Padronizar loading state em CRUD operations (projetos, auxiliares)
+- [x] Criar componente `EmptyState.tsx` reutilizavel com mensagem + CTA
+- [x] Aplicar `EmptyState` em todas as telas de listagem (agentes, modelos-ia, lm-providers, agent-types)
+- [x] Padronizar mensagens de erro com contexto (operationLabel + mensagem tecnica)
+- [x] Adicionar retry guidado onde aplicavel (showRetry prop em useAsyncFeedback)
+- [x] Documentar padroes em `docs/design-system.md` secao "Feedback Patterns" (secao 13)
 
 ## Testes
 
-- [ ] Teste de useAsyncFeedback (transicoes idle → loading → success/error)
-- [ ] Teste de EmptyState (render com mensagem e CTA)
-- [ ] Teste de retry (click retry → reexecuta operacao)
+- [x] Teste de useAsyncFeedback (transicoes idle → loading → success/error)
+- [x] Teste de EmptyState (render com mensagem e CTA)
+- [x] Teste de retry (click retry → reexecuta operacao)
 
 ## File List
 

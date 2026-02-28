@@ -25,6 +25,7 @@ import {
 import { Database, Plus, Trash2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { SplitView } from '@/components/views/SplitView';
 import { KanbanBoard, type KanbanColumn, type KanbanItem } from '@/components/views/KanbanBoard';
 import { ModelCard } from '@/components/lm-models/ModelCard';
@@ -385,15 +386,16 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
       />
 
       {filteredModels.length === 0 ? (
-        <Card>
-          <CardContent className="pb-12 pt-12">
-            <div className="text-center">
-              <p className="mb-4 text-muted-foreground">
-                {models.length === 0 ? 'Nenhum modelo criado ainda' : 'Nenhum resultado encontrado'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          title={models.length === 0 ? 'Nenhum modelo cadastrado' : 'Nenhum resultado encontrado'}
+          description={
+            models.length === 0
+              ? 'Adicione o primeiro modelo de IA para usar nos seus agentes.'
+              : 'Tente ajustar ou limpar os filtros aplicados.'
+          }
+          actionLabel={models.length === 0 ? 'Adicionar Modelo' : undefined}
+          onAction={models.length === 0 ? () => setIsCreateDialogOpen(true) : undefined}
+        />
       ) : viewMode === 'kanban' ? (
         <div className="space-y-4">
           <KanbanBoard

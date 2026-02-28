@@ -9,6 +9,7 @@ import { AgentCockpit } from '@/components/agents/AgentCockpit';
 import { SplitView } from '@/components/views/SplitView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
@@ -214,19 +215,15 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
 
       {/* Content */}
       {filtered.length === 0 ? (
-        <Card>
-          <CardContent className="pb-12 pt-12">
-            <div className="text-center">
-              <Bot className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mb-2 text-lg font-medium">Nenhum agente encontrado</h3>
-              <p className="text-sm text-muted-foreground">
-                {agents.length === 0
-                  ? 'Crie seu primeiro agente para começar!'
-                  : 'Ajuste os filtros ou pesquisa.'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Bot}
+          title={agents.length === 0 ? 'Nenhum agente criado' : 'Nenhum agente encontrado'}
+          description={
+            agents.length === 0
+              ? 'Crie seu primeiro agente de IA para começar.'
+              : 'Ajuste os filtros ou o termo de pesquisa.'
+          }
+        />
       ) : viewMode === 'list' ? (
         <div className="space-y-2">
           {filtered.map((agent) => (

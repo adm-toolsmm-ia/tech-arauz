@@ -24,6 +24,7 @@ import {
   deleteLmProviderAction,
 } from '@/app/actions/lm-providers';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useLmProvidersFilters } from '@/hooks/useLmProvidersFilters';
 import { LmModelsService } from '@/services/agents/lmModelsService';
 import { KanbanBoard, type KanbanItem } from '@/components/views/KanbanBoard';
@@ -311,17 +312,18 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
 
       {/* Providers List or Kanban */}
       {filteredData.length === 0 ? (
-        <Card>
-          <CardContent className="pb-12 pt-12">
-            <div className="text-center">
-              <p className="mb-4 text-muted-foreground">
-                {providers.length === 0
-                  ? 'Nenhum provedor criado ainda'
-                  : 'Nenhum resultado encontrado'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          title={
+            providers.length === 0 ? 'Nenhum provedor cadastrado' : 'Nenhum resultado encontrado'
+          }
+          description={
+            providers.length === 0
+              ? 'Crie o primeiro provedor de modelos de IA para começar.'
+              : 'Tente ajustar ou limpar os filtros aplicados.'
+          }
+          actionLabel={providers.length === 0 ? 'Criar Provedor' : undefined}
+          onAction={providers.length === 0 ? () => setIsCreateDialogOpen(true) : undefined}
+        />
       ) : viewMode === 'kanban' ? (
         <Card>
           <CardHeader>

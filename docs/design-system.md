@@ -426,5 +426,82 @@ Classes utilitarias registradas em `@layer components`:
 
 ---
 
+## 13. Feedback Patterns (Story 2.10)
+
+### 13.1 Regra de Canal
+
+| Tipo de Evento | Canal | Componente/Hook |
+|----------------|-------|-----------------|
+| Eventos globais (sync completo, save sucesso) | Toast | `useAsyncFeedback({ feedbackMode: 'toast' })` |
+| Erros locais (campo, validação, row-level) | Inline | `useAsyncFeedback({ feedbackMode: 'inline' })` |
+| Ambos | Toast + Inline | `useAsyncFeedback({ feedbackMode: 'both' })` |
+
+### 13.2 useAsyncFeedback
+
+Hook que estende `useAsyncOperation` com canal de feedback estruturado.
+
+```typescript
+// Evento global (padrão): toast
+const { execute, isLoading } = useAsyncFeedback({
+  feedbackMode: 'toast',
+  operationLabel: 'salvar projeto',
+  successToast: 'Projeto salvo com sucesso!',
+});
+
+// Feedback local: inline message
+const { execute, inlineMessage, inlineType, clearInline } = useAsyncFeedback({
+  feedbackMode: 'inline',
+  operationLabel: 'validar campo',
+});
+```
+
+**Retorno adicional vs useAsyncOperation:**
+- `inlineMessage: string | null` — mensagem de feedback local
+- `inlineType: 'error' | 'success' | 'info' | null` — tipo do feedback
+- `clearInline()` — limpa a mensagem inline
+
+### 13.3 Loading State Padrão (skeleton → content → toast)
+
+Sequência obrigatória para operações de sync/CRUD:
+
+1. `status === 'loading'` → exibir skeleton (`SkeletonKPI`, `SkeletonTableRow`, etc.)
+2. `status === 'success'` → exibir conteúdo + toast de resultado
+3. `status === 'error'` → exibir mensagem com contexto: "Erro ao {operationLabel}: {message}"
+
+### 13.4 EmptyState Component
+
+Componente padronizado para estados vazios em todas as telas de listagem.
+
+```tsx
+// Sem dados: com CTA
+<EmptyState
+  title="Nenhum projeto cadastrado"
+  description="Crie o primeiro projeto para começar."
+  actionLabel="Criar Projeto"
+  onAction={() => setIsCreateDialogOpen(true)}
+/>
+
+// Filtro sem resultado: sem CTA de criação
+<EmptyState
+  title="Nenhum resultado encontrado"
+  description="Tente ajustar ou limpar os filtros aplicados."
+/>
+```
+
+**Props disponíveis:** `title`, `description`, `icon` (LucideIcon), `actionLabel`, `onAction`, `secondaryLabel`, `onSecondary`, `className`
+
+### 13.5 Mensagens de Erro com Contexto
+
+Padrão: `"Erro ao {verbo} {substantivo}: {mensagem técnica}"`
+
+```
+✅ "Erro ao salvar projeto: Conexão recusada"
+❌ "Erro ao salvar"
+❌ "Algo deu errado"
+```
+
+---
+
 *Documento gerado por Dex (dev) em 2026-02-27*
+*Atualizado em 2026-02-28: Seção 13 Feedback Patterns (Story 2.10)*
 *Base: tailwind.config.ts + globals.css + module-standards.md*

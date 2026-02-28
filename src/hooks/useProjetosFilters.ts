@@ -18,6 +18,7 @@ import { normalizePhaseSlug } from '@/lib/domain/project-phase';
 import { getOverdueData } from '@/lib/domain/project-health';
 import {
   filterProjectsByAgendaPeriod,
+  navigateAgendaRefDate,
   type ProjectAgendaPeriod,
 } from '@/lib/domain/project-agenda';
 
@@ -202,6 +203,13 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     setAgendaPeriodState(period as ProjectAgendaPeriod);
   }, []);
 
+  const navigateAgenda = useCallback(
+    (direction: 1 | -1) => {
+      setAgendaRefDate((prev) => navigateAgendaRefDate(prev, agendaPeriod, direction));
+    },
+    [agendaPeriod],
+  );
+
   const filteredData = useMemo(() => {
     const faseFilter = filterState.filters.fase_atual;
     const hasFaseFilter = Array.isArray(faseFilter) && faseFilter.length > 0;
@@ -260,6 +268,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     agendaRefDate,
     setAgendaPeriod,
     setAgendaRefDate,
+    navigateAgenda,
 
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,

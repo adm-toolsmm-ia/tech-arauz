@@ -68,3 +68,46 @@ export function filterProjectsByAgendaPeriod<T extends ProjectForAgenda>(
 ): T[] {
   return projects.filter((p) => projectEndDateInPeriod(p, refDate, period));
 }
+
+/** Get human-readable label for the period (e.g. "Jan 2026", "1º Trim 2026") */
+export function getAgendaPeriodLabel(refDate: Date, period: ProjectAgendaPeriod): string {
+  const year = refDate.getFullYear();
+  const month = refDate.getMonth();
+
+  if (period === 'month') {
+    const monthNames = [
+      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+    ];
+    return `${monthNames[month]} ${year}`;
+  }
+  if (period === 'quarter') {
+    const q = Math.floor(month / 3) + 1;
+    return `${q}º Trim ${year}`;
+  }
+  if (period === 'semester') {
+    return month < 6 ? `1º Sem ${year}` : `2º Sem ${year}`;
+  }
+  return String(year);
+}
+
+/** Navigate refDate by one period unit (direction: 1 = next, -1 = prev) */
+export function navigateAgendaRefDate(
+  refDate: Date,
+  period: ProjectAgendaPeriod,
+  direction: 1 | -1,
+): Date {
+  const next = new Date(refDate);
+  const delta = direction;
+
+  if (period === 'month') {
+    next.setMonth(next.getMonth() + delta);
+  } else if (period === 'quarter') {
+    next.setMonth(next.getMonth() + delta * 3);
+  } else if (period === 'semester') {
+    next.setMonth(next.getMonth() + delta * 6);
+  } else {
+    next.setFullYear(next.getFullYear() + delta);
+  }
+  return next;
+}

@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { KanbanBoard, type KanbanItem } from '@/components/views/KanbanBoard';
 import { SplitView } from '@/components/views/SplitView';
@@ -208,6 +209,13 @@ export function UsersContent({ users: initialUsers, currentUserId }: UsersConten
         </div>
       )}
 
+      <div className="space-y-3">
+        <ViewModeBar
+          moduleId="usuarios"
+          registry={registry}
+          activeViewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
       <FilterBar
         moduleId="usuarios"
         filters={registry}
@@ -230,6 +238,7 @@ export function UsersContent({ users: initialUsers, currentUserId }: UsersConten
           setSearch('');
         }}
       />
+      </div>
 
       {filteredData.length === 0 ? (
         <EmptyState

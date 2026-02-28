@@ -24,11 +24,7 @@ export default async function CronogramasPage() {
       `
       *,
       project:projects(
-        id,
-        titulo,
-        codigo,
-        status:status_original,
-        fase_atual,
+        *,
         histories:project_histories(*),
         approvers:project_approvers(*),
         budgets:project_budgets(*),

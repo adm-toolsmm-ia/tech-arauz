@@ -21,6 +21,7 @@ import {
   deleteAgentTypeAction,
 } from '@/app/actions/agent-types';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useAgentTypesFilters } from '@/hooks/useAgentTypesFilters';
 import { KanbanBoard } from '@/components/views/KanbanBoard';
@@ -297,7 +298,14 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
         </CardContent>
       </Card>
 
-      {/* FilterBar */}
+      {/* ViewModeBar + FilterBar */}
+      <div className="space-y-3">
+        <ViewModeBar
+          moduleId="agent-types"
+          registry={registry}
+          activeViewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
       <FilterBar
         moduleId="agent-types"
         filters={registry}
@@ -320,6 +328,7 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
           setSearch('');
         }}
       />
+      </div>
 
       {/* Results */}
       {filteredData.length === 0 ? (

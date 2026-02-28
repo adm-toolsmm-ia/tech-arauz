@@ -129,7 +129,7 @@ describe('FilterBar Component', () => {
       expect(screen.getByText('Filters')).toBeInTheDocument();
     });
 
-    it('renders view mode buttons when viewModes are provided', () => {
+    it('does not render view mode buttons (moved to ViewModeBar)', () => {
       render(
         <FilterBar
           moduleId="projetos"
@@ -138,11 +138,11 @@ describe('FilterBar Component', () => {
         />,
       );
 
-      expect(screen.getByTitle('Kanban')).toBeInTheDocument();
-      expect(screen.getByTitle('List')).toBeInTheDocument();
+      expect(screen.queryByTitle('Kanban')).not.toBeInTheDocument();
+      expect(screen.queryByTitle('List')).not.toBeInTheDocument();
     });
 
-    it('renders agenda period buttons when in agenda view mode', async () => {
+    it('does not render agenda period buttons (moved to ViewModeBar)', () => {
       render(
         <FilterBar
           moduleId="projetos"
@@ -153,10 +153,7 @@ describe('FilterBar Component', () => {
         />,
       );
 
-      // Agenda period buttons should be visible in agenda mode
-      await waitFor(() => {
-        expect(screen.getByText('Dia')).toBeInTheDocument();
-      });
+      expect(screen.queryByText('Dia')).not.toBeInTheDocument();
     });
   });
 
@@ -370,7 +367,7 @@ describe('FilterBar Component', () => {
   });
 
   describe('View Mode Selection', () => {
-    it('renders view mode buttons when viewModes are provided', () => {
+    it('does not render view mode buttons (moved to ViewModeBar)', () => {
       render(
         <FilterBar
           moduleId="projetos"
@@ -379,102 +376,26 @@ describe('FilterBar Component', () => {
         />,
       );
 
-      expect(screen.getByTitle('Kanban')).toBeInTheDocument();
-      expect(screen.getByTitle('List')).toBeInTheDocument();
-      expect(screen.getByTitle('Agenda')).toBeInTheDocument();
-    });
-
-    it('sets initial view mode correctly', () => {
-      render(
-        <FilterBar
-          moduleId="projetos"
-          filters={mockFilterRegistry}
-          onFiltersChange={mockOnFiltersChange}
-          initialViewMode="list"
-        />,
-      );
-
-      const listButton = screen.getByTitle('List');
-      expect(listButton).toBeInTheDocument();
-    });
-
-    it('respects currentViewMode prop', () => {
-      const { rerender } = render(
-        <FilterBar
-          moduleId="projetos"
-          filters={mockFilterRegistry}
-          onFiltersChange={mockOnFiltersChange}
-          initialViewMode="kanban"
-        />,
-      );
-
-      rerender(
-        <FilterBar
-          moduleId="projetos"
-          filters={mockFilterRegistry}
-          onFiltersChange={mockOnFiltersChange}
-          currentViewMode="list"
-        />,
-      );
-
-      const listButton = screen.getByTitle('List');
-      expect(listButton).toBeInTheDocument();
+      expect(screen.queryByTitle('Kanban')).not.toBeInTheDocument();
+      expect(screen.queryByTitle('List')).not.toBeInTheDocument();
+      expect(screen.queryByTitle('Agenda')).not.toBeInTheDocument();
     });
   });
 
   describe('Agenda Period Selection', () => {
-    it('shows agenda period buttons when in agenda view mode', () => {
+    it('does not render agenda period buttons (moved to ViewModeBar)', () => {
       render(
         <FilterBar
           moduleId="projetos"
           filters={mockFilterRegistry}
           onFiltersChange={mockOnFiltersChange}
           initialViewMode="agenda"
-        />,
-      );
-
-      expect(screen.getByText('Dia')).toBeInTheDocument();
-      expect(screen.getByText('Semana')).toBeInTheDocument();
-      expect(screen.getByText('Mês')).toBeInTheDocument();
-    });
-
-    it('does not show agenda period buttons when not in agenda view', () => {
-      render(
-        <FilterBar
-          moduleId="projetos"
-          filters={mockFilterRegistry}
-          onFiltersChange={mockOnFiltersChange}
-          initialViewMode="kanban"
         />,
       );
 
       expect(screen.queryByText('Dia')).not.toBeInTheDocument();
-    });
-
-    it('respects currentAgendaPeriod prop', () => {
-      const { rerender } = render(
-        <FilterBar
-          moduleId="projetos"
-          filters={mockFilterRegistry}
-          onFiltersChange={mockOnFiltersChange}
-          initialViewMode="agenda"
-          initialAgendaPeriod="day"
-        />,
-      );
-
-      expect(screen.getByText('Dia')).toBeInTheDocument();
-
-      rerender(
-        <FilterBar
-          moduleId="projetos"
-          filters={mockFilterRegistry}
-          onFiltersChange={mockOnFiltersChange}
-          currentViewMode="agenda"
-          currentAgendaPeriod="week"
-        />,
-      );
-
-      expect(screen.getByText('Semana')).toBeInTheDocument();
+      expect(screen.queryByText('Semana')).not.toBeInTheDocument();
+      expect(screen.queryByText('Mês')).not.toBeInTheDocument();
     });
   });
 

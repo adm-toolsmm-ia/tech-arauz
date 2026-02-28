@@ -157,9 +157,6 @@ export function FilterBar({
     }
   }, [currentSearch]);
 
-  // ✨ CENTRALIZADO: Período calendário (sincronizado entre Agenda e Gantt)
-  const activePeriod = currentAgendaPeriod ?? initialAgendaPeriod ?? 'day';
-
   // Handle search input with debounce
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -175,7 +172,6 @@ export function FilterBar({
     [currentFilters, initialFilters],
   );
   const activeSearch = currentSearch ?? searchInput;
-  const activeViewMode = currentViewMode ?? initialViewMode ?? 'kanban';
 
   // Separate quick and advanced filters
   const quickFilters = filterRegistry.filters.filter((f) => f.quickFilter);
@@ -302,52 +298,6 @@ export function FilterBar({
               <TooltipContent>Reset all filters</TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        )}
-
-        {/* View Mode Selector */}
-        {filterRegistry.viewModes && filterRegistry.viewModes.length > 1 && (
-          <div className="flex items-center gap-2 border-l border-border pl-2">
-            <div className="flex gap-1">
-              {filterRegistry.viewModes.map((mode) => (
-                <Button
-                  key={mode.id}
-                  variant={activeViewMode === mode.id ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => onViewModeChange?.(mode.id)}
-                  title={mode.label}
-                >
-                  {mode.icon ? (
-                    <mode.icon className="h-4 w-4" />
-                  ) : (
-                    <span className="text-xs">{mode.label}</span>
-                  )}
-                </Button>
-              ))}
-            </div>
-            {/* ✨ CENTRALIZADO: Calendar Period Selector (Dia/Semana/Mês)
-                Visível em Agenda E Lista
-                Períodos são compartilhados entre as views */}
-            {(activeViewMode === 'agenda' ||
-              activeViewMode === 'lista' ||
-              (activeViewMode === 'kanban' && moduleId === 'cronogramas')) &&
-              filterRegistry.agendaPeriods &&
-              filterRegistry.agendaPeriods.length > 0 && (
-                <div className="flex gap-1 border-l border-border pl-2">
-                  {filterRegistry.agendaPeriods.map((period) => (
-                    <Button
-                      key={period.id}
-                      variant={activePeriod === period.id ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => onAgendaPeriodChange?.(period.id)}
-                      title={period.label}
-                    >
-                      {period.icon ? <period.icon className="mr-1 h-3.5 w-3.5" /> : null}
-                      <span className="text-xs">{period.label}</span>
-                    </Button>
-                  ))}
-                </div>
-              )}
-          </div>
         )}
       </div>
 

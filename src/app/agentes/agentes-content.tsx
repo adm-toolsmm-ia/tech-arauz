@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { Bot, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
@@ -131,7 +132,14 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
         </div>
       )}
 
-      {/* FilterBar + Refresh */}
+      {/* ViewModeBar + FilterBar + Refresh */}
+      <div className="space-y-3">
+        <ViewModeBar
+          moduleId="agentes"
+          registry={registry}
+          activeViewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <FilterBar
@@ -174,6 +182,7 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
             {isRefreshing ? 'Atualizando...' : 'Atualizar'}
           </span>
         </Button>
+      </div>
       </div>
 
       {/* Content */}

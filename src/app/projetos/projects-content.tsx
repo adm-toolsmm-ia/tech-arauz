@@ -117,6 +117,7 @@ export function ProjectsContent({
     agendaPeriod,
     agendaRefDate,
     setAgendaPeriod,
+    navigateAgenda,
     updateFilter,
     setSearch,
     setViewMode: setFilterViewMode,
@@ -237,6 +238,8 @@ export function ProjectsContent({
               currentDate={agendaRefDate}
               period={agendaPeriod}
               onProjectClick={setSelectedProject}
+              onNavigatePrev={() => navigateAgenda(-1)}
+              onNavigateNext={() => navigateAgenda(1)}
             />
           ) : (
             <ProjectsListViewWrapper

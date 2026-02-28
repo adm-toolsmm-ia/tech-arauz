@@ -3,6 +3,7 @@
 import { RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import type { FilterState, FilterRegistry } from '@/lib/filters/filter-types';
 
 interface CronogramaFiltersProps {
@@ -35,7 +36,16 @@ export function CronogramaFilters({
   onSync,
 }: CronogramaFiltersProps) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="space-y-3">
+      <ViewModeBar
+        moduleId="cronogramas"
+        registry={registry}
+        activeViewMode={viewMode}
+        activeAgendaPeriod={calendarPeriod}
+        onViewModeChange={onViewModeChange}
+        onAgendaPeriodChange={onCalendarPeriodChange}
+      />
+      <div className="flex items-start gap-3">
       <div className="min-w-0 flex-1">
         <FilterBar
           moduleId="cronogramas"
@@ -78,6 +88,7 @@ export function CronogramaFilters({
           {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
         </span>
       </Button>
+    </div>
     </div>
   );
 }

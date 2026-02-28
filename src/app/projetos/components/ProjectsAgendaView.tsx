@@ -3,9 +3,13 @@
 import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ProjectAgendaPeriod } from '@/lib/domain/project-agenda';
+import {
+  getAgendaPeriodLabel,
+  type ProjectAgendaPeriod,
+} from '@/lib/domain/project-agenda';
 
 interface ProjectForAgenda {
   id: string;
@@ -20,6 +24,8 @@ interface ProjectsAgendaViewProps<T extends ProjectForAgenda = ProjectForAgenda>
   currentDate: Date;
   period: ProjectAgendaPeriod;
   onProjectClick?: (project: T) => void;
+  onNavigatePrev?: () => void;
+  onNavigateNext?: () => void;
 }
 
 function formatDateBR(dateStr: string | null): string {
@@ -51,6 +57,8 @@ export function ProjectsAgendaView<T extends ProjectForAgenda>({
   currentDate,
   period,
   onProjectClick,
+  onNavigatePrev,
+  onNavigateNext,
 }: ProjectsAgendaViewProps<T>) {
   const grouped = React.useMemo(() => groupByEndDate(projects), [projects]);
 
@@ -60,6 +68,9 @@ export function ProjectsAgendaView<T extends ProjectForAgenda>({
     if (grouped.has('sem_data')) dates.push('sem_data');
     return dates;
   }, [grouped]);
+
+  const periodLabel = getAgendaPeriodLabel(currentDate, period);
+  const showNavigation = onNavigatePrev != null && onNavigateNext != null;
 
   if (projects.length === 0) {
     return (
@@ -79,6 +90,29 @@ export function ProjectsAgendaView<T extends ProjectForAgenda>({
 
   return (
     <div className="space-y-6">
+      {showNavigation && (
+        <div className="mb-4 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onNavigatePrev}
+            className="h-8 w-8"
+            aria-label="Período anterior"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h3 className="text-base font-semibold">{periodLabel}</h3>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onNavigateNext}
+            className="h-8 w-8"
+            aria-label="Próximo período"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
       {sortedDates.map((dateKey) => {
         const items = grouped.get(dateKey) ?? [];
         const label =

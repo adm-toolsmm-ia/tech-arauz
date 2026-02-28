@@ -24,6 +24,7 @@ import {
   deleteLmProviderAction,
 } from '@/app/actions/lm-providers';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useLmProvidersFilters } from '@/hooks/useLmProvidersFilters';
 import { LmModelsService } from '@/services/agents/lmModelsService';
@@ -286,7 +287,14 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         </CardContent>
       </Card>
 
-      {/* FilterBar: busca padronizada + ViewToggle */}
+      {/* ViewModeBar + FilterBar */}
+      <div className="space-y-3">
+        <ViewModeBar
+          moduleId="lm-providers"
+          registry={registry}
+          activeViewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
       <FilterBar
         moduleId="lm-providers"
         filters={registry}
@@ -309,6 +317,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
           setSearch('');
         }}
       />
+      </div>
 
       {/* Providers List or Kanban */}
       {filteredData.length === 0 ? (

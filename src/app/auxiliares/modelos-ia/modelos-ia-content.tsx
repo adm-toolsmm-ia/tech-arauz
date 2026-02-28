@@ -25,6 +25,7 @@ import {
 import { Database, Plus, Trash2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SplitView } from '@/components/views/SplitView';
 import { KanbanBoard, type KanbanColumn, type KanbanItem } from '@/components/views/KanbanBoard';
@@ -360,6 +361,13 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
         </CardContent>
       </Card>
 
+      <div className="space-y-3">
+        <ViewModeBar
+          moduleId="modelos-ia"
+          registry={registry}
+          activeViewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
       <FilterBar
         moduleId="modelos-ia"
         filters={registry}
@@ -384,6 +392,7 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
           setSearch('');
         }}
       />
+      </div>
 
       {filteredModels.length === 0 ? (
         <EmptyState

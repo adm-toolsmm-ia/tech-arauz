@@ -3,6 +3,7 @@
 import { RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import type { FilterState, FilterRegistry } from '@/lib/filters/filter-types';
 
 interface ProjectsFiltersProps {
@@ -35,7 +36,16 @@ export function ProjectsFilters({
   onSync,
 }: ProjectsFiltersProps) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="space-y-3">
+      <ViewModeBar
+        moduleId="projetos"
+        registry={registry}
+        activeViewMode={viewMode}
+        activeAgendaPeriod={agendaPeriod}
+        onViewModeChange={onViewModeChange}
+        onAgendaPeriodChange={onAgendaPeriodChange}
+      />
+      <div className="flex items-start gap-3">
       <div className="min-w-0 flex-1">
         <FilterBar
           moduleId="projetos"
@@ -78,6 +88,7 @@ export function ProjectsFilters({
           {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
         </span>
       </Button>
+    </div>
     </div>
   );
 }

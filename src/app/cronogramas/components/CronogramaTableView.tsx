@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { AlertTriangle, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { Schedule } from '@/lib/domain/schedule-status';
@@ -9,7 +9,7 @@ import { formatDateBR, isConsideredActive } from '@/lib/domain/schedule-status';
 
 // ---------- Types ----------
 
-type SortField = 'atividade' | 'responsavel' | 'data_inicio' | 'data_fim' | 'data_prazo' | 'status' | 'fase_atividade';
+type SortField = 'atividade' | 'projeto' | 'responsavel' | 'setor' | 'data_inicio' | 'data_fim' | 'data_prazo' | 'status' | 'fase_atividade';
 type SortDirection = 'asc' | 'desc';
 
 interface CronogramaTableViewProps {
@@ -54,7 +54,9 @@ export function CronogramaTableView({
 
     const columns: { key: SortField; label: string; className?: string }[] = [
         { key: 'atividade', label: 'Atividade', className: 'min-w-[200px]' },
+        { key: 'projeto', label: 'Projeto', className: 'min-w-[140px]' },
         { key: 'responsavel', label: 'Responsável', className: 'min-w-[120px]' },
+        { key: 'setor', label: 'Setor', className: 'min-w-[100px]' },
         { key: 'data_inicio', label: 'Início', className: 'w-[100px]' },
         { key: 'data_fim', label: 'Fim', className: 'w-[100px]' },
         { key: 'data_prazo', label: 'Prazo', className: 'w-[100px]' },
@@ -95,7 +97,7 @@ export function CronogramaTableView({
                 <tbody>
                     {displaySchedules.length === 0 ? (
                         <tr>
-                            <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                            <td colSpan={9} className="py-12 text-center text-muted-foreground">
                                 Nenhuma atividade encontrada.
                             </td>
                         </tr>
@@ -108,12 +110,22 @@ export function CronogramaTableView({
                             >
                                 <td className="px-3 py-2.5">
                                     <div className="flex items-center gap-2">
-                                        {s.atrasado && <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-red-500" />}
+                                        {s.atrasado && (
+                                            <Badge variant="destructive" className="shrink-0 px-1.5 py-0 text-[10px]">
+                                                Atrasada
+                                            </Badge>
+                                        )}
                                         <span className="line-clamp-1 font-medium">{s.atividade || 'Sem título'}</span>
                                     </div>
                                 </td>
                                 <td className="px-3 py-2.5 text-muted-foreground">
+                                    <span className="line-clamp-1">{s.project?.titulo || '—'}</span>
+                                </td>
+                                <td className="px-3 py-2.5 text-muted-foreground">
                                     <span className="line-clamp-1">{s.responsavel || '—'}</span>
+                                </td>
+                                <td className="px-3 py-2.5 text-muted-foreground">
+                                    <span className="line-clamp-1">{s.setor_responsavel || '—'}</span>
                                 </td>
                                 <td className="px-3 py-2.5 tabular-nums text-muted-foreground">
                                     {formatDateBR(s.data_inicio)}
@@ -128,10 +140,7 @@ export function CronogramaTableView({
                                     {formatDateBR(s.data_prazo)}
                                 </td>
                                 <td className="px-3 py-2.5">
-                                    <Badge
-                                        variant={s.atrasado ? 'destructive' : 'secondary'}
-                                        className="px-1.5 py-0 text-[10px]"
-                                    >
+                                    <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
                                         {s.status || 'Pendente'}
                                     </Badge>
                                 </td>
@@ -162,7 +171,9 @@ export function CronogramaTableView({
 function getSortValue(s: Schedule, field: SortField): string {
     switch (field) {
         case 'atividade': return (s.atividade || '').toLowerCase();
+        case 'projeto': return (s.project?.titulo || '').toLowerCase();
         case 'responsavel': return (s.responsavel || '').toLowerCase();
+        case 'setor': return (s.setor_responsavel || '').toLowerCase();
         case 'data_inicio': return s.data_inicio || '';
         case 'data_fim': return s.data_fim || '';
         case 'data_prazo': return s.data_prazo || '';

@@ -2,7 +2,7 @@
  * Filter definitions - Modelos IA module.
  */
 
-import { Grid3X3, LayoutGrid, List, Building2, Layers, Power } from 'lucide-react';
+import { LayoutGrid, List, Building2, Layers, Power } from 'lucide-react';
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
 export const filterDefinitionsModelosIa: FilterDefinition[] = [
@@ -46,9 +46,8 @@ export const filterRegistryModelosIa: FilterRegistry = {
   filters: filterDefinitionsModelosIa,
   searchable: true,
   viewModes: [
-    { id: 'grid', label: 'Grade', icon: Grid3X3 },
-    { id: 'list', label: 'Lista', icon: List },
     { id: 'kanban', label: 'Kanban', icon: LayoutGrid },
+    { id: 'list', label: 'Lista', icon: List },
   ],
 };
 

@@ -50,5 +50,7 @@
   "outputStyle": "default",
   "sandbox": {
     "enabled": false
-  }
+  },
+  "spinnerTipsEnabled": true,
+  "prefersReducedMotion": false
 }

@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Users,
   Calendar,
+  CalendarDays,
   LayoutGrid,
   List,
   Layers,
@@ -176,10 +177,21 @@ export const filterRegistryProjetos: FilterRegistry = {
       icon: LayoutGrid,
     },
     {
+      id: 'agenda',
+      label: 'Agenda',
+      icon: CalendarDays,
+    },
+    {
       id: 'list',
       label: 'Lista',
       icon: List,
     },
+  ],
+  agendaPeriods: [
+    { id: 'month', label: 'Mês', icon: Calendar },
+    { id: 'quarter', label: 'Trimestre', icon: Calendar },
+    { id: 'semester', label: 'Semestre', icon: Calendar },
+    { id: 'year', label: 'Ano', icon: CalendarDays },
   ],
 };
 

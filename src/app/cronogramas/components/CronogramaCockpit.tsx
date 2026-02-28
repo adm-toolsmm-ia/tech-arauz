@@ -5,11 +5,17 @@ import { Calendar as CalendarIcon, CalendarDays } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SplitView } from '@/components/views/SplitView';
-import { ProjectCockpit } from '@/components/project';
 import { ScheduleCockpit } from '@/components/cronogramas/ScheduleCockpit';
 import { cn } from '@/lib/utils';
 import type { Schedule } from '@/lib/domain/schedule-status';
 import { PROJECT_COLORS, getProjectColorIndex } from '@/lib/domain/schedule-status';
+import {
+  dbDeliveryToUI,
+  dbHistoryToUI,
+  dbApproverToUI,
+  dbBudgetToUI,
+} from '@/lib/transformers/project';
+import type { DBDelivery, DBHistory, DBApprover, DBBudget } from '@/lib/transformers/project';
 
 // ---------- SplitView Wrapper ----------
 
@@ -19,11 +25,31 @@ interface CronogramaCockpitProps {
   onClose: () => void;
 }
 
+/** Raw project relations from Supabase (schema columns) */
+function toUIDeliveries(raw: unknown[]): Array<{ id: string; description: string; deadline: string; completed: boolean }> {
+  return raw.map((r) => dbDeliveryToUI(r as DBDelivery));
+}
+function toUIHistories(raw: unknown[]): Array<{ id: string; type: string; from: string; to: string; step_from: string; step_to: string; message: string; date: string }> {
+  return raw.map((r) => dbHistoryToUI(r as DBHistory));
+}
+function toUIApprovers(raw: unknown[]): Array<{ id: string; type: string; responsible: string }> {
+  return raw.map((r) => dbApproverToUI(r as DBApprover));
+}
+function toUIBudgets(raw: unknown[]): Array<{ id: string; value: number; supplier: string; date: string; currency: string }> {
+  return raw.map((r) => dbBudgetToUI(r as DBBudget));
+}
+
 export function CronogramaCockpit({
   selectedSchedule,
   allSchedules,
   onClose,
 }: CronogramaCockpitProps) {
+  const project = selectedSchedule?.project;
+  const rawDeliveries = Array.isArray(project?.deliveries) ? project.deliveries : [];
+  const rawHistories = Array.isArray(project?.histories) ? project.histories : [];
+  const rawApprovers = Array.isArray(project?.approvers) ? project.approvers : [];
+  const rawBudgets = Array.isArray(project?.budgets) ? project.budgets : [];
+
   return (
     <SplitView
       isOpen={!!selectedSchedule}
@@ -35,12 +61,12 @@ export function CronogramaCockpit({
       <ScheduleCockpit
         schedule={selectedSchedule}
         onClose={onClose}
-        project={selectedSchedule?.project || undefined}
+        project={project || undefined}
         projectSchedules={allSchedules.filter((s) => s.project_id === selectedSchedule?.project_id)}
-        projectDeliveries={selectedSchedule?.project?.deliveries || []}
-        projectHistories={selectedSchedule?.project?.histories || []}
-        projectApprovers={selectedSchedule?.project?.approvers || []}
-        projectBudgets={selectedSchedule?.project?.budgets || []}
+        projectDeliveries={toUIDeliveries(rawDeliveries)}
+        projectHistories={toUIHistories(rawHistories)}
+        projectApprovers={toUIApprovers(rawApprovers)}
+        projectBudgets={toUIBudgets(rawBudgets)}
       />
     </SplitView>
   );

@@ -51,35 +51,11 @@ export interface CronogramaData {
     codigo: string | null;
     status: string | null;
     fase_atual: string | null;
-    // Project relations
-    histories?: Array<{
-      id: string;
-      type: string;
-      from: string;
-      to: string;
-      step_from: string;
-      step_to: string;
-      message: string;
-      date: string;
-    }>;
-    approvers?: Array<{
-      id: string;
-      type: string;
-      responsible: string;
-    }>;
-    budgets?: Array<{
-      id: string;
-      value: number;
-      supplier: string;
-      date: string;
-      currency: string;
-    }>;
-    deliveries?: Array<{
-      id: string;
-      description: string;
-      deadline: string;
-      completed: boolean;
-    }>;
+    // Project relations (raw DB shape from Supabase query with *)
+    histories?: Array<Record<string, unknown>>;
+    approvers?: Array<Record<string, unknown>>;
+    budgets?: Array<Record<string, unknown>>;
+    deliveries?: Array<Record<string, unknown>>;
   } | null;
 }
 

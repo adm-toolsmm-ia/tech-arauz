@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { KanbanBoard, type KanbanItem, type KanbanColumn } from '@/components/views/KanbanBoard';
 import type { Schedule } from '@/lib/domain/schedule-status';
 import {
-    getKanbanColumn,
-    SCHEDULE_KANBAN_COLUMNS,
+    getKanbanColumnByStatus,
+    buildScheduleKanbanColumns,
+    KANBAN_ATRASADA_KEY,
     formatDateBR,
 } from '@/lib/domain/schedule-status';
 import { cn } from '@/lib/utils';
@@ -19,11 +20,18 @@ interface CronogramaKanbanViewProps {
 }
 
 const columnColorMap: Record<string, string> = {
-    pendente: 'amber',
-    em_execucao: 'blue',
-    atrasada: 'red',
-    concluida: 'green',
+    [KANBAN_ATRASADA_KEY]: 'red',
+    'Aguardando confirmação': 'amber',
+    'Aguardando data de início': 'amber',
+    'Em execução': 'blue',
+    'Em andamento': 'blue',
+    Concluído: 'green',
+    Concluida: 'green',
 };
+
+function getColumnColor(key: string): string {
+    return columnColorMap[key] ?? 'gray';
+}
 
 export function CronogramaKanbanView({
     schedules,
@@ -31,21 +39,25 @@ export function CronogramaKanbanView({
     onActivityClick,
     hideCompleted = true,
 }: CronogramaKanbanViewProps) {
-    const columns: KanbanColumn[] = SCHEDULE_KANBAN_COLUMNS
-        .filter((col) => !(hideCompleted && col.key === 'concluida'))
-        .map((col) => ({
-            id: col.key,
-            title: col.label,
-            color: columnColorMap[col.key] || 'gray',
-        }));
+    const columnDefs = buildScheduleKanbanColumns(schedules, hideCompleted);
+    const columns: KanbanColumn[] = columnDefs.map((col) => ({
+        id: col.key,
+        title: col.label,
+        color: getColumnColor(col.key),
+    }));
+
+    const isCompleted = (s: Schedule) => {
+        const lower = (s.status || '').toLowerCase();
+        return lower === 'concluído' || lower === 'concluido' || lower === 'cancelado';
+    };
 
     const kanbanItems: KanbanItem[] = schedules
-        .filter((s) => !(hideCompleted && getKanbanColumn(s.status, !!s.atrasado) === 'concluida'))
+        .filter((s) => !(hideCompleted && isCompleted(s)))
         .map((s) => ({
             id: s.id,
             title: s.atividade || 'Sem título',
             subtitle: s.responsavel || undefined,
-            status: getKanbanColumn(s.status, !!s.atrasado),
+            status: getKanbanColumnByStatus(s),
             metadata: {
                 ...(s.data_inicio ? { inicio: s.data_inicio } : {}),
                 ...(s.data_fim ? { fim: s.data_fim } : {}),

@@ -13,10 +13,13 @@ import { ErpReadOnlyBanner } from '@/components/shared/erp-readonly-banner';
 import type { ProjectKpiFilterName } from '@/lib/domain/project-kpi';
 import { filterByProjectKpi } from '@/lib/domain/project-kpi';
 
+import { filterProjectsByAgendaPeriod } from '@/lib/domain/project-agenda';
+
 import { ProjectsKPIBar } from './components/ProjectsKPIBar';
 import { ProjectsFilters } from './components/ProjectsFilters';
 import { ProjectsKanbanView } from './components/ProjectsKanbanView';
 import { ProjectsListViewWrapper } from './components/ProjectsListView';
+import { ProjectsAgendaView } from './components/ProjectsAgendaView';
 
 // ---------- Types ----------
 
@@ -111,6 +114,9 @@ export function ProjectsContent({
     search,
     viewMode: filterViewMode,
     filteredData,
+    agendaPeriod,
+    agendaRefDate,
+    setAgendaPeriod,
     updateFilter,
     setSearch,
     setViewMode: setFilterViewMode,
@@ -154,6 +160,14 @@ export function ProjectsContent({
     [filteredData, activeKpiFilter],
   );
 
+  const agendaFilteredData = React.useMemo(
+    () =>
+      activeViewMode === 'agenda'
+        ? filterProjectsByAgendaPeriod(finalFilteredData, agendaRefDate, agendaPeriod)
+        : finalFilteredData,
+    [activeViewMode, finalFilteredData, agendaRefDate, agendaPeriod],
+  );
+
   const projectIds = React.useMemo(() => projects.map((p) => p.id).sort(), [projects]);
 
   const listAnnouncement = activeKpiFilter
@@ -191,6 +205,7 @@ export function ProjectsContent({
           filters={filters}
           search={search}
           viewMode={activeViewMode}
+          agendaPeriod={agendaPeriod}
           isSyncing={isSyncing}
           onUpdateFilter={updateFilter}
           onResetFilters={() => {
@@ -199,10 +214,11 @@ export function ProjectsContent({
           }}
           onSearchChange={setSearch}
           onViewModeChange={handleViewModeChange}
+          onAgendaPeriodChange={setAgendaPeriod}
           onSync={handleSync}
         />
 
-        {/* Content: Kanban or List */}
+        {/* Content: Kanban, Agenda or List */}
         <ErrorBoundary label="Projetos View">
           {activeViewMode === 'kanban' ? (
             <ProjectsKanbanView
@@ -214,6 +230,13 @@ export function ProjectsContent({
               projectIds={projectIds}
               onItemClick={(p) => setSelectedProject(p as Project)}
               onProjectsUpdate={setProjects as React.Dispatch<React.SetStateAction<Project[]>>}
+            />
+          ) : activeViewMode === 'agenda' ? (
+            <ProjectsAgendaView<Project>
+              projects={agendaFilteredData as Project[]}
+              currentDate={agendaRefDate}
+              period={agendaPeriod}
+              onProjectClick={setSelectedProject}
             />
           ) : (
             <ProjectsListViewWrapper

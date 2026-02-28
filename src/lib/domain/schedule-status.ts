@@ -119,7 +119,63 @@ export function getWeekEnd(date: Date): Date {
   return start;
 }
 
-// ---------- Schedule Kanban Mapping (Story 2.15) ----------
+/** Get start of month */
+export function getMonthStart(date: Date): Date {
+  const d = new Date(date.getFullYear(), date.getMonth(), 1);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/** Get end of month */
+export function getMonthEnd(date: Date): Date {
+  const d = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+/** Check if schedule overlaps with date range (inclusive) */
+export function scheduleOverlapsRange(
+  schedule: Schedule,
+  rangeStart: Date,
+  rangeEnd: Date,
+): boolean {
+  const start = schedule.data_inicio ? new Date(schedule.data_inicio) : null;
+  const end = schedule.data_fim ? new Date(schedule.data_fim) : null;
+  if (!start && !end) return false;
+  const rangeStartT = rangeStart.getTime();
+  const rangeEndT = rangeEnd.getTime();
+  if (start && end) {
+    return start.getTime() <= rangeEndT && end.getTime() >= rangeStartT;
+  }
+  if (start) return start.getTime() <= rangeEndT;
+  if (end) return end.getTime() >= rangeStartT;
+  return false;
+}
+
+/** Filter schedules by period (day/week/month) relative to currentDate */
+export function filterSchedulesByPeriod(
+  schedules: Schedule[],
+  currentDate: Date,
+  period: 'day' | 'week' | 'month',
+): Schedule[] {
+  let rangeStart: Date;
+  let rangeEnd: Date;
+  if (period === 'day') {
+    rangeStart = new Date(currentDate);
+    rangeStart.setHours(0, 0, 0, 0);
+    rangeEnd = new Date(currentDate);
+    rangeEnd.setHours(23, 59, 59, 999);
+  } else if (period === 'week') {
+    rangeStart = getWeekStart(currentDate);
+    rangeEnd = getWeekEnd(currentDate);
+  } else {
+    rangeStart = getMonthStart(currentDate);
+    rangeEnd = getMonthEnd(currentDate);
+  }
+  return schedules.filter((s) => scheduleOverlapsRange(s, rangeStart, rangeEnd));
+}
+
+// ---------- Schedule Kanban Mapping (Story 2.15, 3.7) ----------
 
 export type ScheduleKanbanColumn = 'pendente' | 'em_execucao' | 'atrasada' | 'concluida';
 
@@ -130,7 +186,7 @@ export const SCHEDULE_KANBAN_COLUMNS: { key: ScheduleKanbanColumn; label: string
   { key: 'concluida', label: 'Concluída' },
 ];
 
-/** Map schedule status + atrasado to Kanban column */
+/** Map schedule status + atrasado to Kanban column (legacy) */
 export function getKanbanColumn(status: string | null | undefined, atrasado: boolean): ScheduleKanbanColumn {
   const s = (status || '').trim().toLowerCase();
   if (s === 'concluído' || s === 'concluido') return 'concluida';
@@ -138,6 +194,48 @@ export function getKanbanColumn(status: string | null | undefined, atrasado: boo
   if (atrasado) return 'atrasada';
   if (s === 'em_execucao' || s === 'em execução' || s === 'em andamento' || s === 'iniciada') return 'em_execucao';
   return 'pendente';
+}
+
+/** Special column key for overdue items (status !== concluído/aguardando confirmação) */
+export const KANBAN_ATRASADA_KEY = '__atrasada__';
+
+/**
+ * Map schedule to Kanban column using real DB status.
+ * Rule: atrasado=true AND status not in (concluído, aguardando confirmação) -> Atrasada.
+ * Else: use status string from DB (or "Outros" if empty).
+ */
+export function getKanbanColumnByStatus(schedule: Schedule): string {
+  const s = (schedule.status || '').trim();
+  const lower = s.toLowerCase();
+  const atrasado = !!schedule.atrasado;
+
+  if (atrasado && lower !== 'concluído' && lower !== 'concluido' && lower !== 'aguardando confirmação') {
+    return KANBAN_ATRASADA_KEY;
+  }
+  return s || 'Outros';
+}
+
+/** Build Kanban columns from schedules: Atrasada first, then unique statuses from DB */
+export function buildScheduleKanbanColumns(schedules: Schedule[], hideCompleted?: boolean): { key: string; label: string }[] {
+  const statusSet = new Set<string>();
+  for (const s of schedules) {
+    const col = getKanbanColumnByStatus(s);
+    if (col !== KANBAN_ATRASADA_KEY) statusSet.add(col);
+  }
+  const statusCols = Array.from(statusSet).sort();
+
+  const cols: { key: string; label: string }[] = [
+    { key: KANBAN_ATRASADA_KEY, label: 'Atrasada' },
+    ...statusCols.map((k) => ({ key: k, label: k })),
+  ];
+
+  if (hideCompleted) {
+    return cols.filter((c) => {
+      const lower = c.key.toLowerCase().normalize('NFD').replace(/\u0300/g, '');
+      return lower !== 'concluido' && lower !== 'cancelado';
+    });
+  }
+  return cols;
 }
 
 // ---------- Constants ----------

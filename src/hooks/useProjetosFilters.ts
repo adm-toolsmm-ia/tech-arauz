@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import {
   filterDefinitionsProjetos,
   filterRegistryProjetos,
@@ -16,6 +16,10 @@ import { useFilterState } from '@/hooks/useFilterState';
 import { phaseLabels } from '@/lib/constants/phase-labels';
 import { normalizePhaseSlug } from '@/lib/domain/project-phase';
 import { getOverdueData } from '@/lib/domain/project-health';
+import {
+  filterProjectsByAgendaPeriod,
+  type ProjectAgendaPeriod,
+} from '@/lib/domain/project-agenda';
 
 /**
  * Project data interface (UI fields after transform).
@@ -182,6 +186,9 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     });
   }, [projects]);
 
+  const [agendaPeriod, setAgendaPeriodState] = useState<ProjectAgendaPeriod>('month');
+  const [agendaRefDate, setAgendaRefDate] = useState(() => new Date());
+
   const filterState = useFilterState({
     moduleId: 'projetos',
     definitions,
@@ -190,6 +197,10 @@ export function useProjetosFilters(projects: ProjetosData[]) {
       storageKey: 'filters-projetos',
     },
   });
+
+  const setAgendaPeriod = useCallback((period: string) => {
+    setAgendaPeriodState(period as ProjectAgendaPeriod);
+  }, []);
 
   const filteredData = useMemo(() => {
     const faseFilter = filterState.filters.fase_atual;
@@ -245,6 +256,10 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     viewMode: filterState.viewMode,
     definitions: filterState.definitions,
     filteredData,
+    agendaPeriod,
+    agendaRefDate,
+    setAgendaPeriod,
+    setAgendaRefDate,
 
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,

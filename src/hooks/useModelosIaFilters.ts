@@ -50,7 +50,7 @@ export function useModelosIaFilters(models: ModelWithProvider[], providers: LmPr
   const filterState = useFilterState({
     moduleId: 'modelos-ia',
     definitions,
-    initialViewMode: filterRegistryModelosIa.viewModes?.[0]?.id ?? 'grid',
+    initialViewMode: filterRegistryModelosIa.viewModes?.[0]?.id ?? 'kanban',
     persistence: {
       enabled: true,
       storageKey: 'filters-modelos-ia',

@@ -327,7 +327,9 @@ export function FilterBar({
             {/* ✨ CENTRALIZADO: Calendar Period Selector (Dia/Semana/Mês)
                 Visível em Agenda E Lista
                 Períodos são compartilhados entre as views */}
-            {(activeViewMode === 'agenda' || activeViewMode === 'lista') &&
+            {(activeViewMode === 'agenda' ||
+              activeViewMode === 'lista' ||
+              (activeViewMode === 'kanban' && moduleId === 'cronogramas')) &&
               filterRegistry.agendaPeriods &&
               filterRegistry.agendaPeriods.length > 0 && (
                 <div className="flex gap-1 border-l border-border pl-2">

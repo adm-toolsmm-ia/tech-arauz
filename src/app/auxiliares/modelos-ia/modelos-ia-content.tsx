@@ -396,7 +396,7 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
           actionLabel={models.length === 0 ? 'Adicionar Modelo' : undefined}
           onAction={models.length === 0 ? () => setIsCreateDialogOpen(true) : undefined}
         />
-      ) : viewMode === 'kanban' ? (
+      ) : (viewMode === 'kanban' || viewMode === 'grid') ? (
         <div className="space-y-4">
           <KanbanBoard
             columns={kanbanColumns}

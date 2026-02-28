@@ -1,21 +1,45 @@
 /**
  * Filter Registry - Módulo Agentes
- * viewModes padronizados: mesmo ícone Kanban (LayoutGrid) que Projetos
+ * viewModes padronizados: Kanban antes de Lista (como Projetos/Cronogramas)
  * Ver: docs/architecture/PADRAO-KANBAN-VIEW-TOGGLE.md
  */
 
-import { Grid3X3, LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, FileEdit, Tags } from 'lucide-react';
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
-export const filterDefinitionsAgentes: FilterDefinition[] = [];
+export const filterDefinitionsAgentes: FilterDefinition[] = [
+  {
+    id: 'status',
+    label: 'Status',
+    type: 'select',
+    options: [
+      { value: 'draft', label: 'Rascunho' },
+      { value: 'published', label: 'Publicado' },
+      { value: 'deprecated', label: 'Deprecado' },
+    ],
+    quickFilter: true,
+    icon: FileEdit,
+    description: 'Filtrar por status do agente',
+  },
+  {
+    id: 'agentType',
+    label: 'Tipo',
+    type: 'select',
+    options: [], // Dinâmico via useAgentesFilters
+    quickFilter: true,
+    icon: Tags,
+    description: 'Filtrar por tipo de agente',
+  },
+];
 
 export const filterRegistryAgentes: FilterRegistry = {
   moduleId: 'agentes',
   filters: filterDefinitionsAgentes,
   searchable: true,
   viewModes: [
-    { id: 'grid', label: 'Grade', icon: Grid3X3 },
-    { id: 'list', label: 'Lista', icon: List },
     { id: 'kanban', label: 'Kanban', icon: LayoutGrid },
+    { id: 'list', label: 'Lista', icon: List },
   ],
 };
+
+export const searchFieldsAgentes = ['name', 'slug', 'description'];

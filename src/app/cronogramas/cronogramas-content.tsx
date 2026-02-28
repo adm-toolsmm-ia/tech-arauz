@@ -10,7 +10,7 @@ import { feedback } from '@/lib/feedback';
 import { syncEspaiderAction } from '@/app/actions/sync';
 import type { KpiFilterName } from '@/lib/domain/schedule-kpi';
 import { filterByKpi } from '@/lib/domain/schedule-kpi';
-import { isWithinRange, isSameDay } from '@/lib/domain/schedule-status';
+import { isWithinRange, isSameDay, filterSchedulesByPeriod } from '@/lib/domain/schedule-status';
 
 import { CronogramasKPIBar } from './components/CronogramasKPIBar';
 import { CronogramaFilters } from './components/CronogramaFilters';
@@ -60,6 +60,19 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   const finalFilteredSchedules = React.useMemo(
     () => filterByKpi(filteredData, activeKpiFilter),
     [filteredData, activeKpiFilter],
+  );
+
+  // Apply period filter for Kanban and Lista (Dia/Semana/Mês)
+  const periodFilteredSchedules = React.useMemo(
+    () =>
+      (viewMode === 'kanban' || viewMode === 'lista')
+        ? filterSchedulesByPeriod(
+            finalFilteredSchedules,
+            currentDate,
+            calendarPeriod as 'day' | 'week' | 'month',
+          )
+        : finalFilteredSchedules,
+    [viewMode, finalFilteredSchedules, currentDate, calendarPeriod],
   );
 
   const handleKpiClick = (filterName: KpiFilterName) => {
@@ -199,18 +212,18 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           {viewMode === 'kanban' && (
             <ErrorBoundary label="Kanban Cronogramas">
               <CronogramaKanbanView
-                schedules={finalFilteredSchedules}
+                schedules={periodFilteredSchedules}
                 projectIds={projectIds}
                 onActivityClick={setSelectedSchedule}
               />
             </ErrorBoundary>
           )}
 
-          {/* Table View (Lista — 7 columns) */}
+          {/* Table View (Lista) */}
           {viewMode === 'lista' && (
             <ErrorBoundary label="Tabela Cronogramas">
               <CronogramaTableView
-                schedules={finalFilteredSchedules}
+                schedules={periodFilteredSchedules}
                 onActivityClick={setSelectedSchedule}
               />
             </ErrorBoundary>

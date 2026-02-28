@@ -17,6 +17,7 @@ export default async function CronogramasPage() {
   // Fetch schedules with their project info and project relations
   // NOTE: usando status_original (métrica verificada) ao invés de situacao_original (status bruto)
   // Ver .cursor/GLOSSARIO_CAMPOS.md para distinção entre campos de status
+  // Usa * nas relações para garantir compatibilidade com schema (evitar colunas inexistentes)
   const { data: schedules, error } = await supabase
     .from('project_schedules')
     .select(
@@ -28,10 +29,10 @@ export default async function CronogramasPage() {
         codigo,
         status:status_original,
         fase_atual,
-        histories:project_histories(id, type, from, to, step_from, step_to, message, date),
-        approvers:project_approvers(id, type, responsible),
-        budgets:project_budgets(id, value, supplier, date, currency),
-        deliveries:project_deliveries(id, description, deadline, completed)
+        histories:project_histories(*),
+        approvers:project_approvers(*),
+        budgets:project_budgets(*),
+        deliveries:project_deliveries(*)
       )
     `,
     )

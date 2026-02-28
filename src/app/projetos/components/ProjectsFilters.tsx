@@ -10,11 +10,13 @@ interface ProjectsFiltersProps {
   filters: FilterState;
   search: string;
   viewMode: string;
+  agendaPeriod?: string;
   isSyncing: boolean;
   onUpdateFilter: (key: string, value: string) => void;
   onResetFilters: () => void;
   onSearchChange: (value: string) => void;
   onViewModeChange: (mode: string) => void;
+  onAgendaPeriodChange?: (period: string) => void;
   onSync: () => void;
 }
 
@@ -23,11 +25,13 @@ export function ProjectsFilters({
   filters,
   search,
   viewMode,
+  agendaPeriod = 'month',
   isSyncing,
   onUpdateFilter,
   onResetFilters,
   onSearchChange,
   onViewModeChange,
+  onAgendaPeriodChange,
   onSync,
 }: ProjectsFiltersProps) {
   return (
@@ -45,12 +49,15 @@ export function ProjectsFilters({
           }}
           onSearchChange={onSearchChange}
           onViewModeChange={onViewModeChange}
+          onAgendaPeriodChange={onAgendaPeriodChange}
           initialFilters={filters}
           initialSearch={search}
           initialViewMode={viewMode}
+          initialAgendaPeriod={agendaPeriod}
           currentFilters={filters}
           currentSearch={search}
           currentViewMode={viewMode}
+          currentAgendaPeriod={agendaPeriod}
           onUpdateFilter={onUpdateFilter}
           onResetFilters={onResetFilters}
         />

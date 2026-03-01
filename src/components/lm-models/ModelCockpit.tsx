@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ExternalLink, Cpu, FileText, DollarSign } from 'lucide-react';
+import { ExternalLink, Cpu, FileText, DollarSign, Settings } from 'lucide-react';
 import type { LmModel, LmProvider } from '@/types/agents';
 
 interface ModelCockpitProps {
@@ -73,12 +74,20 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
             </Badge>
           )}
         </div>
-        {onEdit && !model.is_system && (
-          <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
-            <ExternalLink className="size-4" />
-            Editar
-          </Button>
-        )}
+        <div className="flex gap-2">
+          <Link href="/auxiliares/modelos-ia/governanca">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Settings className="size-4" />
+              Governança
+            </Button>
+          </Link>
+          {onEdit && !model.is_system && (
+            <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+              <ExternalLink className="size-4" />
+              Editar
+            </Button>
+          )}
+        </div>
       </div>
 
       <Separator />

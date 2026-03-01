@@ -257,26 +257,44 @@ class AgentService:
         
         await self.supabase.table("agents").update(update_data).eq("id", agent_id).eq("tenant_id", tenant_id)
     
-    async def export_agent_version(self, agent_id: str, tenant_id: str) -> dict:
-        """Export published version as canonical JSON"""
-        # Get current published version
+    async def export_agent_version(
+        self,
+        agent_id: str,
+        tenant_id: str,
+        version: Optional[str] = None,
+    ) -> dict:
+        """Export agent version as canonical JSON. If version is None, exports current published version."""
         agent = await self.get_agent(agent_id, tenant_id)
-        if not agent.current_version:
+        target_version = version or agent.current_version
+        if not target_version:
             raise AgentServiceError(f"Agent {agent_id} has no published version")
         
-        version_response = await self.supabase.table("agent_versions").select("*").eq("agent_id", agent_id).eq("version", agent.current_version).single()
+        version_response = await self.supabase.table("agent_versions").select("*").eq("agent_id", agent_id).eq("version", target_version).single()
         
         if not version_response.data:
-            raise AgentServiceError(f"Version {agent.current_version} not found")
+            raise AgentServiceError(f"Version {target_version} not found")
         
         return version_response.data["agent_config"]
     
-    async def get_agent_versions(self, agent_id: str, tenant_id: str) -> list[AgentVersionModel]:
-        """Get all versions of an agent"""
+    async def get_agent_versions(
+        self,
+        agent_id: str,
+        tenant_id: str,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> list[AgentVersionModel]:
+        """Get all versions of an agent with pagination"""
         # Verify agent exists
         await self.get_agent(agent_id, tenant_id)
         
-        response = await self.supabase.table("agent_versions").select("*").eq("agent_id", agent_id).order("created_at", desc=True)
+        offset = (page - 1) * page_size
+        response = await (
+            self.supabase.table("agent_versions")
+            .select("*")
+            .eq("agent_id", agent_id)
+            .order("created_at", desc=True)
+            .range(offset, offset + page_size - 1)
+        )
         
         versions = []
         for row in response.data or []:

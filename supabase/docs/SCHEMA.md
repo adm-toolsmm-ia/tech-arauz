@@ -7,6 +7,8 @@ Fonte: `supabase/migrations/001` ate `supabase/migrations/048`
 
 **Migrations 045–047:** Classificação de agentes (usage_type, show_in_shortcut, is_global_chatbot), governança de lm_models (stability_level, release_channel, capabilities), tabelas de governança avançada (model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log).
 
+**Migration 048:** message_count em agent_sessions (trigger increment/decrement), snapshot em agent_runs (model_id, provider_id, agent_version_id, temperature, top_p, max_tokens, prompt_final), RLS agent_messages (user-session isolation).
+
 **Export em formato Prisma (extraído via MCP Supabase):** `docs/architecture/data/schema.prisma` — pasta canônica para arquitetura de dados e contexto AI/AIOS.
 
 ## 1. Visao geral
@@ -292,9 +294,9 @@ agent_sessions (1) - (N) agent_feedback
 - Campos-chave: `rating` (1-5), `feedback_text`, `feedback_type` (quality/accuracy/relevance/performance)
 - Indice composto: `(session_id)`, `(tenant_id, created_at DESC)`, `(feedback_type)`
 
-## ALTERs em `agent_runs` (Migration 042)
-- ADD: `budget_limit_usd` (numeric)
-- ADD: `session_id` (UUID FK → agent_sessions, ON DELETE SET NULL)
+## ALTERs em `agent_runs`
+- Migration 042: `budget_limit_usd` (numeric), `session_id` (UUID FK → agent_sessions, ON DELETE SET NULL)
+- Migration 048: `model_id` (FK lm_models), `provider_id` (FK lm_providers), `agent_version_id` (FK agent_versions), `temperature`, `top_p`, `max_tokens`, `prompt_final` (snapshot reprodutibilidade)
 
 ## 5. Indices relevantes
 
@@ -309,6 +311,7 @@ agent_sessions (1) - (N) agent_feedback
 - Padrao predominante:
   - `tenant_id = get_user_tenant_id()` para usuarios autenticados
   - policy separada para `service_role` em operacoes internas de sync
+- Migration 048: `agent_messages` com policy `agent_messages_user_session_isolation` — usuário só acessa mensagens de sessões onde `agent_sessions.user_id = auth.uid()`
 - Funcoes utilitarias:
   - `get_user_tenant_id()`
   - `get_user_role()`

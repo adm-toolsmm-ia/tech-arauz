@@ -486,20 +486,22 @@ async def get_budget_status(
         raise HTTPException(status_code=403, detail="Cannot query budget for another user")
 
     bm = get_budget_manager()
-    spent = bm.get_spent(
+    spent_dict = bm.get_spent(
         session_id=session_id, user_id=current_user_id, agent_id=agent_id,
     )
-    remaining = bm.get_remaining(
+    remaining_dict = bm.get_remaining(
         session_id=session_id, user_id=current_user_id, agent_id=agent_id,
     )
+    spent_total = sum(spent_dict.values()) if spent_dict else 0.0
+    remaining_total = sum(remaining_dict.values()) if remaining_dict else 0.0
 
     # Aggregate totals from mock data
     total_spent = sum(a.total_cost_usd for a in MOCK_AGENTS)
     monthly_limit = 50.0  # From project.yaml ai_budget.monthly_tokens
 
     return {
-        "spent_usd": round(spent + total_spent, 4),
-        "remaining_usd": round(remaining, 4),
+        "spent_usd": round(spent_total + total_spent, 4),
+        "remaining_usd": round(remaining_total, 4),
         "total_agents_cost_usd": round(total_spent, 4),
         "monthly_limit_usd": monthly_limit,
         "usage_percentage": round((total_spent / monthly_limit) * 100, 1) if monthly_limit > 0 else 0,
@@ -759,17 +761,18 @@ async def rollback_agent_v2(
         supabase = await get_supabase_client(request)
         service = AgentService(supabase)
         
-        agent = await service.rollback_agent(
+        await service.rollback_agent(
             tenant_id=tenant_id,
             agent_id=agent_id,
             user_id=user_id,
             request=request_body,
         )
         
-        logger.info("Rolled back agent %s to version %s", agent_id, request_body.version)
+        logger.info("Rolled back agent %s to version %s", agent_id, request_body.target_version)
         
+        agent = await service.get_agent(agent_id, tenant_id)
         return {
-            "agent": agent.model_dump(),
+            "agent": agent.model_dump() if hasattr(agent, "model_dump") else {"id": agent_id, "status": "draft"},
         }
     except AgentServiceError as e:
         logger.warning("Agent service error: %s", str(e))
@@ -1336,8 +1339,8 @@ async def chat_with_agent_stream(
             # Final event with metadata
             yield f'data: {json.dumps({"done": True, "tokens": tokens_used, "cost": cost_usd, "duration_ms": duration_ms})}\n\n'
 
-            logger.info("Stream completed: agent=%s, provider=%s→%s, model=%s→%s, tokens=%d, duration=%dms",
-                       agent_id, provider, selected_provider, model_id, selected_model_id, tokens_used, duration_ms)
+            logger.info("Stream completed: agent=%s, provider=%s, model=%s, tokens=%d, duration=%dms",
+                       agent_id, provider, model_id, tokens_used, duration_ms)
 
         except LLMProviderError as e:
             logger.error("LLM provider error: %s", str(e))

@@ -133,8 +133,8 @@ export function AgentEditContent({
         persona: agent.persona,
         prompt_objective: agent.promptObjective,
         prompt_instructions: Array.isArray(agent.promptInstructions)
-          ? agent.promptInstructions
-          : (agent.promptInstructions ?? '').split('\n').filter(Boolean),
+          ? JSON.stringify(agent.promptInstructions)
+          : (agent.promptInstructions ?? ''),
         prompt_template: agent.promptTemplate,
         // Model config
         model_provider: agent.modelProvider,
@@ -145,7 +145,10 @@ export function AgentEditContent({
         output_schema: JSON.parse(agent.outputSchema || '{}'),
       };
 
-      await AgentSupabaseService.updateAgent(initialAgent.id, updates);
+      await AgentSupabaseService.updateAgent(
+        initialAgent.id,
+        updates as unknown as Parameters<typeof AgentSupabaseService.updateAgent>[1],
+      );
       toast.success('✅ Agente atualizado com sucesso!');
       setIsDirty(false);
       router.refresh();

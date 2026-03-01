@@ -8,7 +8,7 @@ export interface AgentSessionWithAgent {
   agent_name: string;
   started_at: string;
   ended_at: string | null;
-  status: 'active' | 'closed';
+  status: 'active' | 'paused' | 'closed';
   message_count: number;
   created_at: string;
   updated_at: string;
@@ -30,7 +30,7 @@ export interface SessionsResponse {
  * - page: number (default: 1)
  * - limit: number (default: 20, max: 100)
  * - agent_id: string (optional)
- * - status: 'active' | 'closed' (optional)
+ * - status: 'active' | 'paused' | 'closed' (optional)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)));
     const agentId = searchParams.get('agent_id');
-    const status = searchParams.get('status') as 'active' | 'closed' | null;
+    const status = searchParams.get('status') as 'active' | 'paused' | 'closed' | null;
 
     // Calculate offset for pagination
     const offset = (page - 1) * limit;

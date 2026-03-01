@@ -53,7 +53,7 @@ Documentação do que existe no repositório. Apenas fatos; uso como contexto pa
 - **Documentação SQL da estrutura atual:** `supabase/docs/SCHEMA.md` — tabelas, colunas, relações, RLS (auditoria até as migrations aplicadas).
 - **Schema em formato Prisma (estado atual):** `docs/architecture/data/schema.prisma` — export do MCP Supabase a partir do banco; o projeto usa Supabase em runtime, não Prisma.
 
-**Migrations (histórico / DDL):** `supabase/migrations/` — arquivos 001_*.sql a 044_*.sql. As migrations iniciais podem ter sido alteradas ou substituídas por migrations posteriores; o estado atual do banco é o resultado cumulativo de todas aplicadas em ordem. Para entender a **estrutura atual**, priorize `SCHEMA.md` e `schema.prisma`. Consulte as migrations quando a tarefa for **alterar o schema** (nova migration) ou **analisar a evolução** do banco. Migration 044 removeu seed data de lm_providers, lm_models, agent_types e agent_templates; tabelas auxiliares ficam vazias até recriação manual.
+**Migrations (histórico / DDL):** `supabase/migrations/` — arquivos 001_*.sql a 047_*.sql. O estado atual do banco é o resultado cumulativo de todas aplicadas em ordem. Para entender a **estrutura atual**, priorize `SCHEMA.md` e `schema.prisma`. Consulte as migrations quando a tarefa for **alterar o schema** (nova migration) ou **analisar a evolução** do banco. Migration 044 removeu seed data de lm_providers, lm_models, agent_types e agent_templates; tabelas auxiliares ficam vazias até recriação manual. Migrations 045–047: classificação de agentes (usage_type, show_in_shortcut, is_global_chatbot), governança de lm_models (stability_level, release_channel, capabilities), e tabelas de governança avançada (model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log).
 
 **Tabelas por domínio (nomes no banco):**
 
@@ -67,8 +67,9 @@ Documentação do que existe no repositório. Apenas fatos; uso como contexto pa
 | Observabilidade agentes | agent_run_steps, agent_budgets, agent_usage_daily, agent_deployments |
 | Ferramentas e contexto | tools, agent_tool_bindings, context_providers, agent_context_bindings |
 | Feedback e LLM | agent_feedback, lm_provider_accounts |
+| Governança de modelos | model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log |
 
-Todas as tabelas de dados têm RLS e isolamento por `tenant_id`. Após migration 043, o campo `agent_id` em agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings referencia `agents(id)`. A tabela agent_run_steps tem `run_id` (FK agent_runs) e `agent_id` (coluna sem FK, tipicamente agents.id para denormalização). Após migration 044, lm_providers, lm_models, agent_types e agent_templates estão vazios (seed removido); agents.agent_type_id foi setado para NULL.
+Todas as tabelas de dados têm RLS e isolamento por `tenant_id`. Após migration 043, o campo `agent_id` em agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings referencia `agents(id)`. A tabela agent_run_steps tem `run_id` (FK agent_runs) e `agent_id` (coluna sem FK, tipicamente agents.id para denormalização). Após migration 044, lm_providers, lm_models, agent_types e agent_templates estão vazios (seed removido); agents.agent_type_id foi setado para NULL. Migration 045: agents.usage_type (chatbot|workflow), show_in_shortcut, is_global_chatbot. Migration 046: lm_models com stability_level, release_channel, supports_tool_calling, supports_json_mode, supports_streaming, supports_vision, supports_audio, deprecated_at, sunset_at.
 
 ---
 
@@ -135,7 +136,7 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
   Unique: (tenantId, slug). Relações: N:1 Tenant; 1:N Agent, AgentTemplate.
 
 - **Agent** → `agents`  
-  Campos: id, tenantId, name, slug, description, owners, tags, status (draft|published|deprecated), persona, promptObjective, promptInstructions, promptTemplate, outputSchema, modelProvider, modelId, modelTemperature, modelTopP, modelMaxTokens, modelPresencePenalty, modelFrequencyPenalty, modelStopSequences, modelResponseFormat, modelEndpointOverrides, runtimeToolIds, runtimeContextProviderIds, runtimeMemory, agentType, agentTypeId, requirements, configurationMeta, templateId, isTemplate, requiresValidation, validationRules, executionCount, lastExecutionAt, createdBy, updatedBy, createdAt, updatedAt.  
+  Campos: id, tenantId, name, slug, description, owners, tags, status (draft|published|deprecated), persona, promptObjective, promptInstructions, promptTemplate, outputSchema, modelProvider, modelId, modelTemperature, modelTopP, modelMaxTokens, modelPresencePenalty, modelFrequencyPenalty, modelStopSequences, modelResponseFormat, modelEndpointOverrides, runtimeToolIds, runtimeContextProviderIds, runtimeMemory, agentType, agentTypeId, requirements, configurationMeta, templateId, isTemplate, requiresValidation, validationRules, executionCount, lastExecutionAt, usageType (chatbot|workflow), showInShortcut, isGlobalChatbot, createdBy, updatedBy, createdAt, updatedAt.  
   Unique: (tenantId, slug). Relações: N:1 Tenant, AgentType (opcional); 1:N AgentVersion, AgentVariable, AgentRun, AgentSession, AgentBudget, AgentUsageDaily, AgentDeployment, AgentToolBinding, AgentContextBinding.
 
 - **AgentVersion** → `agent_versions`  
@@ -207,8 +208,28 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
   Unique: (tenantId, slug). Relações: N:1 Tenant; 1:N LmModel.
 
 - **LmModel** → `lm_models`  
-  Campos: id, tenantId, providerId, name, modelId, description, maxTokens, defaultTemperature, inputCostPer1kTokens, outputCostPer1kTokens, inputTokenCostUsd, outputTokenCostUsd, providerAccountId, docsUrl, contextWindow, displayOrder, tier (entry|balanced|pro|flagship), isActive, isSystem, createdBy, updatedBy, createdAt, updatedAt.  
-  Unique: (providerId, modelId). Relações: N:1 Tenant, LmProvider, LmProviderAccount (opcional).
+  Campos: id, tenantId, providerId, name, modelId, description, maxTokens, defaultTemperature, inputCostPer1kTokens, outputCostPer1kTokens, inputTokenCostUsd, outputTokenCostUsd, providerAccountId, docsUrl, contextWindow, displayOrder, tier (entry|balanced|pro|flagship), isActive, isSystem, stabilityLevel (ga|preview|experimental|deprecated), releaseChannel (stable|beta|alpha), supportsToolCalling, supportsJsonMode, supportsStreaming, supportsVision, supportsAudio, deprecatedAt, sunsetAt, createdBy, updatedBy, createdAt, updatedAt.  
+  Unique: (providerId, modelId). Relações: N:1 Tenant, LmProvider, LmProviderAccount (opcional); 1:N ModelGovernanceReview, ModelCostMonitoring, ModelIncident, ModelFallbackPolicy (primary/fallback), ModelChangeLog.
+
+- **ModelGovernanceReview** → `model_governance_reviews`  
+  Campos: id, tenantId, modelId, reviewerId, status (pending|approved|rejected|needs_revision), notes, createdAt, updatedAt, reviewedAt.  
+  Unique: (tenantId, modelId). Relações: N:1 Tenant, LmModel.
+
+- **ModelCostMonitoring** → `model_cost_monitoring`  
+  Campos: id, tenantId, modelId, periodStart, periodEnd, totalRequests, totalTokens, totalInputTokens, totalOutputTokens, totalCostUsd, inputCostUsd, outputCostUsd, p50LatencyMs, p95LatencyMs, p99LatencyMs, minLatencyMs, maxLatencyMs, errorCount, errorRate, createdAt, updatedAt.  
+  Unique: (tenantId, modelId, periodStart, periodEnd). Relações: N:1 Tenant, LmModel.
+
+- **ModelIncident** → `model_incidents`  
+  Campos: id, tenantId, modelId, severity (low|medium|high|critical), title, description, startedAt, resolvedAt, impactSummary, mitigationSteps, rootCause, createdBy, updatedBy, createdAt, updatedAt.  
+  Relações: N:1 Tenant, LmModel.
+
+- **ModelFallbackPolicy** → `model_fallback_policies`  
+  Campos: id, tenantId, primaryModelId, fallbackModelId, triggerOn (array), priority, isActive, createdBy, updatedBy, createdAt, updatedAt.  
+  Unique: (tenantId, primaryModelId, fallbackModelId). Relações: N:1 Tenant, LmModel (primary), LmModel (fallback).
+
+- **ModelChangeLog** → `model_change_log`  
+  Campos: id, tenantId, modelId, changedBy, changeType (created|updated|deprecated|sunset|other), fieldName, oldValue, newValue, changeReason, changedAt.  
+  Relações: N:1 Tenant, LmModel.
 
 ---
 
@@ -284,7 +305,8 @@ Autenticação: JWT no header Authorization; tenant_id e user_id extraídos do t
 ### 9.1 Páginas (src/app)
 
 - **Agentes:** `src/app/agentes/page.tsx`, `src/app/agentes/agentes-content.tsx`, `src/app/agentes/layout.tsx`, `src/app/agentes/[id]/page.tsx`, `src/app/agentes/[id]/agent-edit-content.tsx`, `src/app/agentes/[id]/chat/page.tsx`, `src/app/agentes/[id]/chat/chat-content.tsx`, `src/app/agentes/components/AgentsKanbanView.tsx`
-- **Auxiliares:** `src/app/auxiliares/agent-types/page.tsx`, `src/app/auxiliares/agent-types/agent-types-content.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeFormDialog.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeListItem.tsx`, `src/app/auxiliares/lm-providers/page.tsx`, `src/app/auxiliares/lm-providers/lm-providers-content.tsx`, `src/app/auxiliares/lm-providers/components/LmProviderListItem.tsx`, `src/app/auxiliares/modelos-ia/page.tsx`, `src/app/auxiliares/modelos-ia/modelos-ia-content.tsx`, `src/app/auxiliares/layout.tsx`, `src/components/lm-models/ModelCockpit.tsx`, `src/components/lm-providers/LmProviderKanbanCard.tsx`
+- **Histórico de Conversas:** `src/app/conversas/page.tsx`, `src/app/conversas/conversas-content.tsx` — lista sessões de chat do usuário, filtro por agente (usage_type=chatbot)
+- **Auxiliares:** `src/app/auxiliares/agent-types/page.tsx`, `src/app/auxiliares/agent-types/agent-types-content.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeFormDialog.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeListItem.tsx`, `src/app/auxiliares/lm-providers/page.tsx`, `src/app/auxiliares/lm-providers/lm-providers-content.tsx`, `src/app/auxiliares/lm-providers/components/LmProviderListItem.tsx`, `src/app/auxiliares/modelos-ia/page.tsx`, `src/app/auxiliares/modelos-ia/modelos-ia-content.tsx`, `src/app/auxiliares/modelos-ia/governanca/page.tsx`, `src/app/auxiliares/modelos-ia/governanca/governanca-content.tsx`, `src/app/auxiliares/layout.tsx`, `src/components/lm-models/ModelCockpit.tsx`, `src/components/lm-providers/LmProviderKanbanCard.tsx`
 
 ### 9.2 API Routes Next.js (proxy para o serviço AI)
 
@@ -298,6 +320,7 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | `src/app/api/agents/[id]/chat/route.ts` | POST | POST `${AI_SERVICE_URL}/api/agents/${id}/chat` (body: session_id, message) |
 | `src/app/api/agents/[id]/sessions/route.ts` | GET, POST | GET/POST `${AI_SERVICE_URL}/api/agents/${id}/sessions` (GET: limit, offset) |
 | `src/app/api/agents/[id]/metrics/route.ts` | GET | Consulta Supabase: agent_usage_daily (sessions_count, messages_count, cost_total_usd, avg_latency_ms, success_rate_pct), agent_deployments. Query: dateRange (7d|30d|90d). Contrato: runs_total, success_rate, avg_latency_ms, total_cost_usd, daily_data, deployments. |
+| `src/app/api/sessions/route.ts` | GET | Lista agent_sessions do usuário autenticado. Query: page, limit, agent_id, status. Retorna sessions com agent_name (join agents). Nota: message_count é derivado (count de agent_messages por session) ou retornado pelo serviço AI; agent_sessions não tem coluna message_count no banco. |
 | `src/app/api/agents/budget/route.ts` | GET | `${AI_SERVICE_URL}/api/budget` |
 | `src/app/api/agents/types/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/types` |
 | `src/app/api/agents/templates/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/templates` + query |
@@ -326,14 +349,16 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | Configuração do projeto | `configs/project.yaml` |
 | Schema SQL atual / RLS | `supabase/docs/SCHEMA.md` |
 | Schema Prisma (estado atual) | `docs/architecture/data/schema.prisma` |
-| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` (incl. 042_ai_features_chat_and_360.sql, 043_fix_agent_id_references.sql, 044_clear_auxiliares_seed_data.sql) |
+| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` (001–047; destaque: 042, 043, 044, 045_agent_usage_type.sql, 046_lm_models_governance.sql, 047_model_governance_tables.sql) |
 | Tipos de agentes (TS) | `src/types/agents.ts` |
 | Serviço AI | `services/ai/app/` |
 | Orquestrador LangGraph | `services/ai/app/graphs/orchestrator.py` |
 | Tracing / LangSmith | `services/ai/app/instrumentation/tracing.py` |
 | Páginas agentes | `src/app/agentes/` |
 | Página chat agente | `src/app/agentes/[id]/chat/` |
+| Histórico de conversas | `src/app/conversas/` |
+| Governança de modelos | `src/app/auxiliares/modelos-ia/governanca/` |
 | Proxy API agentes | `src/app/api/agents/` |
-| API chat/sessions/metrics | `src/app/api/agents/[id]/chat/`, `sessions/`, `metrics/` |
+| API chat/sessions/metrics | `src/app/api/agents/[id]/chat/`, `src/app/api/sessions/`, `src/app/api/agents/[id]/metrics/` |
 | Actions (lm-models, lm-providers, agent-types) | `src/app/actions/` |
 | Sync Espaider | `src/lib/sync/espaider-sync.ts`, `src/app/api/integracoes/sync/` |

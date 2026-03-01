@@ -2,7 +2,7 @@
 // Schema Prisma — Tech Arauz (Supabase/PostgreSQL)
 // =============================================================================
 // Local canônico: docs/architecture/data/schema.prisma (engenharia/arquitetura AI)
-// Extraído via MCP Supabase (list_tables). Última atualização: 2026-03-01 (migration 044).
+// Extraído via MCP Supabase (list_tables). Última atualização: 2026-03-01 (migration 047).
 // O projeto usa Supabase diretamente (não Prisma em runtime); este arquivo
 // serve como documentação do schema e referência para LLMs/ferramentas/AIOS.
 //
@@ -56,6 +56,11 @@ model Tenant {
   agentContextBindings AgentContextBinding[]
   agentFeedback      AgentFeedback[]
   lmProviderAccounts  LmProviderAccount[]
+  modelGovernanceReviews ModelGovernanceReview[]
+  modelCostMonitoring ModelCostMonitoring[]
+  modelIncidents      ModelIncident[]
+  modelFallbackPolicies ModelFallbackPolicy[]
+  modelChangeLog      ModelChangeLog[]
 
   @@map("tenants")
 }
@@ -410,6 +415,9 @@ model Agent {
   validationRules           Json?     @default("{}") @map("validation_rules")
   executionCount            Int?      @default(0) @map("execution_count")
   lastExecutionAt           DateTime? @map("last_execution_at")
+  usageType                 String?   @default("chatbot") @map("usage_type") // chatbot | workflow
+  showInShortcut            Boolean?  @default(false) @map("show_in_shortcut")
+  isGlobalChatbot           Boolean?  @default(false) @map("is_global_chatbot")
   createdBy                String?   @map("created_by") @db.Uuid
   updatedBy                String?   @map("updated_by") @db.Uuid
   createdAt                DateTime? @default(now()) @map("created_at")
@@ -770,6 +778,15 @@ model LmModel {
   tier                   String?  @default("balanced") // entry | balanced | pro | flagship
   isActive               Boolean? @default(true) @map("is_active")
   isSystem               Boolean? @default(false) @map("is_system")
+  stabilityLevel         String?  @default("ga") @map("stability_level") // ga | preview | experimental | deprecated
+  releaseChannel         String?  @default("stable") @map("release_channel") // stable | beta | alpha
+  supportsToolCalling    Boolean? @default(false) @map("supports_tool_calling")
+  supportsJsonMode       Boolean? @default(false) @map("supports_json_mode")
+  supportsStreaming      Boolean? @default(true) @map("supports_streaming")
+  supportsVision         Boolean? @default(false) @map("supports_vision")
+  supportsAudio          Boolean? @default(false) @map("supports_audio")
+  deprecatedAt           DateTime? @map("deprecated_at")
+  sunsetAt               DateTime? @map("sunset_at")
   createdBy              String?  @map("created_by") @db.Uuid
   updatedBy              String?  @map("updated_by") @db.Uuid
   createdAt              DateTime @default(now()) @map("created_at")
@@ -778,7 +795,127 @@ model LmModel {
   tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   provider        LmProvider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
   providerAccount LmProviderAccount?  @relation(fields: [providerAccountId], references: [id], onDelete: SetNull)
+  governanceReviews ModelGovernanceReview[]
+  costMonitoring   ModelCostMonitoring[]
+  incidents        ModelIncident[]
+  fallbackAsPrimary ModelFallbackPolicy[] @relation("FallbackPrimary")
+  fallbackAsFallback ModelFallbackPolicy[] @relation("FallbackFallback")
+  changeLog        ModelChangeLog[]
 
   @@unique([providerId, modelId])
   @@map("lm_models")
+}
+
+// -----------------------------------------------------------------------------
+// Governança de Modelos (Migration 046 + 047)
+// -----------------------------------------------------------------------------
+
+model ModelGovernanceReview {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String    @map("tenant_id") @db.Uuid
+  modelId    String    @map("model_id") @db.Uuid
+  reviewerId String?   @map("reviewer_id") @db.Uuid
+  status     String    @default("pending") // pending | approved | rejected | needs_revision
+  notes      String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @default(now()) @map("updated_at")
+  reviewedAt DateTime? @map("reviewed_at")
+
+  tenant Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  model  LmModel  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, modelId])
+  @@map("model_governance_reviews")
+}
+
+model ModelCostMonitoring {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId            String   @map("tenant_id") @db.Uuid
+  modelId            String   @map("model_id") @db.Uuid
+  periodStart        DateTime @db.Date @map("period_start")
+  periodEnd          DateTime @db.Date @map("period_end")
+  totalRequests      Int?     @default(0) @map("total_requests")
+  totalTokens        Int?     @default(0) @map("total_tokens")
+  totalInputTokens   Int?     @default(0) @map("total_input_tokens")
+  totalOutputTokens  Int?     @default(0) @map("total_output_tokens")
+  totalCostUsd       Decimal? @default(0) @map("total_cost_usd") @db.Decimal(10, 4)
+  inputCostUsd       Decimal? @default(0) @map("input_cost_usd") @db.Decimal(10, 4)
+  outputCostUsd      Decimal? @default(0) @map("output_cost_usd") @db.Decimal(10, 4)
+  p50LatencyMs       Int?     @map("p50_latency_ms")
+  p95LatencyMs       Int?     @map("p95_latency_ms")
+  p99LatencyMs       Int?     @map("p99_latency_ms")
+  minLatencyMs       Int?     @map("min_latency_ms")
+  maxLatencyMs       Int?     @map("max_latency_ms")
+  errorCount         Int?     @default(0) @map("error_count")
+  errorRate          Decimal? @default(0) @map("error_rate") @db.Decimal(5, 2)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  model  LmModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, modelId, periodStart, periodEnd])
+  @@map("model_cost_monitoring")
+}
+
+model ModelIncident {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  modelId        String    @map("model_id") @db.Uuid
+  severity       String    @default("medium") // low | medium | high | critical
+  title          String
+  description    String?
+  startedAt      DateTime  @map("started_at")
+  resolvedAt     DateTime? @map("resolved_at")
+  impactSummary  String?   @map("impact_summary")
+  mitigationSteps String?  @map("mitigation_steps")
+  rootCause      String?   @map("root_cause")
+  createdBy      String?   @map("created_by") @db.Uuid
+  updatedBy      String?   @map("updated_by") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  model  LmModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@map("model_incidents")
+}
+
+model ModelFallbackPolicy {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  primaryModelId  String   @map("primary_model_id") @db.Uuid
+  fallbackModelId String   @map("fallback_model_id") @db.Uuid
+  triggerOn       String[] @default(["timeout", "rate_limit", "error_500"]) @map("trigger_on")
+  priority        Int      @default(1)
+  isActive        Boolean? @default(true)
+  createdBy       String?  @map("created_by") @db.Uuid
+  updatedBy       String?  @map("updated_by") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+
+  tenant         Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  primaryModel   LmModel @relation("FallbackPrimary", fields: [primaryModelId], references: [id], onDelete: Cascade)
+  fallbackModel  LmModel @relation("FallbackFallback", fields: [fallbackModelId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, primaryModelId, fallbackModelId])
+  @@map("model_fallback_policies")
+}
+
+model ModelChangeLog {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  modelId     String   @map("model_id") @db.Uuid
+  changedBy   String?  @map("changed_by") @db.Uuid
+  changeType  String   @default("updated") @map("change_type") // created | updated | deprecated | sunset | other
+  fieldName   String?  @map("field_name")
+  oldValue    Json?    @map("old_value")
+  newValue    Json?    @map("new_value")
+  changeReason String? @map("change_reason")
+  changedAt   DateTime @default(now()) @map("changed_at")
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  model  LmModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@map("model_change_log")
 }

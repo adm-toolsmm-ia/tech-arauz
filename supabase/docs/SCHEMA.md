@@ -1,9 +1,11 @@
 # SCHEMA - Tech Arauz (Supabase/PostgreSQL)
 
 Data da auditoria: 2026-03-01
-Fonte: `supabase/migrations/001` ate `supabase/migrations/044`
+Fonte: `supabase/migrations/001` ate `supabase/migrations/047`
 
 **Migration 044:** Remove seed data de lm_providers, lm_models e agent_types. Tabelas ficam vazias; recriação manual após validação dos módulos.
+
+**Migrations 045–047:** Classificação de agentes (usage_type, show_in_shortcut, is_global_chatbot), governança de lm_models (stability_level, release_channel, capabilities), tabelas de governança avançada (model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log).
 
 **Export em formato Prisma (extraído via MCP Supabase):** `docs/architecture/data/schema.prisma` — pasta canônica para arquitetura de dados e contexto AI/AIOS.
 
@@ -60,6 +62,11 @@ Banco multi-tenant com isolamento por `tenant_id`, RLS e foco em:
 - `context_providers` (context sources)
 - `agent_context_bindings` (agent-context relationships)
 - `agent_feedback` (user feedback on chat quality)
+- `model_governance_reviews` (approval workflow por modelo)
+- `model_cost_monitoring` (custos e métricas por período)
+- `model_incidents` (incidentes e outages)
+- `model_fallback_policies` (cadeias de fallback)
+- `model_change_log` (auditoria de mudanças)
 
 ## 3. Relacionamentos principais
 
@@ -166,6 +173,7 @@ agent_sessions (1) - (N) agent_feedback
 - FK: `tenant_id -> tenants(id)`
 - Unique: `(tenant_id, slug)`
 - Campos-chave: governanca (`owners`, `tags`, `status`), prompt/model config, runtime metadata
+- Migration 045: `usage_type` (chatbot|workflow), `show_in_shortcut`, `is_global_chatbot` (max 1 por tenant)
 
 ## `agent_versions`
 - PK: `id (uuid)`
@@ -206,6 +214,7 @@ agent_sessions (1) - (N) agent_feedback
 - Unique: `(provider_id, model_id)`
 - Campos-chave: custos, `context_window`, `tier`, `display_order`, `docs_url`
 - ALTERs (Migration 042): `input_token_cost_usd`, `output_token_cost_usd`, `provider_account_id` (FK → lm_provider_accounts)
+- Migration 046: `stability_level` (ga|preview|experimental|deprecated), `release_channel` (stable|beta|alpha), `supports_tool_calling`, `supports_json_mode`, `supports_streaming`, `supports_vision`, `supports_audio`, `deprecated_at`, `sunset_at`
 
 ## `lm_provider_accounts`
 - PK: `id (uuid)`
@@ -313,6 +322,9 @@ agent_sessions (1) - (N) agent_feedback
 - 042: AI Features Chat & 360° Dashboard (11 tabelas: sessions, messages, run_steps, budgets, usage_daily, deployments, tools, tool_bindings, context_providers, context_bindings, feedback + ALTERs)
 - 043: Fix agent_id references (agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings)
 - 044: Clear auxiliares seed data (agents.agent_type_id SET NULL; DELETE agent_templates, lm_models, lm_providers, agent_types). Tabelas vazias; recriacao manual apos validacao.
+- 045: Agent classification (usage_type, show_in_shortcut, is_global_chatbot)
+- 046: lm_models governance (stability_level, release_channel, capabilities, deprecated_at, sunset_at)
+- 047: Tabelas de governanca (model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log)
 
 ---
 

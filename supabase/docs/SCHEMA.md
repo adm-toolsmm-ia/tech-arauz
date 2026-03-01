@@ -1,7 +1,7 @@
 # SCHEMA - Tech Arauz (Supabase/PostgreSQL)
 
 Data da auditoria: 2026-03-01
-Fonte: `supabase/migrations/001` ate `supabase/migrations/042`
+Fonte: `supabase/migrations/001` ate `supabase/migrations/043`
 
 **Export em formato Prisma (extraído via MCP Supabase):** `docs/architecture/data/schema.prisma` — pasta canônica para arquitetura de dados e contexto AI/AIOS.
 
@@ -71,18 +71,18 @@ tenants (1) ---- (N) sync_logs ---- (N) integration_log_entries
 tenants (1) ---- (N) agents ---- (N) agent_versions
 agents (1) ----- (N) agent_variables
 agents (1) ----- (N) agent_runs
-agent_runs (1) - (N) agent_sessions ---- (N) agent_messages
+agents (1) ----- (N) agent_sessions ---- (N) agent_messages
 agent_runs (1) - (N) agent_run_steps
-agent_runs (1) - (N) agent_budgets
-agent_runs (1) - (N) agent_usage_daily
-agent_runs (1) - (N) agent_deployments
+agents (1) ----- (N) agent_budgets
+agents (1) ----- (N) agent_usage_daily
+agents (1) ----- (N) agent_deployments
 tenants (1) ---- (N) agent_types ---- (N) agent_templates
 tenants (1) ---- (N) lm_providers ---- (N) lm_models ---- (N) lm_provider_accounts
 
 tenants (1) ---- (N) tools
-agent_runs (1) - (N) agent_tool_bindings --- (N) tools
+agents (1) ----- (N) agent_tool_bindings --- (N) tools
 tenants (1) ---- (N) context_providers
-agent_runs (1) - (N) agent_context_bindings --- (N) context_providers
+agents (1) ----- (N) agent_context_bindings --- (N) context_providers
 agent_sessions (1) - (N) agent_feedback
 ```
 

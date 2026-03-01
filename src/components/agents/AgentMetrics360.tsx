@@ -130,10 +130,10 @@ export function AgentMetrics360({ agentId }: AgentMetrics360Props) {
         ) : (
           <>
             <KPICard
-              title="Total Runs"
+              title="Sessões"
               value={data?.runs_total || 0}
               icon={Activity}
-              subtitle="execuções"
+              subtitle="chat sessions"
             />
             <KPICard
               title="Success Rate"
@@ -159,14 +159,18 @@ export function AgentMetrics360({ agentId }: AgentMetrics360Props) {
 
       {/* Charts Row */}
       <div className="grid gap-4 grid-cols-2">
-        {/* Runs Chart */}
+        {/* Sessions Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Execuções por Dia</CardTitle>
+            <CardTitle className="text-sm">Sessões por Dia</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <Skeleton className="h-80" />
+            ) : chartData.length === 0 ? (
+              <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
+                Nenhum dado no período selecionado
+              </div>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData}>
@@ -215,6 +219,10 @@ export function AgentMetrics360({ agentId }: AgentMetrics360Props) {
         <CardContent>
           {loading ? (
             <Skeleton className="h-80" />
+          ) : chartData.length === 0 ? (
+            <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
+              Nenhum dado no período selecionado
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={chartData}>

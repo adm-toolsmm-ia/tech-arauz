@@ -2,7 +2,7 @@
 
 Documentação do que existe no repositório. Apenas fatos; uso como contexto para engenharia de AI e definição de prompts.
 
-**Data:** 2026-02-28
+**Data:** 2026-03-01
 
 ---
 
@@ -63,8 +63,12 @@ Documentação do que existe no repositório. Apenas fatos; uso como contexto pa
 | Projetos + ERP | projects, project_schedules, project_deliveries, project_requirements, project_histories, project_approvers, project_budgets |
 | Integração | espaider_apis, sync_logs, integration_log_entries |
 | Agentes AI | agents, agent_versions, agent_variables, agent_runs, agent_types, agent_templates, lm_providers, lm_models |
+| Chat e sessões | agent_sessions, agent_messages |
+| Observabilidade agentes | agent_run_steps, agent_budgets, agent_usage_daily, agent_deployments |
+| Ferramentas e contexto | tools, agent_tool_bindings, context_providers, agent_context_bindings |
+| Feedback e LLM | agent_feedback, lm_provider_accounts |
 
-Todas as tabelas de dados têm RLS e isolamento por `tenant_id`.
+Todas as tabelas de dados têm RLS e isolamento por `tenant_id`. Após migration 043, o campo `agent_id` em agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings referencia `agents(id)`. A tabela agent_run_steps mantém `agent_id` e `run_id` referenciando `agent_runs(id)`.
 
 ---
 
@@ -143,8 +147,56 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
   Unique: (agentId, key). Relações: N:1 Agent.
 
 - **AgentRun** → `agent_runs`  
-  Campos: id, agentId, agentVersion, tenantId, inputData, outputData, status, errorMessage, tokensUsed, costUsd, durationMs, createdBy, createdAt, completedAt.  
-  Relações: N:1 Agent.
+  Campos: id, agentId, agentVersion, tenantId, inputData, outputData, status, errorMessage, tokensUsed, costUsd, durationMs, budgetLimitUsd, sessionId, createdBy, createdAt, completedAt.  
+  Relações: N:1 Agent; N:1 AgentSession (session); 1:N AgentSession (sessions via agent_id); 1:N AgentRunStep, AgentBudget, AgentUsageDaily, AgentDeployment, AgentToolBinding, AgentContextBinding.
+
+- **AgentSession** → `agent_sessions`  
+  Campos: id, tenantId, userId, agentId (FK agent_runs), startedAt, endedAt, status (active|paused|closed), tokenUsage, createdAt, updatedAt.  
+  Relações: N:1 Tenant; N:1 AgentRun (agentRun via agent_id); 1:N AgentRun (runs via session_id); 1:N AgentMessage, AgentFeedback.
+
+- **AgentMessage** → `agent_messages`  
+  Campos: id, sessionId, tenantId, role (user|assistant), content, metadata, tokensUsed, createdAt.  
+  Relações: N:1 AgentSession, Tenant.
+
+- **AgentRunStep** → `agent_run_steps`  
+  Campos: id, agentId, tenantId, runId, stepType (input|tool_call|observation|output), input, output, metadata, executionTimeMs, createdAt.  
+  Relações: N:1 AgentRun (via runId), Tenant. Nota: agent_id não tem FK na migration.
+
+- **AgentBudget** → `agent_budgets`  
+  Campos: id, tenantId, agentId (FK agent_runs), monthlyLimitUsd, currentMonthSpentUsd, resetDate, createdAt, updatedAt.  
+  Relações: N:1 AgentRun, Tenant.
+
+- **AgentUsageDaily** → `agent_usage_daily`  
+  Campos: id, tenantId, agentId (FK agent_runs), date, sessionsCount, messagesCount, costTotalUsd, avgLatencyMs, successRatePct, createdAt.  
+  Unique: (tenantId, agentId, date). Relações: N:1 AgentRun, Tenant.
+
+- **AgentDeployment** → `agent_deployments`  
+  Campos: id, agentId (FK agent_runs), tenantId, version, environment (dev|staging|prod), deployedAt, deployedBy, configHash, status (success|failed|rolled_back), createdAt.  
+  Relações: N:1 AgentRun, Tenant.
+
+- **Tool** → `tools`  
+  Campos: id, tenantId, toolName, description, configSchema, enabled, createdAt, updatedAt.  
+  Relações: N:1 Tenant; 1:N AgentToolBinding.
+
+- **AgentToolBinding** → `agent_tool_bindings`  
+  Campos: id, agentId (FK agent_runs), toolId, tenantId, enabled, configOverrides, createdAt, updatedAt.  
+  Relações: N:1 AgentRun, Tool, Tenant.
+
+- **ContextProvider** → `context_providers`  
+  Campos: id, tenantId, providerType (sql|api|knowledge_base), description, config, enabled, createdAt, updatedAt.  
+  Relações: N:1 Tenant; 1:N AgentContextBinding.
+
+- **AgentContextBinding** → `agent_context_bindings`  
+  Campos: id, agentId (FK agent_runs), contextId, tenantId, priority, createdAt.  
+  Relações: N:1 AgentRun, ContextProvider, Tenant.
+
+- **AgentFeedback** → `agent_feedback`  
+  Campos: id, sessionId, tenantId, rating (1-5), feedbackText, feedbackType (quality|accuracy|relevance|performance), createdAt.  
+  Relações: N:1 AgentSession, Tenant.
+
+- **LmProviderAccount** → `lm_provider_accounts`  
+  Campos: id, tenantId, provider (openai|anthropic|google|azure), apiKeyEncrypted, accountIdentifier, monthlySpendUsd, quotaLimitUsd, createdAt, updatedAt.  
+  Relações: N:1 Tenant; 1:N LmModel.
 
 - **AgentTemplate** → `agent_templates`  
   Campos: id, tenantId, agentTypeId, name, slug, description, personaTemplate, promptObjectiveTemplate, promptInstructionsTemplate, promptExamples, outputSchemaTemplate, modelProviderDefault, modelIdDefault, modelTemperatureDefault, modelMaxTokensDefault, usageCount, createdBy, createdAt, updatedAt.  
@@ -155,8 +207,8 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
   Unique: (tenantId, slug). Relações: N:1 Tenant; 1:N LmModel.
 
 - **LmModel** → `lm_models`  
-  Campos: id, tenantId, providerId, name, modelId, description, maxTokens, defaultTemperature, inputCostPer1kTokens, outputCostPer1kTokens, docsUrl, contextWindow, displayOrder, tier (entry|balanced|pro|flagship), isActive, isSystem, createdBy, updatedBy, createdAt, updatedAt.  
-  Unique: (providerId, modelId). Relações: N:1 Tenant, LmProvider.
+  Campos: id, tenantId, providerId, name, modelId, description, maxTokens, defaultTemperature, inputCostPer1kTokens, outputCostPer1kTokens, inputTokenCostUsd, outputTokenCostUsd, providerAccountId, docsUrl, contextWindow, displayOrder, tier (entry|balanced|pro|flagship), isActive, isSystem, createdBy, updatedBy, createdAt, updatedAt.  
+  Unique: (providerId, modelId). Relações: N:1 Tenant, LmProvider, LmProviderAccount (opcional).
 
 ---
 
@@ -212,6 +264,10 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
 | GET | /agents/v2/{agent_id}/export | Export do agente |
 | GET | /agents/v2/types | Tipos de agente |
 | GET | /agents/v2/templates | Templates |
+| POST | /agents/{agent_id}/chat | Chat conversacional (session_id, message) |
+| GET | /agents/{agent_id}/sessions | Listar sessões de chat (limit, offset) |
+| POST | /agents/{agent_id}/sessions | Criar nova sessão |
+| GET | /agents/{agent_id}/sessions/{session_id}/messages | Mensagens da sessão |
 
 Autenticação: JWT no header Authorization; tenant_id e user_id extraídos do token (app_metadata).
 
@@ -227,7 +283,7 @@ Autenticação: JWT no header Authorization; tenant_id e user_id extraídos do t
 
 ### 9.1 Páginas (src/app)
 
-- **Agentes:** `src/app/agentes/page.tsx`, `src/app/agentes/agentes-content.tsx`, `src/app/agentes/layout.tsx`, `src/app/agentes/[id]/page.tsx`, `src/app/agentes/[id]/agent-edit-content.tsx`, `src/app/agentes/components/AgentsKanbanView.tsx`
+- **Agentes:** `src/app/agentes/page.tsx`, `src/app/agentes/agentes-content.tsx`, `src/app/agentes/layout.tsx`, `src/app/agentes/[id]/page.tsx`, `src/app/agentes/[id]/agent-edit-content.tsx`, `src/app/agentes/[id]/chat/page.tsx`, `src/app/agentes/[id]/chat/chat-content.tsx`, `src/app/agentes/components/AgentsKanbanView.tsx`
 - **Auxiliares:** `src/app/auxiliares/agent-types/page.tsx`, `src/app/auxiliares/agent-types/agent-types-content.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeFormDialog.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeListItem.tsx`, `src/app/auxiliares/lm-providers/page.tsx`, `src/app/auxiliares/lm-providers/lm-providers-content.tsx`, `src/app/auxiliares/lm-providers/components/LmProviderListItem.tsx`, `src/app/auxiliares/modelos-ia/page.tsx`, `src/app/auxiliares/modelos-ia/modelos-ia-content.tsx`, `src/app/auxiliares/layout.tsx`
 
 ### 9.2 API Routes Next.js (proxy para o serviço AI)
@@ -239,6 +295,10 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | `src/app/api/agents/route.ts` | GET, POST | GET/POST `${AI_SERVICE_URL}/api/agents/v2` |
 | `src/app/api/agents/[id]/route.ts` | GET, PATCH, DELETE | GET/PATCH/DELETE `${AI_SERVICE_URL}/api/agents/v2/${id}` |
 | `src/app/api/agents/[id]/traces/route.ts` | GET | `${AI_SERVICE_URL}/api/traces?agent_id=${id}&page&page_size` |
+| `src/app/api/agents/[id]/chat/route.ts` | POST | POST `${AI_SERVICE_URL}/api/agents/${id}/chat` (body: session_id, message) |
+| `src/app/api/agents/[id]/sessions/route.ts` | GET, POST | GET/POST `${AI_SERVICE_URL}/api/agents/${id}/sessions` (GET: limit, offset) |
+| `src/app/api/agents/[id]/metrics/route.ts` | GET | Consulta Supabase: agent_usage_daily (sessions_count, messages_count, cost_total_usd, success_rate_pct), agent_deployments (query: dateRange). Mapeia para contrato runs_total, success_rate, daily_data. |
+| `src/app/api/agents/budget/route.ts` | GET | `${AI_SERVICE_URL}/api/budget` |
 | `src/app/api/agents/types/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/types` |
 | `src/app/api/agents/templates/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/templates` + query |
 
@@ -266,13 +326,14 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | Configuração do projeto | `configs/project.yaml` |
 | Schema SQL atual / RLS | `supabase/docs/SCHEMA.md` |
 | Schema Prisma (estado atual) | `docs/architecture/data/schema.prisma` |
-| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` |
+| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` (incl. 042_ai_features_chat_and_360.sql) |
 | Tipos de agentes (TS) | `src/types/agents.ts` |
 | Serviço AI | `services/ai/app/` |
 | Orquestrador LangGraph | `services/ai/app/graphs/orchestrator.py` |
 | Tracing / LangSmith | `services/ai/app/instrumentation/tracing.py` |
 | Páginas agentes | `src/app/agentes/` |
-| Páginas auxiliares (tipos, provedores, modelos) | `src/app/auxiliares/` |
+| Página chat agente | `src/app/agentes/[id]/chat/` |
 | Proxy API agentes | `src/app/api/agents/` |
+| API chat/sessions/metrics | `src/app/api/agents/[id]/chat/`, `sessions/`, `metrics/` |
 | Actions (lm-models, lm-providers, agent-types) | `src/app/actions/` |
 | Sync Espaider | `src/lib/sync/espaider-sync.ts`, `src/app/api/integracoes/sync/` |

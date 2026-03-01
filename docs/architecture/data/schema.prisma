@@ -2,7 +2,7 @@
 // Schema Prisma — Tech Arauz (Supabase/PostgreSQL)
 // =============================================================================
 // Local canônico: docs/architecture/data/schema.prisma (engenharia/arquitetura AI)
-// Extraído via MCP Supabase (list_tables) em 2026-02-28.
+// Extraído via MCP Supabase (list_tables). Última atualização: 2026-03-01 (migration 042).
 // O projeto usa Supabase diretamente (não Prisma em runtime); este arquivo
 // serve como documentação do schema e referência para LLMs/ferramentas/AIOS.
 //
@@ -44,6 +44,18 @@ model Tenant {
   agentTemplates      AgentTemplate[]
   lmProviders         LmProvider[]
   lmModels            LmModel[]
+  agentSessions       AgentSession[]
+  agentMessages      AgentMessage[]
+  agentRunSteps      AgentRunStep[]
+  agentBudgets       AgentBudget[]
+  agentUsageDaily     AgentUsageDaily[]
+  agentDeployments    AgentDeployment[]
+  tools               Tool[]
+  agentToolBindings   AgentToolBinding[]
+  contextProviders    ContextProvider[]
+  agentContextBindings AgentContextBinding[]
+  agentFeedback      AgentFeedback[]
+  lmProviderAccounts  LmProviderAccount[]
 
   @@map("tenants")
 }
@@ -408,6 +420,12 @@ model Agent {
   versions       AgentVersion[]
   variables      AgentVariable[]
   runs           AgentRun[]
+  sessions       AgentSession[]
+  budgets        AgentBudget[]
+  usageDaily     AgentUsageDaily[]
+  deployments    AgentDeployment[]
+  toolBindings   AgentToolBinding[]
+  contextBindings AgentContextBinding[]
 
   @@unique([tenantId, slug])
   @@map("agents")
@@ -451,23 +469,232 @@ model AgentVariable {
 }
 
 model AgentRun {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  agentId     String    @map("agent_id") @db.Uuid
-  agentVersion String?  @map("agent_version")
-  tenantId    String    @map("tenant_id") @db.Uuid
-  inputData   Json?     @map("input_data")
-  outputData  Json?     @map("output_data")
-  status      String?
-  errorMessage String?  @map("error_message")
-  tokensUsed  Int?      @map("tokens_used")
-  costUsd     Decimal?  @map("cost_usd") @db.Decimal
-  durationMs  Int?      @map("duration_ms")
-  createdBy   String?   @map("created_by") @db.Uuid
-  createdAt   DateTime? @default(now()) @map("created_at")
-  completedAt DateTime? @map("completed_at")
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agentId       String    @map("agent_id") @db.Uuid
+  agentVersion  String?   @map("agent_version")
+  tenantId      String    @map("tenant_id") @db.Uuid
+  inputData     Json?     @map("input_data")
+  outputData    Json?     @map("output_data")
+  status        String?
+  errorMessage  String?   @map("error_message")
+  tokensUsed   Int?      @map("tokens_used")
+  costUsd      Decimal?  @map("cost_usd") @db.Decimal
+  durationMs   Int?      @map("duration_ms")
+  budgetLimitUsd Decimal? @map("budget_limit_usd") @db.Decimal(10, 2)
+  sessionId    String?   @map("session_id") @db.Uuid
+  createdBy    String?   @map("created_by") @db.Uuid
+  createdAt    DateTime? @default(now()) @map("created_at")
+  completedAt  DateTime? @map("completed_at")
 
-  agent Agent @relation(fields: [agentId], references: [id])
+  agent    Agent          @relation(fields: [agentId], references: [id])
+  session  AgentSession?  @relation("RunSession", fields: [sessionId], references: [id], onDelete: SetNull)
+  runSteps AgentRunStep[]
+
   @@map("agent_runs")
+}
+
+model AgentSession {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId   String    @map("tenant_id") @db.Uuid
+  userId     String?   @map("user_id") @db.Uuid
+  agentId    String?   @map("agent_id") @db.Uuid
+  startedAt  DateTime? @default(now()) @map("started_at")
+  endedAt    DateTime? @map("ended_at")
+  status     String?   @default("active") // active | paused | closed
+  tokenUsage Int?      @default(0) @map("token_usage")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @default(now()) @map("updated_at")
+
+  tenant   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agent    Agent?        @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  runs     AgentRun[]     @relation("RunSession")
+  messages AgentMessage[]
+  feedback AgentFeedback[]
+
+  @@map("agent_sessions")
+}
+
+model AgentMessage {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  sessionId  String   @map("session_id") @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  role       String   // user | assistant
+  content    String
+  metadata   Json?    @default("{}")
+  tokensUsed Int?    @default(0) @map("tokens_used")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  session AgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tenant  Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("agent_messages")
+}
+
+model AgentRunStep {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  agentId        String   @map("agent_id") @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  runId          String   @map("run_id") @db.Uuid
+  stepType       String   @map("step_type") // input | tool_call | observation | output
+  input          Json?    @default("{}")
+  output         Json?    @default("{}")
+  metadata       Json?    @default("{}")
+  executionTimeMs Int?   @map("execution_time_ms")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  run   AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("agent_run_steps")
+}
+
+model AgentBudget {
+  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  agentId             String    @map("agent_id") @db.Uuid
+  monthlyLimitUsd     Decimal?  @map("monthly_limit_usd") @db.Decimal(10, 2)
+  currentMonthSpentUsd Decimal? @default(0) @map("current_month_spent_usd") @db.Decimal(10, 2)
+  resetDate           DateTime? @db.Date @map("reset_date")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @default(now()) @map("updated_at")
+
+  agent    Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("agent_budgets")
+}
+
+model AgentUsageDaily {
+  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  agentId         String   @map("agent_id") @db.Uuid
+  date            DateTime @db.Date
+  sessionsCount   Int?     @default(0) @map("sessions_count")
+  messagesCount   Int?     @default(0) @map("messages_count")
+  costTotalUsd    Decimal? @default(0) @map("cost_total_usd") @db.Decimal(10, 2)
+  avgLatencyMs    Decimal? @default(0) @map("avg_latency_ms") @db.Decimal(10, 2)
+  successRatePct  Decimal? @default(100) @map("success_rate_pct") @db.Decimal(5, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  agent    Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, agentId, date])
+  @@map("agent_usage_daily")
+}
+
+model AgentDeployment {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  agentId     String   @map("agent_id") @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  version     String
+  environment String   // dev | staging | prod
+  deployedAt  DateTime? @default(now()) @map("deployed_at")
+  deployedBy  String?  @map("deployed_by") @db.Uuid
+  configHash  String?  @map("config_hash")
+  status      String?  @default("success") // success | failed | rolled_back
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  agent     Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tenant    Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("agent_deployments")
+}
+
+model Tool {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  toolName     String   @map("tool_name")
+  description  String?
+  configSchema Json?    @default("{}") @map("config_schema")
+  enabled      Boolean? @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+
+  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agentBindings AgentToolBinding[]
+
+  @@map("tools")
+}
+
+model AgentToolBinding {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  agentId        String   @map("agent_id") @db.Uuid
+  toolId         String   @map("tool_id") @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  enabled        Boolean? @default(true)
+  configOverrides Json?   @default("{}") @map("config_overrides")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @map("updated_at")
+
+  agent    Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tool     Tool    @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("agent_tool_bindings")
+}
+
+model ContextProvider {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  providerType String   @map("provider_type") // sql | api | knowledge_base
+  description  String?
+  config       Json?    @default("{}")
+  enabled      Boolean? @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+
+  tenant       Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agentBindings AgentContextBinding[]
+
+  @@map("context_providers")
+}
+
+model AgentContextBinding {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  agentId   String   @map("agent_id") @db.Uuid
+  contextId String   @map("context_id") @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  priority  Int?     @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  agent     Agent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  context   ContextProvider @relation(fields: [contextId], references: [id], onDelete: Cascade)
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("agent_context_bindings")
+}
+
+model AgentFeedback {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  sessionId    String   @map("session_id") @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  rating       Int?     // 1-5
+  feedbackText String?  @map("feedback_text")
+  feedbackType String?  @map("feedback_type") // quality | accuracy | relevance | performance
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  session AgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tenant  Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("agent_feedback")
+}
+
+model LmProviderAccount {
+  id                String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  provider          String   // openai | anthropic | google | azure
+  apiKeyEncrypted   String   @map("api_key_encrypted")
+  accountIdentifier String?  @map("account_identifier")
+  monthlySpendUsd   Decimal? @default(0) @map("monthly_spend_usd") @db.Decimal(10, 2)
+  quotaLimitUsd     Decimal? @map("quota_limit_usd") @db.Decimal(10, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lmModels  LmModel[]
+
+  @@map("lm_provider_accounts")
 }
 
 model AgentTemplate {
@@ -534,6 +761,9 @@ model LmModel {
   defaultTemperature     Decimal? @map("default_temperature") @db.Decimal(2, 2)
   inputCostPer1kTokens    Decimal? @map("input_cost_per_1k_tokens") @db.Decimal(10, 8)
   outputCostPer1kTokens   Decimal? @map("output_cost_per_1k_tokens") @db.Decimal(10, 8)
+  inputTokenCostUsd      Decimal? @map("input_token_cost_usd") @db.Decimal(12, 6)
+  outputTokenCostUsd     Decimal? @map("output_token_cost_usd") @db.Decimal(12, 6)
+  providerAccountId      String?  @map("provider_account_id") @db.Uuid
   docsUrl                String?  @map("docs_url")
   contextWindow          Int?     @map("context_window")
   displayOrder           Int?     @default(100) @map("display_order")
@@ -545,8 +775,9 @@ model LmModel {
   createdAt              DateTime @default(now()) @map("created_at")
   updatedAt              DateTime @default(now()) @map("updated_at")
 
-  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  provider LmProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider        LmProvider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  providerAccount LmProviderAccount?  @relation(fields: [providerAccountId], references: [id], onDelete: SetNull)
 
   @@unique([providerId, modelId])
   @@map("lm_models")

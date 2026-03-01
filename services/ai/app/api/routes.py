@@ -8,7 +8,9 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import jwt
+import json
 from fastapi import APIRouter, HTTPException, Query, Request, Depends
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from supabase import AsyncClient
 from app.config import get_settings
@@ -1161,6 +1163,181 @@ async def chat_with_agent(
     except Exception as e:
         logger.exception("Error in chat endpoint: %s", str(e))
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# Story 7.6: Streaming SSE endpoint
+@router.post("/agents/{agent_id}/chat/stream")
+async def chat_with_agent_stream(
+    agent_id: str,
+    request_body: ChatRequest,
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> StreamingResponse:
+    """
+    Send a message to an agent and receive streaming response via SSE.
+
+    Returns Server-Sent Events with message deltas.
+    Final event includes token count and cost.
+    """
+    async def generate():
+        """Async generator for SSE streaming"""
+        import time
+        t0 = time.perf_counter()
+
+        try:
+            tenant_id = token_data["tenant_id"]
+            user_id = token_data["user_id"]
+            supabase = await get_supabase_client(request)
+
+            if not request_body.message:
+                yield f'data: {json.dumps({"error": "message field is required"})}\n\n'
+                return
+
+            # Get or create session
+            session = await get_or_create_session(
+                agent_id=agent_id,
+                session_id=request_body.session_id,
+                tenant_id=tenant_id,
+                user_id=user_id,
+                supabase=supabase,
+            )
+
+            # Load message history
+            history = await load_message_history(
+                session_id=session["id"],
+                supabase=supabase,
+                limit=10,
+            )
+
+            # Fetch agent version & instantiate LLM
+            agent_service = AgentService(supabase)
+            try:
+                agent_config = await agent_service.export_agent_version(agent_id, tenant_id)
+            except AgentServiceError:
+                agent = await agent_service.get_agent(agent_id, tenant_id)
+                if not agent.draft:
+                    yield f'data: {json.dumps({"error": "Agent has no configuration"})}\n\n'
+                    return
+                agent_config = agent.draft.model_dump() if hasattr(agent.draft, 'model_dump') else agent.draft
+
+            # Extract LLM config
+            model_config = agent_config.get("model", {})
+            provider = model_config.get("provider", "openai")
+            model_id = model_config.get("model_id", "gpt-4o")
+            temperature = model_config.get("temperature", 0.7)
+            max_tokens = model_config.get("max_tokens", 2000)
+            top_p = model_config.get("top_p")
+
+            llm_kwargs = {"temperature": temperature, "max_tokens": max_tokens}
+            if top_p is not None:
+                llm_kwargs["top_p"] = top_p
+
+            llm = get_llm(provider, model_id, **llm_kwargs)
+
+            # Build message list
+            messages = []
+            persona = agent_config.get("persona", "You are a helpful assistant.")
+            prompt_objective = agent_config.get("prompt_objective", "Assist the user.")
+            system_content = f"{persona}\n\nObjective: {prompt_objective}"
+            messages.append(SystemMessage(content=system_content))
+
+            for msg in history:
+                if msg.get("role") == "user":
+                    messages.append(HumanMessage(content=msg.get("content", "")))
+                elif msg.get("role") == "assistant":
+                    messages.append(AIMessage(content=msg.get("content", "")))
+
+            messages.append(HumanMessage(content=request_body.message))
+
+            # Stream LLM response
+            full_response = ""
+            tokens_used = 0
+            cost_usd = 0.0
+
+            async for chunk in llm.astream(messages):
+                delta = chunk.content if hasattr(chunk, 'content') else str(chunk)
+                if delta:
+                    full_response += delta
+                    yield f'data: {json.dumps({"delta": delta})}\n\n'
+
+            # Extract final token count (if available)
+            if hasattr(chunk, 'usage_metadata') and chunk.usage_metadata:
+                usage = chunk.usage_metadata
+                tokens_used = usage.get('input_tokens', 0) + usage.get('output_tokens', 0)
+                if provider == "openai":
+                    cost_usd = (usage.get('input_tokens', 0) * 0.000003 +
+                               usage.get('output_tokens', 0) * 0.000006)
+                elif provider == "anthropic":
+                    cost_usd = (usage.get('input_tokens', 0) * 0.000003 +
+                               usage.get('output_tokens', 0) * 0.000015)
+                else:
+                    cost_usd = tokens_used * 0.000005
+
+            duration_ms = round((time.perf_counter() - t0) * 1000)
+
+            # Register run
+            run_id = str(uuid.uuid4())
+            await supabase.table("agent_runs").insert([{
+                "id": run_id,
+                "agent_id": agent_id,
+                "agent_version": agent_config.get("version", "unknown"),
+                "tenant_id": tenant_id,
+                "input_data": {"message": request_body.message},
+                "output_data": {"answer": full_response},
+                "status": "completed",
+                "tokens_used": tokens_used,
+                "cost_usd": float(cost_usd),
+                "duration_ms": duration_ms,
+                "created_at": datetime.utcnow().isoformat(),
+                "created_by": user_id,
+            }]).execute()
+
+            # Persist turn
+            await persist_turn(
+                session_id=session["id"],
+                tenant_id=tenant_id,
+                user_msg=request_body.message,
+                assistant_msg=full_response,
+                run_id=run_id,
+                supabase=supabase,
+                metadata={"tokens": tokens_used, "cost_usd": cost_usd},
+            )
+
+            # Update usage
+            await update_usage_daily(
+                agent_id=agent_id,
+                tenant_id=tenant_id,
+                supabase=supabase,
+                run_result={
+                    "cost_usd": cost_usd,
+                    "tokens_used": tokens_used,
+                    "duration_ms": duration_ms,
+                },
+            )
+
+            # Final event with metadata
+            yield f'data: {json.dumps({"done": True, "tokens": tokens_used, "cost": cost_usd, "duration_ms": duration_ms})}\n\n'
+
+            logger.info("Stream completed: agent=%s, tokens=%d, duration=%dms", agent_id, tokens_used, duration_ms)
+
+        except LLMProviderError as e:
+            logger.error("LLM provider error: %s", str(e))
+            yield f'data: {json.dumps({"error": f"LLM not configured: {e.provider}"})}\n\n'
+        except SessionServiceError as e:
+            logger.warning("Session service error: %s", str(e))
+            yield f'data: {json.dumps({"error": str(e)})}\n\n'
+        except Exception as e:
+            logger.exception("Error in stream endpoint: %s", str(e))
+            yield f'data: {json.dumps({"error": "Internal server error"})}\n\n'
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # Disable buffering in proxies
+        },
+    )
 
 
 @router.get("/agents/{agent_id}/sessions")

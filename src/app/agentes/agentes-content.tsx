@@ -6,7 +6,7 @@ import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { CreateAgentDialog } from '@/components/agents/CreateAgentDialog';
 import { AgentCockpit } from '@/components/agents/AgentCockpit';
-import { AgentMetrics360 } from '@/components/agents/AgentMetrics360';
+import { AgentEditSheet } from '@/components/agents/AgentEditSheet';
 import { SplitView } from '@/components/views/SplitView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -34,13 +34,18 @@ import { AgentsKanbanView } from './components/AgentsKanbanView';
 interface AgentsContentProps {
   agents: UIAgent[];
   providers?: LmProvider[];
+  agentTypes?: any[];
 }
 
-export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsContentProps) {
+export function AgentsContent({
+  agents: initialAgents,
+  providers = [],
+  agentTypes = [],
+}: AgentsContentProps) {
   const router = useRouter();
   const [agents, setAgents] = useState(initialAgents);
   const [selectedAgent, setSelectedAgent] = useState<UIAgent | null>(null);
-  const [metricsAgentId, setMetricsAgentId] = useState<string | null>(null);
+  const [editingAgent, setEditingAgent] = useState<UIAgent | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -100,6 +105,13 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
     }
   }, []);
 
+  // Handle agent saved from edit sheet
+  const handleAgentSaved = (updated: UIAgent) => {
+    setAgents((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+    setSelectedAgent(updated); // atualiza cockpit com dados novos
+    setEditingAgent(null);
+  };
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -141,34 +153,6 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
         </div>
       )}
 
-      {/* Dashboard 360° de Métricas */}
-      {agents.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Dashboard 360° de Métricas</h3>
-                <Select value={metricsAgentId || ''} onValueChange={setMetricsAgentId}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Selecionar agente..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {agents.map((agent) => (
-                      <SelectItem key={agent.id} value={agent.id}>
-                        {agent.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {metricsAgentId && (
-                <AgentMetrics360 agentId={metricsAgentId} />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* ViewModeBar + FilterBar + Refresh */}
       <div className="space-y-3">
@@ -276,20 +260,26 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
         onClose={() => setSelectedAgent(null)}
         title={selectedAgent?.name ?? ''}
         subtitle={selectedAgent?.slug}
-        width="lg"
+        width="wide"
       >
         {selectedAgent && (
           <AgentCockpit
             agent={selectedAgent}
-            onEdit={() => {
-              if (selectedAgent) {
-                setSelectedAgent(null);
-                router.push(`/agentes/${selectedAgent.id}`);
-              }
-            }}
+            providers={providers}
+            agentTypes={agentTypes}
+            onEdit={() => setEditingAgent(selectedAgent)}
           />
         )}
       </SplitView>
+
+      {/* EditSheet: edição do agente */}
+      <AgentEditSheet
+        agent={editingAgent}
+        isOpen={!!editingAgent}
+        providers={providers}
+        onClose={() => setEditingAgent(null)}
+        onSaved={handleAgentSaved}
+      />
     </div>
   );
 }

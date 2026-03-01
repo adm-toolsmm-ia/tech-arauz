@@ -54,6 +54,7 @@ export interface UIAgent {
   tags: string[];
   modelId: string;
   agentType: string;
+  agentTypeId: string | null;
   updatedAt: string;
   createdAt: string;
   executionCount: number;
@@ -87,6 +88,7 @@ export function dbAgentToUI(dbAgent: DBAgent): UIAgent {
     tags: dbAgent.tags,
     modelId: dbAgent.model_id,
     agentType: dbAgent.agent_type || 'custom',
+    agentTypeId: dbAgent.agent_type_id,
     updatedAt: dbAgent.updated_at,
     createdAt: dbAgent.created_at,
     executionCount: dbAgent.execution_count,

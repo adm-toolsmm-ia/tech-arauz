@@ -21,21 +21,30 @@ import { ChevronLeft, Save, Trash2, AlertTriangle, MessageCircle } from 'lucide-
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
+import { AgentTypesService } from '@/services/agents/agentTypesService';
+import { LmModelsService } from '@/services/agents/lmModelsService';
 import { AgentMetrics360 } from '@/components/agents/AgentMetrics360';
 import { ChatContent } from './chat/chat-content';
+import type { AgentType, LmModel, LmProvider } from '@/types/agents';
 import type { UIAgent } from '@/lib/transformers/agent';
 
 interface AgentEditContentProps {
   initialAgent: UIAgent;
+  providers?: LmProvider[];
 }
 
-export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
+export function AgentEditContent({
+  initialAgent,
+  providers = [],
+}: AgentEditContentProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  const [agentTypes, setAgentTypes] = useState<AgentType[]>([]);
+  const [modelsByProvider, setModelsByProvider] = useState<Record<string, LmModel[]>>({});
 
   const [agent, setAgent] = useState({
     name: initialAgent.name,
@@ -44,7 +53,7 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
     status: initialAgent.status,
     owners: initialAgent.owners,
     tags: initialAgent.tags,
-    agentType: initialAgent.agentType,
+    agentTypeId: initialAgent.agentTypeId || '',
     persona: initialAgent.fullConfig.persona || '',
     promptObjective: initialAgent.fullConfig.promptObjective || '',
     promptInstructions: initialAgent.fullConfig.promptInstructions || '',
@@ -57,6 +66,40 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
     outputSchema: JSON.stringify(initialAgent.fullConfig.outputSchema || {}, null, 2),
   });
 
+  // Load agent types
+  React.useEffect(() => {
+    AgentTypesService.listAgentTypes()
+      .then(setAgentTypes)
+      .catch(() => {
+        toast.error('Erro ao carregar tipos de agentes');
+      });
+  }, []);
+
+  // Load models for selected provider
+  const loadModelsForProvider = React.useCallback(
+    async (providerId: string) => {
+      if (modelsByProvider[providerId]) return;
+      try {
+        const models = await LmModelsService.listModels(providerId);
+        const sorted = models.sort(
+          (a, b) => (a.display_order ?? 100) - (b.display_order ?? 100),
+        );
+        setModelsByProvider((prev) => ({ ...prev, [providerId]: sorted }));
+      } catch {
+        toast.error('Erro ao carregar modelos');
+      }
+    },
+    [modelsByProvider],
+  );
+
+  // Load models when provider changes
+  React.useEffect(() => {
+    const provider = providers.find((p) => p.slug === agent.modelProvider);
+    if (provider) {
+      void loadModelsForProvider(provider.id);
+    }
+  }, [agent.modelProvider, providers, loadModelsForProvider]);
+
   const handleChange = (field: string, value: unknown) => {
     setAgent((prev) => ({ ...prev, [field]: value }));
     setIsDirty(true);
@@ -65,6 +108,7 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      const selectedType = agentTypes.find((t) => t.id === agent.agentTypeId);
       const updates = {
         name: agent.name,
         slug: agent.slug,
@@ -72,7 +116,8 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
         status: agent.status,
         owners: agent.owners,
         tags: agent.tags,
-        agent_type: agent.agentType,
+        agent_type_id: agent.agentTypeId || undefined,
+        agent_type: selectedType?.slug || 'custom',
         persona: agent.persona,
         prompt_objective: agent.promptObjective,
         prompt_instructions: agent.promptInstructions.split('\n').filter(Boolean),
@@ -248,17 +293,19 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
                 <div>
                   <Label>Tipo</Label>
                   <Select
-                    value={agent.agentType}
-                    onValueChange={(value) => handleChange('agentType', value)}
+                    value={agent.agentTypeId}
+                    onValueChange={(value) => handleChange('agentTypeId', value || null)}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Selecionar..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="status-report">📊 Status Report</SelectItem>
-                      <SelectItem value="requirements">📋 Requisitos</SelectItem>
-                      <SelectItem value="analysis">🔍 Análise</SelectItem>
-                      <SelectItem value="custom">⚙️ Custom</SelectItem>
+                      <SelectItem value="">Sem tipo (Custom)</SelectItem>
+                      {agentTypes.map((type) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.icon_emoji} {type.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -328,17 +375,49 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Provider</Label>
-                  <Input
+                  <Select
                     value={agent.modelProvider}
-                    onChange={(e) => handleChange('modelProvider', e.target.value)}
-                  />
+                    onValueChange={(value) => {
+                      handleChange('modelProvider', value);
+                      handleChange('modelId', '');
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {providers.map((p) => (
+                        <SelectItem key={p.id} value={p.slug}>
+                          {p.icon_emoji} {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+
                 <div>
                   <Label>Model ID</Label>
-                  <Input
+                  <Select
                     value={agent.modelId}
-                    onChange={(e) => handleChange('modelId', e.target.value)}
-                  />
+                    onValueChange={(value) => handleChange('modelId', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(() => {
+                        const provider = providers.find(
+                          (p) => p.slug === agent.modelProvider,
+                        );
+                        const models = provider ? (modelsByProvider[provider.id] ?? []) : [];
+                        return models.map((m) => (
+                          <SelectItem key={m.id} value={m.model_id}>
+                            {m.name} {m.tier ? `[${m.tier}]` : ''}
+                          </SelectItem>
+                        ));
+                      })()}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

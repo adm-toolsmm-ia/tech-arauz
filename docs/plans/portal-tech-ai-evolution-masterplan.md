@@ -97,6 +97,25 @@
 - **Commits:** 1c2fdc9
 - **Próximo:** Story 7.13 (GlobalChatbot Component) — **READY FOR EXECUTION**
 
+### 2026-03-01 20:40 — Épico 4 Story 7.13 (GlobalChatbot) ✅ COMPLETO
+- **Agente:** @dev (Dex)
+- **Story:** 7.13 — Frontend: Componente GlobalChatbot
+- **Features:**
+  - ✅ Botão flutuante circular: fixed bottom-6 right-6, z-50
+  - ✅ Sheet (shadcn/ui) side=right, 420px
+  - ✅ Estado 1: Seleção de Agente (lista filtrada por usage_type=chatbot, status=published, show_in_shortcut=true)
+  - ✅ Estado 2: Chat (nome agente, header com botão trocar/fechar, messages, input)
+  - ✅ Indicador de typing (animated dots)
+  - ✅ Auto-scroll para última mensagem
+  - ✅ Botão "Copiar" em mensagens assistente
+  - ✅ Botão "Limpar conversa" (reseta estado)
+  - ✅ Envio POST /api/agents/[id]/chat
+  - ✅ Responsivo (mobile-friendly)
+  - ✅ Integrado em layout.tsx
+  - ✅ Sem erros no console
+- **Commits:** 9706f09
+- **Próximo:** Story 7.14 (Página Histórico) — **FINAL STORY**
+
 ---
 
 ---

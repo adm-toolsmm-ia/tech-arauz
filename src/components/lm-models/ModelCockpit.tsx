@@ -85,9 +85,10 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
 
       {/* Tabs */}
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general">Geral</TabsTrigger>
           <TabsTrigger value="config">Config</TabsTrigger>
+          <TabsTrigger value="governance">Governança</TabsTrigger>
           <TabsTrigger value="docs">Documentação</TabsTrigger>
         </TabsList>
 
@@ -169,7 +170,72 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
           </div>
         </TabsContent>
 
-        {/* TAB 3: DOCS */}
+        {/* TAB 3: GOVERNANCE */}
+        <TabsContent value="governance" className="mt-4 space-y-4">
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-semibold mb-2">Stability Level</h4>
+              {model.stability_level && (
+                <Badge
+                  variant="outline"
+                  className={
+                    model.stability_level === 'ga'
+                      ? 'bg-green-100 text-green-800'
+                      : model.stability_level === 'preview'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : model.stability_level === 'experimental'
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-gray-100 text-gray-800'
+                  }
+                >
+                  {model.stability_level.toUpperCase()}
+                </Badge>
+              )}
+            </div>
+
+            {model.release_channel && (
+              <div>
+                <h4 className="text-sm font-semibold mb-2">Release Channel</h4>
+                <Badge variant="outline">{model.release_channel}</Badge>
+              </div>
+            )}
+
+            {(model.supports_tool_calling || model.supports_json_mode || model.supports_streaming || model.supports_vision || model.supports_audio) && (
+              <div>
+                <h4 className="text-sm font-semibold mb-2">Capacidades</h4>
+                <div className="flex flex-wrap gap-2">
+                  {model.supports_tool_calling && <Badge className="bg-blue-100 text-blue-800">🔧 Tool Calling</Badge>}
+                  {model.supports_json_mode && <Badge className="bg-blue-100 text-blue-800">📄 JSON Mode</Badge>}
+                  {model.supports_streaming && <Badge className="bg-blue-100 text-blue-800">🌊 Streaming</Badge>}
+                  {model.supports_vision && <Badge className="bg-blue-100 text-blue-800">👁️ Vision</Badge>}
+                  {model.supports_audio && <Badge className="bg-blue-100 text-blue-800">🎵 Audio</Badge>}
+                </div>
+              </div>
+            )}
+
+            {model.deprecated_at && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-800">
+                  <strong>⚠️ Deprecado em:</strong> {new Date(model.deprecated_at).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+            )}
+
+            {model.sunset_at && (
+              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>⏰ Sunset em:</strong> {new Date(model.sunset_at).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+            )}
+
+            {!model.stability_level && !model.release_channel && !model.deprecated_at && !model.sunset_at && (model.supports_tool_calling || model.supports_json_mode || model.supports_streaming || model.supports_vision || model.supports_audio) === false && (
+              <p className="text-sm text-muted-foreground">Nenhuma informação de governança cadastrada.</p>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* TAB 4: DOCS */}
         <TabsContent value="docs" className="mt-4 space-y-4">
           <div className="space-y-4">
             <div className="flex items-center gap-2">

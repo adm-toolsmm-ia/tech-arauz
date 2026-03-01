@@ -21,6 +21,14 @@ const TIER_CONFIG: Record<string, { emoji: string; label: string }> = {
   flagship: { emoji: '👑', label: 'Flagship' },
 };
 
+// Stability level configurations
+const STABILITY_CONFIG: Record<string, { color: string; label: string }> = {
+  ga: { color: 'bg-green-100 text-green-800', label: 'GA' },
+  preview: { color: 'bg-yellow-100 text-yellow-800', label: 'Preview' },
+  experimental: { color: 'bg-orange-100 text-orange-800', label: 'Experimental' },
+  deprecated: { color: 'bg-gray-100 text-gray-800', label: 'Deprecated' },
+};
+
 export function ModelCard({
   model,
   provider,
@@ -58,6 +66,19 @@ export function ModelCard({
           <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
             {model.model_id}
           </Badge>
+          {model.stability_level && (
+            <Badge
+              variant="outline"
+              className={`px-1.5 py-0 text-[10px] ${STABILITY_CONFIG[model.stability_level]?.color}`}
+            >
+              {STABILITY_CONFIG[model.stability_level]?.label}
+            </Badge>
+          )}
+          {model.release_channel && (
+            <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+              {model.release_channel}
+            </Badge>
+          )}
           {tierConfig && (
             <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
               {tierConfig.emoji} {tierConfig.label}
@@ -69,6 +90,17 @@ export function ModelCard({
             </Badge>
           )}
         </div>
+
+        {/* Capacidades chips */}
+        {(model.supports_tool_calling || model.supports_json_mode || model.supports_streaming || model.supports_vision || model.supports_audio) && (
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {model.supports_tool_calling && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">🔧</Badge>}
+            {model.supports_json_mode && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">📄</Badge>}
+            {model.supports_streaming && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">🌊</Badge>}
+            {model.supports_vision && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">👁️</Badge>}
+            {model.supports_audio && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">🎵</Badge>}
+          </div>
+        )}
       </div>
 
       {(onCopy || onDelete) && (

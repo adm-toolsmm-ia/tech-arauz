@@ -62,6 +62,16 @@ interface FormData {
   tier: 'entry' | 'balanced' | 'pro' | 'flagship' | '';
   input_cost_per_1k_tokens?: number;
   output_cost_per_1k_tokens?: number;
+  // Governança
+  stability_level?: 'ga' | 'preview' | 'experimental' | 'deprecated';
+  release_channel?: 'stable' | 'beta' | 'alpha';
+  supports_tool_calling?: boolean;
+  supports_json_mode?: boolean;
+  supports_streaming?: boolean;
+  supports_vision?: boolean;
+  supports_audio?: boolean;
+  deprecated_at?: string;
+  sunset_at?: string;
 }
 
 export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaContentProps) {
@@ -136,6 +146,15 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
       tier: 'balanced',
       input_cost_per_1k_tokens: undefined,
       output_cost_per_1k_tokens: undefined,
+      stability_level: undefined,
+      release_channel: undefined,
+      supports_tool_calling: undefined,
+      supports_json_mode: undefined,
+      supports_streaming: undefined,
+      supports_vision: undefined,
+      supports_audio: undefined,
+      deprecated_at: undefined,
+      sunset_at: undefined,
     });
   }, []);
 
@@ -167,6 +186,8 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
         tier: formData.tier || undefined,
         input_cost_per_1k_tokens: formData.input_cost_per_1k_tokens,
         output_cost_per_1k_tokens: formData.output_cost_per_1k_tokens,
+        stability_level: formData.stability_level,
+        release_channel: formData.release_channel,
         is_active: true,
         is_system: false,
       });
@@ -354,6 +375,15 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
           docs_url: editForm.docs_url?.trim() || undefined,
           input_cost_per_1k_tokens: editForm.input_cost_per_1k_tokens,
           output_cost_per_1k_tokens: editForm.output_cost_per_1k_tokens,
+          stability_level: editForm.stability_level,
+          release_channel: editForm.release_channel,
+          supports_tool_calling: editForm.supports_tool_calling,
+          supports_json_mode: editForm.supports_json_mode,
+          supports_streaming: editForm.supports_streaming,
+          supports_vision: editForm.supports_vision,
+          supports_audio: editForm.supports_audio,
+          deprecated_at: editForm.deprecated_at,
+          sunset_at: editForm.sunset_at,
         });
         if (result.success && result.data) {
           const provider = model.lm_providers;
@@ -714,6 +744,127 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                     disabled={isLoading}
                   />
                 </div>
+
+                {/* Governança Section */}
+                <div className="sm:col-span-2">
+                  <h4 className="text-sm font-semibold mb-4">Governança</h4>
+                </div>
+                <div>
+                  <Label>Stability Level</Label>
+                  <Select
+                    value={editForm.stability_level ?? ''}
+                    onValueChange={(v) => setEditForm((p) => ({ ...p, stability_level: v as any }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ga">GA</SelectItem>
+                      <SelectItem value="preview">Preview</SelectItem>
+                      <SelectItem value="experimental">Experimental</SelectItem>
+                      <SelectItem value="deprecated">Deprecated</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Release Channel</Label>
+                  <Select
+                    value={editForm.release_channel ?? ''}
+                    onValueChange={(v) => setEditForm((p) => ({ ...p, release_channel: v as any }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="stable">Stable</SelectItem>
+                      <SelectItem value="beta">Beta</SelectItem>
+                      <SelectItem value="alpha">Alpha</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Deprecated At (ISO)</Label>
+                  <Input
+                    type="datetime-local"
+                    value={editForm.deprecated_at?.slice(0, 16) ?? ''}
+                    onChange={(e) =>
+                      setEditForm((p) => ({
+                        ...p,
+                        deprecated_at: e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Sunset At (ISO)</Label>
+                  <Input
+                    type="datetime-local"
+                    value={editForm.sunset_at?.slice(0, 16) ?? ''}
+                    onChange={(e) =>
+                      setEditForm((p) => ({
+                        ...p,
+                        sunset_at: e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+
+                {/* Capabilities */}
+                <div className="sm:col-span-2">
+                  <h4 className="text-sm font-semibold mb-4">Capacidades</h4>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editForm.supports_tool_calling ?? false}
+                    onChange={(e) => setEditForm((p) => ({ ...p, supports_tool_calling: e.target.checked }))}
+                    disabled={isLoading}
+                    id="tool_calling"
+                  />
+                  <Label htmlFor="tool_calling">🔧 Tool Calling</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editForm.supports_json_mode ?? false}
+                    onChange={(e) => setEditForm((p) => ({ ...p, supports_json_mode: e.target.checked }))}
+                    disabled={isLoading}
+                    id="json_mode"
+                  />
+                  <Label htmlFor="json_mode">📄 JSON Mode</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editForm.supports_streaming ?? false}
+                    onChange={(e) => setEditForm((p) => ({ ...p, supports_streaming: e.target.checked }))}
+                    disabled={isLoading}
+                    id="streaming"
+                  />
+                  <Label htmlFor="streaming">🌊 Streaming</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editForm.supports_vision ?? false}
+                    onChange={(e) => setEditForm((p) => ({ ...p, supports_vision: e.target.checked }))}
+                    disabled={isLoading}
+                    id="vision"
+                  />
+                  <Label htmlFor="vision">👁️ Vision</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editForm.supports_audio ?? false}
+                    onChange={(e) => setEditForm((p) => ({ ...p, supports_audio: e.target.checked }))}
+                    disabled={isLoading}
+                    id="audio"
+                  />
+                  <Label htmlFor="audio">🎵 Audio</Label>
+                </div>
               </div>
               </>
             ) : (
@@ -736,6 +887,15 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                             tier: selectedModel.tier ?? 'balanced',
                             input_cost_per_1k_tokens: selectedModel.input_cost_per_1k_tokens,
                             output_cost_per_1k_tokens: selectedModel.output_cost_per_1k_tokens,
+                            stability_level: selectedModel.stability_level,
+                            release_channel: selectedModel.release_channel,
+                            supports_tool_calling: selectedModel.supports_tool_calling,
+                            supports_json_mode: selectedModel.supports_json_mode,
+                            supports_streaming: selectedModel.supports_streaming,
+                            supports_vision: selectedModel.supports_vision,
+                            supports_audio: selectedModel.supports_audio,
+                            deprecated_at: selectedModel.deprecated_at,
+                            sunset_at: selectedModel.sunset_at,
                           });
                           setIsEditingModel(true);
                         }
@@ -941,6 +1101,44 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                   }))
                 }
               />
+            </div>
+
+            {/* Governança */}
+            <div className="border-t pt-4">
+              <h3 className="font-semibold mb-4 text-sm">Governança (opcional)</h3>
+            </div>
+            <div>
+              <Label>Stability Level</Label>
+              <Select
+                value={formData.stability_level ?? ''}
+                onValueChange={(v) => setFormData((prev) => ({ ...prev, stability_level: v as any }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ga">GA</SelectItem>
+                  <SelectItem value="preview">Preview</SelectItem>
+                  <SelectItem value="experimental">Experimental</SelectItem>
+                  <SelectItem value="deprecated">Deprecated</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Release Channel</Label>
+              <Select
+                value={formData.release_channel ?? ''}
+                onValueChange={(v) => setFormData((prev) => ({ ...prev, release_channel: v as any }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="stable">Stable</SelectItem>
+                  <SelectItem value="beta">Beta</SelectItem>
+                  <SelectItem value="alpha">Alpha</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

@@ -53,7 +53,7 @@ Documentação do que existe no repositório. Apenas fatos; uso como contexto pa
 - **Documentação SQL da estrutura atual:** `supabase/docs/SCHEMA.md` — tabelas, colunas, relações, RLS (auditoria até as migrations aplicadas).
 - **Schema em formato Prisma (estado atual):** `docs/architecture/data/schema.prisma` — export do MCP Supabase a partir do banco; o projeto usa Supabase em runtime, não Prisma.
 
-**Migrations (histórico / DDL):** `supabase/migrations/` — arquivos 001_*.sql a 041_*.sql. As migrations iniciais podem ter sido alteradas ou substituídas por migrations posteriores; o estado atual do banco é o resultado cumulativo de todas aplicadas em ordem. Para entender a **estrutura atual**, priorize `SCHEMA.md` e `schema.prisma`. Consulte as migrations quando a tarefa for **alterar o schema** (nova migration) ou **analisar a evolução** do banco.
+**Migrations (histórico / DDL):** `supabase/migrations/` — arquivos 001_*.sql a 043_*.sql. As migrations iniciais podem ter sido alteradas ou substituídas por migrations posteriores; o estado atual do banco é o resultado cumulativo de todas aplicadas em ordem. Para entender a **estrutura atual**, priorize `SCHEMA.md` e `schema.prisma`. Consulte as migrations quando a tarefa for **alterar o schema** (nova migration) ou **analisar a evolução** do banco.
 
 **Tabelas por domínio (nomes no banco):**
 
@@ -68,7 +68,7 @@ Documentação do que existe no repositório. Apenas fatos; uso como contexto pa
 | Ferramentas e contexto | tools, agent_tool_bindings, context_providers, agent_context_bindings |
 | Feedback e LLM | agent_feedback, lm_provider_accounts |
 
-Todas as tabelas de dados têm RLS e isolamento por `tenant_id`. Após migration 043, o campo `agent_id` em agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings referencia `agents(id)`. A tabela agent_run_steps mantém `agent_id` e `run_id` referenciando `agent_runs(id)`.
+Todas as tabelas de dados têm RLS e isolamento por `tenant_id`. Após migration 043, o campo `agent_id` em agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings referencia `agents(id)`. A tabela agent_run_steps tem `run_id` (FK agent_runs) e `agent_id` (coluna sem FK, tipicamente agents.id para denormalização).
 
 ---
 
@@ -136,7 +136,7 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
 
 - **Agent** → `agents`  
   Campos: id, tenantId, name, slug, description, owners, tags, status (draft|published|deprecated), persona, promptObjective, promptInstructions, promptTemplate, outputSchema, modelProvider, modelId, modelTemperature, modelTopP, modelMaxTokens, modelPresencePenalty, modelFrequencyPenalty, modelStopSequences, modelResponseFormat, modelEndpointOverrides, runtimeToolIds, runtimeContextProviderIds, runtimeMemory, agentType, agentTypeId, requirements, configurationMeta, templateId, isTemplate, requiresValidation, validationRules, executionCount, lastExecutionAt, createdBy, updatedBy, createdAt, updatedAt.  
-  Unique: (tenantId, slug). Relações: N:1 Tenant, AgentType (opcional); 1:N AgentVersion, AgentVariable, AgentRun.
+  Unique: (tenantId, slug). Relações: N:1 Tenant, AgentType (opcional); 1:N AgentVersion, AgentVariable, AgentRun, AgentSession, AgentBudget, AgentUsageDaily, AgentDeployment, AgentToolBinding, AgentContextBinding.
 
 - **AgentVersion** → `agent_versions`  
   Campos: id, agentId, version, status, agentConfig, commitMessage, changeReason, breakingChange, createdBy, createdAt.  
@@ -148,11 +148,11 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
 
 - **AgentRun** → `agent_runs`  
   Campos: id, agentId, agentVersion, tenantId, inputData, outputData, status, errorMessage, tokensUsed, costUsd, durationMs, budgetLimitUsd, sessionId, createdBy, createdAt, completedAt.  
-  Relações: N:1 Agent; N:1 AgentSession (session); 1:N AgentSession (sessions via agent_id); 1:N AgentRunStep, AgentBudget, AgentUsageDaily, AgentDeployment, AgentToolBinding, AgentContextBinding.
+  Relações: N:1 Agent; N:1 AgentSession (session via sessionId); 1:N AgentRunStep.
 
 - **AgentSession** → `agent_sessions`  
-  Campos: id, tenantId, userId, agentId (FK agent_runs), startedAt, endedAt, status (active|paused|closed), tokenUsage, createdAt, updatedAt.  
-  Relações: N:1 Tenant; N:1 AgentRun (agentRun via agent_id); 1:N AgentRun (runs via session_id); 1:N AgentMessage, AgentFeedback.
+  Campos: id, tenantId, userId, agentId (FK agents), startedAt, endedAt, status (active|paused|closed), tokenUsage, createdAt, updatedAt.  
+  Relações: N:1 Tenant; N:1 Agent (via agentId); 1:N AgentRun (runs via sessionId); 1:N AgentMessage, AgentFeedback.
 
 - **AgentMessage** → `agent_messages`  
   Campos: id, sessionId, tenantId, role (user|assistant), content, metadata, tokensUsed, createdAt.  
@@ -160,35 +160,35 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
 
 - **AgentRunStep** → `agent_run_steps`  
   Campos: id, agentId, tenantId, runId, stepType (input|tool_call|observation|output), input, output, metadata, executionTimeMs, createdAt.  
-  Relações: N:1 AgentRun (via runId), Tenant. Nota: agent_id não tem FK na migration.
+  Relações: N:1 AgentRun (via runId), Tenant. Nota: agent_id é coluna sem FK (denormalização).
 
 - **AgentBudget** → `agent_budgets`  
-  Campos: id, tenantId, agentId (FK agent_runs), monthlyLimitUsd, currentMonthSpentUsd, resetDate, createdAt, updatedAt.  
-  Relações: N:1 AgentRun, Tenant.
+  Campos: id, tenantId, agentId (FK agents), monthlyLimitUsd, currentMonthSpentUsd, resetDate, createdAt, updatedAt.  
+  Relações: N:1 Agent, Tenant.
 
 - **AgentUsageDaily** → `agent_usage_daily`  
-  Campos: id, tenantId, agentId (FK agent_runs), date, sessionsCount, messagesCount, costTotalUsd, avgLatencyMs, successRatePct, createdAt.  
-  Unique: (tenantId, agentId, date). Relações: N:1 AgentRun, Tenant.
+  Campos: id, tenantId, agentId (FK agents), date, sessionsCount, messagesCount, costTotalUsd, avgLatencyMs, successRatePct, createdAt.  
+  Unique: (tenantId, agentId, date). Relações: N:1 Agent, Tenant.
 
 - **AgentDeployment** → `agent_deployments`  
-  Campos: id, agentId (FK agent_runs), tenantId, version, environment (dev|staging|prod), deployedAt, deployedBy, configHash, status (success|failed|rolled_back), createdAt.  
-  Relações: N:1 AgentRun, Tenant.
+  Campos: id, agentId (FK agents), tenantId, version, environment (dev|staging|prod), deployedAt, deployedBy, configHash, status (success|failed|rolled_back), createdAt.  
+  Relações: N:1 Agent, Tenant.
 
 - **Tool** → `tools`  
   Campos: id, tenantId, toolName, description, configSchema, enabled, createdAt, updatedAt.  
   Relações: N:1 Tenant; 1:N AgentToolBinding.
 
 - **AgentToolBinding** → `agent_tool_bindings`  
-  Campos: id, agentId (FK agent_runs), toolId, tenantId, enabled, configOverrides, createdAt, updatedAt.  
-  Relações: N:1 AgentRun, Tool, Tenant.
+  Campos: id, agentId (FK agents), toolId, tenantId, enabled, configOverrides, createdAt, updatedAt.  
+  Relações: N:1 Agent, Tool, Tenant.
 
 - **ContextProvider** → `context_providers`  
   Campos: id, tenantId, providerType (sql|api|knowledge_base), description, config, enabled, createdAt, updatedAt.  
   Relações: N:1 Tenant; 1:N AgentContextBinding.
 
 - **AgentContextBinding** → `agent_context_bindings`  
-  Campos: id, agentId (FK agent_runs), contextId, tenantId, priority, createdAt.  
-  Relações: N:1 AgentRun, ContextProvider, Tenant.
+  Campos: id, agentId (FK agents), contextId, tenantId, priority, createdAt.  
+  Relações: N:1 Agent, ContextProvider, Tenant.
 
 - **AgentFeedback** → `agent_feedback`  
   Campos: id, sessionId, tenantId, rating (1-5), feedbackText, feedbackType (quality|accuracy|relevance|performance), createdAt.  
@@ -297,7 +297,7 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | `src/app/api/agents/[id]/traces/route.ts` | GET | `${AI_SERVICE_URL}/api/traces?agent_id=${id}&page&page_size` |
 | `src/app/api/agents/[id]/chat/route.ts` | POST | POST `${AI_SERVICE_URL}/api/agents/${id}/chat` (body: session_id, message) |
 | `src/app/api/agents/[id]/sessions/route.ts` | GET, POST | GET/POST `${AI_SERVICE_URL}/api/agents/${id}/sessions` (GET: limit, offset) |
-| `src/app/api/agents/[id]/metrics/route.ts` | GET | Consulta Supabase: agent_usage_daily (sessions_count, messages_count, cost_total_usd, success_rate_pct), agent_deployments (query: dateRange). Mapeia para contrato runs_total, success_rate, daily_data. |
+| `src/app/api/agents/[id]/metrics/route.ts` | GET | Consulta Supabase: agent_usage_daily (sessions_count, messages_count, cost_total_usd, avg_latency_ms, success_rate_pct), agent_deployments. Query: dateRange (7d|30d|90d). Contrato: runs_total, success_rate, avg_latency_ms, total_cost_usd, daily_data, deployments. |
 | `src/app/api/agents/budget/route.ts` | GET | `${AI_SERVICE_URL}/api/budget` |
 | `src/app/api/agents/types/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/types` |
 | `src/app/api/agents/templates/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/templates` + query |
@@ -326,7 +326,7 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | Configuração do projeto | `configs/project.yaml` |
 | Schema SQL atual / RLS | `supabase/docs/SCHEMA.md` |
 | Schema Prisma (estado atual) | `docs/architecture/data/schema.prisma` |
-| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` (incl. 042_ai_features_chat_and_360.sql) |
+| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` (incl. 042_ai_features_chat_and_360.sql, 043_fix_agent_id_references.sql) |
 | Tipos de agentes (TS) | `src/types/agents.ts` |
 | Serviço AI | `services/ai/app/` |
 | Orquestrador LangGraph | `services/ai/app/graphs/orchestrator.py` |

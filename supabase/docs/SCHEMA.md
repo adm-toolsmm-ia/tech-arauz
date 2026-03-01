@@ -213,7 +213,7 @@ agent_sessions (1) - (N) agent_feedback
 
 ## `agent_sessions`
 - PK: `id (uuid)`
-- FK: `tenant_id -> tenants(id)`, `user_id -> auth.users(id)`, `agent_id -> agent_runs(id)`
+- FK: `tenant_id -> tenants(id)`, `user_id -> auth.users(id)`, `agent_id -> agents(id)`
 - Campos-chave: `status` (active/paused/closed), `started_at`, `ended_at`, `token_usage`
 - Indice composto: `(tenant_id, agent_id, created_at DESC)`
 
@@ -231,20 +231,20 @@ agent_sessions (1) - (N) agent_feedback
 
 ## `agent_budgets`
 - PK: `id (uuid)`
-- FK: `agent_id -> agent_runs(id)`, `tenant_id -> tenants(id)`
+- FK: `agent_id -> agents(id)`, `tenant_id -> tenants(id)`
 - Campos-chave: `monthly_limit_usd`, `current_month_spent_usd`, `reset_date`
 - Indice composto: `(tenant_id, agent_id)`, `(reset_date)`
 
 ## `agent_usage_daily`
 - PK: `id (uuid)`
-- FK: `agent_id -> agent_runs(id)`, `tenant_id -> tenants(id)`
+- FK: `agent_id -> agents(id)`, `tenant_id -> tenants(id)`
 - Unique: `(tenant_id, agent_id, date)`
 - Campos-chave: `date`, `sessions_count`, `messages_count`, `cost_total_usd`, `avg_latency_ms`, `success_rate_pct`
 - Indice composto: `(tenant_id, agent_id, date DESC)`, `(date DESC)`
 
 ## `agent_deployments`
 - PK: `id (uuid)`
-- FK: `agent_id -> agent_runs(id)`, `deployed_by -> auth.users(id)`, `tenant_id -> tenants(id)`
+- FK: `agent_id -> agents(id)`, `deployed_by -> auth.users(id)`, `tenant_id -> tenants(id)`
 - Campos-chave: `version`, `environment` (dev/staging/prod), `deployed_at`, `config_hash`, `status` (success/failed/rolled_back)
 - Indice composto: `(agent_id, deployed_at DESC)`, `(tenant_id, environment, status)`
 
@@ -256,7 +256,7 @@ agent_sessions (1) - (N) agent_feedback
 
 ## `agent_tool_bindings`
 - PK: `id (uuid)`
-- FK: `agent_id -> agent_runs(id)`, `tool_id -> tools(id)`, `tenant_id -> tenants(id)`
+- FK: `agent_id -> agents(id)`, `tool_id -> tools(id)`, `tenant_id -> tenants(id)`
 - Campos-chave: `enabled`, `config_overrides` (jsonb)
 - Indice composto: `(agent_id, enabled)`, `(tenant_id, agent_id)`
 
@@ -268,7 +268,7 @@ agent_sessions (1) - (N) agent_feedback
 
 ## `agent_context_bindings`
 - PK: `id (uuid)`
-- FK: `agent_id -> agent_runs(id)`, `context_id -> context_providers(id)`, `tenant_id -> tenants(id)`
+- FK: `agent_id -> agents(id)`, `context_id -> context_providers(id)`, `tenant_id -> tenants(id)`
 - Campos-chave: `priority`
 - Indice composto: `(agent_id, priority)`, `(tenant_id, agent_id)`
 

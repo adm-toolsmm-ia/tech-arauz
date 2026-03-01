@@ -35,6 +35,8 @@ from app.services.session_service import (
     update_usage_daily,
     SessionServiceError,
 )
+from app.llm.factory import get_llm, LLMProviderError
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 router = APIRouter()
 logger = logging.getLogger("obs.routes")
@@ -986,22 +988,131 @@ async def chat_with_agent(
             supabase=supabase,
         )
 
-        # Load message history for context (if Story 4.4 LCEL chain uses it)
+        # Load message history for context
         history = await load_message_history(
             session_id=session["id"],
             supabase=supabase,
             limit=10,
         )
 
-        # TODO (Story 4.4): Replace with actual LCEL chain execution
-        # For now, return mock response
+        # Story 7.5: Fetch agent version & instantiate LLM (replaces mock)
         import time
-
         t0 = time.perf_counter()
-        answer = f"Mock response to: {request_body.message}"
-        duration_ms = round((time.perf_counter() - t0) * 1000)
-        tokens_used = 50
-        cost_usd = 0.001
+
+        try:
+            # Get published agent version for LLM config
+            agent_service = AgentService(supabase)
+            agent_version = None
+
+            try:
+                agent_config = await agent_service.export_agent_version(agent_id, tenant_id)
+            except AgentServiceError:
+                # If no published version, use draft config
+                agent = await agent_service.get_agent(agent_id, tenant_id)
+                if not agent.draft:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Agent has no configuration (draft or published)"
+                    )
+                agent_config = agent.draft.model_dump() if hasattr(agent.draft, 'model_dump') else agent.draft
+
+            # Extract LLM config
+            model_config = agent_config.get("model", {})
+            provider = model_config.get("provider", "openai")
+            model_id = model_config.get("model_id", "gpt-4o")
+            temperature = model_config.get("temperature", 0.7)
+            max_tokens = model_config.get("max_tokens", 2000)
+            top_p = model_config.get("top_p")
+
+            # Build LLM parameters
+            llm_kwargs = {
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+            }
+            if top_p is not None:
+                llm_kwargs["top_p"] = top_p
+
+            # Instantiate LLM
+            llm = get_llm(provider, model_id, **llm_kwargs)
+
+            # Build message list: persona + history + new message
+            messages = []
+
+            # System message (persona)
+            persona = agent_config.get("persona", "You are a helpful assistant.")
+            prompt_objective = agent_config.get("prompt_objective", "Assist the user.")
+            system_content = f"{persona}\n\nObjective: {prompt_objective}"
+            messages.append(SystemMessage(content=system_content))
+
+            # Add conversation history
+            for msg in history:
+                if msg.get("role") == "user":
+                    messages.append(HumanMessage(content=msg.get("content", "")))
+                elif msg.get("role") == "assistant":
+                    messages.append(AIMessage(content=msg.get("content", "")))
+
+            # Add new user message
+            messages.append(HumanMessage(content=request_body.message))
+
+            # Invoke LLM
+            response = await llm.ainvoke(messages)
+            answer = response.content
+
+            # Extract tokens and cost (if available from response metadata)
+            tokens_used = 0
+            cost_usd = 0.0
+
+            if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                usage = response.usage_metadata
+                tokens_used = usage.get('input_tokens', 0) + usage.get('output_tokens', 0)
+                # Simple cost calculation: input + output tokens * rate (varies by model)
+                # For now, estimate: $0.00001 per token for gpt-4o, $0.000003 for claude
+                if provider == "openai":
+                    cost_usd = (usage.get('input_tokens', 0) * 0.000003 +
+                               usage.get('output_tokens', 0) * 0.000006)
+                elif provider == "anthropic":
+                    cost_usd = (usage.get('input_tokens', 0) * 0.000003 +
+                               usage.get('output_tokens', 0) * 0.000015)
+                else:
+                    cost_usd = tokens_used * 0.000005
+
+            duration_ms = round((time.perf_counter() - t0) * 1000)
+
+            # Register agent run (for observability & audit trail)
+            run_id = str(uuid.uuid4())
+            await supabase.table("agent_runs").insert([{
+                "id": run_id,
+                "agent_id": agent_id,
+                "agent_version": agent_config.get("version", "unknown"),
+                "tenant_id": tenant_id,
+                "input_data": {"message": request_body.message},
+                "output_data": {"answer": answer},
+                "status": "completed",
+                "tokens_used": tokens_used,
+                "cost_usd": float(cost_usd),
+                "duration_ms": duration_ms,
+                "created_at": datetime.utcnow().isoformat(),
+                "created_by": user_id,
+            }]).execute()
+
+            logger.info(
+                "Chat LLM execution: agent=%s, provider=%s, model=%s, tokens=%d, cost=$%.4f, duration=%dms",
+                agent_id,
+                provider,
+                model_id,
+                tokens_used,
+                cost_usd,
+                duration_ms,
+            )
+
+        except LLMProviderError as e:
+            logger.error("LLM provider error: %s", str(e))
+            if "API_KEY" in str(e) or "not set" in str(e).lower():
+                raise HTTPException(status_code=500, detail=f"LLM not configured: {e.provider}")
+            raise HTTPException(status_code=503, detail="LLM service unavailable")
+        except Exception as e:
+            logger.error("Error during LLM invocation: %s", str(e), exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Error generating response: {str(e)}")
 
         # Persist turn (user message + assistant response)
         user_msg_id, asst_msg_id = await persist_turn(

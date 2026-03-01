@@ -2,7 +2,7 @@
 // Schema Prisma — Tech Arauz (Supabase/PostgreSQL)
 // =============================================================================
 // Local canônico: docs/architecture/data/schema.prisma (engenharia/arquitetura AI)
-// Extraído via MCP Supabase (list_tables). Última atualização: 2026-03-01 (migration 047).
+// Extraído via MCP Supabase (list_tables). Última atualização: 2026-03-01 (migration 048).
 // O projeto usa Supabase diretamente (não Prisma em runtime); este arquivo
 // serve como documentação do schema e referência para LLMs/ferramentas/AIOS.
 //

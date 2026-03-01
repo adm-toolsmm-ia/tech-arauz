@@ -53,7 +53,7 @@ Documentação do que existe no repositório. Apenas fatos; uso como contexto pa
 - **Documentação SQL da estrutura atual:** `supabase/docs/SCHEMA.md` — tabelas, colunas, relações, RLS (auditoria até as migrations aplicadas).
 - **Schema em formato Prisma (estado atual):** `docs/architecture/data/schema.prisma` — export do MCP Supabase a partir do banco; o projeto usa Supabase em runtime, não Prisma.
 
-**Migrations (histórico / DDL):** `supabase/migrations/` — arquivos 001_*.sql a 047_*.sql. O estado atual do banco é o resultado cumulativo de todas aplicadas em ordem. Para entender a **estrutura atual**, priorize `SCHEMA.md` e `schema.prisma`. Consulte as migrations quando a tarefa for **alterar o schema** (nova migration) ou **analisar a evolução** do banco. Migration 044 removeu seed data de lm_providers, lm_models, agent_types e agent_templates; tabelas auxiliares ficam vazias até recriação manual. Migrations 045–047: classificação de agentes (usage_type, show_in_shortcut, is_global_chatbot), governança de lm_models (stability_level, release_channel, capabilities), e tabelas de governança avançada (model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log).
+**Migrations (histórico / DDL):** `supabase/migrations/` — arquivos 001_*.sql a 048_*.sql. O estado atual do banco é o resultado cumulativo de todas aplicadas em ordem. Para entender a **estrutura atual**, priorize `SCHEMA.md` e `schema.prisma`. Consulte as migrations quando a tarefa for **alterar o schema** (nova migration) ou **analisar a evolução** do banco. Migration 044 removeu seed data de lm_providers, lm_models, agent_types e agent_templates; tabelas auxiliares ficam vazias até recriação manual. Migrations 045–047: classificação de agentes (usage_type, show_in_shortcut, is_global_chatbot), governança de lm_models (stability_level, release_channel, capabilities), tabelas de governança avançada (model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log). Migration 048: message_count em agent_sessions (trigger increment/decrement), snapshot em agent_runs (model_id, provider_id, agent_version_id, temperature, top_p, max_tokens, prompt_final), RLS agent_messages (user-session isolation).
 
 **Tabelas por domínio (nomes no banco):**
 
@@ -69,7 +69,7 @@ Documentação do que existe no repositório. Apenas fatos; uso como contexto pa
 | Feedback e LLM | agent_feedback, lm_provider_accounts |
 | Governança de modelos | model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log |
 
-Todas as tabelas de dados têm RLS e isolamento por `tenant_id`. Após migration 043, o campo `agent_id` em agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings referencia `agents(id)`. A tabela agent_run_steps tem `run_id` (FK agent_runs) e `agent_id` (coluna sem FK, tipicamente agents.id para denormalização). Após migration 044, lm_providers, lm_models, agent_types e agent_templates estão vazios (seed removido); agents.agent_type_id foi setado para NULL. Migration 045: agents.usage_type (chatbot|workflow), show_in_shortcut, is_global_chatbot. Migration 046: lm_models com stability_level, release_channel, supports_tool_calling, supports_json_mode, supports_streaming, supports_vision, supports_audio, deprecated_at, sunset_at.
+Todas as tabelas de dados têm RLS e isolamento por `tenant_id`. Após migration 043, o campo `agent_id` em agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings referencia `agents(id)`. A tabela agent_run_steps tem `run_id` (FK agent_runs) e `agent_id` (coluna sem FK, tipicamente agents.id para denormalização). Após migration 044, lm_providers, lm_models, agent_types e agent_templates estão vazios (seed removido); agents.agent_type_id foi setado para NULL. Migration 045: agents.usage_type (chatbot|workflow), show_in_shortcut, is_global_chatbot. Migration 046: lm_models com stability_level, release_channel, supports_tool_calling, supports_json_mode, supports_streaming, supports_vision, supports_audio, deprecated_at, sunset_at. Migration 048: agent_sessions.message_count (trigger mantido); agent_runs com snapshot (model_id, provider_id, agent_version_id, temperature, top_p, max_tokens, prompt_final); agent_messages com RLS user-session isolation.
 
 ---
 
@@ -148,11 +148,11 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
   Unique: (agentId, key). Relações: N:1 Agent.
 
 - **AgentRun** → `agent_runs`  
-  Campos: id, agentId, agentVersion, tenantId, inputData, outputData, status, errorMessage, tokensUsed, costUsd, durationMs, budgetLimitUsd, sessionId, createdBy, createdAt, completedAt.  
+  Campos: id, agentId, agentVersion, tenantId, inputData, outputData, status, errorMessage, tokensUsed, costUsd, durationMs, budgetLimitUsd, sessionId, modelId (FK lm_models), providerId (FK lm_providers), agentVersionId (FK agent_versions), temperature, topP, maxTokens, promptFinal, createdBy, createdAt, completedAt.  
   Relações: N:1 Agent; N:1 AgentSession (session via sessionId); 1:N AgentRunStep.
 
 - **AgentSession** → `agent_sessions`  
-  Campos: id, tenantId, userId, agentId (FK agents), startedAt, endedAt, status (active|paused|closed), tokenUsage, createdAt, updatedAt.  
+  Campos: id, tenantId, userId, agentId (FK agents), startedAt, endedAt, status (active|paused|closed), tokenUsage, messageCount (mantido via trigger em agent_messages), createdAt, updatedAt.  
   Relações: N:1 Tenant; N:1 Agent (via agentId); 1:N AgentRun (runs via sessionId); 1:N AgentMessage, AgentFeedback.
 
 - **AgentMessage** → `agent_messages`  
@@ -349,7 +349,7 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | Configuração do projeto | `configs/project.yaml` |
 | Schema SQL atual / RLS | `supabase/docs/SCHEMA.md` |
 | Schema Prisma (estado atual) | `docs/architecture/data/schema.prisma` |
-| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` (001–047; destaque: 042, 043, 044, 045_agent_usage_type.sql, 046_lm_models_governance.sql, 047_model_governance_tables.sql) |
+| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` (001–048; destaque: 042, 043, 044, 045_agent_usage_type.sql, 046_lm_models_governance.sql, 047_model_governance_tables.sql, 048_correction_governance_gaps.sql) |
 | Tipos de agentes (TS) | `src/types/agents.ts` |
 | Serviço AI | `services/ai/app/` |
 | Orquestrador LangGraph | `services/ai/app/graphs/orchestrator.py` |

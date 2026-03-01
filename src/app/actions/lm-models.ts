@@ -151,6 +151,89 @@ export async function deleteLmModelAction(modelId: string): Promise<LmModelActio
 }
 
 /**
+ * Server Action: Update LM model (full update for non-system models)
+ */
+export async function updateLmModelAction(
+  id: string,
+  updates: Partial<
+    Omit<
+      LmModel,
+      | 'id'
+      | 'tenant_id'
+      | 'provider_id'
+      | 'created_at'
+      | 'created_by'
+      | 'is_system'
+    >
+  >,
+): Promise<LmModelActionResult> {
+  const supabase = await createClient();
+
+  const VALID_TIERS = ['entry', 'balanced', 'pro', 'flagship'];
+  if (updates.tier && !VALID_TIERS.includes(updates.tier)) {
+    return {
+      success: false,
+      message: `Tier inválido. Valores permitidos: ${VALID_TIERS.join(', ')}`,
+    };
+  }
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, message: 'Usuário não autenticado. Faça login novamente.' };
+  }
+
+  const { data: existing, error: fetchError } = await supabase
+    .from('lm_models')
+    .select('id, tenant_id, is_system')
+    .eq('id', id)
+    .single();
+
+  if (fetchError || !existing) {
+    return { success: false, message: 'Modelo não encontrado.' };
+  }
+
+  if (existing.is_system) {
+    return { success: false, message: 'Modelos de sistema não podem ser editados.' };
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile || existing.tenant_id !== profile.tenant_id) {
+    return { success: false, message: 'Modelo não pertence ao seu tenant.' };
+  }
+
+  const cleanUpdates = Object.fromEntries(
+    Object.entries(updates).filter(([, v]) => v !== undefined),
+  );
+  const { data: updated, error } = await supabase
+    .from('lm_models')
+    .update({
+      ...cleanUpdates,
+      updated_by: user.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    return { success: false, message: `Erro ao atualizar modelo: ${error.message}` };
+  }
+
+  revalidatePath('/auxiliares/modelos-ia');
+  revalidatePath('/auxiliares/lm-providers');
+  return { success: true, message: 'Modelo atualizado!', data: updated as LmModel };
+}
+
+/**
  * Server Action: Update model display_order (for drag-drop reordering)
  */
 export async function updateLmModelDisplayOrderAction(

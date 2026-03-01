@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { FileText, Cpu, Lock, Plus, ExternalLink } from 'lucide-react';
+import { FileText, Cpu, Lock, Plus, ExternalLink, Pencil, X, Check } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { createLmModelAction } from '@/app/actions/lm-models';
+import { updateLmProviderAction } from '@/app/actions/lm-providers';
 import { toast } from 'sonner';
 import type { LmProvider, LmModel } from '@/types/agents';
 
@@ -24,6 +25,7 @@ interface LmProviderCockpitProps {
   provider: LmProvider;
   models: LmModel[];
   onModelCreated?: (model: LmModel) => void;
+  onProviderUpdated?: (provider: LmProvider) => void;
 }
 
 function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
@@ -35,10 +37,23 @@ function InfoField({ label, value }: { label: string; value: string | null | und
   );
 }
 
-export function LmProviderCockpit({ provider, models, onModelCreated }: LmProviderCockpitProps) {
+export function LmProviderCockpit({
+  provider,
+  models,
+  onModelCreated,
+  onProviderUpdated,
+}: LmProviderCockpitProps) {
   const [isCreateModelOpen, setIsCreateModelOpen] = useState(false);
   const [modelForm, setModelForm] = useState({ name: '', model_id: '', docs_url: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: provider.name,
+    description: provider.description ?? '',
+    api_endpoint: provider.api_endpoint ?? '',
+    docs_url: provider.docs_url ?? '',
+    api_key_field_name: provider.api_key_field_name ?? 'api_key',
+  });
 
   const handleCreateModel = useCallback(async () => {
     if (!modelForm.name.trim() || !modelForm.model_id.trim()) {
@@ -70,6 +85,41 @@ export function LmProviderCockpit({ provider, models, onModelCreated }: LmProvid
     }
   }, [provider.id, modelForm, onModelCreated]);
 
+  const handleSaveEdit = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const result = await updateLmProviderAction(provider.id, {
+        name: editForm.name.trim(),
+        description: editForm.description.trim() || undefined,
+        api_endpoint: editForm.api_endpoint.trim() || undefined,
+        docs_url: editForm.docs_url.trim() || undefined,
+        api_key_field_name: editForm.api_key_field_name.trim() || 'api_key',
+      });
+      if (result.success && result.data) {
+        onProviderUpdated?.(result.data);
+        toast.success(result.message);
+        setIsEditing(false);
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error('Erro ao atualizar provedor');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [provider.id, editForm, onProviderUpdated]);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditForm({
+      name: provider.name,
+      description: provider.description ?? '',
+      api_endpoint: provider.api_endpoint ?? '',
+      docs_url: provider.docs_url ?? '',
+      api_key_field_name: provider.api_key_field_name ?? 'api_key',
+    });
+    setIsEditing(false);
+  }, [provider]);
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="detalhes" className="w-full">
@@ -94,52 +144,151 @@ export function LmProviderCockpit({ provider, models, onModelCreated }: LmProvid
         </TabsList>
 
         <TabsContent value="detalhes" className="mt-4 space-y-4">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex size-12 items-center justify-center rounded-lg text-2xl"
-              style={{ backgroundColor: `${provider.color_hex || '#64748B'}20` }}
-            >
-              {provider.icon_emoji || '🤖'}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div
+                className="flex size-12 items-center justify-center rounded-lg text-2xl"
+                style={{ backgroundColor: `${provider.color_hex || '#64748B'}20` }}
+              >
+                {provider.icon_emoji || '🤖'}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {provider.is_system && (
+                  <Badge variant="outline">
+                    <Lock className="mr-1 size-3" />
+                    Sistema
+                  </Badge>
+                )}
+                {provider.is_active ? (
+                  <Badge variant="default" className="bg-green-600">
+                    Ativo
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary">Inativo</Badge>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {provider.is_system && (
-                <Badge variant="outline">
-                  <Lock className="mr-1 size-3" />
-                  Sistema
-                </Badge>
-              )}
-              {provider.is_active ? (
-                <Badge variant="default" className="bg-green-600">
-                  Ativo
-                </Badge>
-              ) : (
-                <Badge variant="secondary">Inativo</Badge>
-              )}
-            </div>
+            {!provider.is_system && onProviderUpdated && (
+              <div className="flex gap-2">
+                {isEditing ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCancelEdit}
+                      disabled={isLoading}
+                      className="gap-1"
+                    >
+                      <X className="size-4" />
+                      Cancelar
+                    </Button>
+                    <Button size="sm" onClick={handleSaveEdit} disabled={isLoading} className="gap-1">
+                      <Check className="size-4" />
+                      Salvar
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditForm({
+                        name: provider.name,
+                        description: provider.description ?? '',
+                        api_endpoint: provider.api_endpoint ?? '',
+                        docs_url: provider.docs_url ?? '',
+                        api_key_field_name: provider.api_key_field_name ?? 'api_key',
+                      });
+                      setIsEditing(true);
+                    }}
+                    className="gap-1"
+                  >
+                    <Pencil className="size-4" />
+                    Editar
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
 
           <Separator />
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <InfoField label="Nome" value={provider.name} />
-            <InfoField label="Slug" value={provider.slug} />
-            <InfoField label="Descrição" value={provider.description} />
-            <InfoField label="Endpoint da API" value={provider.api_endpoint} />
-            {provider.docs_url && (
-              <div className="space-y-1 sm:col-span-2">
-                <p className="text-xs text-muted-foreground">Documentação</p>
-                <a
-                  href={provider.docs_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-                >
-                  {provider.docs_url}
-                  <ExternalLink className="size-3" />
-                </a>
+          {isEditing ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="edit-name">Nome *</Label>
+                <Input
+                  id="edit-name"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
+                  disabled={isLoading}
+                />
               </div>
-            )}
-          </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor="edit-description">Descrição</Label>
+                <Input
+                  id="edit-description"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
+                  disabled={isLoading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-api_endpoint">Endpoint da API</Label>
+                <Input
+                  id="edit-api_endpoint"
+                  value={editForm.api_endpoint}
+                  onChange={(e) => setEditForm((p) => ({ ...p, api_endpoint: e.target.value }))}
+                  disabled={isLoading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-api_key_field_name">Identificador da API Key</Label>
+                <Input
+                  id="edit-api_key_field_name"
+                  value={editForm.api_key_field_name}
+                  onChange={(e) =>
+                    setEditForm((p) => ({ ...p, api_key_field_name: e.target.value }))
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor="edit-docs_url">URL da documentação</Label>
+                <Input
+                  id="edit-docs_url"
+                  value={editForm.docs_url}
+                  onChange={(e) => setEditForm((p) => ({ ...p, docs_url: e.target.value }))}
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <InfoField label="Nome" value={provider.name} />
+              <InfoField label="Slug" value={provider.slug} />
+              <InfoField label="Descrição" value={provider.description} />
+              <InfoField label="Endpoint da API" value={provider.api_endpoint} />
+              <InfoField
+                label="Identificador da API Key"
+                value={provider.api_key_field_name ?? 'api_key'}
+              />
+              {provider.docs_url && (
+                <div className="space-y-1 sm:col-span-2">
+                  <p className="text-xs text-muted-foreground">Documentação</p>
+                  <a
+                    href={provider.docs_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                  >
+                    {provider.docs_url}
+                    <ExternalLink className="size-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="modelos" className="mt-4">

@@ -4,7 +4,7 @@ import { LmProvidersContent } from './lm-providers-content';
 import type { LmProvider } from '@/types/agents';
 
 export const metadata = {
-  title: 'Fornecedores IA - Tech Arauz',
+  title: 'Provedores IA - Tech Arauz',
   description: 'Gerenciar fornecedores de modelos de linguagem',
 };
 

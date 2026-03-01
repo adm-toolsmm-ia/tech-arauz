@@ -124,7 +124,7 @@ export function ModelCard({
         <div className="space-y-1 border-t border-border/30 pt-2">
           {provider && (
             <div>
-              <p className="text-[10px] text-muted-foreground">Fornecedor:</p>
+              <p className="text-[10px] text-muted-foreground">Provedor:</p>
               <div className="flex items-center gap-2">
                 <span className="text-lg">{provider.icon_emoji || '🤖'}</span>
                 <span className="text-xs font-semibold text-foreground">{provider.name}</span>

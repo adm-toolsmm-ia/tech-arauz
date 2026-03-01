@@ -69,7 +69,7 @@ export function ModelsKanbanCard({ model, provider }: ModelsKanbanCardProps) {
           )}
         </div>
 
-        {/* Fornecedor + Contexto */}
+        {/* Provedor + Contexto */}
         <div className="space-y-1 border-t border-border/30 pt-1">
           {provider && (
             <div className="flex items-center gap-1.5">

@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Database, Plus, Trash2, Zap } from 'lucide-react';
+import { Database, Plus, Trash2, Zap, Pencil, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { ViewModeBar } from '@/components/filters/ViewModeBar';
@@ -35,7 +35,9 @@ import { ModelsListView } from '@/components/lm-models/ModelsListView';
 import {
   createLmModelAction,
   deleteLmModelAction,
+  updateLmModelAction,
   updateLmModelDisplayOrderAction,
+  bulkUpdateLmModelsActiveAction,
 } from '@/app/actions/lm-models';
 import { useModelosIaFilters, type ModelWithProvider } from '@/hooks/useModelosIaFilters';
 import type { LmModel, LmProvider } from '@/types/agents';
@@ -50,8 +52,15 @@ interface FormData {
   name: string;
   model_id: string;
   provider_id: string;
+  description: string;
   docs_url: string;
   max_tokens?: number;
+  default_temperature?: number;
+  context_window?: number;
+  display_order?: number;
+  tier: 'entry' | 'balanced' | 'pro' | 'flagship' | '';
+  input_cost_per_1k_tokens?: number;
+  output_cost_per_1k_tokens?: number;
 }
 
 export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaContentProps) {
@@ -61,12 +70,21 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
   const [modelToDelete, setModelToDelete] = useState<ModelWithProvider | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [isEditingModel, setIsEditingModel] = useState(false);
+  const [editForm, setEditForm] = useState<Partial<FormData>>({});
   const [formData, setFormData] = useState<FormData>({
     name: '',
     model_id: '',
     provider_id: '',
+    description: '',
     docs_url: '',
     max_tokens: undefined,
+    default_temperature: undefined,
+    context_window: undefined,
+    display_order: undefined,
+    tier: 'balanced',
+    input_cost_per_1k_tokens: undefined,
+    output_cost_per_1k_tokens: undefined,
   });
 
   const {
@@ -108,14 +126,21 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
       name: '',
       model_id: '',
       provider_id: '',
+      description: '',
       docs_url: '',
       max_tokens: undefined,
+      default_temperature: undefined,
+      context_window: undefined,
+      display_order: undefined,
+      tier: 'balanced',
+      input_cost_per_1k_tokens: undefined,
+      output_cost_per_1k_tokens: undefined,
     });
   }, []);
 
   const handleCreate = useCallback(async () => {
     if (!formData.provider_id) {
-      toast.error('Selecione o fornecedor do modelo.');
+      toast.error('Selecione o provedor do modelo.');
       return;
     }
 
@@ -131,9 +156,16 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
       const result = await createLmModelAction({
         provider_id: formData.provider_id,
         name: formData.name.trim(),
-        model_id: formData.model_id.trim(),
+        model_id: formData.model_id.trim().toLowerCase().replace(/\s+/g, '-'),
+        description: formData.description.trim() || undefined,
         docs_url: formData.docs_url.trim() || undefined,
         max_tokens: formData.max_tokens,
+        default_temperature: formData.default_temperature,
+        context_window: formData.context_window,
+        display_order: formData.display_order,
+        tier: formData.tier || undefined,
+        input_cost_per_1k_tokens: formData.input_cost_per_1k_tokens,
+        output_cost_per_1k_tokens: formData.output_cost_per_1k_tokens,
         is_active: true,
         is_system: false,
       });
@@ -146,7 +178,7 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
       const provider = initialProviders.find((item) => item.id === result.data?.provider_id);
       const modelWithProvider: ModelWithProvider = {
         ...result.data,
-        lm_providers: provider,
+        lm_providers: provider!,
       };
 
       setModels((prev) => [...prev, modelWithProvider]);
@@ -272,30 +304,24 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
     try {
       setIsBulkUpdating(true);
 
-      const response = await fetch('/api/lm-models/bulk-update', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ modelIds, isActive }),
-      });
+      const result = await bulkUpdateLmModelsActiveAction(modelIds, isActive);
 
-      if (!response.ok) {
-        throw new Error('Falha ao atualizar modelos em lote.');
+      if (!result.success || !result.ids) {
+        throw new Error(result.message ?? 'Falha ao atualizar modelos em lote.');
       }
-
-      const updated = await response.json();
 
       setModels((prevModels) =>
         prevModels.map((model) =>
-          updated.ids.includes(model.id) ? { ...model, is_active: isActive } : model,
+          result.ids!.includes(model.id) ? { ...model, is_active: isActive } : model,
         ),
       );
 
       setSelectedModel((prev) =>
-        prev && updated.ids.includes(prev.id) ? { ...prev, is_active: isActive } : prev,
+        prev && result.ids!.includes(prev.id) ? { ...prev, is_active: isActive } : prev,
       );
 
       toast.success(
-        `${updated.ids.length} modelo${updated.ids.length !== 1 ? 's' : ''} ${isActive ? 'ativado(s)' : 'desativado(s)'}.`,
+        `${result.ids.length} modelo${result.ids.length !== 1 ? 's' : ''} ${isActive ? 'ativado(s)' : 'desativado(s)'}.`,
         { id: toastId },
       );
     } catch (error) {
@@ -306,6 +332,49 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
       setIsBulkUpdating(false);
     }
   }, []);
+
+  const handleSaveEditModel = useCallback(
+    async (model: ModelWithProvider) => {
+      if (!editForm.name?.trim()) {
+        toast.error('Nome é obrigatório.');
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const result = await updateLmModelAction(model.id, {
+          name: editForm.name.trim(),
+          model_id: editForm.model_id?.trim().toLowerCase().replace(/\s+/g, '-'),
+          description: editForm.description?.trim() || undefined,
+          max_tokens: editForm.max_tokens,
+          default_temperature: editForm.default_temperature,
+          context_window: editForm.context_window,
+          display_order: editForm.display_order,
+          tier: editForm.tier || undefined,
+          docs_url: editForm.docs_url?.trim() || undefined,
+          input_cost_per_1k_tokens: editForm.input_cost_per_1k_tokens,
+          output_cost_per_1k_tokens: editForm.output_cost_per_1k_tokens,
+        });
+        if (result.success && result.data) {
+          const provider = model.lm_providers;
+          setModels((prev) =>
+            prev.map((m) => (m.id === model.id ? { ...result.data!, lm_providers: provider } : m)),
+          );
+          setSelectedModel((prev) =>
+            prev?.id === model.id ? { ...result.data!, lm_providers: provider } : prev,
+          );
+          toast.success(result.message);
+          setIsEditingModel(false);
+        } else {
+          toast.error(result.message);
+        }
+      } catch {
+        toast.error('Erro ao atualizar modelo.');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [editForm],
+  );
 
   const listAnnouncement = `Lista com ${filteredModels.length} modelos.`;
 
@@ -336,7 +405,7 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
           />
           <KPICard
             icon={Zap}
-            title={selectedProviderFilters.length === 1 ? 'Modelos do Fornecedor' : 'Fornecedores'}
+            title={selectedProviderFilters.length === 1 ? 'Modelos do Provedor' : 'Provedores'}
             value={selectedProviderFilters.length === 1 ? kpis.byProvider : kpis.uniqueProviders}
             trend={{ value: '0', positive: false }}
           />
@@ -470,57 +539,299 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
       {selectedModel && (
         <SplitView
           isOpen={!!selectedModel}
-          onClose={() => setSelectedModel(null)}
+          onClose={() => {
+            setSelectedModel(null);
+            setIsEditingModel(false);
+          }}
           title="Detalhes do Modelo"
           subtitle={selectedModel.name}
           width="lg"
         >
           <div className="space-y-6">
-            <div>
-              <h3 className="mb-2 text-sm font-semibold">Informacoes Gerais</h3>
-              <dl className="space-y-2 text-sm">
-                <div>
-                  <dt className="text-muted-foreground">Nome:</dt>
-                  <dd className="font-medium">{selectedModel.name}</dd>
-                </div>
-                <div>
-                  <dt className="text-muted-foreground">Model ID:</dt>
-                  <dd className="font-mono">{selectedModel.model_id}</dd>
-                </div>
-                {selectedModel.max_tokens != null && (
-                  <div>
-                    <dt className="text-muted-foreground">Max. Tokens:</dt>
-                    <dd className="font-medium">
-                      {selectedModel.max_tokens.toLocaleString('pt-BR')} tokens
-                    </dd>
-                  </div>
+            {!selectedModel.is_system && (
+              <div className="flex justify-end gap-2">
+                {isEditingModel ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingModel(false)}
+                      disabled={isLoading}
+                      className="gap-1"
+                    >
+                      <X className="size-4" />
+                      Cancelar
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleSaveEditModel(selectedModel)}
+                      disabled={isLoading}
+                      className="gap-1"
+                    >
+                      <Check className="size-4" />
+                      Salvar
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditForm({
+                        name: selectedModel.name,
+                        model_id: selectedModel.model_id,
+                        description: selectedModel.description ?? '',
+                        docs_url: selectedModel.docs_url ?? '',
+                        max_tokens: selectedModel.max_tokens,
+                        default_temperature: selectedModel.default_temperature,
+                        context_window: selectedModel.context_window,
+                        display_order: selectedModel.display_order,
+                        tier: selectedModel.tier ?? 'balanced',
+                        input_cost_per_1k_tokens: selectedModel.input_cost_per_1k_tokens,
+                        output_cost_per_1k_tokens: selectedModel.output_cost_per_1k_tokens,
+                      });
+                      setIsEditingModel(true);
+                    }}
+                    className="gap-1"
+                  >
+                    <Pencil className="size-4" />
+                    Editar
+                  </Button>
                 )}
-              </dl>
-            </div>
-
-            {selectedModel.docs_url && (
-              <div>
-                <h3 className="mb-2 text-sm font-semibold">Documentacao</h3>
-                <a
-                  href={selectedModel.docs_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary underline"
-                >
-                  Ver documentacao
-                </a>
               </div>
             )}
 
-            {!selectedModel.is_system && (
-              <Button
-                variant="destructive"
-                onClick={() => setModelToDelete(selectedModel)}
-                className="w-full"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir Modelo
-              </Button>
+            {isEditingModel ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label>Nome *</Label>
+                  <Input
+                    value={editForm.name ?? ''}
+                    onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Model ID *</Label>
+                  <Input
+                    value={editForm.model_id ?? ''}
+                    onChange={(e) =>
+                      setEditForm((p) => ({
+                        ...p,
+                        model_id: e.target.value.toLowerCase().replace(/\s+/g, '-'),
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label>Descrição</Label>
+                  <Input
+                    value={editForm.description ?? ''}
+                    onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Max. Tokens</Label>
+                  <Input
+                    type="number"
+                    value={editForm.max_tokens ?? ''}
+                    onChange={(e) =>
+                      setEditForm((p) => ({
+                        ...p,
+                        max_tokens: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Context Window</Label>
+                  <Input
+                    type="number"
+                    value={editForm.context_window ?? ''}
+                    onChange={(e) =>
+                      setEditForm((p) => ({
+                        ...p,
+                        context_window: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Tier</Label>
+                  <Select
+                    value={editForm.tier ?? 'balanced'}
+                    onValueChange={(v) => setEditForm((p) => ({ ...p, tier: v as FormData['tier'] }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="entry">Entry</SelectItem>
+                      <SelectItem value="balanced">Balanced</SelectItem>
+                      <SelectItem value="pro">Pro</SelectItem>
+                      <SelectItem value="flagship">Flagship</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Display Order</Label>
+                  <Input
+                    type="number"
+                    value={editForm.display_order ?? ''}
+                    onChange={(e) =>
+                      setEditForm((p) => ({
+                        ...p,
+                        display_order: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <Label>URL Documentação</Label>
+                  <Input
+                    value={editForm.docs_url ?? ''}
+                    onChange={(e) => setEditForm((p) => ({ ...p, docs_url: e.target.value }))}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Temperatura padrão</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={editForm.default_temperature ?? ''}
+                    onChange={(e) =>
+                      setEditForm((p) => ({
+                        ...p,
+                        default_temperature: e.target.value ? parseFloat(e.target.value) : undefined,
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Custo entrada /1K</Label>
+                  <Input
+                    type="number"
+                    step="0.000001"
+                    value={editForm.input_cost_per_1k_tokens ?? ''}
+                    onChange={(e) =>
+                      setEditForm((p) => ({
+                        ...p,
+                        input_cost_per_1k_tokens: e.target.value ? parseFloat(e.target.value) : undefined,
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Custo saída /1K</Label>
+                  <Input
+                    type="number"
+                    step="0.000001"
+                    value={editForm.output_cost_per_1k_tokens ?? ''}
+                    onChange={(e) =>
+                      setEditForm((p) => ({
+                        ...p,
+                        output_cost_per_1k_tokens: e.target.value ? parseFloat(e.target.value) : undefined,
+                      }))
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold">Informações Gerais</h3>
+                  <dl className="space-y-2 text-sm">
+                    <div>
+                      <dt className="text-muted-foreground">Nome:</dt>
+                      <dd className="font-medium">{selectedModel.name}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Model ID:</dt>
+                      <dd className="font-mono">{selectedModel.model_id}</dd>
+                    </div>
+                    {selectedModel.description && (
+                      <div>
+                        <dt className="text-muted-foreground">Descrição:</dt>
+                        <dd className="font-medium">{selectedModel.description}</dd>
+                      </div>
+                    )}
+                    {selectedModel.max_tokens != null && (
+                      <div>
+                        <dt className="text-muted-foreground">Max. Tokens:</dt>
+                        <dd className="font-medium">
+                          {selectedModel.max_tokens.toLocaleString('pt-BR')} tokens
+                        </dd>
+                      </div>
+                    )}
+                    {selectedModel.context_window != null && (
+                      <div>
+                        <dt className="text-muted-foreground">Context Window:</dt>
+                        <dd className="font-medium">
+                          {(selectedModel.context_window / 1000).toFixed(0)}K tokens
+                        </dd>
+                      </div>
+                    )}
+                    {selectedModel.tier && (
+                      <div>
+                        <dt className="text-muted-foreground">Tier:</dt>
+                        <dd className="font-medium capitalize">{selectedModel.tier}</dd>
+                      </div>
+                    )}
+                    {(selectedModel.input_cost_per_1k_tokens != null ||
+                      selectedModel.output_cost_per_1k_tokens != null) && (
+                      <div>
+                        <dt className="text-muted-foreground">Custos (USD/1K tokens):</dt>
+                        <dd className="font-medium">
+                          {selectedModel.input_cost_per_1k_tokens != null && (
+                            <span>Entrada: ${selectedModel.input_cost_per_1k_tokens.toFixed(6)}</span>
+                          )}
+                          {selectedModel.input_cost_per_1k_tokens != null &&
+                            selectedModel.output_cost_per_1k_tokens != null && (
+                              <span className="mx-1">|</span>
+                            )}
+                          {selectedModel.output_cost_per_1k_tokens != null && (
+                            <span>Saída: ${selectedModel.output_cost_per_1k_tokens.toFixed(6)}</span>
+                          )}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                </div>
+
+                {selectedModel.docs_url && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold">Documentação</h3>
+                    <a
+                      href={selectedModel.docs_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary underline"
+                    >
+                      Ver documentação
+                    </a>
+                  </div>
+                )}
+
+                {!selectedModel.is_system && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => setModelToDelete(selectedModel)}
+                    className="w-full"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Excluir Modelo
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </SplitView>
@@ -539,19 +850,19 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
           <DialogHeader>
             <DialogTitle>Novo Modelo IA</DialogTitle>
             <DialogDescription>
-              Crie um novo modelo vinculando ao fornecedor e parametros basicos.
+              Crie um novo modelo vinculando ao provedor e parâmetros básicos.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label>Fornecedor</Label>
+              <Label>Provedor</Label>
               <Select
                 value={formData.provider_id}
                 onValueChange={(value) => setFormData((prev) => ({ ...prev, provider_id: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um fornecedor..." />
+                  <SelectValue placeholder="Selecione um provedor..." />
                 </SelectTrigger>
                 <SelectContent>
                   {initialProviders.map((provider) => (
@@ -595,6 +906,14 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
             </div>
 
             <div>
+              <Label>Descrição (opcional)</Label>
+              <Input
+                placeholder="Breve descrição do modelo"
+                value={formData.description}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+              />
+            </div>
+            <div>
               <Label>Max. Tokens (opcional)</Label>
               <Input
                 type="number"
@@ -604,6 +923,100 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                   setFormData((prev) => ({
                     ...prev,
                     max_tokens: event.target.value ? parseInt(event.target.value, 10) : undefined,
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <Label>Context Window (opcional)</Label>
+              <Input
+                type="number"
+                placeholder="Ex: 128000"
+                value={formData.context_window ?? ''}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    context_window: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <Label>Tier</Label>
+              <Select
+                value={formData.tier}
+                onValueChange={(v) =>
+                  setFormData((prev) => ({ ...prev, tier: v as FormData['tier'] }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="entry">Entry</SelectItem>
+                  <SelectItem value="balanced">Balanced</SelectItem>
+                  <SelectItem value="pro">Pro</SelectItem>
+                  <SelectItem value="flagship">Flagship</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Display Order (opcional)</Label>
+              <Input
+                type="number"
+                placeholder="Ex: 10"
+                value={formData.display_order ?? ''}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    display_order: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <Label>Temperatura padrão (opcional)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                min="0"
+                max="2"
+                placeholder="Ex: 0.7"
+                value={formData.default_temperature ?? ''}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    default_temperature: e.target.value ? parseFloat(e.target.value) : undefined,
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <Label>Custo entrada /1K tokens (opcional)</Label>
+              <Input
+                type="number"
+                step="0.000001"
+                placeholder="Ex: 0.00015"
+                value={formData.input_cost_per_1k_tokens ?? ''}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    input_cost_per_1k_tokens: e.target.value ? parseFloat(e.target.value) : undefined,
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <Label>Custo saída /1K tokens (opcional)</Label>
+              <Input
+                type="number"
+                step="0.000001"
+                placeholder="Ex: 0.0006"
+                value={formData.output_cost_per_1k_tokens ?? ''}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    output_cost_per_1k_tokens: e.target.value ? parseFloat(e.target.value) : undefined,
                   }))
                 }
               />

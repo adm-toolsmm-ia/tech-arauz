@@ -1,6 +1,6 @@
 /**
  * useLmProvidersFilters Hook
- * Module-specific filter management for Provedores de LM (Auxiliares)
+ * Module-specific filter management for Provedores IA (Auxiliares)
  */
 
 'use client';

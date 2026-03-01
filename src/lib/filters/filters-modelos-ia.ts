@@ -8,12 +8,12 @@ import { FilterDefinition, FilterRegistry } from './filter-types';
 export const filterDefinitionsModelosIa: FilterDefinition[] = [
   {
     id: 'provider_id',
-    label: 'Fornecedor',
+    label: 'Provedor',
     type: 'multi-select',
     options: [],
     quickFilter: true,
     icon: Building2,
-    description: 'Filtrar modelos por fornecedor',
+    description: 'Filtrar modelos por provedor',
     multi: true,
     searchable: true,
   },

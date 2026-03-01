@@ -5,14 +5,39 @@
  * Campos de busca: name, slug, description
  */
 
-import { LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, Power, Lock } from 'lucide-react';
 import { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
  * Filter Definitions para Tipos de Agentes
- * Módulo auxiliar: apenas busca global (sem quick filters na v1)
+ * Quick filters: is_active, is_system (baseline Agentes AI)
  */
-export const filterDefinitionsAgentTypes: FilterDefinition[] = [];
+export const filterDefinitionsAgentTypes: FilterDefinition[] = [
+  {
+    id: 'is_active',
+    label: 'Status',
+    type: 'select',
+    options: [
+      { value: true, label: 'Ativo' },
+      { value: false, label: 'Inativo' },
+    ],
+    quickFilter: true,
+    icon: Power,
+    description: 'Filtrar por status do tipo',
+  },
+  {
+    id: 'is_system',
+    label: 'Sistema',
+    type: 'select',
+    options: [
+      { value: true, label: 'Sistema' },
+      { value: false, label: 'Não-sistema' },
+    ],
+    quickFilter: true,
+    icon: Lock,
+    description: 'Filtrar por tipo de sistema',
+  },
+];
 
 /**
  * Filter Registry para o módulo Agent Types

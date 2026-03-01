@@ -50,7 +50,7 @@ export const menuConfig: NavGroup[] = [
     items: [
       { title: 'Tipos de Agentes', url: '/auxiliares/agent-types', icon: Settings },
       { title: 'Modelos IA', url: '/auxiliares/modelos-ia', icon: Database },
-      { title: 'Fornecedores IA', url: '/auxiliares/lm-providers', icon: Zap },
+      { title: 'Provedores IA', url: '/auxiliares/lm-providers', icon: Zap },
     ],
   },
 ];

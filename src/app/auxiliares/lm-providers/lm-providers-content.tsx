@@ -54,6 +54,7 @@ interface CreateProviderFormData {
   slug: string;
   description: string;
   api_endpoint: string;
+  api_key_field_name: string;
   docs_url: string;
   icon_emoji: string;
   color_hex: string;
@@ -77,6 +78,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
     slug: '',
     description: '',
     api_endpoint: '',
+    api_key_field_name: 'api_key',
     docs_url: '',
     icon_emoji: '🤖',
     color_hex: '#64748B',
@@ -128,6 +130,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
           slug: '',
           description: '',
           api_endpoint: '',
+          api_key_field_name: 'api_key',
           docs_url: '',
           icon_emoji: '🤖',
           color_hex: '#64748B',
@@ -147,7 +150,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
   // Delete provider
   const handleDelete = useCallback(async (provider: LmProvider) => {
     if (provider.is_system) {
-      toast.error('❌ Fornecedores de sistema não podem ser deletados');
+      toast.error('❌ Provedores de sistema não podem ser deletados');
       return;
     }
 
@@ -237,7 +240,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
       {/* Header */}
       <div className="flex items-center justify-between">
         <DashboardHeader
-          title="Provedores de LM"
+          title="Provedores IA"
           subtitle="Gerencie provedores de modelos de linguagem e seus modelos disponíveis"
         />
         <Button className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
@@ -275,13 +278,13 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
             <AlertCircle className="h-4 w-4" />
-            Sobre Fornecedores IA
+            Sobre Provedores IA
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
           <p>
-            Fornecedores IA são serviços externos que fornecem modelos de linguagem (como OpenAI,
-            Anthropic, etc.). Cada fornecedor pode ter múltiplos modelos com configurações
+            Provedores IA são serviços externos que fornecem modelos de linguagem (como OpenAI,
+            Anthropic, etc.). Cada provedor pode ter múltiplos modelos com configurações
             diferentes.
           </p>
         </CardContent>
@@ -337,7 +340,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {filteredData.length} de {providers.length} fornecedores
+              {filteredData.length} de {providers.length} provedores
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -365,7 +368,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {filteredData.length} de {providers.length} fornecedores
+              {filteredData.length} de {providers.length} provedores
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -403,6 +406,11 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                 [selectedProvider.id]: [...(prev[selectedProvider.id] ?? []), model],
               }))
             }
+            onProviderUpdated={(updated) => {
+              setProviders((prev) =>
+                prev.map((p) => (p.id === updated.id ? updated : p)),
+              );
+            }}
           />
         )}
       </SplitView>
@@ -464,6 +472,23 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                 onChange={(e) => setFormData((prev) => ({ ...prev, api_endpoint: e.target.value }))}
                 disabled={isLoading}
               />
+            </div>
+
+            {/* Identificador da API Key */}
+            <div>
+              <Label htmlFor="api_key_field_name">Identificador da API Key</Label>
+              <Input
+                id="api_key_field_name"
+                placeholder="Ex: api_key"
+                value={formData.api_key_field_name}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, api_key_field_name: e.target.value }))
+                }
+                disabled={isLoading}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Nome do campo usado para a chave de API (ex: api_key, OPENAI_API_KEY)
+              </p>
             </div>
 
             {/* URL Documentação */}

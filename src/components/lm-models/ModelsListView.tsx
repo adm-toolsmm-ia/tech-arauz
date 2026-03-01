@@ -201,7 +201,7 @@ export function ModelsListView({
                   <SortHeader column="name" label="Modelo" />
                 </th>
                 <th className="min-w-fit px-3 py-2 text-left font-semibold text-muted-foreground">
-                  <SortHeader column="provider" label="Fornecedor" />
+                  <SortHeader column="provider" label="Provedor" />
                 </th>
                 <th className="w-24 min-w-fit px-3 py-2 text-left font-semibold text-muted-foreground">
                   <SortHeader column="tier" label="Tier" />

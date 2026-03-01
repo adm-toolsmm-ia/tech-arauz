@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { ChevronLeft, Save, Trash2, AlertTriangle, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -54,10 +55,16 @@ export function AgentEditContent({
     owners: initialAgent.owners,
     tags: initialAgent.tags,
     agentTypeId: initialAgent.agentTypeId || '',
+    // Story 7.8: New classification fields
+    usageType: initialAgent.usageType || 'chatbot',
+    showInShortcut: initialAgent.showInShortcut || false,
+    isGlobalChatbot: initialAgent.isGlobalChatbot || false,
+    // Persona & prompt
     persona: initialAgent.fullConfig.persona || '',
     promptObjective: initialAgent.fullConfig.promptObjective || '',
     promptInstructions: initialAgent.fullConfig.promptInstructions || '',
     promptTemplate: initialAgent.fullConfig.promptTemplate || '',
+    // Model config
     modelProvider: initialAgent.fullConfig.modelProvider,
     modelId: initialAgent.modelId,
     modelTemperature: initialAgent.fullConfig.modelTemperature,
@@ -118,12 +125,18 @@ export function AgentEditContent({
         tags: agent.tags,
         agent_type_id: agent.agentTypeId || undefined,
         agent_type: selectedType?.slug || 'custom',
+        // Story 7.8: Classification fields
+        usage_type: agent.usageType,
+        show_in_shortcut: agent.usageType === 'chatbot' && agent.showInShortcut,
+        is_global_chatbot: agent.usageType === 'chatbot' && agent.isGlobalChatbot,
+        // Persona & prompt
         persona: agent.persona,
         prompt_objective: agent.promptObjective,
         prompt_instructions: Array.isArray(agent.promptInstructions)
           ? agent.promptInstructions
           : (agent.promptInstructions ?? '').split('\n').filter(Boolean),
         prompt_template: agent.promptTemplate,
+        // Model config
         model_provider: agent.modelProvider,
         model_id: agent.modelId,
         model_temperature: agent.modelTemperature,
@@ -191,7 +204,7 @@ export function AgentEditContent({
           </div>
         </div>
         <div className="flex gap-2">
-          {initialAgent.status === 'published' && (
+          {initialAgent.status === 'published' && agent.usageType === 'chatbot' && (
             <Link href={`/agentes/${initialAgent.id}/chat`}>
               <Button variant="default" size="sm" className="gap-2">
                 <MessageCircle className="h-4 w-4" />
@@ -275,7 +288,7 @@ export function AgentEditContent({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <Label>Status</Label>
                   <Select
@@ -311,7 +324,57 @@ export function AgentEditContent({
                     </SelectContent>
                   </Select>
                 </div>
+                {/* Story 7.8: Usage Type */}
+                <div>
+                  <Label>Tipo de Uso</Label>
+                  <Select
+                    value={agent.usageType}
+                    onValueChange={(value) => {
+                      handleChange('usageType', value);
+                      // Reset conditonal fields when switching to workflow
+                      if (value === 'workflow') {
+                        handleChange('showInShortcut', false);
+                        handleChange('isGlobalChatbot', false);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="chatbot">🗨️ Chatbot</SelectItem>
+                      <SelectItem value="workflow">⚙️ Workflow</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+
+              {/* Story 7.8: Conditional Fields - Only show for chatbots */}
+              {agent.usageType === 'chatbot' && (
+                <div className="space-y-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
+                  <div className="flex items-center justify-between">
+                    <Label className="cursor-pointer">Exibir no atalho global</Label>
+                    <Switch
+                      checked={agent.showInShortcut}
+                      onCheckedChange={(value) => handleChange('showInShortcut', value)}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Quando ativado, este agente aparecerá na lista de atalhos do chatbot flutuante.
+                  </p>
+
+                  <div className="mt-3 flex items-center justify-between pt-3">
+                    <Label className="cursor-pointer">Chatbot Global</Label>
+                    <Switch
+                      checked={agent.isGlobalChatbot}
+                      onCheckedChange={(value) => handleChange('isGlobalChatbot', value)}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Apenas um agente por tenant pode ser o chatbot global (flutuante). Ativar aqui o desativa em outros agentes.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

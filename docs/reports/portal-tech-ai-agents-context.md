@@ -53,7 +53,7 @@ Documentação do que existe no repositório. Apenas fatos; uso como contexto pa
 - **Documentação SQL da estrutura atual:** `supabase/docs/SCHEMA.md` — tabelas, colunas, relações, RLS (auditoria até as migrations aplicadas).
 - **Schema em formato Prisma (estado atual):** `docs/architecture/data/schema.prisma` — export do MCP Supabase a partir do banco; o projeto usa Supabase em runtime, não Prisma.
 
-**Migrations (histórico / DDL):** `supabase/migrations/` — arquivos 001_*.sql a 043_*.sql. As migrations iniciais podem ter sido alteradas ou substituídas por migrations posteriores; o estado atual do banco é o resultado cumulativo de todas aplicadas em ordem. Para entender a **estrutura atual**, priorize `SCHEMA.md` e `schema.prisma`. Consulte as migrations quando a tarefa for **alterar o schema** (nova migration) ou **analisar a evolução** do banco.
+**Migrations (histórico / DDL):** `supabase/migrations/` — arquivos 001_*.sql a 044_*.sql. As migrations iniciais podem ter sido alteradas ou substituídas por migrations posteriores; o estado atual do banco é o resultado cumulativo de todas aplicadas em ordem. Para entender a **estrutura atual**, priorize `SCHEMA.md` e `schema.prisma`. Consulte as migrations quando a tarefa for **alterar o schema** (nova migration) ou **analisar a evolução** do banco. Migration 044 removeu seed data de lm_providers, lm_models, agent_types e agent_templates; tabelas auxiliares ficam vazias até recriação manual.
 
 **Tabelas por domínio (nomes no banco):**
 
@@ -68,7 +68,7 @@ Documentação do que existe no repositório. Apenas fatos; uso como contexto pa
 | Ferramentas e contexto | tools, agent_tool_bindings, context_providers, agent_context_bindings |
 | Feedback e LLM | agent_feedback, lm_provider_accounts |
 
-Todas as tabelas de dados têm RLS e isolamento por `tenant_id`. Após migration 043, o campo `agent_id` em agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings referencia `agents(id)`. A tabela agent_run_steps tem `run_id` (FK agent_runs) e `agent_id` (coluna sem FK, tipicamente agents.id para denormalização).
+Todas as tabelas de dados têm RLS e isolamento por `tenant_id`. Após migration 043, o campo `agent_id` em agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings referencia `agents(id)`. A tabela agent_run_steps tem `run_id` (FK agent_runs) e `agent_id` (coluna sem FK, tipicamente agents.id para denormalização). Após migration 044, lm_providers, lm_models, agent_types e agent_templates estão vazios (seed removido); agents.agent_type_id foi setado para NULL.
 
 ---
 
@@ -284,7 +284,7 @@ Autenticação: JWT no header Authorization; tenant_id e user_id extraídos do t
 ### 9.1 Páginas (src/app)
 
 - **Agentes:** `src/app/agentes/page.tsx`, `src/app/agentes/agentes-content.tsx`, `src/app/agentes/layout.tsx`, `src/app/agentes/[id]/page.tsx`, `src/app/agentes/[id]/agent-edit-content.tsx`, `src/app/agentes/[id]/chat/page.tsx`, `src/app/agentes/[id]/chat/chat-content.tsx`, `src/app/agentes/components/AgentsKanbanView.tsx`
-- **Auxiliares:** `src/app/auxiliares/agent-types/page.tsx`, `src/app/auxiliares/agent-types/agent-types-content.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeFormDialog.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeListItem.tsx`, `src/app/auxiliares/lm-providers/page.tsx`, `src/app/auxiliares/lm-providers/lm-providers-content.tsx`, `src/app/auxiliares/lm-providers/components/LmProviderListItem.tsx`, `src/app/auxiliares/modelos-ia/page.tsx`, `src/app/auxiliares/modelos-ia/modelos-ia-content.tsx`, `src/app/auxiliares/layout.tsx`
+- **Auxiliares:** `src/app/auxiliares/agent-types/page.tsx`, `src/app/auxiliares/agent-types/agent-types-content.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeFormDialog.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeListItem.tsx`, `src/app/auxiliares/lm-providers/page.tsx`, `src/app/auxiliares/lm-providers/lm-providers-content.tsx`, `src/app/auxiliares/lm-providers/components/LmProviderListItem.tsx`, `src/app/auxiliares/modelos-ia/page.tsx`, `src/app/auxiliares/modelos-ia/modelos-ia-content.tsx`, `src/app/auxiliares/layout.tsx`, `src/components/lm-models/ModelCockpit.tsx`, `src/components/lm-providers/LmProviderKanbanCard.tsx`
 
 ### 9.2 API Routes Next.js (proxy para o serviço AI)
 
@@ -326,7 +326,7 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | Configuração do projeto | `configs/project.yaml` |
 | Schema SQL atual / RLS | `supabase/docs/SCHEMA.md` |
 | Schema Prisma (estado atual) | `docs/architecture/data/schema.prisma` |
-| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` (incl. 042_ai_features_chat_and_360.sql, 043_fix_agent_id_references.sql) |
+| Migrations (histórico DDL; usar para alterar schema ou evolução) | `supabase/migrations/` (incl. 042_ai_features_chat_and_360.sql, 043_fix_agent_id_references.sql, 044_clear_auxiliares_seed_data.sql) |
 | Tipos de agentes (TS) | `src/types/agents.ts` |
 | Serviço AI | `services/ai/app/` |
 | Orquestrador LangGraph | `services/ai/app/graphs/orchestrator.py` |

@@ -311,6 +311,8 @@ agent_sessions (1) - (N) agent_feedback
 - 031-038: provedores/modelos LLM e curadoria 360 (tier, custo, ordem, contexto)
 - 039-041: expansao de agentes (configs, tipos melhorados) e preparacao para chat
 - 042: AI Features Chat & 360° Dashboard (11 tabelas: sessions, messages, run_steps, budgets, usage_daily, deployments, tools, tool_bindings, context_providers, context_bindings, feedback + ALTERs)
+- 043: Fix agent_id references (agent_sessions, agent_budgets, agent_usage_daily, agent_deployments, agent_tool_bindings, agent_context_bindings)
+- 044: Clear auxiliares seed data (agents.agent_type_id SET NULL; DELETE agent_templates, lm_models, lm_providers, agent_types). Tabelas vazias; recriacao manual apos validacao.
 
 ---
 

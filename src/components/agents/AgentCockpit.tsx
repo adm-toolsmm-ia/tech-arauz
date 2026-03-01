@@ -116,6 +116,28 @@ export function AgentCockpit({
             <InfoField label="Slug" value={agent.slug} />
             <InfoField label="Descrição" value={agent.description || undefined} />
 
+            <Separator className="my-4" />
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold">Classificação</h4>
+              <InfoField
+                label="Tipo de Uso"
+                value={agent.usageType === 'chatbot' ? '🗨️ Chatbot' : '⚙️ Workflow'}
+              />
+              {agent.usageType === 'chatbot' && (
+                <>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Exibir no Atalho Global</p>
+                    <p className="text-sm font-medium">{agent.showInShortcut ? '✅ Sim' : '❌ Não'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Chatbot Global</p>
+                    <p className="text-sm font-medium">{agent.isGlobalChatbot ? '✅ Sim' : '❌ Não'}</p>
+                  </div>
+                </>
+              )}
+            </div>
+
             {agent.tags && agent.tags.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">Tags</p>

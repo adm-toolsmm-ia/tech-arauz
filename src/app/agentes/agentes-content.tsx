@@ -232,7 +232,13 @@ export function AgentsContent({
                     <h3 className="font-semibold">{agent.name}</h3>
                     <p className="text-sm text-muted-foreground">{agent.description}</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <Badge
+                      variant={agent.usageType === 'chatbot' ? 'default' : 'secondary'}
+                      className="text-xs"
+                    >
+                      {agent.usageType === 'chatbot' ? '🗨️ Chatbot' : '⚙️ Workflow'}
+                    </Badge>
                     <Badge>{agent.agentType}</Badge>
                     <Badge variant={agent.status === 'published' ? 'default' : 'secondary'}>
                       {agent.status}

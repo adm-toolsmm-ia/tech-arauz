@@ -30,6 +30,17 @@ export const filterDefinitionsAgentes: FilterDefinition[] = [
     icon: Tags,
     description: 'Filtrar por tipo de agente',
   },
+  {
+    id: 'usageType',
+    label: 'Classificação',
+    type: 'select',
+    options: [
+      { value: 'chatbot', label: '🗨️ Chatbot' },
+      { value: 'workflow', label: '⚙️ Workflow' },
+    ],
+    quickFilter: true,
+    description: 'Filtrar por tipo de uso (Chatbot ou Workflow)',
+  },
 ];
 
 export const filterRegistryAgentes: FilterRegistry = {

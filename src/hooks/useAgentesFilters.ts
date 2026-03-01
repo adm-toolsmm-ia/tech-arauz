@@ -22,11 +22,25 @@ import type { UIAgent } from '@/lib/transformers/agent';
 export function useAgentesFilters(agents: UIAgent[]) {
   const definitions = useMemo(() => {
     const uniqueTypes = getUniqueAgentTypes(agents);
+    const usageTypesSet = new Set<'chatbot' | 'workflow'>(
+      agents.map((a) => a.usageType || 'chatbot') as ('chatbot' | 'workflow')[]
+    );
+    const uniqueUsageTypes = Array.from(usageTypesSet);
+
     return filterDefinitionsAgentes.map((def) => {
       if (def.id === 'agentType') {
         return {
           ...def,
           options: uniqueTypes.map((type) => ({ value: type, label: type })),
+        };
+      }
+      if (def.id === 'usageType') {
+        return {
+          ...def,
+          options: [
+            { value: 'chatbot', label: '🗨️ Chatbot' },
+            { value: 'workflow', label: '⚙️ Workflow' },
+          ].filter((opt) => (uniqueUsageTypes as string[]).includes(opt.value)),
         };
       }
       return def;

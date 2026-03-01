@@ -6,6 +6,7 @@ import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { CreateAgentDialog } from '@/components/agents/CreateAgentDialog';
 import { AgentCockpit } from '@/components/agents/AgentCockpit';
+import { AgentMetrics360 } from '@/components/agents/AgentMetrics360';
 import { SplitView } from '@/components/views/SplitView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,6 +21,13 @@ import type { UIAgent } from '@/lib/transformers/agent';
 import type { LmProvider } from '@/types/agents';
 import { computeAgentKpis } from '@/lib/domain/agent-rules';
 import { useAgentesFilters } from '@/hooks/useAgentesFilters';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import { AgentsKanbanView } from './components/AgentsKanbanView';
 
@@ -32,6 +40,7 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
   const router = useRouter();
   const [agents, setAgents] = useState(initialAgents);
   const [selectedAgent, setSelectedAgent] = useState<UIAgent | null>(null);
+  const [metricsAgentId, setMetricsAgentId] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -130,6 +139,35 @@ export function AgentsContent({ agents: initialAgents, providers = [] }: AgentsC
             trend={{ value: '0', positive: false }}
           />
         </div>
+      )}
+
+      {/* Dashboard 360° de Métricas */}
+      {agents.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Dashboard 360° de Métricas</h3>
+                <Select value={metricsAgentId || ''} onValueChange={setMetricsAgentId}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Selecionar agente..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {agents.map((agent) => (
+                      <SelectItem key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {metricsAgentId && (
+                <AgentMetrics360 agentId={metricsAgentId} />
+              )}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* ViewModeBar + FilterBar + Refresh */}

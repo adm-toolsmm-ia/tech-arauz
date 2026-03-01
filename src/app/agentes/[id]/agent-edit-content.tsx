@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import { AgentMetrics360 } from '@/components/agents/AgentMetrics360';
+import { ChatContent } from './chat/chat-content';
 import type { UIAgent } from '@/lib/transformers/agent';
 
 interface AgentEditContentProps {
@@ -184,13 +185,14 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
 
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="basic">Básico</TabsTrigger>
           <TabsTrigger value="persona">Persona</TabsTrigger>
           <TabsTrigger value="model">Modelo</TabsTrigger>
           <TabsTrigger value="advanced">Avançado</TabsTrigger>
           <TabsTrigger value="ferramentas">Ferramentas</TabsTrigger>
           <TabsTrigger value="deployments">Deployments</TabsTrigger>
+          <TabsTrigger value="chat">Chat</TabsTrigger>
         </TabsList>
 
         {/* TAB 1: BASIC */}
@@ -445,6 +447,21 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* TAB 7: CHAT */}
+        {agent.status === 'published' && (
+          <TabsContent value="chat" className="mt-4 space-y-4">
+            <Card className="h-[600px] flex flex-col">
+              <CardHeader>
+                <CardTitle>Testar Chat</CardTitle>
+                <CardDescription>Converse com o agente para testá-lo em tempo real</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-hidden">
+                <ChatContent agentId={initialAgent.id} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Dashboard 360° */}

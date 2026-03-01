@@ -30,6 +30,11 @@ export interface DBAgent {
   model_endpoint_overrides: Record<string, unknown> | null;
   agent_type: string | null;
   agent_type_id: string | null;
+  // Story 7.8: Classification fields
+  usage_type?: 'chatbot' | 'workflow';
+  show_in_shortcut?: boolean;
+  is_global_chatbot?: boolean;
+  // Configuration
   requirements: string[] | null;
   configuration_meta: Record<string, unknown> | null;
   template_id: string | null;
@@ -55,6 +60,11 @@ export interface UIAgent {
   modelId: string;
   agentType: string;
   agentTypeId: string | null;
+  // Story 7.8: Classification fields
+  usageType?: 'chatbot' | 'workflow';
+  showInShortcut?: boolean;
+  isGlobalChatbot?: boolean;
+  // Metadata
   updatedAt: string;
   createdAt: string;
   executionCount: number;
@@ -101,11 +111,17 @@ export function dbAgentToUI(dbAgent: DBAgent): UIAgent {
     modelId: dbAgent.model_id,
     agentType: dbAgent.agent_type || 'custom',
     agentTypeId: dbAgent.agent_type_id,
+    // Story 7.8: Classification fields
+    usageType: dbAgent.usage_type || 'chatbot',
+    showInShortcut: dbAgent.show_in_shortcut || false,
+    isGlobalChatbot: dbAgent.is_global_chatbot || false,
+    // Metadata
     updatedAt: dbAgent.updated_at,
     createdAt: dbAgent.created_at,
     executionCount: dbAgent.execution_count,
     lastExecutionAt: dbAgent.last_execution_at,
     isTemplate: dbAgent.is_template,
+    // Full config for edit page
     fullConfig: {
       persona: dbAgent.persona,
       promptObjective: dbAgent.prompt_objective,

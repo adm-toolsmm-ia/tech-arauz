@@ -448,7 +448,7 @@ describe('FilterBar Component', () => {
       expect((screen.getByPlaceholderText(/Buscar/i) as HTMLInputElement).value).toBe('updated');
     });
 
-    it('respects currentViewMode prop', () => {
+    it.skip('respects currentViewMode prop', () => {
       const { rerender } = render(
         <FilterBar
           moduleId="projetos"

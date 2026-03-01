@@ -28,6 +28,13 @@ from app.agents.models import (
     PaginatedResponse,
 )
 from app.agents.service import AgentService, AgentServiceError
+from app.services.session_service import (
+    get_or_create_session,
+    load_message_history,
+    persist_turn,
+    update_usage_daily,
+    SessionServiceError,
+)
 
 router = APIRouter()
 logger = logging.getLogger("obs.routes")
@@ -894,4 +901,278 @@ async def list_agent_templates(
         return {"templates": response.data}
     except Exception as e:
         logger.exception("Error listing agent templates: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# =============================================================================
+# PHASE 3: Chat Endpoints (Story 4.3)
+# =============================================================================
+
+class ChatRequest(BaseModel):
+    """Request model for chat endpoint."""
+
+    session_id: Optional[str] = None
+    message: str
+    config: Optional[dict] = None
+
+
+class ChatResponse(BaseModel):
+    """Response model for chat endpoint."""
+
+    session_id: str
+    message_id: str
+    answer: str
+    sql_query: Optional[str] = None
+    row_count: Optional[int] = None
+    tokens_used: int
+    cost_usd: float
+    trace_url: Optional[str] = None
+    duration_ms: int
+
+
+class SessionInfo(BaseModel):
+    """Session information."""
+
+    id: str
+    agent_id: str
+    user_id: Optional[str] = None
+    tenant_id: str
+    started_at: datetime
+    status: str
+    message_count: int
+    last_message_at: Optional[datetime] = None
+
+
+class MessageInfo(BaseModel):
+    """Message information."""
+
+    id: str
+    session_id: str
+    role: str  # "user" or "assistant"
+    content: str
+    created_at: datetime
+    tokens_used: int = 0
+    metadata: Optional[dict] = None
+
+
+@router.post("/agents/{agent_id}/chat", response_model=ChatResponse)
+async def chat_with_agent(
+    agent_id: str,
+    request_body: ChatRequest,
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> ChatResponse:
+    """
+    Send a message to an agent and get a response.
+
+    Creates a new session if session_id is not provided.
+    Persists both user and assistant messages.
+    Returns: session_id, message_id, answer, sql_query (optional), tokens, cost, trace_url, duration.
+    """
+    try:
+        tenant_id = token_data["tenant_id"]
+        user_id = token_data["user_id"]
+        supabase = await get_supabase_client(request)
+
+        if not request_body.message:
+            raise HTTPException(status_code=400, detail="message field is required")
+
+        # Get or create session
+        session = await get_or_create_session(
+            agent_id=agent_id,
+            session_id=request_body.session_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            supabase=supabase,
+        )
+
+        # Load message history for context (if Story 4.4 LCEL chain uses it)
+        history = await load_message_history(
+            session_id=session["id"],
+            supabase=supabase,
+            limit=10,
+        )
+
+        # TODO (Story 4.4): Replace with actual LCEL chain execution
+        # For now, return mock response
+        import time
+
+        t0 = time.perf_counter()
+        answer = f"Mock response to: {request_body.message}"
+        duration_ms = round((time.perf_counter() - t0) * 1000)
+        tokens_used = 50
+        cost_usd = 0.001
+
+        # Persist turn (user message + assistant response)
+        user_msg_id, asst_msg_id = await persist_turn(
+            session_id=session["id"],
+            tenant_id=tenant_id,
+            user_msg=request_body.message,
+            assistant_msg=answer,
+            run_id=str(uuid.uuid4()),
+            supabase=supabase,
+            metadata={"tokens": tokens_used, "cost_usd": cost_usd},
+        )
+
+        # Update daily usage
+        await update_usage_daily(
+            agent_id=agent_id,
+            tenant_id=tenant_id,
+            supabase=supabase,
+            run_result={
+                "cost_usd": cost_usd,
+                "tokens_used": tokens_used,
+                "duration_ms": duration_ms,
+            },
+        )
+
+        logger.info("Chat turn completed for session %s", session["id"])
+
+        return ChatResponse(
+            session_id=session["id"],
+            message_id=asst_msg_id,
+            answer=answer,
+            sql_query=None,
+            row_count=None,
+            tokens_used=tokens_used,
+            cost_usd=cost_usd,
+            trace_url=None,
+            duration_ms=duration_ms,
+        )
+
+    except SessionServiceError as e:
+        if e.error_code == "not_found":
+            raise HTTPException(status_code=404, detail=str(e))
+        logger.warning("Session service error: %s", str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Error in chat endpoint: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/agents/{agent_id}/sessions")
+async def list_agent_sessions(
+    agent_id: str,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=50),
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
+    """
+    List all chat sessions for an agent and user.
+
+    Returns paginated list of sessions with message counts.
+    """
+    try:
+        tenant_id = token_data["tenant_id"]
+        user_id = token_data["user_id"]
+        supabase = await get_supabase_client(request)
+
+        # Query agent_sessions
+        query = supabase.table("agent_sessions").select(
+            "id, agent_id, user_id, tenant_id, started_at, status"
+        ).eq("tenant_id", tenant_id).eq("agent_id", agent_id).order(
+            "created_at", desc=True
+        )
+
+        # Execute query with pagination
+        response = await query.offset((page - 1) * page_size).limit(page_size).execute()
+
+        sessions = response.data if response.data else []
+
+        # For each session, count messages
+        sessions_with_counts = []
+        for session in sessions:
+            msg_response = await supabase.table("agent_messages").select(
+                "id, created_at", count="exact"
+            ).eq("session_id", session["id"]).order("created_at", desc=True).limit(1).execute()
+
+            sessions_with_counts.append({
+                **session,
+                "message_count": msg_response.count or 0,
+                "last_message_at": (
+                    msg_response.data[0]["created_at"] if msg_response.data else None
+                ),
+            })
+
+        # Get total count
+        count_response = await supabase.table("agent_sessions").select(
+            "id", count="exact"
+        ).eq("tenant_id", tenant_id).eq("agent_id", agent_id).execute()
+
+        total = count_response.count or 0
+
+        logger.info("Listed %d sessions for agent %s", len(sessions), agent_id)
+
+        return {
+            "sessions": sessions_with_counts,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "has_next": (page * page_size) < total,
+        }
+
+    except Exception as e:
+        logger.exception("Error listing sessions: %s", str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/agents/{agent_id}/sessions/{session_id}/messages")
+async def get_session_messages(
+    agent_id: str,
+    session_id: str,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    token_data: dict = Depends(get_token_data),
+    request: Request = None,
+) -> dict:
+    """
+    Get message history for a specific session.
+
+    Returns paginated list of messages (user and assistant).
+    """
+    try:
+        tenant_id = token_data["tenant_id"]
+        supabase = await get_supabase_client(request)
+
+        # Verify session belongs to tenant
+        session_response = await supabase.table("agent_sessions").select(
+            "id, tenant_id"
+        ).eq("id", session_id).eq("tenant_id", tenant_id).execute()
+
+        if not session_response.data:
+            raise HTTPException(status_code=404, detail="Session not found or access denied")
+
+        # Query messages
+        msg_response = await supabase.table("agent_messages").select(
+            "id, session_id, role, content, created_at, tokens_used, metadata"
+        ).eq("session_id", session_id).eq("tenant_id", tenant_id).order(
+            "created_at", desc=True
+        ).offset((page - 1) * page_size).limit(page_size).execute()
+
+        messages = msg_response.data if msg_response.data else []
+
+        # Get total count
+        count_response = await supabase.table("agent_messages").select(
+            "id", count="exact"
+        ).eq("session_id", session_id).eq("tenant_id", tenant_id).execute()
+
+        total = count_response.count or 0
+
+        logger.info("Retrieved %d messages for session %s", len(messages), session_id)
+
+        return {
+            "messages": messages,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "has_next": (page * page_size) < total,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Error retrieving messages: %s", str(e))
         raise HTTPException(status_code=500, detail="Internal server error")

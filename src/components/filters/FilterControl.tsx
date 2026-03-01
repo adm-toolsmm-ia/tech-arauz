@@ -264,7 +264,6 @@ function MultiSelectControl({
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               className="mb-2"
-              autoFocus
             />
           )}
 

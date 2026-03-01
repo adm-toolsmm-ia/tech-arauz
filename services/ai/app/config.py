@@ -24,6 +24,10 @@ class Settings(BaseSettings):
 
     # LLM
     openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
+    anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
+    google_api_key: str = Field(default="", alias="GOOGLE_API_KEY")
+    azure_openai_api_key: str = Field(default="", alias="AZURE_OPENAI_API_KEY")
+    azure_openai_endpoint: str = Field(default="", alias="AZURE_OPENAI_ENDPOINT")
 
     # Supabase
     supabase_url: str = Field(default="", alias="SUPABASE_URL")
@@ -48,6 +52,11 @@ class Settings(BaseSettings):
     obs_budget_session_usd: float = Field(default=0.50, alias="OBS_BUDGET_SESSION_USD")
     obs_budget_user_usd: float = Field(default=5.00, alias="OBS_BUDGET_USER_USD")
     obs_budget_agent_usd: float = Field(default=2.00, alias="OBS_BUDGET_AGENT_USD")
+
+    # SQL QA Validator
+    sql_qa_default_limit: int = Field(default=100, alias="SQL_QA_DEFAULT_LIMIT")
+    sql_qa_max_limit: int = Field(default=500, alias="SQL_QA_MAX_LIMIT")
+    chat_history_window: int = Field(default=10, alias="CHAT_HISTORY_WINDOW")
 
     @property
     def is_langsmith_enabled(self) -> bool:

@@ -49,6 +49,22 @@
 - **Commits:** 5b0ee17
 - **Próximo:** Story 7.10 (Módulo Governança de Modelos) — **READY FOR EXECUTION**
 
+### 2026-03-01 19:45 — Épico 3 Story 7.10 (Frontend: Módulo Governança) ✅ COMPLETO
+- **Agente:** @dev (Dex)
+- **Story:** 7.10 — Frontend: Módulo de Governança de Modelos
+- **Features:**
+  - ✅ Badges stability_level: GA (verde), Preview (amarelo), Experimental (laranja), Deprecated (cinza)
+  - ✅ Tags release_channel: Stable, Beta, Alpha
+  - ✅ Chips de capacidades: 🔧 Tool Calling, 📄 JSON Mode, 🌊 Streaming, 👁️ Vision, 🎵 Audio
+  - ✅ Alerta visual em vermelho para deprecated_at
+  - ✅ Alerta amarelo para sunset_at
+  - ✅ Formulário expandido com seção Governança em ModelForm
+  - ✅ ModelCockpit: nova aba "Governança" com todos os campos
+  - ✅ ModelCard: exibe badges stability_level, release_channel, chips capacidades
+  - ✅ Servidor action genérico já suporta novos campos
+- **Commits:** 76d01a1
+- **Próximo:** Story 7.11 (Página Governança Avançada) — **READY FOR EXECUTION**
+
 ---
 
 ---

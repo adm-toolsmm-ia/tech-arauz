@@ -11,6 +11,7 @@ import {
   UserPlus,
   Zap,
   Database,
+  MessageSquare,
 } from 'lucide-react';
 import type { NavGroup, NavItem } from './sidebar-types';
 
@@ -41,6 +42,7 @@ export const menuConfig: NavGroup[] = [
     group: 'Tecnologia & IA',
     items: [
       { title: 'Agentes AI', url: '/agentes', icon: Bot, badge: 'MVP' },
+      { title: 'Histórico de Conversas', url: '/conversas', icon: MessageSquare },
       { title: 'Integrações', url: '/integracoes', icon: Plug },
       { title: 'Usuários', url: '/cadastros/usuarios', icon: UserPlus },
     ],

@@ -206,3 +206,119 @@ def _get_azure_llm(model_id: str, **kwargs: Any) -> BaseChatModel:
             model_id=model_id,
             error_detail=f"Failed to instantiate AzureChatOpenAI: {str(exc)}",
         )
+
+
+# Story 7.7: Multi-provider fallback wrapper
+async def create_with_fallback(
+    primary_provider: str,
+    primary_model_id: str,
+    supabase_client,
+    tenant_id: str,
+    **llm_kwargs: Any,
+) -> tuple[BaseChatModel, str, str]:
+    """
+    Create LLM with automatic fallback to secondary provider on error.
+
+    Queries model_fallback_policies to find fallback chain.
+    If primary provider fails (rate limit, timeout, 500), tries fallback in priority order.
+    Registers incidents for failed attempts.
+
+    Args:
+        primary_provider: Primary provider name (openai, anthropic, etc.)
+        primary_model_id: Primary model ID
+        supabase_client: Async Supabase client for policy queries
+        tenant_id: Tenant ID for policy lookup
+        **llm_kwargs: Additional LLM arguments (temperature, max_tokens, etc.)
+
+    Returns:
+        Tuple of (llm_instance, selected_provider, selected_model_id)
+
+    Raises:
+        LLMProviderError: If all providers in fallback chain fail
+    """
+    from datetime import datetime
+
+    # Get fallback policies from Supabase
+    try:
+        policies_response = (
+            await supabase_client.table("model_fallback_policies")
+            .select("*")
+            .eq("tenant_id", tenant_id)
+            .eq("is_active", True)
+            .order("priority", desc=False)
+            .execute()
+        )
+        fallback_policies = policies_response.data or []
+    except Exception as e:
+        # If policy query fails, just use primary provider
+        fallback_policies = []
+
+    # Build fallback chain: [primary] + [fallbacks in priority order]
+    fallback_chain = [
+        {
+            "provider": primary_provider,
+            "model_id": primary_model_id,
+            "is_primary": True,
+        }
+    ]
+
+    # Find fallbacks for this primary model
+    for policy in fallback_policies:
+        if policy.get("primary_model_id") == primary_model_id:
+            fallback_chain.append(
+                {
+                    "provider": policy.get("fallback_provider", "anthropic"),
+                    "model_id": policy.get("fallback_model_id", "claude-3-sonnet"),
+                    "is_primary": False,
+                    "priority": policy.get("priority", 999),
+                }
+            )
+
+    # Try each provider in chain
+    last_error = None
+    for i, attempt in enumerate(fallback_chain):
+        provider = attempt["provider"]
+        model_id = attempt["model_id"]
+        is_primary = attempt.get("is_primary", False)
+
+        try:
+            llm = get_llm(provider, model_id, **llm_kwargs)
+            if not is_primary:
+                # Log fallback selection
+                await supabase_client.table("model_incidents").insert([
+                    {
+                        "tenant_id": tenant_id,
+                        "model_id": primary_model_id,
+                        "severity": "low",
+                        "title": f"Fallback activated: {primary_provider}/{primary_model_id}",
+                        "description": f"Primary provider failed, using fallback: {provider}/{model_id}",
+                        "started_at": datetime.utcnow().isoformat(),
+                    }
+                ]).execute()
+            return llm, provider, model_id
+
+        except LLMProviderError as e:
+            last_error = e
+            if is_primary:
+                # Log primary failure
+                await supabase_client.table("model_incidents").insert([
+                    {
+                        "tenant_id": tenant_id,
+                        "model_id": primary_model_id,
+                        "severity": "medium",
+                        "title": f"Primary provider failed: {provider}/{model_id}",
+                        "description": str(e),
+                        "started_at": datetime.utcnow().isoformat(),
+                    }
+                ]).execute()
+            continue
+        except Exception as e:
+            last_error = e
+            continue
+
+    # If all fail, raise error
+    raise LLMProviderError(
+        provider=primary_provider,
+        model_id=primary_model_id,
+        error_detail=f"All providers in fallback chain failed. Last error: {str(last_error)}",
+    )

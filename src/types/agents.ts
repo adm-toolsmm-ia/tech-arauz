@@ -50,6 +50,22 @@ export interface LmModel {
   context_window?: number; // Maximum input tokens (context window) for prompt engineering and compliance
   display_order?: number; // Display order in UI selectors and catalogs (lower values first; default 100)
   tier?: 'entry' | 'balanced' | 'pro' | 'flagship'; // Operational tier for model curation (default: balanced)
+
+  // Governance & Stability (Migration 046)
+  stability_level?: 'ga' | 'preview' | 'experimental' | 'deprecated'; // Model stability (default: 'ga')
+  release_channel?: 'stable' | 'beta' | 'alpha'; // Release channel (default: 'stable')
+
+  // Capability Flags (Migration 046)
+  supports_tool_calling?: boolean; // Model supports function/tool calling
+  supports_json_mode?: boolean; // Model can return strictly formatted JSON
+  supports_streaming?: boolean; // Model supports streaming responses (default: true)
+  supports_vision?: boolean; // Model can process images
+  supports_audio?: boolean; // Model can process/generate audio
+
+  // Deprecation & Sunset (Migration 046)
+  deprecated_at?: string | null; // ISO 8601 timestamp when deprecated
+  sunset_at?: string | null; // ISO 8601 timestamp when fully removed
+
   is_active: boolean;
   is_system: boolean;
   created_at: string;
@@ -177,6 +193,11 @@ export interface AgentConfig {
   requirements?: string[]; // array of requirement descriptions
   configuration_meta?: Record<string, unknown>; // flexible config storage
 
+  // Classification & Usage (Migration 045)
+  usage_type?: 'chatbot' | 'workflow'; // Classify as chatbot (conversational) or workflow (default: 'chatbot')
+  show_in_shortcut?: boolean; // Display in chatbot selector (only for chatbots)
+  is_global_chatbot?: boolean; // Mark as global floating chatbot (only one per tenant)
+
   // Persona & Prompt
   persona?: string;
   prompt_objective: string;
@@ -237,6 +258,11 @@ export interface AgentHead {
   execution_count?: number;
   last_execution_at?: string | null;
 
+  // Classification & Usage (Migration 045)
+  usage_type?: 'chatbot' | 'workflow';
+  show_in_shortcut?: boolean;
+  is_global_chatbot?: boolean;
+
   // Version info
   current_version?: string; // null if only draft exists
   draft?: AgentConfig; // current draft state
@@ -262,6 +288,11 @@ export interface AgentListItem {
   current_version?: string;
   updated_at: string;
   owners: string[];
+
+  // Classification & Usage (Migration 045)
+  usage_type?: 'chatbot' | 'workflow';
+  show_in_shortcut?: boolean;
+  is_global_chatbot?: boolean;
 }
 
 /**
@@ -352,6 +383,107 @@ export interface RollbackAgentRequest {
 
 export interface ImportAgentRequest {
   agent_config: AgentConfig;
+}
+
+/**
+ * Model Governance Review (Migration 047)
+ * Track governance review status for each model
+ */
+export interface ModelGovernanceReview {
+  id: string; // UUID
+  tenant_id: string; // UUID
+  model_id: string; // UUID reference to lm_models
+  reviewer_id?: string; // UUID reference to auth.users
+  status: 'pending' | 'approved' | 'rejected' | 'needs_revision';
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  reviewed_at?: string | null;
+}
+
+/**
+ * Model Cost Monitoring (Migration 047)
+ * Monitor cost, usage, and performance metrics by billing period
+ */
+export interface ModelCostMonitoring {
+  id: string; // UUID
+  tenant_id: string; // UUID
+  model_id: string; // UUID reference to lm_models
+  period_start: string; // ISO date
+  period_end: string; // ISO date
+  total_requests: number;
+  total_tokens: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_cost_usd: number;
+  input_cost_usd: number;
+  output_cost_usd: number;
+  p50_latency_ms?: number;
+  p95_latency_ms?: number;
+  p99_latency_ms?: number;
+  min_latency_ms?: number;
+  max_latency_ms?: number;
+  error_count: number;
+  error_rate: number; // 0-100
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Model Incident (Migration 047)
+ * Record incidents, outages, and issues affecting models
+ */
+export interface ModelIncident {
+  id: string; // UUID
+  tenant_id: string; // UUID
+  model_id: string; // UUID reference to lm_models
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  title: string;
+  description?: string;
+  started_at: string; // ISO 8601
+  resolved_at?: string | null; // ISO 8601
+  impact_summary?: string;
+  mitigation_steps?: string;
+  root_cause?: string;
+  created_at: string;
+  created_by?: string; // UUID reference to auth.users
+  updated_at: string;
+  updated_by?: string; // UUID reference to auth.users
+}
+
+/**
+ * Model Fallback Policy (Migration 047)
+ * Define fallback chains: if primary model fails, try fallback model
+ */
+export interface ModelFallbackPolicy {
+  id: string; // UUID
+  tenant_id: string; // UUID
+  primary_model_id: string; // UUID reference to lm_models
+  fallback_model_id: string; // UUID reference to lm_models
+  trigger_on: ('timeout' | 'rate_limit' | 'error_500' | 'error_429' | 'error_503')[]; // Failure conditions
+  priority: number; // Lower = higher priority
+  is_active: boolean;
+  created_at: string;
+  created_by?: string; // UUID reference to auth.users
+  updated_at: string;
+  updated_by?: string; // UUID reference to auth.users
+}
+
+/**
+ * Model Change Log (Migration 047)
+ * Audit trail of all changes to model configurations (immutable)
+ */
+export interface ModelChangeLog {
+  id: string; // UUID
+  tenant_id: string; // UUID
+  model_id: string; // UUID reference to lm_models
+  changed_by?: string; // UUID reference to auth.users
+  change_type: 'created' | 'updated' | 'deprecated' | 'sunset' | 'other';
+  field_name?: string; // Which field was changed
+  old_value?: Record<string, unknown>; // Previous value (JSON)
+  new_value?: Record<string, unknown>; // New value (JSON)
+  change_reason?: string;
+  changed_at: string; // ISO 8601
 }
 
 /**

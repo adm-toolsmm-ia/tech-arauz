@@ -44,6 +44,7 @@ Este arquivo define as instrucoes do projeto para o Codex CLI.
 ## Shell / Terminal (Windows)
 
 Projeto usa PowerShell no Windows. Ao gerar comandos no terminal:
+
 - **Nunca use `&&`** — use `;` para encadear (ex.: `npm run lint ; npm run typecheck`).
 - **Nunca use comandos Unix** (`head`, `tail`, `grep` como cmd, `cat`, `ls`); use PowerShell: `Select-Object -First N`, `Get-ChildItem`, `Get-Content`. Ver `configs/project.yaml` e `.agent/skills/powershell-windows/SKILL.md`.
 
@@ -69,6 +70,7 @@ Gate minimo por story:
 ## Agent Shortcuts
 
 Preferencia de ativacao no Codex CLI:
+
 1. Use `/skills` e selecione `aios-<agent-id>` vindo de `.codex/skills` (ex.: `aios-architect`)
 2. Se preferir, use os atalhos abaixo (`@architect`, `/architect`, etc.)
 

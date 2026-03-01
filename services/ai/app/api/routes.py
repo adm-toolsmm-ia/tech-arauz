@@ -37,7 +37,7 @@ from app.services.session_service import (
     update_usage_daily,
     SessionServiceError,
 )
-from app.llm.factory import get_llm, LLMProviderError
+from app.llm.factory import get_llm, create_with_fallback, LLMProviderError
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 router = APIRouter()
@@ -1034,8 +1034,14 @@ async def chat_with_agent(
             if top_p is not None:
                 llm_kwargs["top_p"] = top_p
 
-            # Instantiate LLM
-            llm = get_llm(provider, model_id, **llm_kwargs)
+            # Instantiate LLM with automatic fallback (Story 7.7)
+            llm, selected_provider, selected_model_id = await create_with_fallback(
+                primary_provider=provider,
+                primary_model_id=model_id,
+                supabase_client=supabase,
+                tenant_id=tenant_id,
+                **llm_kwargs
+            )
 
             # Build message list: persona + history + new message
             messages = []
@@ -1098,10 +1104,12 @@ async def chat_with_agent(
             }]).execute()
 
             logger.info(
-                "Chat LLM execution: agent=%s, provider=%s, model=%s, tokens=%d, cost=$%.4f, duration=%dms",
+                "Chat LLM execution: agent=%s, provider=%s→%s, model=%s→%s, tokens=%d, cost=$%.4f, duration=%dms",
                 agent_id,
                 provider,
+                selected_provider,
                 model_id,
+                selected_model_id,
                 tokens_used,
                 cost_usd,
                 duration_ms,
@@ -1318,7 +1326,8 @@ async def chat_with_agent_stream(
             # Final event with metadata
             yield f'data: {json.dumps({"done": True, "tokens": tokens_used, "cost": cost_usd, "duration_ms": duration_ms})}\n\n'
 
-            logger.info("Stream completed: agent=%s, tokens=%d, duration=%dms", agent_id, tokens_used, duration_ms)
+            logger.info("Stream completed: agent=%s, provider=%s→%s, model=%s→%s, tokens=%d, duration=%dms",
+                       agent_id, provider, selected_provider, model_id, selected_model_id, tokens_used, duration_ms)
 
         except LLMProviderError as e:
             logger.error("LLM provider error: %s", str(e))

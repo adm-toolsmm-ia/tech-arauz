@@ -21,15 +21,20 @@
 ### 2026-03-01 17:45 — Épico 2 (Fase 2: Backend) ✅ COMPLETO
 - **Agente:** @dev (Dex)
 - **Stories:** 7.5, 7.6, 7.7 (Backend LLM Real + Streaming + Fallback)
-- **Endpoints:** POST /agents/{id}/chat + POST /agents/{id}/chat/stream
-- **Features:**
-  - ✅ LLM Real: ainvoke() com multi-provider (OpenAI/Anthropic/Gemini/Azure)
-  - ✅ Streaming SSE: astream() com eventos incrementais
-  - ✅ Fallback Automático: policy-driven fallback chain com incident logging
-  - ✅ Observabilidade: agent_runs + model_incidents registrados
-  - ✅ Token/Custo: tracking em response.usage_metadata
 - **Commits:** 8d44fe7 + bc89ff2 + 6ebe4e0 + 89519b1
-- **Próximo:** Fase 3 (Frontend Refatoração) — **READY FOR EXECUTION** (paralelo com Fase 2 ✅)
+
+### 2026-03-01 18:30 — Épico 3 Story 7.8 (Frontend: Formulário) ✅ COMPLETO
+- **Agente:** @dev (Dex)
+- **Story:** 7.8 — Formulário de Edição de Agente (usage_type, show_in_shortcut, is_global_chatbot)
+- **Features:**
+  - ✅ Select para usage_type: Chatbot | Workflow
+  - ✅ Conditional Switches: show_in_shortcut + is_global_chatbot (apenas chatbots)
+  - ✅ UI: Seção azul para campos condicionais, reset automático ao trocar para workflow
+  - ✅ Validação: Botão "Testar Chat" apenas para chatbots publicados
+  - ✅ Types: UIAgent + DBAgent + dbAgentToUI transformer atualizado
+  - ✅ TypeScript: typecheck passa sem erros
+- **Commits:** 751ddf3 + 121758b
+- **Próximo:** Story 7.9 (Separação Visual Chatbot/Workflow) — **READY FOR EXECUTION**
 
 ---
 
@@ -1031,7 +1036,7 @@ Na Seção 8 (Sumário de Progresso), ao completar uma story, mudar:
 | 7.6 | Backend: Streaming SSE | @dev | ✅ Done | 2026-03-01 |
 | 7.7 | Backend: Fallback multi-provider | @dev | ✅ Done | 2026-03-01 |
 | **FASE 3 — FRONTEND REFATORAÇÃO (paralelo com Fase 2)** | | | | |
-| 7.8 | Frontend: Formulário agente (usage_type) | @dev | 🔵 Ready | — |
+| 7.8 | Frontend: Formulário agente (usage_type) | @dev | ✅ Done | 2026-03-01 |
 | 7.9 | Frontend: Badges visual Chatbot/Workflow | @dev | 🔵 Ready | — |
 | 7.10 | Frontend: Módulo governança modelos | @dev | 🔵 Ready | — |
 | 7.11 | Frontend: Página governança avançada | @dev | 🔵 Ready | — |

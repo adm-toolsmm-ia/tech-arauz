@@ -36,6 +36,19 @@
 - **Commits:** 751ddf3 + 121758b
 - **Próximo:** Story 7.9 (Separação Visual Chatbot/Workflow) — **READY FOR EXECUTION**
 
+### 2026-03-01 19:15 — Épico 3 Story 7.9 (Frontend: Separação Visual) ✅ COMPLETO
+- **Agente:** @dev (Dex)
+- **Story:** 7.9 — Frontend: Separação Visual Chatbot vs Workflow
+- **Features:**
+  - ✅ Badges 🗨️ Chatbot (azul) e ⚙️ Workflow (cinza) em list view
+  - ✅ Badges condicionais em Kanban view (CA para Chatbot, WF para Workflow)
+  - ✅ Filtro usageType na FilterBar (Classificação: Chatbot | Workflow)
+  - ✅ AgentCockpit tab "general" exibe: usageType, showInShortcut, isGlobalChatbot
+  - ✅ Campos condicionais aparecem apenas para chatbots
+  - ✅ Query inclui todos os campos via select('*')
+- **Commits:** 5b0ee17
+- **Próximo:** Story 7.10 (Módulo Governança de Modelos) — **READY FOR EXECUTION**
+
 ---
 
 ---

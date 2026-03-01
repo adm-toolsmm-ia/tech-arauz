@@ -6,7 +6,7 @@ Sprint: 5 — Padronização de UI
 Agente: @dev
 Esforço: 1h
 Prioridade: Alta (Quick Win)
-Status: Ready for Review
+Status: Done
 
 ## Como usuário
 

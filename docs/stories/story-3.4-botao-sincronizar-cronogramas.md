@@ -6,7 +6,7 @@ Sprint: 5 — Padronização de UI
 Agente: @dev
 Esforço: 2h
 Prioridade: Alta
-Status: Draft
+Status: Done
 
 ## Como usuário
 

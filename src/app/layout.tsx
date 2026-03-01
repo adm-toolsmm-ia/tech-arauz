@@ -4,6 +4,7 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { SkipNavigation } from '@/components/a11y/SkipNavigation';
+import { GlobalChatbot } from '@/components/chat/GlobalChatbot';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,6 +36,7 @@ export default function RootLayout({
           <ErrorBoundary label="App">
             <div id="main-content">{children}</div>
           </ErrorBoundary>
+          <GlobalChatbot />
         </Providers>
       </body>
     </html>

@@ -320,7 +320,7 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | `src/app/api/agents/[id]/chat/route.ts` | POST | POST `${AI_SERVICE_URL}/api/agents/${id}/chat` (body: session_id, message) |
 | `src/app/api/agents/[id]/sessions/route.ts` | GET, POST | GET/POST `${AI_SERVICE_URL}/api/agents/${id}/sessions` (GET: limit, offset) |
 | `src/app/api/agents/[id]/metrics/route.ts` | GET | Consulta Supabase: agent_usage_daily (sessions_count, messages_count, cost_total_usd, avg_latency_ms, success_rate_pct), agent_deployments. Query: dateRange (7d|30d|90d). Contrato: runs_total, success_rate, avg_latency_ms, total_cost_usd, daily_data, deployments. |
-| `src/app/api/sessions/route.ts` | GET | Lista agent_sessions do usuário autenticado. Query: page, limit, agent_id, status. Retorna sessions com agent_name (join agents). Nota: message_count é derivado (count de agent_messages por session) ou retornado pelo serviço AI; agent_sessions não tem coluna message_count no banco. |
+| `src/app/api/sessions/route.ts` | GET | Lista agent_sessions do usuário autenticado. Query: page, limit, agent_id, status. Retorna sessions com agent_name (join agents) e message_count (coluna em agent_sessions, mantida via trigger em agent_messages — migration 048). |
 | `src/app/api/agents/budget/route.ts` | GET | `${AI_SERVICE_URL}/api/budget` |
 | `src/app/api/agents/types/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/types` |
 | `src/app/api/agents/templates/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/templates` + query |

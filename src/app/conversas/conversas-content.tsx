@@ -117,7 +117,7 @@ export function ConversasContent({
   // Handle reopen conversation
   const handleReopenConversation = useCallback(
     (session: AgentSessionWithAgent) => {
-      router.push(`/agentes/${session.agent_id}/chat?session=${session.id}`);
+      router.push(`/agentes/${session.agent_id}/chat?sessionId=${session.id}`);
     },
     [router]
   );

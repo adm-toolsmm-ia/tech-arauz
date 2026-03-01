@@ -1,7 +1,7 @@
 # SCHEMA - Tech Arauz (Supabase/PostgreSQL)
 
 Data da auditoria: 2026-03-01
-Fonte: `supabase/migrations/001` ate `supabase/migrations/047`
+Fonte: `supabase/migrations/001` ate `supabase/migrations/048`
 
 **Migration 044:** Remove seed data de lm_providers, lm_models e agent_types. Tabelas ficam vazias; recriação manual após validação dos módulos.
 
@@ -188,8 +188,9 @@ agent_sessions (1) - (N) agent_feedback
 
 ## `agent_runs`
 - PK: `id (uuid)`
-- FK: `agent_id -> agents(id)`, `tenant_id -> tenants(id)`
+- FK: `agent_id -> agents(id)`, `tenant_id -> tenants(id)`, `session_id -> agent_sessions(id)`, `model_id -> lm_models(id)`, `provider_id -> lm_providers(id)`, `agent_version_id -> agent_versions(id)`
 - Campos-chave: `input_data`, `output_data`, `status`, `tokens_used`, `cost_usd`, `duration_ms`
+- Migration 048: `model_id`, `provider_id`, `agent_version_id`, `temperature`, `top_p`, `max_tokens`, `prompt_final` (snapshot reprodutibilidade)
 
 ## `agent_types`
 - PK: `id (uuid)`
@@ -225,13 +226,15 @@ agent_sessions (1) - (N) agent_feedback
 ## `agent_sessions`
 - PK: `id (uuid)`
 - FK: `tenant_id -> tenants(id)`, `user_id -> auth.users(id)`, `agent_id -> agents(id)`
-- Campos-chave: `status` (active/paused/closed), `started_at`, `ended_at`, `token_usage`
+- Campos-chave: `status` (active/paused/closed), `started_at`, `ended_at`, `token_usage`, `message_count`
+- Migration 048: `message_count` (mantido via trigger em agent_messages)
 - Indice composto: `(tenant_id, agent_id, created_at DESC)`
 
 ## `agent_messages`
 - PK: `id (uuid)`
 - FK: `session_id -> agent_sessions(id)`, `tenant_id -> tenants(id)`
 - Campos-chave: `role` (user/assistant), `content`, `metadata` (jsonb), `tokens_used`
+- Migration 048: RLS policy `agent_messages_user_session_isolation` — usuário só acessa mensagens de sessões onde `agent_sessions.user_id = auth.uid()`
 - Indice composto: `(session_id, created_at ASC)`, `(tenant_id, created_at DESC)`
 
 ## `agent_run_steps`
@@ -325,6 +328,7 @@ agent_sessions (1) - (N) agent_feedback
 - 045: Agent classification (usage_type, show_in_shortcut, is_global_chatbot)
 - 046: lm_models governance (stability_level, release_channel, capabilities, deprecated_at, sunset_at)
 - 047: Tabelas de governanca (model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log)
+- 048: Correção gaps governança — message_count em agent_sessions (trigger), snapshot agent_runs (model_id, provider_id, agent_version_id, temperature, top_p, max_tokens, prompt_final), RLS agent_messages (user-session isolation)
 
 ---
 

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { ConversasContent } from './conversas-content';
-import type { AgentSessionWithAgent } from '@/app/api/sessions/route';
 
 export const metadata = {
   title: 'Histórico de Conversas - Tech Arauz',
@@ -19,13 +19,18 @@ export default async function ConversasPage() {
     redirect('/login');
   }
 
+  // Forward cookies from original request so /api/sessions can authenticate
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join('; ');
+
   // Fetch initial sessions data
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/sessions?page=1&limit=20`,
     {
-      headers: {
-        Cookie: `sb-access-token=${user.id}`,
-      },
+      headers: cookieHeader ? { Cookie: cookieHeader } : {},
     }
   ).catch(() => null);
 

@@ -490,6 +490,13 @@ model AgentRun {
   durationMs   Int?      @map("duration_ms")
   budgetLimitUsd Decimal? @map("budget_limit_usd") @db.Decimal(10, 2)
   sessionId    String?   @map("session_id") @db.Uuid
+  modelId      String?   @map("model_id") @db.Uuid
+  providerId   String?   @map("provider_id") @db.Uuid
+  agentVersionId String? @map("agent_version_id") @db.Uuid
+  temperature  Decimal?  @db.Decimal
+  topP         Decimal?  @map("top_p") @db.Decimal
+  maxTokens    Int?      @map("max_tokens")
+  promptFinal  String?   @map("prompt_final")
   createdBy    String?   @map("created_by") @db.Uuid
   createdAt    DateTime? @default(now()) @map("created_at")
   completedAt  DateTime? @map("completed_at")
@@ -502,16 +509,17 @@ model AgentRun {
 }
 
 model AgentSession {
-  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  tenantId   String    @map("tenant_id") @db.Uuid
-  userId     String?   @map("user_id") @db.Uuid
-  agentId    String?   @map("agent_id") @db.Uuid
-  startedAt  DateTime? @default(now()) @map("started_at")
-  endedAt    DateTime? @map("ended_at")
-  status     String?   @default("active") // active | paused | closed
-  tokenUsage Int?      @default(0) @map("token_usage")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @default(now()) @map("updated_at")
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  userId       String?   @map("user_id") @db.Uuid
+  agentId      String?   @map("agent_id") @db.Uuid
+  startedAt    DateTime? @default(now()) @map("started_at")
+  endedAt      DateTime? @map("ended_at")
+  status       String?   @default("active") // active | paused | closed
+  tokenUsage   Int?      @default(0) @map("token_usage")
+  messageCount Int       @default(0) @map("message_count")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @map("updated_at")
 
   tenant   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   agent    Agent?        @relation(fields: [agentId], references: [id], onDelete: SetNull)

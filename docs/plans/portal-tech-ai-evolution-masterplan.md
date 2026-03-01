@@ -79,8 +79,23 @@
   - ✅ EmptyState para abas sem dados
   - ✅ Link no ModelCockpit: botão "Governança" na header
   - ✅ Query Supabase com ordem e relacionamentos corretos
-- **Commits:** 7c026c3
+- **Commits:** 7c026c3 + 2c4294c
 - **Próximo:** Story 7.12 (API Sessions Globais) — **Épico 4 inicia**
+
+### 2026-03-01 20:25 — Épico 4 Story 7.12 (API Sessions) ✅ COMPLETO
+- **Agente:** @dev (Dex)
+- **Story:** 7.12 — Frontend: API Route para Sessões Globais
+- **Features:**
+  - ✅ Endpoint `GET /api/sessions` com autenticação obrigatória
+  - ✅ Paginação: page (default 1) e limit (default 20, max 100)
+  - ✅ Filtros opcionais: agent_id, status (active/closed)
+  - ✅ Query com JOIN agent_sessions ← agents (obtém agent_name)
+  - ✅ Resposta: `{ sessions[], total, page, limit, hasMore }`
+  - ✅ HTTP 401 para usuário não autenticado
+  - ✅ HTTP 500 com mensagem clara para erros
+  - ✅ Suporte a count exact para total
+- **Commits:** 1c2fdc9
+- **Próximo:** Story 7.13 (GlobalChatbot Component) — **READY FOR EXECUTION**
 
 ---
 

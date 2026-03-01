@@ -894,8 +894,8 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                             supports_streaming: selectedModel.supports_streaming,
                             supports_vision: selectedModel.supports_vision,
                             supports_audio: selectedModel.supports_audio,
-                            deprecated_at: selectedModel.deprecated_at,
-                            sunset_at: selectedModel.sunset_at,
+                            deprecated_at: selectedModel.deprecated_at ?? undefined,
+                            sunset_at: selectedModel.sunset_at ?? undefined,
                           });
                           setIsEditingModel(true);
                         }

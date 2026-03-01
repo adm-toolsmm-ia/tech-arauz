@@ -39,7 +39,7 @@ export function GlobalChatbot() {
     if (isOpen && agents.length === 0) {
       fetchAgents();
     }
-  }, [isOpen]);
+  }, [isOpen, agents.length]);
 
   // Auto-scroll to bottom
   useEffect(() => {

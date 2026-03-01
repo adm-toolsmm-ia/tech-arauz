@@ -21,6 +21,7 @@ import { ChevronLeft, Save, Trash2, AlertTriangle, MessageCircle } from 'lucide-
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
+import { AgentMetrics360 } from '@/components/agents/AgentMetrics360';
 import type { UIAgent } from '@/lib/transformers/agent';
 
 interface AgentEditContentProps {
@@ -183,11 +184,13 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
 
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="basic">Básico</TabsTrigger>
           <TabsTrigger value="persona">Persona</TabsTrigger>
           <TabsTrigger value="model">Modelo</TabsTrigger>
           <TabsTrigger value="advanced">Avançado</TabsTrigger>
+          <TabsTrigger value="ferramentas">Ferramentas</TabsTrigger>
+          <TabsTrigger value="deployments">Deployments</TabsTrigger>
         </TabsList>
 
         {/* TAB 1: BASIC */}
@@ -405,42 +408,50 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* TAB 5: FERRAMENTAS */}
+        <TabsContent value="ferramentas" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Ferramentas Vinculadas</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {initialAgent.id}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-muted-foreground">
+                <p>Ferramentas vinculadas ao agente serão exibidas aqui.</p>
+                <p className="mt-2 text-xs">
+                  Nota: Lista completa de ferramentas será carregada do backend quando disponível.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB 6: DEPLOYMENTS */}
+        <TabsContent value="deployments" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Histórico de Deployments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-muted-foreground">
+                <p>Histórico de deployments será exibido aqui.</p>
+                <p className="mt-2 text-xs">
+                  Nota: Informações de deployment serão carregadas do backend quando disponível.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
-      {/* Stats */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Estatísticas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Execuções</p>
-              <p className="text-lg font-semibold">{initialAgent.executionCount}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Criado em</p>
-              <p className="text-sm">
-                {new Date(initialAgent.createdAt).toLocaleDateString('pt-BR')}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Atualizado em</p>
-              <p className="text-sm">
-                {new Date(initialAgent.updatedAt).toLocaleDateString('pt-BR')}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Última execução</p>
-              <p className="text-sm">
-                {initialAgent.lastExecutionAt
-                  ? new Date(initialAgent.lastExecutionAt).toLocaleDateString('pt-BR')
-                  : 'Nunca'}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Dashboard 360° */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Dashboard 360° de Métricas</h3>
+        <AgentMetrics360 agentId={initialAgent.id} />
+      </div>
 
       {/* Delete Dialog - Handled via confirm() */}
     </div>

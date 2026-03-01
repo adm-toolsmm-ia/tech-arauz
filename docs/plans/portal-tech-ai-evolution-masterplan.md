@@ -1,10 +1,26 @@
 # Portal Tech — Masterplan de Evolução AI Governance
 
-**Versão:** 1.0
-**Data:** 2026-03-01
+**Versão:** 1.1
+**Data Criação:** 2026-03-01
+**Data Última Atualização:** 2026-03-01 15:30 (execução iniciada)
 **Autor:** Orion (aios-master)
 **Épico raiz:** Épico 7 — AI Governance, Chatbot Global e Governança de Modelos
-**Status:** Ready for Execution
+**Status:** In Execution — Fase 1 Completa ✅
+
+---
+
+## 🔄 Execução & Change Log
+
+### 2026-03-01 15:30 — Épico 1 (Fase 1: Database) COMPLETO ✅
+- **Agente:** @data-engineer (Dara)
+- **Stories Executadas:** 7.1, 7.2, 7.3, 7.4
+- **Migrations Aplicadas:** 045, 046, 047 (todas sem erros)
+- **Types Atualizados:** LmModel + 5 novos tipos de governança
+- **Commit:** cdf17f8 — "feat(auxiliares): Épico 1 — Governança de Dados e Classificação de Agentes"
+- **Verificações:** npm typecheck ✅ | Migrations aplicadas ✅ | RLS verificado ✅
+- **Próximo:** Fase 2 (Backend: LLM Real + Streaming) — **READY FOR EXECUTION**
+
+---
 
 ---
 
@@ -992,26 +1008,26 @@ Na Seção 8 (Sumário de Progresso), ao completar uma story, mudar:
 
 ## 8. Sumário de Progresso
 
-| Story | Título Curto | Agente | Status |
-|---|---|---|---|
-| **FASE 1 — DATABASE (BLOQUEANTE)** | | | |
-| 7.1 | DB: usage_type em agents | @data-engineer | Ready |
-| 7.2 | DB: governança em lm_models | @data-engineer | Ready |
-| 7.3 | DB: tabelas governança avançada | @data-engineer | Ready |
-| 7.4 | Types TypeScript atualizados | @dev | Ready |
-| **FASE 2 — BACKEND (paralelo com Fase 3)** | | | |
-| 7.5 | Backend: LLM real (substitui mock) | @dev | Ready |
-| 7.6 | Backend: Streaming SSE | @dev | Ready |
-| 7.7 | Backend: Fallback multi-provider | @dev | Ready |
-| **FASE 3 — FRONTEND REFATORAÇÃO (paralelo com Fase 2)** | | | |
-| 7.8 | Frontend: Formulário agente (usage_type) | @dev | Ready |
-| 7.9 | Frontend: Badges visual Chatbot/Workflow | @dev | Ready |
-| 7.10 | Frontend: Módulo governança modelos | @dev | Ready |
-| 7.11 | Frontend: Página governança avançada | @dev | Ready |
-| **FASE 4 — CHATBOT GLOBAL (após Fase 2 completa)** | | | |
-| 7.12 | API: Sessões globais do usuário | @dev | Ready |
-| 7.13 | Frontend: GlobalChatbot component | @dev | Ready |
-| 7.14 | Frontend: Página histórico conversas | @dev | Ready |
+| Story | Título Curto | Agente | Status | Última Atualização |
+|---|---|---|---|---|
+| **FASE 1 — DATABASE (BLOQUEANTE)** | | | | |
+| 7.1 | DB: usage_type em agents | @data-engineer | ✅ Done | 2026-03-01 |
+| 7.2 | DB: governança em lm_models | @data-engineer | ✅ Done | 2026-03-01 |
+| 7.3 | DB: tabelas governança avançada | @data-engineer | ✅ Done | 2026-03-01 |
+| 7.4 | Types TypeScript atualizados | @dev | ✅ Done | 2026-03-01 |
+| **FASE 2 — BACKEND (paralelo com Fase 3)** | | | | |
+| 7.5 | Backend: LLM real (substitui mock) | @dev | 🔵 Ready | — |
+| 7.6 | Backend: Streaming SSE | @dev | 🔵 Ready | — |
+| 7.7 | Backend: Fallback multi-provider | @dev | 🔵 Ready | — |
+| **FASE 3 — FRONTEND REFATORAÇÃO (paralelo com Fase 2)** | | | | |
+| 7.8 | Frontend: Formulário agente (usage_type) | @dev | 🔵 Ready | — |
+| 7.9 | Frontend: Badges visual Chatbot/Workflow | @dev | 🔵 Ready | — |
+| 7.10 | Frontend: Módulo governança modelos | @dev | 🔵 Ready | — |
+| 7.11 | Frontend: Página governança avançada | @dev | 🔵 Ready | — |
+| **FASE 4 — CHATBOT GLOBAL (após Fase 2 completa)** | | | | |
+| 7.12 | API: Sessões globais do usuário | @dev | 🔵 Ready | — |
+| 7.13 | Frontend: GlobalChatbot component | @dev | 🔵 Ready | — |
+| 7.14 | Frontend: Página histórico conversas | @dev | 🔵 Ready | — |
 
 ---
 

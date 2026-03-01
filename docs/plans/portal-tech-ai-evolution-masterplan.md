@@ -11,14 +11,25 @@
 
 ## 🔄 Execução & Change Log
 
-### 2026-03-01 15:30 — Épico 1 (Fase 1: Database) COMPLETO ✅
+### 2026-03-01 15:30 — Épico 1 (Fase 1: Database) ✅ COMPLETO
 - **Agente:** @data-engineer (Dara)
-- **Stories Executadas:** 7.1, 7.2, 7.3, 7.4
-- **Migrations Aplicadas:** 045, 046, 047 (todas sem erros)
-- **Types Atualizados:** LmModel + 5 novos tipos de governança
-- **Commit:** cdf17f8 — "feat(auxiliares): Épico 1 — Governança de Dados e Classificação de Agentes"
-- **Verificações:** npm typecheck ✅ | Migrations aplicadas ✅ | RLS verificado ✅
-- **Próximo:** Fase 2 (Backend: LLM Real + Streaming) — **READY FOR EXECUTION**
+- **Stories:** 7.1, 7.2, 7.3, 7.4
+- **Migrations:** 045, 046, 047
+- **Commits:** cdf17f8 + 7515d39
+- **Verificações:** typecheck ✅ | RLS ✅ | Constraints ✅
+
+### 2026-03-01 17:45 — Épico 2 (Fase 2: Backend) ✅ COMPLETO
+- **Agente:** @dev (Dex)
+- **Stories:** 7.5, 7.6, 7.7 (Backend LLM Real + Streaming + Fallback)
+- **Endpoints:** POST /agents/{id}/chat + POST /agents/{id}/chat/stream
+- **Features:**
+  - ✅ LLM Real: ainvoke() com multi-provider (OpenAI/Anthropic/Gemini/Azure)
+  - ✅ Streaming SSE: astream() com eventos incrementais
+  - ✅ Fallback Automático: policy-driven fallback chain com incident logging
+  - ✅ Observabilidade: agent_runs + model_incidents registrados
+  - ✅ Token/Custo: tracking em response.usage_metadata
+- **Commits:** 8d44fe7 + bc89ff2 + 6ebe4e0 + 89519b1
+- **Próximo:** Fase 3 (Frontend Refatoração) — **READY FOR EXECUTION** (paralelo com Fase 2 ✅)
 
 ---
 
@@ -1016,9 +1027,9 @@ Na Seção 8 (Sumário de Progresso), ao completar uma story, mudar:
 | 7.3 | DB: tabelas governança avançada | @data-engineer | ✅ Done | 2026-03-01 |
 | 7.4 | Types TypeScript atualizados | @dev | ✅ Done | 2026-03-01 |
 | **FASE 2 — BACKEND (paralelo com Fase 3)** | | | | |
-| 7.5 | Backend: LLM real (substitui mock) | @dev | 🔵 Ready | — |
-| 7.6 | Backend: Streaming SSE | @dev | 🔵 Ready | — |
-| 7.7 | Backend: Fallback multi-provider | @dev | 🔵 Ready | — |
+| 7.5 | Backend: LLM real (substitui mock) | @dev | ✅ Done | 2026-03-01 |
+| 7.6 | Backend: Streaming SSE | @dev | ✅ Done | 2026-03-01 |
+| 7.7 | Backend: Fallback multi-provider | @dev | ✅ Done | 2026-03-01 |
 | **FASE 3 — FRONTEND REFATORAÇÃO (paralelo com Fase 2)** | | | | |
 | 7.8 | Frontend: Formulário agente (usage_type) | @dev | 🔵 Ready | — |
 | 7.9 | Frontend: Badges visual Chatbot/Workflow | @dev | 🔵 Ready | — |

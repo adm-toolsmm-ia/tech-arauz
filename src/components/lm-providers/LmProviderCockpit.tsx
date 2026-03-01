@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { FileText, Cpu, Lock, Plus, ExternalLink, Pencil, X, Check } from 'lucide-react';
+import { FileText, Cpu, Lock, Plus, ExternalLink, X, Check } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -123,18 +123,12 @@ export function LmProviderCockpit({
   return (
     <div className="space-y-6">
       <Tabs defaultValue="detalhes" className="w-full">
-        <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
-          <TabsTrigger
-            value="detalhes"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
-          >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="detalhes">
             <FileText className="mr-2 size-4" />
-            Detalhes
+            Geral
           </TabsTrigger>
-          <TabsTrigger
-            value="modelos"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
-          >
+          <TabsTrigger value="modelos">
             <Cpu className="mr-2 size-4" />
             Modelos
             {models.length > 0 && (
@@ -144,29 +138,28 @@ export function LmProviderCockpit({
         </TabsList>
 
         <TabsContent value="detalhes" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div
-                className="flex size-12 items-center justify-center rounded-lg text-2xl"
-                style={{ backgroundColor: `${provider.color_hex || '#64748B'}20` }}
+          {/* Header with Actions (aligned with AgentCockpit) */}
+          <div className="flex items-center justify-between">
+            <div className="flex flex-wrap gap-2">
+              <Badge
+                variant="outline"
+                className={
+                  provider.is_active
+                    ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
+                }
               >
-                {provider.icon_emoji || '🤖'}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {provider.is_system && (
-                  <Badge variant="outline">
-                    <Lock className="mr-1 size-3" />
-                    Sistema
-                  </Badge>
-                )}
-                {provider.is_active ? (
-                  <Badge variant="default" className="bg-green-600">
-                    Ativo
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary">Inativo</Badge>
-                )}
-              </div>
+                {provider.is_active ? '✅ Ativo' : '⛔ Inativo'}
+              </Badge>
+              {provider.is_system && (
+                <Badge variant="outline" className="text-xs">
+                  <Lock className="mr-1 size-3" />
+                  Sistema
+                </Badge>
+              )}
+              <Badge variant="outline" className="text-xs">
+                {provider.icon_emoji || '🤖'} {provider.name}
+              </Badge>
             </div>
             {!provider.is_system && onProviderUpdated && (
               <div className="flex gap-2">
@@ -203,7 +196,7 @@ export function LmProviderCockpit({
                     }}
                     className="gap-1"
                   >
-                    <Pencil className="size-4" />
+                    <ExternalLink className="size-4" />
                     Editar
                   </Button>
                 )}

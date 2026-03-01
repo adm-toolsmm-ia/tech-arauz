@@ -120,7 +120,9 @@ export function AgentEditContent({
         agent_type: selectedType?.slug || 'custom',
         persona: agent.persona,
         prompt_objective: agent.promptObjective,
-        prompt_instructions: agent.promptInstructions.split('\n').filter(Boolean),
+        prompt_instructions: Array.isArray(agent.promptInstructions)
+          ? agent.promptInstructions
+          : (agent.promptInstructions ?? '').split('\n').filter(Boolean),
         prompt_template: agent.promptTemplate,
         model_provider: agent.modelProvider,
         model_id: agent.modelId,

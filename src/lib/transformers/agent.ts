@@ -64,7 +64,7 @@ export interface UIAgent {
   fullConfig: {
     persona: string | null;
     promptObjective: string | null;
-    promptInstructions: string | null;
+    promptInstructions: string[] | null;
     promptTemplate: string | null;
     outputSchema: Record<string, unknown> | null;
     modelProvider: string;
@@ -75,6 +75,18 @@ export interface UIAgent {
     requiresValidation: boolean;
     validationRules: Record<string, unknown> | null;
   };
+}
+
+function parsePromptInstructions(value: string | null | undefined): string[] {
+  if (!value) return [];
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+  try {
+    const parsed = JSON.parse(trimmed);
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return trimmed.split('\n').map((s) => s.trim()).filter(Boolean);
+  }
 }
 
 export function dbAgentToUI(dbAgent: DBAgent): UIAgent {
@@ -97,7 +109,7 @@ export function dbAgentToUI(dbAgent: DBAgent): UIAgent {
     fullConfig: {
       persona: dbAgent.persona,
       promptObjective: dbAgent.prompt_objective,
-      promptInstructions: dbAgent.prompt_instructions,
+      promptInstructions: parsePromptInstructions(dbAgent.prompt_instructions),
       promptTemplate: dbAgent.prompt_template,
       outputSchema: dbAgent.output_schema,
       modelProvider: dbAgent.model_provider || 'openai',

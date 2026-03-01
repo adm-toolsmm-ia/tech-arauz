@@ -31,6 +31,7 @@ import { LmModelsService } from '@/services/agents/lmModelsService';
 import { KanbanBoard, type KanbanItem } from '@/components/views/KanbanBoard';
 import { SplitView } from '@/components/views/SplitView';
 import { LmProviderCockpit } from '@/components/lm-providers/LmProviderCockpit';
+import { LmProviderKanbanCard } from '@/components/lm-providers/LmProviderKanbanCard';
 import type { LmProvider, LmModel } from '@/types/agents';
 import { computeProviderKpis } from '@/lib/domain/lm-provider-rules';
 import { LmProviderListItem } from './components/LmProviderListItem';
@@ -353,14 +354,11 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
                 if (provider) void handleSelectProvider(provider);
               }}
               onStatusChange={handleKanbanStatusChange}
-              renderItemContent={(item) => (
-                <div className="space-y-1">
-                  <p className="font-medium">{item.title}</p>
-                  {item.subtitle && (
-                    <p className="font-mono text-xs text-muted-foreground">{item.subtitle}</p>
-                  )}
-                </div>
-              )}
+              renderItemContent={(item) => {
+                const provider = filteredData.find((p) => p.id === item.id);
+                if (!provider) return null;
+                return <LmProviderKanbanCard provider={provider} />;
+              }}
             />
           </CardContent>
         </Card>

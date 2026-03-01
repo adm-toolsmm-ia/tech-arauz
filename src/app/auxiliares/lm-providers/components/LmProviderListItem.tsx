@@ -3,6 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Lock, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { LmProvider } from '@/types/agents';
 
 interface LmProviderListItemProps {
@@ -24,9 +25,10 @@ export function LmProviderListItem({
     <div
       role="button"
       tabIndex={0}
-      className={`cursor-pointer rounded-lg border p-4 transition-colors hover:bg-muted/50 ${
-        isSelected ? 'ring-2 ring-primary' : ''
-      }`}
+      className={cn(
+        'flex cursor-pointer flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50',
+        isSelected && 'border-primary bg-primary/5 ring-2 ring-primary',
+      )}
       onClick={() => onSelect(provider)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -35,83 +37,67 @@ export function LmProviderListItem({
         }
       }}
     >
-      {/* Provider Header */}
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex flex-1 items-center gap-4">
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded text-2xl"
-            style={{ backgroundColor: `${provider.color_hex}20` }}
-          >
-            {provider.icon_emoji || '🤖'}
-          </div>
-          <div className="flex-1">
-            <h3 className="font-medium">{provider.name}</h3>
-            <p className="font-mono text-sm text-xs text-muted-foreground">{provider.slug}</p>
-            {provider.description && (
-              <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                {provider.description}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Badges */}
-        <div className="mr-4 flex items-center gap-2">
+      <div className="space-y-1.5">
+        <span className="line-clamp-2 text-sm font-semibold leading-tight text-foreground/90">
+          {provider.icon_emoji || '🤖'} {provider.name}
+        </span>
+        {provider.description && (
+          <p className="line-clamp-2 text-[11px] text-muted-foreground">{provider.description}</p>
+        )}
+        <div className="flex flex-wrap items-center gap-1">
+          <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+            {provider.slug}
+          </Badge>
           {provider.is_system && (
-            <Badge variant="outline">
-              <Lock className="mr-1 h-3 w-3" />
+            <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+              <Lock className="mr-0.5 size-2.5" />
               Sistema
             </Badge>
           )}
-          {provider.is_active ? (
-            <Badge variant="default" className="bg-green-600">
-              ✅ Ativo
-            </Badge>
-          ) : (
-            <Badge variant="secondary">⭐ Inativo</Badge>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          {!provider.is_system && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                title="Alternar status"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleActive(provider);
-                }}
-              >
-                {provider.is_active ? '🔴' : '🟢'}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                title="Deletar"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(provider);
-                }}
-              >
-                <Trash2 className="h-4 w-4 text-red-500" />
-              </Button>
-            </>
-          )}
-          {provider.is_system && (
-            <Button variant="ghost" size="sm" disabled>
-              <Lock className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          )}
+          <Badge
+            variant="secondary"
+            className={cn(
+              'px-1.5 py-0 text-[10px]',
+              provider.is_active
+                ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200'
+                : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
+            )}
+          >
+            {provider.is_active ? 'Ativo' : 'Inativo'}
+          </Badge>
         </div>
       </div>
 
-      {/* API Endpoint */}
-      {provider.api_endpoint && (
-        <div className="rounded bg-muted/50 p-2 font-mono text-xs text-muted-foreground">
-          {provider.api_endpoint}
+      {!provider.is_system && (
+        <div
+          role="presentation"
+          className="mt-2 flex justify-end gap-1 border-t border-border/30 pt-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            title="Alternar status"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleActive(provider);
+            }}
+          >
+            {provider.is_active ? 'Desativar' : 'Ativar'}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            title="Deletar"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(provider);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5 text-red-500 hover:text-red-600" />
+          </Button>
         </div>
       )}
     </div>

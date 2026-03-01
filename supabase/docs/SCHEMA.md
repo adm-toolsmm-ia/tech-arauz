@@ -1,7 +1,9 @@
 # SCHEMA - Tech Arauz (Supabase/PostgreSQL)
 
 Data da auditoria: 2026-03-01
-Fonte: `supabase/migrations/001` ate `supabase/migrations/043`
+Fonte: `supabase/migrations/001` ate `supabase/migrations/044`
+
+**Migration 044:** Remove seed data de lm_providers, lm_models e agent_types. Tabelas ficam vazias; recriação manual após validação dos módulos.
 
 **Export em formato Prisma (extraído via MCP Supabase):** `docs/architecture/data/schema.prisma` — pasta canônica para arquitetura de dados e contexto AI/AIOS.
 

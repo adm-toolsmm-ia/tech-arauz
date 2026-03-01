@@ -25,6 +25,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import type { LmProvider, AgentType, LmModel } from '@/types/agents';
 import type { UIAgent } from '@/lib/transformers/agent';
+import { dbAgentToUI, type DBAgent } from '@/lib/transformers/agent';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import { AgentTypesService } from '@/services/agents/agentTypesService';
 import { LmModelsService } from '@/services/agents/lmModelsService';
@@ -77,6 +78,7 @@ export function AgentEditSheet({
   // Initialize form from agent prop
   useEffect(() => {
     if (agent) {
+      const instructions = agent.fullConfig.promptInstructions;
       setFormData({
         name: agent.name,
         slug: agent.slug,
@@ -85,7 +87,7 @@ export function AgentEditSheet({
         agentTypeId: agent.agentTypeId || '',
         persona: agent.fullConfig.persona || '',
         promptObjective: agent.fullConfig.promptObjective || '',
-        promptInstructions: agent.fullConfig.promptInstructions || '',
+        promptInstructions: Array.isArray(instructions) ? instructions.join('\n') : String(instructions || ''),
         promptTemplate: agent.fullConfig.promptTemplate || '',
         modelProvider: agent.fullConfig.modelProvider,
         modelId: agent.modelId,
@@ -144,30 +146,31 @@ export function AgentEditSheet({
 
     setIsSaving(true);
     try {
+      const instructionsArr = formData.promptInstructions.split('\n').map((s) => s.trim()).filter(Boolean);
       const updates = {
         name: formData.name,
         slug: formData.slug,
         description: formData.description,
         status: formData.status,
-        agent_type_id: formData.agentTypeId || undefined,
+        agent_type_id: formData.agentTypeId || null,
         agent_type: agentTypes.find((t) => t.id === formData.agentTypeId)?.slug || 'custom',
         persona: formData.persona,
         prompt_objective: formData.promptObjective,
-        prompt_instructions: formData.promptInstructions.split('\n').filter(Boolean),
+        prompt_instructions: JSON.stringify(instructionsArr),
         prompt_template: formData.promptTemplate,
         model_provider: formData.modelProvider,
         model_id: formData.modelId,
         model_temperature: formData.modelTemperature,
         model_max_tokens: formData.modelMaxTokens,
-        requirements: formData.requirements.split('\n').filter(Boolean),
+        requirements: formData.requirements.split('\n').map((s) => s.trim()).filter(Boolean),
         output_schema: JSON.parse(formData.outputSchema || '{}'),
       };
 
-      await AgentSupabaseService.updateAgent(agent.id, updates);
+      const updated = await AgentSupabaseService.updateAgent(agent.id, updates as unknown as Parameters<typeof AgentSupabaseService.updateAgent>[1]);
+      const uiAgent = dbAgentToUI(updated as unknown as DBAgent);
       toast.success('✅ Agente atualizado com sucesso!');
       setIsDirty(false);
-      // Refetch the agent to get the updated data
-      onSaved({...agent, ...formData, agentTypeId: agent.agentTypeId});
+      onSaved(uiAgent);
       onClose();
     } catch (error) {
       toast.error(`❌ Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);

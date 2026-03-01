@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Database, Plus, Trash2, Zap, Pencil, X, Check } from 'lucide-react';
+import { Database, Plus, Trash2, Zap, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { ViewModeBar } from '@/components/filters/ViewModeBar';
@@ -30,6 +30,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { SplitView } from '@/components/views/SplitView';
 import { KanbanBoard, type KanbanColumn, type KanbanItem } from '@/components/views/KanbanBoard';
 import { ModelCard } from '@/components/lm-models/ModelCard';
+import { ModelCockpit } from '@/components/lm-models/ModelCockpit';
 import { ModelsKanbanCard } from '@/components/lm-models/ModelsKanbanCard';
 import { ModelsListView } from '@/components/lm-models/ModelsListView';
 import {
@@ -548,61 +549,30 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
           width="lg"
         >
           <div className="space-y-6">
-            {!selectedModel.is_system && (
-              <div className="flex justify-end gap-2">
-                {isEditingModel ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditingModel(false)}
-                      disabled={isLoading}
-                      className="gap-1"
-                    >
-                      <X className="size-4" />
-                      Cancelar
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => handleSaveEditModel(selectedModel)}
-                      disabled={isLoading}
-                      className="gap-1"
-                    >
-                      <Check className="size-4" />
-                      Salvar
-                    </Button>
-                  </>
-                ) : (
+            {isEditingModel ? (
+              <>
+                <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setEditForm({
-                        name: selectedModel.name,
-                        model_id: selectedModel.model_id,
-                        description: selectedModel.description ?? '',
-                        docs_url: selectedModel.docs_url ?? '',
-                        max_tokens: selectedModel.max_tokens,
-                        default_temperature: selectedModel.default_temperature,
-                        context_window: selectedModel.context_window,
-                        display_order: selectedModel.display_order,
-                        tier: selectedModel.tier ?? 'balanced',
-                        input_cost_per_1k_tokens: selectedModel.input_cost_per_1k_tokens,
-                        output_cost_per_1k_tokens: selectedModel.output_cost_per_1k_tokens,
-                      });
-                      setIsEditingModel(true);
-                    }}
+                    onClick={() => setIsEditingModel(false)}
+                    disabled={isLoading}
                     className="gap-1"
                   >
-                    <Pencil className="size-4" />
-                    Editar
+                    <X className="size-4" />
+                    Cancelar
                   </Button>
-                )}
-              </div>
-            )}
-
-            {isEditingModel ? (
-              <div className="grid gap-4 sm:grid-cols-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleSaveEditModel(selectedModel)}
+                    disabled={isLoading}
+                    className="gap-1"
+                  >
+                    <Check className="size-4" />
+                    Salvar
+                  </Button>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label>Nome *</Label>
                   <Input
@@ -745,82 +715,33 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                   />
                 </div>
               </div>
+              </>
             ) : (
               <>
-                <div>
-                  <h3 className="mb-2 text-sm font-semibold">Informações Gerais</h3>
-                  <dl className="space-y-2 text-sm">
-                    <div>
-                      <dt className="text-muted-foreground">Nome:</dt>
-                      <dd className="font-medium">{selectedModel.name}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Model ID:</dt>
-                      <dd className="font-mono">{selectedModel.model_id}</dd>
-                    </div>
-                    {selectedModel.description && (
-                      <div>
-                        <dt className="text-muted-foreground">Descrição:</dt>
-                        <dd className="font-medium">{selectedModel.description}</dd>
-                      </div>
-                    )}
-                    {selectedModel.max_tokens != null && (
-                      <div>
-                        <dt className="text-muted-foreground">Max. Tokens:</dt>
-                        <dd className="font-medium">
-                          {selectedModel.max_tokens.toLocaleString('pt-BR')} tokens
-                        </dd>
-                      </div>
-                    )}
-                    {selectedModel.context_window != null && (
-                      <div>
-                        <dt className="text-muted-foreground">Context Window:</dt>
-                        <dd className="font-medium">
-                          {(selectedModel.context_window / 1000).toFixed(0)}K tokens
-                        </dd>
-                      </div>
-                    )}
-                    {selectedModel.tier && (
-                      <div>
-                        <dt className="text-muted-foreground">Tier:</dt>
-                        <dd className="font-medium capitalize">{selectedModel.tier}</dd>
-                      </div>
-                    )}
-                    {(selectedModel.input_cost_per_1k_tokens != null ||
-                      selectedModel.output_cost_per_1k_tokens != null) && (
-                      <div>
-                        <dt className="text-muted-foreground">Custos (USD/1K tokens):</dt>
-                        <dd className="font-medium">
-                          {selectedModel.input_cost_per_1k_tokens != null && (
-                            <span>Entrada: ${selectedModel.input_cost_per_1k_tokens.toFixed(6)}</span>
-                          )}
-                          {selectedModel.input_cost_per_1k_tokens != null &&
-                            selectedModel.output_cost_per_1k_tokens != null && (
-                              <span className="mx-1">|</span>
-                            )}
-                          {selectedModel.output_cost_per_1k_tokens != null && (
-                            <span>Saída: ${selectedModel.output_cost_per_1k_tokens.toFixed(6)}</span>
-                          )}
-                        </dd>
-                      </div>
-                    )}
-                  </dl>
-                </div>
-
-                {selectedModel.docs_url && (
-                  <div>
-                    <h3 className="mb-2 text-sm font-semibold">Documentação</h3>
-                    <a
-                      href={selectedModel.docs_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary underline"
-                    >
-                      Ver documentação
-                    </a>
-                  </div>
-                )}
-
+                <ModelCockpit
+                  model={selectedModel}
+                  provider={selectedModel.lm_providers}
+                  onEdit={
+                    !selectedModel.is_system
+                      ? () => {
+                          setEditForm({
+                            name: selectedModel.name,
+                            model_id: selectedModel.model_id,
+                            description: selectedModel.description ?? '',
+                            docs_url: selectedModel.docs_url ?? '',
+                            max_tokens: selectedModel.max_tokens,
+                            default_temperature: selectedModel.default_temperature,
+                            context_window: selectedModel.context_window,
+                            display_order: selectedModel.display_order,
+                            tier: selectedModel.tier ?? 'balanced',
+                            input_cost_per_1k_tokens: selectedModel.input_cost_per_1k_tokens,
+                            output_cost_per_1k_tokens: selectedModel.output_cost_per_1k_tokens,
+                          });
+                          setIsEditingModel(true);
+                        }
+                      : undefined
+                  }
+                />
                 {!selectedModel.is_system && (
                   <Button
                     variant="destructive"

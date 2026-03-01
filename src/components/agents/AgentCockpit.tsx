@@ -220,17 +220,20 @@ export function AgentCockpit({
               </>
             )}
 
-            {agent.fullConfig.promptInstructions && (
-              <>
-                <Separator />
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground font-semibold">Instruções</p>
-                  <p className="text-sm whitespace-pre-wrap text-foreground">
-                    {agent.fullConfig.promptInstructions}
-                  </p>
-                </div>
-              </>
-            )}
+            {agent.fullConfig.promptInstructions &&
+              agent.fullConfig.promptInstructions.length > 0 && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground font-semibold">Instruções</p>
+                    <p className="text-sm whitespace-pre-wrap text-foreground">
+                      {Array.isArray(agent.fullConfig.promptInstructions)
+                        ? agent.fullConfig.promptInstructions.join('\n')
+                        : String(agent.fullConfig.promptInstructions)}
+                    </p>
+                  </div>
+                </>
+              )}
 
             {agent.fullConfig.promptTemplate && (
               <>

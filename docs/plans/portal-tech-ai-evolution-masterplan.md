@@ -65,6 +65,23 @@
 - **Commits:** 76d01a1
 - **Próximo:** Story 7.11 (Página Governança Avançada) — **READY FOR EXECUTION**
 
+### 2026-03-01 20:10 — Épico 3 Story 7.11 (Frontend: Governança Avançada) ✅ COMPLETO
+- **Agente:** @dev (Dex)
+- **Story:** 7.11 — Frontend: Página de Governança Avançada
+- **Features:**
+  - ✅ Página `/auxiliares/modelos-ia/governanca` com 5 tabs
+  - ✅ Tab "Revisões": Tabela model_governance_reviews com status badges (approved/rejected/pending)
+  - ✅ Tab "Custo": Tabela model_cost_monitoring com período, requests, tokens, custo total, latência P95
+  - ✅ Tab "Incidentes": Tabela model_incidents com severity badges coloridos (critical/high/medium/low)
+  - ✅ Tab "Fallback": Tabela model_fallback_policies com status ativo/inativo
+  - ✅ Tab "Changelog": Tabela model_change_log read-only, ordenada por changed_at DESC
+  - ✅ Stats cards no topo (5 métricas: Revisões, Períodos, Incidentes, Fallbacks, Alterações)
+  - ✅ EmptyState para abas sem dados
+  - ✅ Link no ModelCockpit: botão "Governança" na header
+  - ✅ Query Supabase com ordem e relacionamentos corretos
+- **Commits:** 7c026c3
+- **Próximo:** Story 7.12 (API Sessions Globais) — **Épico 4 inicia**
+
 ---
 
 ---

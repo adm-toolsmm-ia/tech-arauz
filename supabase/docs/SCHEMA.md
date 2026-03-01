@@ -3,6 +3,8 @@
 Data da auditoria: 2026-02-26  
 Fonte: `supabase/migrations/001` ate `supabase/migrations/038`
 
+**Export em formato Prisma (extraído via MCP Supabase):** `docs/architecture/data/schema.prisma` — pasta canônica para arquitetura de dados e contexto AI/AIOS.
+
 ## 1. Visao geral
 
 Banco multi-tenant com isolamento por `tenant_id`, RLS e foco em:

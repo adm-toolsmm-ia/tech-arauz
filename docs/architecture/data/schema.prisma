@@ -1,0 +1,553 @@
+// =============================================================================
+// Schema Prisma — Tech Arauz (Supabase/PostgreSQL)
+// =============================================================================
+// Local canônico: docs/architecture/data/schema.prisma (engenharia/arquitetura AI)
+// Extraído via MCP Supabase (list_tables) em 2026-02-28.
+// O projeto usa Supabase diretamente (não Prisma em runtime); este arquivo
+// serve como documentação do schema e referência para LLMs/ferramentas/AIOS.
+//
+// Para usar com Prisma: configurar datasource para PostgreSQL e
+// apontar url para a connection string do Supabase.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Core: Tenant + Profiles
+// -----------------------------------------------------------------------------
+
+model Tenant {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String   @unique
+  name      String
+  settings  Json?    @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  profiles            Profile[]
+  projects            Project[]
+  espaiderApis        EspaiderApi[]
+  syncLogs            SyncLog[]
+  integrationLogEntries IntegrationLogEntry[]
+  projectHistories    ProjectHistory[]
+  projectApprovers    ProjectApprover[]
+  projectBudgets      ProjectBudget[]
+  agents              Agent[]
+  agentTypes          AgentType[]
+  agentTemplates      AgentTemplate[]
+  lmProviders         LmProvider[]
+  lmModels            LmModel[]
+
+  @@map("tenants")
+}
+
+model Profile {
+  id        String   @id @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  email     String
+  fullName  String?  @map("full_name")
+  role      String   @default("viewer") // admin | user | viewer
+  avatarUrl String?  @map("avatar_url")
+  settings  Json?    @default("{}")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+// -----------------------------------------------------------------------------
+// Projetos + ERP (Espaider)
+// -----------------------------------------------------------------------------
+
+model Project {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId              String    @map("tenant_id") @db.Uuid
+  espaiderId            Int       @map("espaider_id")
+  codigo                String
+  titulo                String
+  situacaoOriginal      String    @default("Novo") @map("situacao_original")
+  statusOriginal        String?   @map("status_original")
+  responsavel           String?
+  prioridade            String?  @default("Normal")
+  categoria             String?
+  prazoFinal            DateTime? @db.Date @map("prazo_final")
+  faseAtual             String?   @map("fase_atual")
+  prazoFase             DateTime? @db.Date @map("prazo_fase")
+  cronogramaAtual       String?   @map("cronograma_atual")
+  prazoCronograma       DateTime? @db.Date @map("prazo_cronograma")
+  area                  String?
+  pastaConsultivo       String?   @map("pasta_consultivo")
+  solucaoAplicada       String?   @map("solucao_aplicada")
+  dataMovimentacao      DateTime? @map("data_movimentacao")
+  dataEncerramento      DateTime? @map("data_encerramento")
+  dataInicioAprovacao   DateTime? @map("data_inicio_aprovacao")
+  trmEspaider           String?   @map("trm_espaider")
+  tipoChamado           String?   @map("tipo_chamado")
+  tipoAssunto           String?   @map("tipo_assunto")
+  solicitante           String?
+  objetivo              String?
+  motivoImportanciaEspecial String? @map("motivo_importancia_especial")
+  mensagemMovimentacao  String?   @map("mensagem_movimentacao")
+  justificativa         String?
+  importanciaEspecial   Boolean?  @default(false) @map("importancia_especial")
+  impactoOperacional   String?   @map("impacto_operacional")
+  impactoEstrategico    String?   @map("impacto_estrategico")
+  escopo                String?
+  complexidadeTecnica   String?   @map("complexidade_tecnica")
+  notesHtml             String?   @map("notes_html")
+  espaiderRaw           Json?     @map("espaider_raw")
+  syncStatus            String?   @default("synced") @map("sync_status") // synced | pending | error
+  lastSyncAt            DateTime? @map("last_sync_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @default(now()) @map("updated_at")
+
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  schedules         ProjectSchedule[]
+  deliveries         ProjectDelivery[]
+  requirements       ProjectRequirement[]
+  histories          ProjectHistory[]
+  approvers          ProjectApprover[]
+  budgets            ProjectBudget[]
+
+  @@unique([tenantId, espaiderId])
+  @@map("projects")
+}
+
+model ProjectSchedule {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  projectId         String    @map("project_id") @db.Uuid
+  espaiderId        Int       @map("espaider_id")
+  atividade         String
+  responsavel       String?
+  dataInicio        DateTime? @db.Date @map("data_inicio")
+  dataFim           DateTime? @db.Date @map("data_fim")
+  status            String?   @default("Pendente")
+  faseAtividade     String?   @map("fase_atividade")
+  atrasado          Boolean?  @default(false)
+  setorResponsavel  String?   @map("setor_responsavel")
+  item              String?
+  detalhamento      String?
+  dataPrazo         DateTime? @db.Date @map("data_prazo")
+  dataNovoPrazo     DateTime? @db.Date @map("data_novo_prazo")
+  dataAlertaPrazo   DateTime? @db.Date @map("data_alerta_prazo")
+  prazoConfirmado   Boolean?  @map("prazo_confirmado")
+  espaiderRaw       Json?     @map("espaider_raw")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @map("updated_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, espaiderId])
+  @@map("project_schedules")
+}
+
+model ProjectDelivery {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  projectId     String    @map("project_id") @db.Uuid
+  espaiderId    Int       @map("espaider_id")
+  titulo        String
+  status        String?   @default("Pendente")
+  prioridade    String?   @default("Normal")
+  ordem         String?
+  detalhamento  String?
+  dataPrevista  DateTime? @db.Date @map("data_prevista")
+  dataRealizada DateTime? @db.Date @map("data_realizada")
+  espaiderRaw   Json?     @map("espaider_raw")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, espaiderId])
+  @@map("project_deliveries")
+}
+
+model ProjectRequirement {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  projectId          String    @map("project_id") @db.Uuid
+  espaiderId         Int       @map("espaider_id")
+  codigo             String
+  descricao          String?
+  tipo               String?
+  prioridade         String?   @default("Normal")
+  status             String?   @default("Aberto")
+  impacto            String?
+  detalhamento       String?
+  entregaIdEspaider  Int?      @map("entrega_id_espaider")
+  entregaNome       String?   @map("entrega_nome")
+  dataConclusao      DateTime? @db.Date @map("data_conclusao")
+  espaiderRaw        Json?     @map("espaider_raw")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @default(now()) @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, espaiderId])
+  @@map("project_requirements")
+}
+
+model ProjectHistory {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId        String    @map("project_id") @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  espaiderId       BigInt    @map("espaider_id")
+  type             String?
+  responsibleTo    String?   @map("responsible_to")
+  responsibleFrom  String?   @map("responsible_from")
+  stepTo           String?   @map("step_to")
+  stepFrom         String?   @map("step_from")
+  procedureNumber  Int?      @map("procedure_number")
+  message          String?
+  date             DateTime? @map("date")
+  espaiderRaw      Json?     @map("espaider_raw")
+  createdAt        DateTime? @default(now()) @map("created_at")
+  updatedAt        DateTime? @default(now()) @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, espaiderId])
+  @@map("project_histories")
+}
+
+model ProjectApprover {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId        String    @map("project_id") @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  espaiderId       BigInt    @map("espaider_id")
+  type             String?
+  responsible      String?
+  attentionPoints  String?   @map("attention_points")
+  espaiderRaw      Json?     @map("espaider_raw")
+  createdAt        DateTime? @default(now()) @map("created_at")
+  updatedAt        DateTime? @default(now()) @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, espaiderId])
+  @@map("project_approvers")
+}
+
+model ProjectBudget {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId     String    @map("project_id") @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  espaiderId    BigInt    @map("espaider_id")
+  value         Decimal?  @db.Decimal(15, 2)
+  provider      String?
+  quotationDate DateTime? @db.Date @map("quotation_date")
+  moeda         String?   @default("BRL")
+  espaiderRaw   Json?     @map("espaider_raw")
+  createdAt     DateTime? @default(now()) @map("created_at")
+  updatedAt     DateTime? @default(now()) @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, espaiderId])
+  @@map("project_budgets")
+}
+
+model EspaiderApi {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  nome            String
+  baseUrl         String    @map("base_url")
+  token           String
+  identificador   String
+  tipo            String    @default("projetos") // projetos | entregas | cronogramas | requisitos | completo
+  isActive        Boolean   @default(true) @map("is_active")
+  lastSyncAt      DateTime? @map("last_sync_at")
+  lastSyncStatus  String?   @map("last_sync_status") // success | partial | failed
+  settings        Json?     @default("{}")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, identificador])
+  @@map("espaider_apis")
+}
+
+model SyncLog {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  requestId      String    @map("request_id")
+  dataset        String    // Projetos | Entregas | Cronogramas | Requisitos | Historicos | Aprovadores | Orcamentos
+  startedAt      DateTime  @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  durationMs     Int?      @map("duration_ms")
+  totalRecords   Int?      @default(0) @map("total_records")
+  newRecords     Int?      @default(0) @map("new_records")
+  updatedRecords Int?      @default(0) @map("updated_records")
+  errors         Int?      @default(0)
+  retries        Int?      @default(0)
+  status         String    @default("running") // running | success | partial | failed
+  errorMessage   String?   @map("error_message")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  tenant                Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  integrationLogEntries IntegrationLogEntry[]
+
+  @@map("sync_logs")
+}
+
+model IntegrationLogEntry {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  syncLogId  String?  @map("sync_log_id") @db.Uuid
+  requestId  String   @map("request_id")
+  level      String   // info | warn | error | success
+  dataset    String   // Projetos | Entregas | Cronogramas | Requisitos | Geral | Historicos | Aprovadores | Orcamentos
+  message    String
+  details    Json?
+  loggedAt   DateTime @map("logged_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  syncLog SyncLog? @relation(fields: [syncLogId], references: [id], onDelete: Cascade)
+
+  @@map("integration_log_entries")
+}
+
+// -----------------------------------------------------------------------------
+// Agentes AI + Catálogo LLM
+// -----------------------------------------------------------------------------
+
+model AgentType {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId              String    @map("tenant_id") @db.Uuid
+  name                  String
+  slug                  String
+  description           String?
+  defaultTemplate       Json?     @map("default_template")
+  requiredFields        String[]? @map("required_fields")
+  recommendedFields     String[]? @map("recommended_fields")
+  metadata              Json?     @default("{}")
+  iconEmoji             String?   @default("⚙️") @map("icon_emoji")
+  colorHex              String?   @default("#64748B") @map("color_hex")
+  isSystem              Boolean?  @default(false) @map("is_system")
+  isActive              Boolean?  @default(true) @map("is_active")
+  defaultModelProvider  String?   @map("default_model_provider")
+  defaultModelId        String?   @map("default_model_id")
+  defaultTemperature    Decimal?  @map("default_temperature") @db.Decimal(2, 2)
+  createdBy             String?   @map("created_by") @db.Uuid
+  updatedBy             String?   @map("updated_by") @db.Uuid
+  createdAt             DateTime? @default(now()) @map("created_at")
+  updatedAt             DateTime? @default(now()) @map("updated_at")
+
+  tenant        Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agents        Agent[]
+  agentTemplates AgentTemplate[]
+
+  @@unique([tenantId, slug])
+  @@map("agent_types")
+}
+
+model Agent {
+  id                        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId                  String    @map("tenant_id") @db.Uuid
+  name                      String
+  slug                      String
+  description               String?
+  owners                    String[]  @default([])
+  tags                      String[]  @default([])
+  status                    String?   @default("draft") // draft | published | deprecated
+  persona                   String?
+  promptObjective           String?   @map("prompt_objective")
+  promptInstructions        String?   @map("prompt_instructions")
+  promptTemplate            String?   @map("prompt_template")
+  outputSchema              Json?     @map("output_schema")
+  modelProvider             String?   @map("model_provider")
+  modelId                   String?   @map("model_id")
+  modelTemperature          Decimal?  @default(0.7) @map("model_temperature") @db.Decimal
+  modelTopP                 Decimal?  @map("model_top_p") @db.Decimal
+  modelMaxTokens            Int?      @map("model_max_tokens")
+  modelPresencePenalty      Decimal?  @map("model_presence_penalty") @db.Decimal
+  modelFrequencyPenalty     Decimal?  @map("model_frequency_penalty") @db.Decimal
+  modelStopSequences        String[]? @map("model_stop_sequences")
+  modelResponseFormat       String?   @map("model_response_format")
+  modelEndpointOverrides   Json?     @map("model_endpoint_overrides")
+  runtimeToolIds            String[]? @map("runtime_tool_ids")
+  runtimeContextProviderIds String[]? @map("runtime_context_provider_ids")
+  runtimeMemory             String?   @default("stateless") @map("runtime_memory")
+  agentType                 String?   @default("projetos") @map("agent_type")
+  agentTypeId              String?   @map("agent_type_id") @db.Uuid
+  requirements              String[]?
+  configurationMeta        Json?     @default("{}") @map("configuration_meta")
+  templateId               String?   @map("template_id") @db.Uuid
+  isTemplate               Boolean?  @default(false) @map("is_template")
+  requiresValidation       Boolean?  @default(true) @map("requires_validation")
+  validationRules           Json?     @default("{}") @map("validation_rules")
+  executionCount            Int?      @default(0) @map("execution_count")
+  lastExecutionAt           DateTime? @map("last_execution_at")
+  createdBy                String?   @map("created_by") @db.Uuid
+  updatedBy                String?   @map("updated_by") @db.Uuid
+  createdAt                DateTime? @default(now()) @map("created_at")
+  updatedAt                DateTime? @default(now()) @map("updated_at")
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agentTypeRef   AgentType?      @relation(fields: [agentTypeId], references: [id])
+  versions       AgentVersion[]
+  variables      AgentVariable[]
+  runs           AgentRun[]
+
+  @@unique([tenantId, slug])
+  @@map("agents")
+}
+
+model AgentVersion {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agentId       String   @map("agent_id") @db.Uuid
+  version       String   // semver
+  status        String?  @default("published")
+  agentConfig   Json     @map("agent_config")
+  commitMessage String?  @map("commit_message")
+  changeReason  String?  @map("change_reason")
+  breakingChange Boolean? @default(false) @map("breaking_change")
+  createdBy     String?  @map("created_by") @db.Uuid
+  createdAt     DateTime? @default(now()) @map("created_at")
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, version])
+  @@map("agent_versions")
+}
+
+model AgentVariable {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agentId     String    @map("agent_id") @db.Uuid
+  key         String
+  type        String    // string | number | boolean | enum | array | object
+  required    Boolean?  @default(false)
+  defaultValue Json?    @map("default_value")
+  enumValues  String[]? @map("enum_values")
+  regexPattern String?  @map("regex_pattern")
+  description String?
+  createdAt   DateTime? @default(now()) @map("created_at")
+  updatedAt   DateTime? @default(now()) @map("updated_at")
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, key])
+  @@map("agent_variables")
+}
+
+model AgentRun {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agentId     String    @map("agent_id") @db.Uuid
+  agentVersion String?  @map("agent_version")
+  tenantId    String    @map("tenant_id") @db.Uuid
+  inputData   Json?     @map("input_data")
+  outputData  Json?     @map("output_data")
+  status      String?
+  errorMessage String?  @map("error_message")
+  tokensUsed  Int?      @map("tokens_used")
+  costUsd     Decimal?  @map("cost_usd") @db.Decimal
+  durationMs  Int?      @map("duration_ms")
+  createdBy   String?   @map("created_by") @db.Uuid
+  createdAt   DateTime? @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  agent Agent @relation(fields: [agentId], references: [id])
+  @@map("agent_runs")
+}
+
+model AgentTemplate {
+  id                        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId                  String    @map("tenant_id") @db.Uuid
+  agentTypeId               String    @map("agent_type_id") @db.Uuid
+  name                      String
+  slug                      String
+  description               String?
+  personaTemplate           String?   @map("persona_template")
+  promptObjectiveTemplate   String?   @map("prompt_objective_template")
+  promptInstructionsTemplate String[]? @map("prompt_instructions_template")
+  promptExamples            Json?     @map("prompt_examples")
+  outputSchemaTemplate      Json?     @map("output_schema_template")
+  modelProviderDefault      String?   @default("openai") @map("model_provider_default")
+  modelIdDefault            String?   @default("gpt-4") @map("model_id_default")
+  modelTemperatureDefault   Decimal?  @default(0.7) @map("model_temperature_default") @db.Decimal
+  modelMaxTokensDefault     Int?      @default(2000) @map("model_max_tokens_default")
+  usageCount                Int?      @default(0) @map("usage_count")
+  createdBy                 String?   @map("created_by") @db.Uuid
+  createdAt                 DateTime? @default(now()) @map("created_at")
+  updatedAt                 DateTime? @default(now()) @map("updated_at")
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agentType AgentType @relation(fields: [agentTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, agentTypeId, slug])
+  @@map("agent_templates")
+}
+
+model LmProvider {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  name              String
+  slug              String
+  description       String?
+  apiEndpoint       String?   @map("api_endpoint")
+  apiKeyFieldName   String?   @default("api_key") @map("api_key_field_name")
+  iconEmoji         String?   @default("🤖") @map("icon_emoji")
+  colorHex          String?   @default("#64748B") @map("color_hex")
+  docsUrl           String?   @map("docs_url")
+  isActive          Boolean?  @default(true) @map("is_active")
+  isSystem          Boolean?  @default(false) @map("is_system")
+  createdBy         String?   @map("created_by") @db.Uuid
+  updatedBy         String?   @map("updated_by") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @map("updated_at")
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lmModels LmModel[]
+
+  @@unique([tenantId, slug])
+  @@map("lm_providers")
+}
+
+model LmModel {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId               String   @map("tenant_id") @db.Uuid
+  providerId             String   @map("provider_id") @db.Uuid
+  name                   String
+  modelId                String   @map("model_id")
+  description            String?
+  maxTokens              Int?     @map("max_tokens")
+  defaultTemperature     Decimal? @map("default_temperature") @db.Decimal(2, 2)
+  inputCostPer1kTokens    Decimal? @map("input_cost_per_1k_tokens") @db.Decimal(10, 8)
+  outputCostPer1kTokens   Decimal? @map("output_cost_per_1k_tokens") @db.Decimal(10, 8)
+  docsUrl                String?  @map("docs_url")
+  contextWindow          Int?     @map("context_window")
+  displayOrder           Int?     @default(100) @map("display_order")
+  tier                   String?  @default("balanced") // entry | balanced | pro | flagship
+  isActive               Boolean? @default(true) @map("is_active")
+  isSystem               Boolean? @default(false) @map("is_system")
+  createdBy              String?  @map("created_by") @db.Uuid
+  updatedBy              String?  @map("updated_by") @db.Uuid
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @default(now()) @map("updated_at")
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider LmProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, modelId])
+  @@map("lm_models")
+}

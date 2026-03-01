@@ -1,7 +1,7 @@
 # SCHEMA - Tech Arauz (Supabase/PostgreSQL)
 
-Data da auditoria: 2026-02-26  
-Fonte: `supabase/migrations/001` ate `supabase/migrations/038`
+Data da auditoria: 2026-03-01
+Fonte: `supabase/migrations/001` ate `supabase/migrations/042`
 
 **Export em formato Prisma (extraído via MCP Supabase):** `docs/architecture/data/schema.prisma` — pasta canônica para arquitetura de dados e contexto AI/AIOS.
 
@@ -43,6 +43,21 @@ Banco multi-tenant com isolamento por `tenant_id`, RLS e foco em:
 - `agent_templates`
 - `lm_providers`
 - `lm_models`
+- `lm_provider_accounts`
+
+### 2.4 AI Features — Chat, observabilidade e budget
+
+- `agent_sessions` (chat sessions)
+- `agent_messages` (conversation turns)
+- `agent_run_steps` (detailed execution steps)
+- `agent_budgets` (monthly spend limits)
+- `agent_usage_daily` (aggregated metrics)
+- `agent_deployments` (deployment history)
+- `tools` (tool definitions)
+- `agent_tool_bindings` (agent-tool relationships)
+- `context_providers` (context sources)
+- `agent_context_bindings` (agent-context relationships)
+- `agent_feedback` (user feedback on chat quality)
 
 ## 3. Relacionamentos principais
 
@@ -56,8 +71,19 @@ tenants (1) ---- (N) sync_logs ---- (N) integration_log_entries
 tenants (1) ---- (N) agents ---- (N) agent_versions
 agents (1) ----- (N) agent_variables
 agents (1) ----- (N) agent_runs
+agent_runs (1) - (N) agent_sessions ---- (N) agent_messages
+agent_runs (1) - (N) agent_run_steps
+agent_runs (1) - (N) agent_budgets
+agent_runs (1) - (N) agent_usage_daily
+agent_runs (1) - (N) agent_deployments
 tenants (1) ---- (N) agent_types ---- (N) agent_templates
-tenants (1) ---- (N) lm_providers ---- (N) lm_models
+tenants (1) ---- (N) lm_providers ---- (N) lm_models ---- (N) lm_provider_accounts
+
+tenants (1) ---- (N) tools
+agent_runs (1) - (N) agent_tool_bindings --- (N) tools
+tenants (1) ---- (N) context_providers
+agent_runs (1) - (N) agent_context_bindings --- (N) context_providers
+agent_sessions (1) - (N) agent_feedback
 ```
 
 ## 4. Tabelas (resumo)
@@ -177,6 +203,84 @@ tenants (1) ---- (N) lm_providers ---- (N) lm_models
 - FK: `tenant_id -> tenants(id)`, `provider_id -> lm_providers(id)`
 - Unique: `(provider_id, model_id)`
 - Campos-chave: custos, `context_window`, `tier`, `display_order`, `docs_url`
+- ALTERs (Migration 042): `input_token_cost_usd`, `output_token_cost_usd`, `provider_account_id` (FK → lm_provider_accounts)
+
+## `lm_provider_accounts`
+- PK: `id (uuid)`
+- FK: `tenant_id -> tenants(id)`
+- Campos-chave: `provider` (openai/anthropic/google/azure), `api_key_encrypted`, `account_identifier`, `monthly_spend_usd`, `quota_limit_usd`
+- Nota: chaves criptografadas via Supabase pgcrypto
+
+## `agent_sessions`
+- PK: `id (uuid)`
+- FK: `tenant_id -> tenants(id)`, `user_id -> auth.users(id)`, `agent_id -> agent_runs(id)`
+- Campos-chave: `status` (active/paused/closed), `started_at`, `ended_at`, `token_usage`
+- Indice composto: `(tenant_id, agent_id, created_at DESC)`
+
+## `agent_messages`
+- PK: `id (uuid)`
+- FK: `session_id -> agent_sessions(id)`, `tenant_id -> tenants(id)`
+- Campos-chave: `role` (user/assistant), `content`, `metadata` (jsonb), `tokens_used`
+- Indice composto: `(session_id, created_at ASC)`, `(tenant_id, created_at DESC)`
+
+## `agent_run_steps`
+- PK: `id (uuid)`
+- FK: `run_id -> agent_runs(id)`, `tenant_id -> tenants(id)`
+- Campos-chave: `step_type` (input/tool_call/observation/output), `input/output` (jsonb), `execution_time_ms`
+- Indice composto: `(agent_id, run_id)`, `(tenant_id, created_at DESC)`
+
+## `agent_budgets`
+- PK: `id (uuid)`
+- FK: `agent_id -> agent_runs(id)`, `tenant_id -> tenants(id)`
+- Campos-chave: `monthly_limit_usd`, `current_month_spent_usd`, `reset_date`
+- Indice composto: `(tenant_id, agent_id)`, `(reset_date)`
+
+## `agent_usage_daily`
+- PK: `id (uuid)`
+- FK: `agent_id -> agent_runs(id)`, `tenant_id -> tenants(id)`
+- Unique: `(tenant_id, agent_id, date)`
+- Campos-chave: `date`, `sessions_count`, `messages_count`, `cost_total_usd`, `avg_latency_ms`, `success_rate_pct`
+- Indice composto: `(tenant_id, agent_id, date DESC)`, `(date DESC)`
+
+## `agent_deployments`
+- PK: `id (uuid)`
+- FK: `agent_id -> agent_runs(id)`, `deployed_by -> auth.users(id)`, `tenant_id -> tenants(id)`
+- Campos-chave: `version`, `environment` (dev/staging/prod), `deployed_at`, `config_hash`, `status` (success/failed/rolled_back)
+- Indice composto: `(agent_id, deployed_at DESC)`, `(tenant_id, environment, status)`
+
+## `tools`
+- PK: `id (uuid)`
+- FK: `tenant_id -> tenants(id)`
+- Campos-chave: `tool_name`, `description`, `config_schema` (jsonb), `enabled`
+- Indice composto: `(tenant_id, tool_name)`, `(enabled)`
+
+## `agent_tool_bindings`
+- PK: `id (uuid)`
+- FK: `agent_id -> agent_runs(id)`, `tool_id -> tools(id)`, `tenant_id -> tenants(id)`
+- Campos-chave: `enabled`, `config_overrides` (jsonb)
+- Indice composto: `(agent_id, enabled)`, `(tenant_id, agent_id)`
+
+## `context_providers`
+- PK: `id (uuid)`
+- FK: `tenant_id -> tenants(id)`
+- Campos-chave: `provider_type` (sql/api/knowledge_base), `description`, `config` (jsonb), `enabled`
+- Indice composto: `(tenant_id, provider_type)`, `(enabled)`
+
+## `agent_context_bindings`
+- PK: `id (uuid)`
+- FK: `agent_id -> agent_runs(id)`, `context_id -> context_providers(id)`, `tenant_id -> tenants(id)`
+- Campos-chave: `priority`
+- Indice composto: `(agent_id, priority)`, `(tenant_id, agent_id)`
+
+## `agent_feedback`
+- PK: `id (uuid)`
+- FK: `session_id -> agent_sessions(id)`, `tenant_id -> tenants(id)`
+- Campos-chave: `rating` (1-5), `feedback_text`, `feedback_type` (quality/accuracy/relevance/performance)
+- Indice composto: `(session_id)`, `(tenant_id, created_at DESC)`, `(feedback_type)`
+
+## ALTERs em `agent_runs` (Migration 042)
+- ADD: `budget_limit_usd` (numeric)
+- ADD: `session_id` (UUID FK → agent_sessions, ON DELETE SET NULL)
 
 ## 5. Indices relevantes
 
@@ -203,6 +307,8 @@ tenants (1) ---- (N) lm_providers ---- (N) lm_models
 - 016-027: ajustes de constraints e remediacao RLS em child tables/logs
 - 028-030: schema de agentes AI + tipos/templates
 - 031-038: provedores/modelos LLM e curadoria 360 (tier, custo, ordem, contexto)
+- 039-041: expansao de agentes (configs, tipos melhorados) e preparacao para chat
+- 042: AI Features Chat & 360° Dashboard (11 tabelas: sessions, messages, run_steps, budgets, usage_daily, deployments, tools, tool_bindings, context_providers, context_bindings, feedback + ALTERs)
 
 ---
 

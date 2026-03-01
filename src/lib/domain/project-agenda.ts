@@ -69,24 +69,33 @@ export function filterProjectsByAgendaPeriod<T extends ProjectForAgenda>(
   return projects.filter((p) => projectEndDateInPeriod(p, refDate, period));
 }
 
-/** Get human-readable label for the period (e.g. "Jan 2026", "1º Trim 2026") */
+const MONTH_NAMES_FULL = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+];
+
+function formatMMyyyy(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${m}/${d.getFullYear()}`;
+}
+
+/** Get human-readable label for the period */
 export function getAgendaPeriodLabel(refDate: Date, period: ProjectAgendaPeriod): string {
   const year = refDate.getFullYear();
   const month = refDate.getMonth();
 
   if (period === 'month') {
-    const monthNames = [
-      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
-    ];
-    return `${monthNames[month]} ${year}`;
+    return `${MONTH_NAMES_FULL[month]}/${year} - ${formatMMyyyy(refDate)}`;
   }
   if (period === 'quarter') {
+    const { start, end } = getPeriodRange(refDate, period);
     const q = Math.floor(month / 3) + 1;
-    return `${q}º Trim ${year}`;
+    return `${q}º Trimestre ${year} - ${formatMMyyyy(start)} à ${formatMMyyyy(end)}`;
   }
   if (period === 'semester') {
-    return month < 6 ? `1º Sem ${year}` : `2º Sem ${year}`;
+    const { start, end } = getPeriodRange(refDate, period);
+    const s = month < 6 ? 1 : 2;
+    return `${s}º Semestre ${year} - ${formatMMyyyy(start)} à ${formatMMyyyy(end)}`;
   }
   return String(year);
 }

@@ -12,6 +12,7 @@ import type { KpiFilterName } from '@/lib/domain/schedule-kpi';
 import { filterByKpi } from '@/lib/domain/schedule-kpi';
 import { isWithinRange, isSameDay, filterSchedulesByPeriod } from '@/lib/domain/schedule-status';
 
+import { PeriodNavigationBar } from '@/components/cronogramas/PeriodNavigationBar';
 import { CronogramasKPIBar } from './components/CronogramasKPIBar';
 import { CronogramaFilters } from './components/CronogramaFilters';
 import { CronogramaCalendar } from './components/CronogramaCalendar';
@@ -118,6 +119,12 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
     setSelectedDay(null);
   };
 
+  const onNavigatePeriod = (direction: number) => {
+    if (calendarPeriod === 'day') navigateDay(direction);
+    else if (calendarPeriod === 'week') navigateWeek(direction);
+    else navigateMonth(direction);
+  };
+
   // Get schedules for a specific date
   const getSchedulesForDate = React.useCallback(
     (date: Date): Schedule[] => {
@@ -211,21 +218,35 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
           {/* Kanban View (read-only) */}
           {viewMode === 'kanban' && (
             <ErrorBoundary label="Kanban Cronogramas">
-              <CronogramaKanbanView
-                schedules={periodFilteredSchedules}
-                projectIds={projectIds}
-                onActivityClick={setSelectedSchedule}
-              />
+              <div className="space-y-4">
+                <PeriodNavigationBar
+                  currentDate={currentDate}
+                  period={calendarPeriod as 'day' | 'week' | 'month'}
+                  onNavigate={onNavigatePeriod}
+                />
+                <CronogramaKanbanView
+                  schedules={periodFilteredSchedules}
+                  projectIds={projectIds}
+                  onActivityClick={setSelectedSchedule}
+                />
+              </div>
             </ErrorBoundary>
           )}
 
           {/* Table View (Lista) */}
           {viewMode === 'lista' && (
             <ErrorBoundary label="Tabela Cronogramas">
-              <CronogramaTableView
-                schedules={periodFilteredSchedules}
-                onActivityClick={setSelectedSchedule}
-              />
+              <div className="space-y-4">
+                <PeriodNavigationBar
+                  currentDate={currentDate}
+                  period={calendarPeriod as 'day' | 'week' | 'month'}
+                  onNavigate={onNavigatePeriod}
+                />
+                <CronogramaTableView
+                  schedules={periodFilteredSchedules}
+                  onActivityClick={setSelectedSchedule}
+                />
+              </div>
             </ErrorBoundary>
           )}
 

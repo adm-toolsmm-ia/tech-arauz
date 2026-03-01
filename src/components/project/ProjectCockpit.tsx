@@ -12,6 +12,7 @@ import {
   UserCheck,
   ArrowRight,
   StickyNote,
+  ClipboardList,
 } from 'lucide-react';
 import { ProjectNotesEditor } from './ProjectNotesEditor';
 
@@ -119,6 +120,8 @@ interface ProjectCockpitProps {
   histories?: UIHistory[];
   approvers?: UIApprover[];
   budgets?: UIBudget[];
+  /** When opened from Cronogramas: the activity/schedule clicked. Shows "Atividade" tab. */
+  selectedSchedule?: UISchedule | null;
   onSync?: () => void;
   isSyncing?: boolean;
 }
@@ -167,10 +170,13 @@ export function ProjectCockpit({
   histories = [],
   approvers = [],
   budgets = [],
+  selectedSchedule = null,
   onSync,
   isSyncing = false,
 }: ProjectCockpitProps) {
   const completedDeliveries = deliveries.filter((d) => d.completed).length;
+  const showAtividadeTab = !!selectedSchedule;
+  const defaultTab = showAtividadeTab ? 'atividade' : 'projeto';
 
   return (
     <div className="space-y-6">
@@ -180,14 +186,23 @@ export function ProjectCockpit({
       {/* Header badges removed as per user request */}
 
       {/* Tabs */}
-      <Tabs defaultValue="detalhes" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
+          {showAtividadeTab && (
+            <TabsTrigger
+              value="atividade"
+              className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            >
+              <ClipboardList className="mr-2 size-4" />
+              Atividade
+            </TabsTrigger>
+          )}
           <TabsTrigger
-            value="detalhes"
+            value="projeto"
             className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
           >
             <FileText className="mr-2 size-4" />
-            Detalhes
+            Projeto
           </TabsTrigger>
           <TabsTrigger
             value="anotacoes"
@@ -257,13 +272,39 @@ export function ProjectCockpit({
           </TabsTrigger>
         </TabsList>
 
+        {/* Tab: Atividade (when opened from Cronogramas) */}
+        {showAtividadeTab && selectedSchedule && (
+          <TabsContent value="atividade" className="mt-6 space-y-8">
+            <section>
+              <div className="mb-4 flex items-center gap-2 border-b pb-2">
+                <ClipboardList className="size-5 text-primary" />
+                <h3 className="text-base font-semibold">Dados da Atividade</h3>
+                {selectedSchedule.atrasado && (
+                  <Badge variant="destructive" className="ml-2">Atrasada</Badge>
+                )}
+              </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <InfoField label="Atividade" value={selectedSchedule.atividade} />
+                <InfoField label="Responsável" value={selectedSchedule.responsavel} />
+                <InfoField label="Setor" value={selectedSchedule.setor_responsavel} />
+                <InfoField label="Status" value={selectedSchedule.status} />
+                <InfoField label="Fase" value={selectedSchedule.fase_atividade} />
+                <InfoField label="Item" value={selectedSchedule.item} />
+                <InfoField label="Data Início" value={formatDate(selectedSchedule.data_inicio)} />
+                <InfoField label="Data Fim" value={formatDate(selectedSchedule.data_fim)} />
+                <InfoField label="Data Prazo" value={formatDate(selectedSchedule.data_prazo)} />
+              </div>
+            </section>
+          </TabsContent>
+        )}
+
         {/* Tab: Anotações */}
         <TabsContent value="anotacoes" className="mt-6">
           <ProjectNotesEditor projectId={project.id} initialContent={project.notes_html ?? null} />
         </TabsContent>
 
-        {/* Tab: Detalhes */}
-        <TabsContent value="detalhes" className="mt-6 space-y-8">
+        {/* Tab: Projeto (ex-Detalhes) */}
+        <TabsContent value="projeto" className="mt-6 space-y-8">
           {/* 0. Importância Especial (Top Priority) */}
           {project.importancia_especial && (
             <div className="rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/10">

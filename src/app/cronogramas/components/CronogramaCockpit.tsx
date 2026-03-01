@@ -56,6 +56,23 @@ export function CronogramaCockpit({
           histories={uiProject.histories || []}
           approvers={uiProject.approvers || []}
           budgets={uiProject.budgets || []}
+          selectedSchedule={
+            selectedSchedule
+              ? {
+                  id: selectedSchedule.id,
+                  atividade: selectedSchedule.atividade,
+                  responsavel: selectedSchedule.responsavel,
+                  data_inicio: selectedSchedule.data_inicio,
+                  data_fim: selectedSchedule.data_fim,
+                  data_prazo: selectedSchedule.data_prazo,
+                  status: selectedSchedule.status,
+                  fase_atividade: selectedSchedule.fase_atividade,
+                  atrasado: selectedSchedule.atrasado,
+                  setor_responsavel: selectedSchedule.setor_responsavel,
+                  item: selectedSchedule.item,
+                }
+              : null
+          }
         />
       ) : (
         <div className="flex flex-col items-center justify-center p-8 text-center text-sm text-muted-foreground">

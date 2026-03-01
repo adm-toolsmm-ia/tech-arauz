@@ -72,22 +72,6 @@ export function ProjectsAgendaView<T extends ProjectForAgenda>({
   const periodLabel = getAgendaPeriodLabel(currentDate, period);
   const showNavigation = onNavigatePrev != null && onNavigateNext != null;
 
-  if (projects.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/50">
-            <CalendarDays className="h-8 w-8 text-muted-foreground/40" />
-          </div>
-          <h3 className="mt-4 text-sm font-medium text-foreground">Nenhum projeto no período</h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Selecione outro período ou ajuste os filtros.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {showNavigation && (
@@ -113,7 +97,20 @@ export function ProjectsAgendaView<T extends ProjectForAgenda>({
           </Button>
         </div>
       )}
-      {sortedDates.map((dateKey) => {
+      {projects.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/50">
+              <CalendarDays className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <h3 className="mt-4 text-sm font-medium text-foreground">Nenhum projeto no período</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Selecione outro período ou ajuste os filtros.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        sortedDates.map((dateKey) => {
         const items = grouped.get(dateKey) ?? [];
         const label =
           dateKey === 'sem_data'
@@ -149,7 +146,8 @@ export function ProjectsAgendaView<T extends ProjectForAgenda>({
             </div>
           </div>
         );
-      })}
+      })
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { Cpu, Calendar, PlayCircle, ExternalLink } from 'lucide-react';
+import { Cpu, Calendar, PlayCircle, ExternalLink, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -49,12 +50,22 @@ export function AgentCockpit({ agent, onEdit }: AgentCockpitProps) {
           </Badge>
           <Badge variant="outline">{agent.agentType}</Badge>
         </div>
-        {onEdit && (
-          <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
-            <ExternalLink className="size-4" />
-            Editar
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {agent.status === 'published' && (
+            <Link href={`/agentes/${agent.id}/chat`}>
+              <Button variant="default" size="sm" className="gap-2">
+                <MessageCircle className="size-4" />
+                Testar Chat
+              </Button>
+            </Link>
+          )}
+          {onEdit && (
+            <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+              <ExternalLink className="size-4" />
+              Editar
+            </Button>
+          )}
+        </div>
       </div>
 
       <Separator />

@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChevronLeft, Save, Trash2, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, Save, Trash2, AlertTriangle, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import type { UIAgent } from '@/lib/transformers/agent';
@@ -141,6 +142,14 @@ export function AgentEditContent({ initialAgent }: AgentEditContentProps) {
           </div>
         </div>
         <div className="flex gap-2">
+          {initialAgent.status === 'published' && (
+            <Link href={`/agentes/${initialAgent.id}/chat`}>
+              <Button variant="default" size="sm" className="gap-2">
+                <MessageCircle className="h-4 w-4" />
+                Testar Chat
+              </Button>
+            </Link>
+          )}
           <Button
             variant="destructive"
             size="sm"

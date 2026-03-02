@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Save, X, AlertTriangle, Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import type { LmProvider, AgentType, LmModel } from '@/types/agents';
@@ -63,6 +64,11 @@ export function AgentEditSheet({
     description: '',
     status: 'draft' as 'draft' | 'published' | 'deprecated',
     agentTypeId: '',
+    usageType: 'chatbot' as 'chatbot' | 'workflow',
+    showInShortcut: false,
+    isGlobalChatbot: false,
+    tags: [] as string[],
+    owners: [] as string[],
     persona: '',
     promptObjective: '',
     promptInstructions: '',
@@ -85,6 +91,11 @@ export function AgentEditSheet({
         description: agent.description,
         status: agent.status,
         agentTypeId: agent.agentTypeId || '',
+        usageType: agent.usageType || 'chatbot',
+        showInShortcut: agent.showInShortcut ?? false,
+        isGlobalChatbot: agent.isGlobalChatbot ?? false,
+        tags: agent.tags ?? [],
+        owners: agent.owners ?? [],
         persona: agent.fullConfig.persona || '',
         promptObjective: agent.fullConfig.promptObjective || '',
         promptInstructions: Array.isArray(instructions) ? instructions.join('\n') : String(instructions || ''),
@@ -154,6 +165,11 @@ export function AgentEditSheet({
         status: formData.status,
         agent_type_id: formData.agentTypeId || null,
         agent_type: agentTypes.find((t) => t.id === formData.agentTypeId)?.slug || 'custom',
+        usage_type: formData.usageType,
+        show_in_shortcut: formData.showInShortcut,
+        is_global_chatbot: formData.isGlobalChatbot,
+        tags: formData.tags,
+        owners: formData.owners,
         persona: formData.persona,
         prompt_objective: formData.promptObjective,
         prompt_instructions: JSON.stringify(instructionsArr),
@@ -296,6 +312,69 @@ export function AgentEditSheet({
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Tipo de Uso</Label>
+                  <Select
+                    value={formData.usageType}
+                    onValueChange={(v) => handleChange('usageType', v as 'chatbot' | 'workflow')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="chatbot">Chatbot</SelectItem>
+                      <SelectItem value="workflow">Workflow</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.usageType === 'chatbot' && (
+                  <div className="space-y-3 rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Exibir no atalho</Label>
+                      <Switch
+                        checked={formData.showInShortcut}
+                        onCheckedChange={(c) => handleChange('showInShortcut', c)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label>Chatbot global</Label>
+                      <Switch
+                        checked={formData.isGlobalChatbot}
+                        onCheckedChange={(c) => handleChange('isGlobalChatbot', c)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <Label>Tags (separadas por vírgula)</Label>
+                  <Input
+                    value={formData.tags.join(', ')}
+                    onChange={(e) =>
+                      handleChange(
+                        'tags',
+                        e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
+                      )
+                    }
+                    placeholder="ex: projetos, relatorios"
+                  />
+                </div>
+
+                <div>
+                  <Label>Owners (emails, separados por vírgula)</Label>
+                  <Input
+                    value={formData.owners.join(', ')}
+                    onChange={(e) =>
+                      handleChange(
+                        'owners',
+                        e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
+                      )
+                    }
+                    placeholder="ex: user@example.com"
+                  />
                 </div>
               </TabsContent>
 

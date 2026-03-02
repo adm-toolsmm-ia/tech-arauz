@@ -66,6 +66,7 @@ class AgentConfigModel(BaseModel):
     agent_type: Optional[str] = None  # e.g., 'projetos', 'requisitos'
     agent_type_id: Optional[str] = None
     is_template: bool = False
+    usage_type: Optional[str] = "chatbot"  # chatbot | workflow
     
     # Prompt & Persona Configuration
     persona: Optional[str] = None

@@ -10,6 +10,19 @@ import type { AgentHead, AgentConfig, CreateAgentRequest } from '@/types/agents'
 const supabase = createClient();
 
 /**
+ * Serialize prompt_instructions for DB storage (JSON string).
+ * Handles array, string, or undefined.
+ */
+function serializePromptInstructions(
+  value: string[] | string | undefined
+): string {
+  if (value === undefined || value === null) return '[]';
+  if (Array.isArray(value)) return JSON.stringify(value);
+  if (typeof value === 'string') return value;
+  return '[]';
+}
+
+/**
  * Extract tenant_id via RLS function (get_user_tenant_id)
  * RLS will enforce tenant isolation automatically
  */
@@ -65,17 +78,22 @@ export class AgentSupabaseService {
       description: data.description || null,
       status: 'draft' as const,
       owners: data.owners || [user.email || user.id],
-      tags: [],
+      tags: data.tags ?? [],
       model_provider: data.model_provider || 'openai',
       model_id: data.model_id || 'gpt-4',
       model_temperature: data.model_temperature || 0.7,
       model_max_tokens: data.model_max_tokens || 2000,
       agent_type: data.agent_type || null,
       agent_type_id: data.agent_type_id || null,
-      prompt_objective: '',
-      prompt_instructions: '[]',
-      prompt_template: '',
-      persona: '',
+      prompt_objective: data.prompt_objective ?? '',
+      prompt_instructions: serializePromptInstructions(data.prompt_instructions),
+      prompt_template: data.prompt_template ?? '',
+      persona: data.persona ?? '',
+      usage_type: data.usage_type ?? 'chatbot',
+      show_in_shortcut: data.show_in_shortcut ?? false,
+      is_global_chatbot: data.is_global_chatbot ?? false,
+      requirements: data.requirements ?? [],
+      output_schema: data.output_schema ?? null,
       created_at: now,
       updated_at: now,
       created_by: user.id,

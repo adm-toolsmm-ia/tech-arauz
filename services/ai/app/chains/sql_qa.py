@@ -16,6 +16,7 @@ import logging
 import time
 from typing import Any, Optional
 
+from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import Runnable, RunnableLambda
 from pydantic import BaseModel
 from supabase import AsyncClient
@@ -26,9 +27,21 @@ from app.instrumentation.budget import BudgetExceededError, get_budget_manager
 from app.instrumentation.logging import log_event
 from app.instrumentation.tracing import create_span, get_current_run, get_trace_url, with_run_context
 from app.instrumentation.wrappers import wrap_llm_call
-from app.llm.factory import LLMProviderError, get_llm
+from app.llm.factory import LLMProviderError, create_with_fallback, get_llm
 
 logger = logging.getLogger("obs.sql_qa")
+
+# Schema for SQL generation (whitelisted tables only)
+SCHEMA_FOR_SQL = """
+-- projects: id, tenant_id, espaider_id, codigo, titulo, situacao_original, status_original, responsavel, prioridade, categoria, prazo_final, fase_atual, cronograma_atual, prazo_cronograma, area, data_encerramento, created_at, updated_at
+-- project_schedules: id, tenant_id, project_id, espaider_id, atividade, responsavel, data_inicio, data_fim, status, fase_atividade, atrasado, data_prazo, created_at, updated_at
+-- project_deliveries: id, tenant_id, project_id, espaider_id, titulo, status, prioridade, data_prevista, data_realizada, created_at, updated_at
+-- project_requirements: id, tenant_id, project_id, espaider_id, codigo, descricao, tipo, prioridade, created_at, updated_at
+-- project_histories: id, tenant_id, project_id, data, evento, descricao, created_at
+-- project_budgets: id, tenant_id, project_id, valor_previsto, valor_realizado, created_at, updated_at
+
+Todas as tabelas têm tenant_id (UUID). Use sempre tenant_id no WHERE para isolamento.
+"""
 
 
 class SQLQAResult(BaseModel):
@@ -152,6 +165,8 @@ async def run_sql_qa(
             user_message,
             message_history,
             agent_config,
+            tenant_id=tenant_id,
+            supabase=supabase,
         )
         if not raw_sql:
             answer = "Não consegui gerar uma query para essa pergunta. Tente ser mais específico."
@@ -197,7 +212,13 @@ async def run_sql_qa(
         )
 
         # Step 5: Response Formatting
-        answer = await _format_response(user_message, rows, agent_config)
+        answer = await _format_response(
+            user_message,
+            rows,
+            agent_config,
+            tenant_id=tenant_id,
+            supabase=supabase,
+        )
 
         # Charge budget
         cost_usd = 0.0  # TODO: estimate from tokens
@@ -278,8 +299,11 @@ async def _generate_sql(
     user_message: str,
     message_history: list[dict[str, Any]],
     agent_config: dict[str, Any],
+    *,
+    tenant_id: str,
+    supabase: AsyncClient,
 ) -> Optional[str]:
-    """Generate SQL from user message.
+    """Generate SQL from user message using LLM with schema context.
 
     Uses agent's configured model (gpt-4o, claude-3, etc.)
 
@@ -287,19 +311,68 @@ async def _generate_sql(
         user_message: User question
         message_history: Conversation context
         agent_config: Agent configuration
+        tenant_id: Tenant ID (for LLM fallback)
+        supabase: Supabase client (for LLM fallback)
 
     Returns:
         Generated SQL string or None if failed
     """
     try:
         with create_span("sql_generate", kind="llm.call") as span:
-            # TODO: Call actual LLM with schema context
-            # For now, placeholder SQL
-            sql = f"SELECT * FROM projects WHERE status = 'active' LIMIT 100"
+            model_config = agent_config.get("model", {})
+            provider = model_config.get("provider", "openai")
+            model_id = model_config.get("model_id", "gpt-4o-mini")
+            temperature = model_config.get("temperature", 0.2)
+            max_tokens = model_config.get("max_tokens", 500)
+
+            llm, _, _ = await create_with_fallback(
+                primary_provider=provider,
+                primary_model_id=model_id,
+                supabase_client=supabase,
+                tenant_id=tenant_id,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+
+            history_context = ""
+            if message_history:
+                recent = message_history[-3:]
+                history_context = "\n".join(
+                    f"{m.get('role', 'user')}: {m.get('content', '')[:200]}"
+                    for m in recent
+                )
+
+            system_prompt = f"""Você é um assistente que gera SQL PostgreSQL para consultar dados de projetos.
+Schema disponível (apenas estas tabelas):
+{SCHEMA_FOR_SQL}
+
+Regras:
+- Gere APENAS SELECT. Não use INSERT, UPDATE, DELETE.
+- Use apenas tabelas: projects, project_schedules, project_deliveries, project_requirements, project_histories, project_budgets.
+- Retorne SEMPRE o SQL puro, sem markdown, sem explicação."""
+            user_prompt = f"""Pergunta: {user_message}
+{f'Contexto da conversa:\n{history_context}' if history_context else ''}
+
+Gere o SQL para responder à pergunta."""
+            messages = [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=user_prompt),
+            ]
+            response = await llm.ainvoke(messages)
+            sql = (response.content or "").strip()
+            # Remove markdown code blocks if present
+            if sql.startswith("```"):
+                lines = sql.split("\n")
+                if lines[0].startswith("```"):
+                    lines = lines[1:]
+                if lines and lines[-1].strip() == "```":
+                    lines = lines[:-1]
+                sql = "\n".join(lines)
+            sql = sql.strip() or None
 
             span.attributes.update({
                 "input.preview": user_message[:100],
-                "output.sql": sql[:100],
+                "output.sql": (sql or "")[:200],
             })
 
             return sql
@@ -313,10 +386,10 @@ async def _execute_query(
     clean_sql: str,
     supabase: AsyncClient,
 ) -> tuple[list[dict[str, Any]], int]:
-    """Execute SQL query against Supabase.
+    """Execute SQL query via Supabase RPC execute_readonly_query.
 
     Args:
-        clean_sql: Validated SQL query
+        clean_sql: Validated SQL query (tenant_id already injected by sql_validator)
         supabase: Supabase async client
 
     Returns:
@@ -324,19 +397,25 @@ async def _execute_query(
     """
     try:
         with create_span("query_execute", kind="tool.call") as span:
-            # NOTE: This is a simplified example. Real implementation would
-            # use Supabase PostgREST with service role, or RPC for raw SQL.
-            # For now, return mock data to demonstrate the flow.
+            response = await supabase.rpc(
+                "execute_readonly_query",
+                {"query_text": clean_sql},
+            ).execute()
 
-            rows = [
-                {"id": 1, "name": "Projeto A", "status": "active"},
-                {"id": 2, "name": "Projeto B", "status": "active"},
-            ]
+            # RPC returns SETOF jsonb: list of row objects
+            data = response.data or []
+            rows = []
+            for item in data:
+                if isinstance(item, dict):
+                    rows.append(item)
+                else:
+                    rows.append({"value": item})
+
             row_count = len(rows)
 
             span.attributes.update({
                 "output.row_count": row_count,
-                "output.preview": str(rows)[:100],
+                "output.preview": str(rows)[:200],
             })
 
             return rows, row_count
@@ -350,6 +429,9 @@ async def _format_response(
     user_message: str,
     rows: list[dict[str, Any]],
     agent_config: dict[str, Any],
+    *,
+    tenant_id: str = "",
+    supabase: Optional[AsyncClient] = None,
 ) -> str:
     """Format query results into PT-BR prose response.
 
@@ -357,18 +439,37 @@ async def _format_response(
         user_message: Original user question
         rows: Query results
         agent_config: Agent configuration
+        tenant_id: Tenant ID (for optional LLM formatting)
+        supabase: Supabase client (for optional LLM formatting)
 
     Returns:
         Formatted response in Portuguese (PT-BR)
     """
     try:
         with create_span("response_format", kind="llm.call") as span:
-            # TODO: Call actual LLM to format response
-            # For now, simple text formatting
             if not rows:
                 answer = "Nenhum resultado encontrado para sua pergunta."
             else:
-                answer = f"Encontrei {len(rows)} projeto(s) ativo(s)."
+                # Simple formatting: summarize count and list key fields
+                count = len(rows)
+                sample = rows[0]
+                keys = [k for k in sample.keys() if k not in ("tenant_id", "espaider_raw")]
+                if "titulo" in sample or "titulo" in keys:
+                    items = [r.get("titulo", r.get("codigo", str(r)[:50])) for r in rows[:10]]
+                    answer = f"Encontrei {count} registro(s). "
+                    if count <= 10:
+                        answer += "Detalhes: " + "; ".join(str(i) for i in items)
+                    else:
+                        answer += f"Primeiros: {', '.join(str(i) for i in items)}..."
+                elif "codigo" in sample or "codigo" in keys:
+                    items = [r.get("codigo", str(r)[:30]) for r in rows[:10]]
+                    answer = f"Encontrei {count} registro(s): {', '.join(str(i) for i in items)}"
+                    if count > 10:
+                        answer += "..."
+                else:
+                    answer = f"Encontrei {count} registro(s). " + json.dumps(rows[:3], default=str, ensure_ascii=False)[:300]
+                    if count > 3:
+                        answer += "..."
 
             span.attributes.update({
                 "input.preview": user_message[:100],
@@ -379,8 +480,7 @@ async def _format_response(
 
     except Exception as exc:
         logger.warning("Response formatting failed: %s", str(exc))
-        # Fallback: return raw JSON
-        return f"Resultados: {json.dumps(rows)}"
+        return f"Resultados: {json.dumps(rows[:5], default=str, ensure_ascii=False)}"
 
 
 async def _format_chit_chat_response(

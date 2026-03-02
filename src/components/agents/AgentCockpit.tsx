@@ -1,12 +1,17 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Cpu, MessageCircle, ExternalLink, BarChart3 } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { Cpu, MessageCircle, ExternalLink, ChevronDown, ChevronRight } from 'lucide-react';
 import type { LmProvider, AgentType } from '@/types/agents';
 import type { UIAgent } from '@/lib/transformers/agent';
 import { AgentMetrics360 } from '@/components/agents/AgentMetrics360';
@@ -63,6 +68,8 @@ export function AgentCockpit({
     () => providers.find((p) => p.slug === agent.fullConfig.modelProvider),
     [agent.fullConfig.modelProvider, providers],
   );
+
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -171,6 +178,57 @@ export function AgentCockpit({
                 }
               />
             </div>
+
+            {agent.owners && agent.owners.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Owners</p>
+                <div className="flex flex-wrap gap-1">
+                  {agent.owners.map((owner: string) => (
+                    <Badge key={owner} variant="outline" className="text-xs">
+                      {owner}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                {advancedOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                Avançado (requirements, output_schema, validation_rules)
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-3 space-y-3 pl-6">
+                {agent.fullConfig.requirements && agent.fullConfig.requirements.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">Requisitos</p>
+                    <ul className="list-inside list-disc text-sm">
+                      {agent.fullConfig.requirements.map((r, i) => (
+                        <li key={i}>{r}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {agent.fullConfig.outputSchema && Object.keys(agent.fullConfig.outputSchema).length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">Output Schema</p>
+                    <pre className="rounded-md bg-muted p-2 text-xs overflow-x-auto">
+                      {JSON.stringify(agent.fullConfig.outputSchema, null, 2)}
+                    </pre>
+                  </div>
+                )}
+                {agent.fullConfig.validationRules && Object.keys(agent.fullConfig.validationRules).length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">Regras de Validação</p>
+                    <pre className="rounded-md bg-muted p-2 text-xs overflow-x-auto">
+                      {JSON.stringify(agent.fullConfig.validationRules, null, 2)}
+                    </pre>
+                  </div>
+                )}
+                {(!agent.fullConfig.requirements?.length && !agent.fullConfig.outputSchema && (!agent.fullConfig.validationRules || Object.keys(agent.fullConfig.validationRules).length === 0)) && (
+                  <p className="text-xs text-muted-foreground">Nenhum dado avançado configurado.</p>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         </TabsContent>
 

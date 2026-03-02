@@ -38,6 +38,7 @@ from app.services.session_service import (
     SessionServiceError,
 )
 from app.llm.factory import get_llm, create_with_fallback, LLMProviderError
+from app.chains.sql_qa import run_sql_qa
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 router = APIRouter()
@@ -1005,124 +1006,126 @@ async def chat_with_agent(
         t0 = time.perf_counter()
 
         try:
-            # Get published agent version for LLM config
+            # Get agent config for chat (published version or draft from agents table)
             agent_service = AgentService(supabase)
-            agent_version = None
+            agent_config = await agent_service.get_agent_config_for_chat(agent_id, tenant_id)
 
-            try:
-                agent_config = await agent_service.export_agent_version(agent_id, tenant_id)
-            except AgentServiceError:
-                # If no published version, use draft config
-                agent = await agent_service.get_agent(agent_id, tenant_id)
-                if not agent.draft:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Agent has no configuration (draft or published)"
-                    )
-                agent_config = agent.draft.model_dump() if hasattr(agent.draft, 'model_dump') else agent.draft
+            usage_type = agent_config.get("usage_type", "chatbot")
 
-            # Extract LLM config
-            model_config = agent_config.get("model", {})
-            provider = model_config.get("provider", "openai")
-            model_id = model_config.get("model_id", "gpt-4o")
-            temperature = model_config.get("temperature", 0.7)
-            max_tokens = model_config.get("max_tokens", 2000)
-            top_p = model_config.get("top_p")
+            # Chatbot with SQL QA: use run_sql_qa (classifies intent, runs SQL or chit-chat)
+            if usage_type == "chatbot":
+                sql_result = await run_sql_qa(
+                    agent_id=agent_id,
+                    tenant_id=tenant_id,
+                    session_id=session["id"],
+                    user_message=request_body.message,
+                    message_history=history,
+                    supabase=supabase,
+                    agent_config=agent_config,
+                )
+                answer = sql_result.answer
+                tokens_used = sql_result.tokens_used
+                cost_usd = sql_result.cost_usd
+                duration_ms = sql_result.duration_ms
+                sql_query = sql_result.sql_query
+                row_count = sql_result.row_count
+                trace_url = sql_result.trace_url
 
-            # Build LLM parameters
-            llm_kwargs = {
-                "temperature": temperature,
-                "max_tokens": max_tokens,
-            }
-            if top_p is not None:
-                llm_kwargs["top_p"] = top_p
+                # Register agent run for SQL QA path
+                run_id = str(uuid.uuid4())
+                await supabase.table("agent_runs").insert([{
+                    "id": run_id,
+                    "agent_id": agent_id,
+                    "agent_version": agent_config.get("version", "draft"),
+                    "tenant_id": tenant_id,
+                    "session_id": session["id"],
+                    "input_data": {"message": request_body.message},
+                    "output_data": {"answer": answer, "sql_query": sql_query, "row_count": row_count},
+                    "status": "completed",
+                    "tokens_used": tokens_used,
+                    "cost_usd": float(cost_usd),
+                    "duration_ms": duration_ms,
+                    "created_at": datetime.utcnow().isoformat(),
+                    "created_by": user_id,
+                }]).execute()
+            else:
+                # Workflow or fallback: LLM direct
+                model_config = agent_config.get("model", {})
+                provider = model_config.get("provider", "openai")
+                model_id = model_config.get("model_id", "gpt-4o")
+                temperature = model_config.get("temperature", 0.7)
+                max_tokens = model_config.get("max_tokens", 2000)
+                top_p = model_config.get("top_p")
 
-            # Instantiate LLM with automatic fallback (Story 7.7)
-            llm, selected_provider, selected_model_id = await create_with_fallback(
-                primary_provider=provider,
-                primary_model_id=model_id,
-                supabase_client=supabase,
-                tenant_id=tenant_id,
-                **llm_kwargs
-            )
+                llm_kwargs = {"temperature": temperature, "max_tokens": max_tokens}
+                if top_p is not None:
+                    llm_kwargs["top_p"] = top_p
 
-            # Build message list: persona + history + new message
-            messages = []
+                llm, selected_provider, selected_model_id = await create_with_fallback(
+                    primary_provider=provider,
+                    primary_model_id=model_id,
+                    supabase_client=supabase,
+                    tenant_id=tenant_id,
+                    **llm_kwargs
+                )
 
-            # System message (persona)
-            persona = agent_config.get("persona", "You are a helpful assistant.")
-            prompt_objective = agent_config.get("prompt_objective", "Assist the user.")
-            system_content = f"{persona}\n\nObjective: {prompt_objective}"
-            messages.append(SystemMessage(content=system_content))
+                persona = agent_config.get("persona", "You are a helpful assistant.")
+                prompt_objective = agent_config.get("prompt_objective", "Assist the user.")
+                system_content = f"{persona}\n\nObjective: {prompt_objective}"
+                messages = [SystemMessage(content=system_content)]
+                for msg in history:
+                    if msg.get("role") == "user":
+                        messages.append(HumanMessage(content=msg.get("content", "")))
+                    elif msg.get("role") == "assistant":
+                        messages.append(AIMessage(content=msg.get("content", "")))
+                messages.append(HumanMessage(content=request_body.message))
 
-            # Add conversation history
-            for msg in history:
-                if msg.get("role") == "user":
-                    messages.append(HumanMessage(content=msg.get("content", "")))
-                elif msg.get("role") == "assistant":
-                    messages.append(AIMessage(content=msg.get("content", "")))
+                response = await llm.ainvoke(messages)
+                answer = response.content
+                tokens_used = 0
+                cost_usd = 0.0
+                if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                    usage = response.usage_metadata
+                    tokens_used = usage.get('input_tokens', 0) + usage.get('output_tokens', 0)
+                    if provider == "openai":
+                        cost_usd = (usage.get('input_tokens', 0) * 0.000003 +
+                                   usage.get('output_tokens', 0) * 0.000006)
+                    elif provider == "anthropic":
+                        cost_usd = (usage.get('input_tokens', 0) * 0.000003 +
+                                   usage.get('output_tokens', 0) * 0.000015)
+                    else:
+                        cost_usd = tokens_used * 0.000005
 
-            # Add new user message
-            messages.append(HumanMessage(content=request_body.message))
+                duration_ms = round((time.perf_counter() - t0) * 1000)
+                sql_query = None
+                row_count = None
+                trace_url = None
 
-            # Invoke LLM
-            response = await llm.ainvoke(messages)
-            answer = response.content
+                run_id = str(uuid.uuid4())
+                await supabase.table("agent_runs").insert([{
+                    "id": run_id,
+                    "agent_id": agent_id,
+                    "agent_version": agent_config.get("version", "unknown"),
+                    "tenant_id": tenant_id,
+                    "session_id": session["id"],
+                    "input_data": {"message": request_body.message},
+                    "output_data": {"answer": answer},
+                    "status": "completed",
+                    "tokens_used": tokens_used,
+                    "cost_usd": float(cost_usd),
+                    "duration_ms": duration_ms,
+                    "temperature": temperature,
+                    "top_p": top_p,
+                    "max_tokens": max_tokens,
+                    "prompt_final": system_content + "\n\n" + request_body.message[:10000],
+                    "created_at": datetime.utcnow().isoformat(),
+                    "created_by": user_id,
+                }]).execute()
 
-            # Extract tokens and cost (if available from response metadata)
-            tokens_used = 0
-            cost_usd = 0.0
-
-            if hasattr(response, 'usage_metadata') and response.usage_metadata:
-                usage = response.usage_metadata
-                tokens_used = usage.get('input_tokens', 0) + usage.get('output_tokens', 0)
-                # Simple cost calculation: input + output tokens * rate (varies by model)
-                # For now, estimate: $0.00001 per token for gpt-4o, $0.000003 for claude
-                if provider == "openai":
-                    cost_usd = (usage.get('input_tokens', 0) * 0.000003 +
-                               usage.get('output_tokens', 0) * 0.000006)
-                elif provider == "anthropic":
-                    cost_usd = (usage.get('input_tokens', 0) * 0.000003 +
-                               usage.get('output_tokens', 0) * 0.000015)
-                else:
-                    cost_usd = tokens_used * 0.000005
-
-            duration_ms = round((time.perf_counter() - t0) * 1000)
-
-            # Register agent run (for observability & audit trail)
-            run_id = str(uuid.uuid4())
-            await supabase.table("agent_runs").insert([{
-                "id": run_id,
-                "agent_id": agent_id,
-                "agent_version": agent_config.get("version", "unknown"),
-                "tenant_id": tenant_id,
-                "session_id": session["id"],
-                "input_data": {"message": request_body.message},
-                "output_data": {"answer": answer},
-                "status": "completed",
-                "tokens_used": tokens_used,
-                "cost_usd": float(cost_usd),
-                "duration_ms": duration_ms,
-                "temperature": temperature,
-                "top_p": top_p,
-                "max_tokens": max_tokens,
-                "prompt_final": system_content + "\n\n" + request_body.message[:10000],
-                "created_at": datetime.utcnow().isoformat(),
-                "created_by": user_id,
-            }]).execute()
-
-            logger.info(
-                "Chat LLM execution: agent=%s, provider=%s→%s, model=%s→%s, tokens=%d, cost=$%.4f, duration=%dms",
-                agent_id,
-                provider,
-                selected_provider,
-                model_id,
-                selected_model_id,
-                tokens_used,
-                cost_usd,
-                duration_ms,
-            )
-
+        except AgentServiceError as e:
+            if "not found" in str(e).lower():
+                raise HTTPException(status_code=404, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e))
         except LLMProviderError as e:
             logger.error("LLM provider error: %s", str(e))
             if "API_KEY" in str(e) or "not set" in str(e).lower():
@@ -1161,11 +1164,11 @@ async def chat_with_agent(
             session_id=session["id"],
             message_id=asst_msg_id,
             answer=answer,
-            sql_query=None,
-            row_count=None,
+            sql_query=sql_query if usage_type == "chatbot" else None,
+            row_count=row_count if usage_type == "chatbot" else None,
             tokens_used=tokens_used,
             cost_usd=cost_usd,
-            trace_url=None,
+            trace_url=trace_url,
             duration_ms=duration_ms,
         )
 

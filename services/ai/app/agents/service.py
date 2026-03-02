@@ -3,6 +3,7 @@ Agent service layer - Business logic for agent configuration
 Handles: CRUD, versionamento, breaking change detection, RLS
 """
 
+import json
 import logging
 import uuid
 from datetime import datetime
@@ -275,6 +276,27 @@ class AgentService:
             raise AgentServiceError(f"Version {target_version} not found")
         
         return version_response.data["agent_config"]
+
+    async def get_agent_config_for_chat(
+        self,
+        agent_id: str,
+        tenant_id: str,
+    ) -> dict:
+        """Get agent config for chat: published version or draft from agents table.
+        Unifies config source so chat works with both published and draft agents.
+        """
+        try:
+            return await self.export_agent_version(agent_id, tenant_id)
+        except AgentServiceError:
+            pass
+
+        # Fallback: agent has no published version, use draft from agents
+        response = await self.supabase.table("agents").select("*").eq("id", agent_id).eq("tenant_id", tenant_id).single()
+        if not response.data:
+            raise AgentServiceError(f"Agent {agent_id} not found")
+
+        config = self._build_agent_config(response.data)
+        return config.model_dump()
     
     async def get_agent_versions(
         self,
@@ -339,6 +361,20 @@ class AgentService:
             created_by=row["created_by"],
         )
     
+    def _parse_prompt_instructions(self, value) -> list:
+        """Parse prompt_instructions from DB (JSON string or list)."""
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return value
+        if isinstance(value, str):
+            try:
+                parsed = json.loads(value)
+                return parsed if isinstance(parsed, list) else []
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return []
+
     def _build_agent_config(self, row: dict) -> AgentConfigModel:
         """Build AgentConfigModel from DB row"""
         return AgentConfigModel(
@@ -349,11 +385,14 @@ class AgentService:
             owners=row.get("owners", []),
             tags=row.get("tags"),
             status=row["status"],
-            persona=row.get("persona"),
-            prompt_objective=row["prompt_objective"],
-            prompt_instructions=row.get("prompt_instructions", []),
-            prompt_template=row["prompt_template"],
+            agent_type=row.get("agent_type"),
+            agent_type_id=row.get("agent_type_id"),
+            persona=row.get("persona") or None,
+            prompt_objective=row.get("prompt_objective") or "",
+            prompt_instructions=self._parse_prompt_instructions(row.get("prompt_instructions")),
+            prompt_template=row.get("prompt_template") or "",
             output_schema=row.get("output_schema"),
+            usage_type=row.get("usage_type") or "chatbot",
             model={
                 "provider": row.get("model_provider"),
                 "model_id": row.get("model_id"),

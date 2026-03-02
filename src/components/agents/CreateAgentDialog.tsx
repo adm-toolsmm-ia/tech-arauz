@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
@@ -50,12 +51,9 @@ export function CreateAgentDialog({
   const defaultProvider = providers[0];
   const defaultProviderSlug = defaultProvider?.slug ?? 'openai';
 
-  const [formData, setFormData] = useState<
-    CreateAgentRequest & {
-      persona?: string;
-      prompt_objective?: string;
-    }
-  >({
+  const initialFormData: CreateAgentRequest & {
+    prompt_instructions?: string[];
+  } = {
     name: '',
     slug: '',
     description: '',
@@ -67,7 +65,17 @@ export function CreateAgentDialog({
     model_max_tokens: 2000,
     persona: '',
     prompt_objective: '',
-  });
+    prompt_instructions: [],
+    prompt_template: '',
+    tags: [],
+    usage_type: 'chatbot',
+    show_in_shortcut: false,
+    is_global_chatbot: false,
+    requirements: [],
+    output_schema: undefined,
+  };
+
+  const [formData, setFormData] = useState<typeof initialFormData>(initialFormData);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -153,19 +161,7 @@ export function CreateAgentDialog({
       await AgentSupabaseService.createAgent(formData);
       toast.success(`✅ Agente "${formData.name}" criado com sucesso!`);
       setOpen(false);
-      setFormData({
-        name: '',
-        slug: '',
-        description: '',
-        agent_type: 'custom',
-        agent_type_id: undefined,
-        model_provider: defaultProviderSlug,
-        model_id: 'gpt-4',
-        model_temperature: 0.7,
-        model_max_tokens: 2000,
-        persona: '',
-        prompt_objective: '',
-      });
+      setFormData(initialFormData);
       router.refresh();
       onSuccess?.();
     } catch (error) {
@@ -206,15 +202,21 @@ export function CreateAgentDialog({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Tabs for Organization */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full">
-              <TabsTrigger value="basic" className="flex-1">
+            <TabsList className="w-full flex-wrap">
+              <TabsTrigger value="basic" className="flex-1 min-w-0">
                 Básico
               </TabsTrigger>
-              <TabsTrigger value="llm" className="flex-1">
+              <TabsTrigger value="classification" className="flex-1 min-w-0">
+                Classificação
+              </TabsTrigger>
+              <TabsTrigger value="llm" className="flex-1 min-w-0">
                 Modelo
               </TabsTrigger>
-              <TabsTrigger value="persona" className="flex-1">
+              <TabsTrigger value="persona" className="flex-1 min-w-0">
                 Persona
+              </TabsTrigger>
+              <TabsTrigger value="advanced" className="flex-1 min-w-0">
+                Avançado
               </TabsTrigger>
             </TabsList>
 
@@ -285,6 +287,80 @@ export function CreateAgentDialog({
                   </SelectContent>
                 </Select>
               </div>
+
+              <div>
+                <Label htmlFor="tags">Tags (separadas por vírgula)</Label>
+                <Input
+                  id="tags"
+                  placeholder="ex: projetos, relatorios, status"
+                  value={(formData.tags ?? []).join(', ')}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      tags: e.target.value
+                        .split(',')
+                        .map((t) => t.trim())
+                        .filter(Boolean),
+                    }))
+                  }
+                  disabled={isLoading || externalLoading}
+                />
+              </div>
+            </TabsContent>
+
+            {/* TAB: Classificação */}
+            <TabsContent value="classification" className="mt-4 space-y-4">
+              <div>
+                <Label htmlFor="usage-type">Tipo de Uso</Label>
+                <Select
+                  value={formData.usage_type || 'chatbot'}
+                  onValueChange={(value: 'chatbot' | 'workflow') =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      usage_type: value,
+                      ...(value === 'workflow' && {
+                        show_in_shortcut: false,
+                        is_global_chatbot: false,
+                      }),
+                    }))
+                  }
+                  disabled={isLoading || externalLoading}
+                >
+                  <SelectTrigger id="usage-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="chatbot">Chatbot (conversacional)</SelectItem>
+                    <SelectItem value="workflow">Workflow (automação)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {formData.usage_type === 'chatbot' && (
+                <div className="space-y-3 rounded-lg border p-4 bg-muted/30">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="show-in-shortcut">Exibir no seletor de chatbot</Label>
+                    <Switch
+                      id="show-in-shortcut"
+                      checked={formData.show_in_shortcut ?? false}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({ ...prev, show_in_shortcut: checked }))
+                      }
+                      disabled={isLoading || externalLoading}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="is-global-chatbot">Chatbot global (flutuante)</Label>
+                    <Switch
+                      id="is-global-chatbot"
+                      checked={formData.is_global_chatbot ?? false}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({ ...prev, is_global_chatbot: checked }))
+                      }
+                      disabled={isLoading || externalLoading}
+                    />
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             {/* TAB 2: LLM Configuration (provedores e modelos do banco) */}
@@ -408,7 +484,7 @@ export function CreateAgentDialog({
               </div>
             </TabsContent>
 
-            {/* TAB 3: Persona & Objective */}
+            {/* TAB: Persona */}
             <TabsContent value="persona" className="mt-4 space-y-4">
               <div>
                 <Label htmlFor="persona">Persona</Label>
@@ -433,6 +509,92 @@ export function CreateAgentDialog({
                   }
                   disabled={isLoading || externalLoading}
                   rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="prompt-instructions">Instruções (uma por linha)</Label>
+                <Textarea
+                  id="prompt-instructions"
+                  placeholder="ex: Sempre responda em português&#10;Formate datas no padrão DD/MM/AAAA"
+                  value={(formData.prompt_instructions ?? []).join('\n')}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      prompt_instructions: e.target.value
+                        .split('\n')
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    }))
+                  }
+                  disabled={isLoading || externalLoading}
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="prompt-template">Template de prompt</Label>
+                <Textarea
+                  id="prompt-template"
+                  placeholder="ex: Analise o projeto {{project_id}} e retorne o status..."
+                  value={formData.prompt_template || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, prompt_template: e.target.value }))
+                  }
+                  disabled={isLoading || externalLoading}
+                  rows={3}
+                />
+              </div>
+            </TabsContent>
+
+            {/* TAB: Avançado */}
+            <TabsContent value="advanced" className="mt-4 space-y-4">
+              <div>
+                <Label htmlFor="requirements">Requisitos (um por linha)</Label>
+                <Textarea
+                  id="requirements"
+                  placeholder="ex: Deve validar datas antes de processar&#10;Deve retornar JSON quando solicitado"
+                  value={(formData.requirements ?? []).join('\n')}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      requirements: e.target.value
+                        .split('\n')
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    }))
+                  }
+                  disabled={isLoading || externalLoading}
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="output-schema">Output Schema (JSON)</Label>
+                <Textarea
+                  id="output-schema"
+                  placeholder='{"type": "object", "properties": {...}}'
+                  value={
+                    formData.output_schema
+                      ? JSON.stringify(formData.output_schema, null, 2)
+                      : ''
+                  }
+                  onChange={(e) => {
+                    const val = e.target.value.trim();
+                    if (!val) {
+                      setFormData((prev) => ({ ...prev, output_schema: undefined }));
+                      return;
+                    }
+                    try {
+                      const parsed = JSON.parse(val) as Record<string, unknown>;
+                      setFormData((prev) => ({ ...prev, output_schema: parsed }));
+                    } catch {
+                      // ignore invalid JSON while typing
+                    }
+                  }}
+                  disabled={isLoading || externalLoading}
+                  rows={6}
+                  className="font-mono text-sm"
                 />
               </div>
             </TabsContent>

@@ -350,6 +350,14 @@ export interface CreateAgentRequest {
   model_max_tokens?: number;
   persona?: string;
   prompt_objective?: string;
+  prompt_instructions?: string[] | string;
+  prompt_template?: string;
+  tags?: string[];
+  usage_type?: 'chatbot' | 'workflow';
+  show_in_shortcut?: boolean;
+  is_global_chatbot?: boolean;
+  requirements?: string[];
+  output_schema?: Record<string, unknown>;
 }
 
 export interface UpdateAgentDraftRequest {

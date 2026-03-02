@@ -2,7 +2,7 @@
 name = "tech-arauz-ai"
 version = "0.1.0"
 description = "Serviço de AI para Tech Arauz - Gestão de Agentes com LangGraph"
-readme = "README.md"
+# readme omitido: Nixpacks/Railway copia só pyproject.toml no build; README.md existe no repo
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [

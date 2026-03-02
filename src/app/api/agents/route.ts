@@ -46,7 +46,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'No session token' }, { status: 401 });
   }
 
-  // Proxy to Python service v2 with JWT
+  // Proxy to Python service v2 with JWT; fallback to Supabase when FastAPI unavailable
   const { searchParams } = new URL(request.url);
   const params = new URLSearchParams(searchParams);
 
@@ -60,7 +60,12 @@ export async function GET(request: Request) {
     });
 
     if (!res.ok) {
-      const error = await res.json();
+      if (res.status === 503) {
+        // Fallback: fetch from Supabase when FastAPI unavailable
+        const fallback = await fetchAgentsFromSupabase(supabase, searchParams);
+        if (fallback) return fallback;
+      }
+      const error = await res.json().catch(() => ({}));
       return NextResponse.json(error, { status: res.status });
     }
 
@@ -68,7 +73,53 @@ export async function GET(request: Request) {
     return NextResponse.json(data);
   } catch (error) {
     logProxyError('GET', error);
+    // Fallback: fetch from Supabase when FastAPI unreachable
+    const fallback = await fetchAgentsFromSupabase(supabase, searchParams);
+    if (fallback) return fallback;
     return NextResponse.json({ error: 'AI service unavailable' }, { status: 503 });
+  }
+}
+
+/** Fallback: fetch agents from Supabase when FastAPI returns 503 or is unreachable */
+async function fetchAgentsFromSupabase(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  searchParams: URLSearchParams,
+) {
+  try {
+    const usageType = searchParams.get('usage_type');
+    const status = searchParams.get('status');
+    const showInShortcut = searchParams.get('show_in_shortcut');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 100);
+
+    let query = supabase.from('agents').select('id, name, description, status, usage_type, show_in_shortcut');
+
+    if (usageType) query = query.eq('usage_type', usageType);
+    if (status) query = query.eq('status', status);
+    if (showInShortcut === 'true') query = query.eq('show_in_shortcut', true);
+
+    const { data: rows, error } = await query.order('created_at', { ascending: false }).limit(limit);
+
+    if (error) {
+      console.error('[agents/GET] Supabase fallback error:', error);
+      return null;
+    }
+
+    const agents = (rows || []).map((r: { id: string; name: string; description: string | null }) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description || '',
+    }));
+
+    return Response.json({
+      agents,
+      total: agents.length,
+      page: 1,
+      page_size: agents.length,
+      has_next: false,
+    });
+  } catch (e) {
+    console.error('[agents/GET] Supabase fallback exception:', e);
+    return null;
   }
 }
 

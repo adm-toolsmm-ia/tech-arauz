@@ -296,14 +296,16 @@ export function AgentEditSheet({
                   <div>
                     <Label>Tipo de Agente</Label>
                     <Select
-                      value={formData.agentTypeId}
-                      onValueChange={(value) => handleChange('agentTypeId', value || null)}
+                      value={formData.agentTypeId || 'no-type'}
+                      onValueChange={(value) =>
+                        handleChange('agentTypeId', value === 'no-type' ? null : value)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecionar..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Sem tipo (Custom)</SelectItem>
+                        <SelectItem value="no-type">Sem tipo (Custom)</SelectItem>
                         {agentTypes.map((type) => (
                           <SelectItem key={type.id} value={type.id}>
                             {type.icon_emoji} {type.name}

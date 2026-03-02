@@ -1,13 +1,15 @@
 # SCHEMA - Tech Arauz (Supabase/PostgreSQL)
 
 Data da auditoria: 2026-03-01
-Fonte: `supabase/migrations/001` ate `supabase/migrations/048`
+Fonte: `supabase/migrations/001` ate `supabase/migrations/049`
 
 **Migration 044:** Remove seed data de lm_providers, lm_models e agent_types. Tabelas ficam vazias; recriação manual após validação dos módulos.
 
 **Migrations 045–047:** Classificação de agentes (usage_type, show_in_shortcut, is_global_chatbot), governança de lm_models (stability_level, release_channel, capabilities), tabelas de governança avançada (model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log).
 
 **Migration 048:** message_count em agent_sessions (trigger increment/decrement), snapshot em agent_runs (model_id, provider_id, agent_version_id, temperature, top_p, max_tokens, prompt_final), RLS agent_messages (user-session isolation).
+
+**Migration 049:** Seed lm_providers e lm_models — provedores (OpenAI, Anthropic, Google AI, Azure OpenAI) e modelos estratégicos para todos os tenants. Idempotente via ON CONFLICT.
 
 **Export em formato Prisma (extraído via MCP Supabase):** `docs/architecture/data/schema.prisma` — pasta canônica para arquitetura de dados e contexto AI/AIOS.
 
@@ -363,6 +365,7 @@ agent_sessions (1) - (N) agent_feedback
 - 046: lm_models governance (stability_level, release_channel, capabilities, deprecated_at, sunset_at)
 - 047: Tabelas de governanca (model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log)
 - 048: Correção gaps governança — message_count em agent_sessions (trigger), snapshot agent_runs (model_id, provider_id, agent_version_id, temperature, top_p, max_tokens, prompt_final), RLS agent_messages (user-session isolation)
+- 049: Seed lm_providers e lm_models (OpenAI, Anthropic, Google AI, Azure OpenAI + 7 modelos estratégicos) para todos os tenants. Idempotente.
 
 ---
 

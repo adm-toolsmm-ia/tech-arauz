@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     ai_service_port: int = Field(default=8000, alias="AI_SERVICE_PORT")
     ai_service_host: str = Field(default="0.0.0.0", alias="AI_SERVICE_HOST")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
+    # CORS: origens permitidas separadas por vírgula (ex: http://localhost:3000,https://arauz-tech.vercel.app)
+    cors_origins: str = Field(
+        default="http://localhost:3000",
+        alias="CORS_ORIGINS",
+    )
 
     # Observability
     obs_enabled: bool = Field(default=True, alias="OBS_ENABLED")

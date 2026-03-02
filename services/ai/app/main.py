@@ -70,10 +70,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
+# CORS (CORS_ORIGINS: vírgula-separado, ex: http://localhost:3000,https://arauz-tech.vercel.app)
+_settings = get_settings()
+_origins = [o.strip() for o in _settings.cors_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js dev
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

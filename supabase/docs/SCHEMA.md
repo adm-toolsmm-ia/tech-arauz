@@ -88,7 +88,9 @@ agents (1) ----- (N) agent_budgets
 agents (1) ----- (N) agent_usage_daily
 agents (1) ----- (N) agent_deployments
 tenants (1) ---- (N) agent_types ---- (N) agent_templates
-tenants (1) ---- (N) lm_providers ---- (N) lm_models ---- (N) lm_provider_accounts
+tenants (1) ---- (N) lm_providers ---- (N) lm_models
+lm_models (N) ---- (1) lm_provider_accounts (opcional, via provider_account_id)
+lm_models (1) ---- (N) model_governance_reviews, model_cost_monitoring, model_incidents, model_fallback_policies, model_change_log
 
 tenants (1) ---- (N) tools
 agents (1) ----- (N) agent_tool_bindings --- (N) tools
@@ -242,6 +244,7 @@ agent_sessions (1) - (N) agent_feedback
 ## `agent_run_steps`
 - PK: `id (uuid)`
 - FK: `run_id -> agent_runs(id)`, `tenant_id -> tenants(id)`
+- Coluna `agent_id` (UUID, sem FK): denormalização; tipicamente agents.id para indexação
 - Campos-chave: `step_type` (input/tool_call/observation/output), `input/output` (jsonb), `execution_time_ms`
 - Indice composto: `(agent_id, run_id)`, `(tenant_id, created_at DESC)`
 
@@ -293,6 +296,34 @@ agent_sessions (1) - (N) agent_feedback
 - FK: `session_id -> agent_sessions(id)`, `tenant_id -> tenants(id)`
 - Campos-chave: `rating` (1-5), `feedback_text`, `feedback_type` (quality/accuracy/relevance/performance)
 - Indice composto: `(session_id)`, `(tenant_id, created_at DESC)`, `(feedback_type)`
+
+## `model_governance_reviews` (Migration 047)
+- PK: `id (uuid)`
+- FK: `tenant_id -> tenants(id)`, `model_id -> lm_models(id)`
+- Unique: `(tenant_id, model_id)`
+- Campos-chave: `reviewer_id`, `status` (pending|approved|rejected|needs_revision), `notes`, `reviewed_at`
+
+## `model_cost_monitoring` (Migration 047)
+- PK: `id (uuid)`
+- FK: `tenant_id -> tenants(id)`, `model_id -> lm_models(id)`
+- Unique: `(tenant_id, model_id, period_start, period_end)`
+- Campos-chave: `period_start`, `period_end`, `total_requests`, `total_tokens`, `total_cost_usd`, latências (p50, p95, p99), `error_count`, `error_rate`
+
+## `model_incidents` (Migration 047)
+- PK: `id (uuid)`
+- FK: `tenant_id -> tenants(id)`, `model_id -> lm_models(id)`
+- Campos-chave: `severity` (low|medium|high|critical), `title`, `description`, `started_at`, `resolved_at`, `impact_summary`, `mitigation_steps`, `root_cause`
+
+## `model_fallback_policies` (Migration 047)
+- PK: `id (uuid)`
+- FK: `tenant_id -> tenants(id)`, `primary_model_id -> lm_models(id)`, `fallback_model_id -> lm_models(id)`
+- Unique: `(tenant_id, primary_model_id, fallback_model_id)`
+- Campos-chave: `trigger_on` (array), `priority`, `is_active`
+
+## `model_change_log` (Migration 047)
+- PK: `id (uuid)`
+- FK: `tenant_id -> tenants(id)`, `model_id -> lm_models(id)`
+- Campos-chave: `changed_by`, `change_type` (created|updated|deprecated|sunset|other), `field_name`, `old_value`, `new_value`, `change_reason`, `changed_at`
 
 ## ALTERs em `agent_runs`
 - Migration 042: `budget_limit_usd` (numeric), `session_id` (UUID FK → agent_sessions, ON DELETE SET NULL)

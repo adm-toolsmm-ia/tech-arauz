@@ -285,9 +285,9 @@ O arquivo completo está em `docs/architecture/data/schema.prisma`. Resumo abaix
 | GET | /agents/v2/{agent_id}/export | Export do agente |
 | GET | /agents/v2/types | Tipos de agente |
 | GET | /agents/v2/templates | Templates |
-| POST | /agents/{agent_id}/chat | Chat conversacional (session_id, message) |
+| POST | /agents/{agent_id}/chat | Chat conversacional (session_id, message). Cria sessão via get_or_create_session quando session_id não fornecido. |
+| POST | /agents/{agent_id}/chat/stream | Chat em streaming (SSE) |
 | GET | /agents/{agent_id}/sessions | Listar sessões de chat (limit, offset) |
-| POST | /agents/{agent_id}/sessions | Criar nova sessão |
 | GET | /agents/{agent_id}/sessions/{session_id}/messages | Mensagens da sessão |
 
 Autenticação: JWT no header Authorization; tenant_id e user_id extraídos do token (app_metadata).
@@ -304,6 +304,12 @@ Autenticação: JWT no header Authorization; tenant_id e user_id extraídos do t
 
 ### 9.1 Páginas (src/app)
 
+- **Raiz e auth:** `src/app/page.tsx`, `src/app/login/page.tsx`, `src/app/logout/page.tsx`
+- **Dashboard:** `src/app/dashboard/page.tsx`
+- **Projetos:** `src/app/projetos/page.tsx` — listagem/visão de projetos (Espaider)
+- **Cronogramas:** `src/app/cronogramas/page.tsx` — cronogramas de projetos
+- **Integrações:** `src/app/integracoes/page.tsx` — configuração espaider_apis e sync
+- **Cadastros:** `src/app/cadastros/usuarios/page.tsx` — gestão de usuários
 - **Agentes:** `src/app/agentes/page.tsx`, `src/app/agentes/agentes-content.tsx`, `src/app/agentes/layout.tsx`, `src/app/agentes/[id]/page.tsx`, `src/app/agentes/[id]/agent-edit-content.tsx`, `src/app/agentes/[id]/chat/page.tsx`, `src/app/agentes/[id]/chat/chat-content.tsx`, `src/app/agentes/components/AgentsKanbanView.tsx`
 - **Histórico de Conversas:** `src/app/conversas/page.tsx`, `src/app/conversas/conversas-content.tsx` — lista sessões de chat do usuário, filtro por agente (usage_type=chatbot)
 - **Auxiliares:** `src/app/auxiliares/agent-types/page.tsx`, `src/app/auxiliares/agent-types/agent-types-content.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeFormDialog.tsx`, `src/app/auxiliares/agent-types/components/AgentTypeListItem.tsx`, `src/app/auxiliares/lm-providers/page.tsx`, `src/app/auxiliares/lm-providers/lm-providers-content.tsx`, `src/app/auxiliares/lm-providers/components/LmProviderListItem.tsx`, `src/app/auxiliares/modelos-ia/page.tsx`, `src/app/auxiliares/modelos-ia/modelos-ia-content.tsx`, `src/app/auxiliares/modelos-ia/governanca/page.tsx`, `src/app/auxiliares/modelos-ia/governanca/governanca-content.tsx`, `src/app/auxiliares/layout.tsx`, `src/components/lm-models/ModelCockpit.tsx`, `src/components/lm-providers/LmProviderKanbanCard.tsx`
@@ -318,12 +324,19 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | `src/app/api/agents/[id]/route.ts` | GET, PATCH, DELETE | GET/PATCH/DELETE `${AI_SERVICE_URL}/api/agents/v2/${id}` |
 | `src/app/api/agents/[id]/traces/route.ts` | GET | `${AI_SERVICE_URL}/api/traces?agent_id=${id}&page&page_size` |
 | `src/app/api/agents/[id]/chat/route.ts` | POST | POST `${AI_SERVICE_URL}/api/agents/${id}/chat` (body: session_id, message) |
-| `src/app/api/agents/[id]/sessions/route.ts` | GET, POST | GET/POST `${AI_SERVICE_URL}/api/agents/${id}/sessions` (GET: limit, offset) |
+| `src/app/api/agents/[id]/sessions/route.ts` | GET, POST | GET `${AI_SERVICE_URL}/api/agents/${id}/sessions` (limit, offset). POST: proxy para serviço AI (serviço não implementa POST; criação de sessão ocorre no primeiro turno do chat via get_or_create_session quando session_id ausente). |
 | `src/app/api/agents/[id]/metrics/route.ts` | GET | Consulta Supabase: agent_usage_daily (sessions_count, messages_count, cost_total_usd, avg_latency_ms, success_rate_pct), agent_deployments. Query: dateRange (7d|30d|90d). Contrato: runs_total, success_rate, avg_latency_ms, total_cost_usd, daily_data, deployments. |
 | `src/app/api/sessions/route.ts` | GET | Lista agent_sessions do usuário autenticado. Query: page, limit, agent_id, status. Retorna sessions com agent_name (join agents) e message_count (coluna em agent_sessions, mantida via trigger em agent_messages — migration 048). |
 | `src/app/api/agents/budget/route.ts` | GET | `${AI_SERVICE_URL}/api/budget` |
 | `src/app/api/agents/types/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/types` |
 | `src/app/api/agents/templates/route.ts` | GET | `${AI_SERVICE_URL}/api/agents/v2/templates` + query |
+| `src/app/api/integracoes/route.ts` | GET, POST, PATCH, DELETE | CRUD espaider_apis (Supabase direto; RLS por tenant) |
+| `src/app/api/integracoes/sync/route.ts` | POST | Dispara sync Espaider via `espaider-sync.ts` |
+| `src/app/api/integracoes/setup/route.ts` | GET, POST | Setup/teste de integração |
+| `src/app/api/integracoes/test/route.ts` | POST | Teste de conexão com API Espaider |
+| `src/app/api/integracoes/logs/route.ts` | GET | Logs de integração (sync_logs, integration_log_entries) |
+| `src/app/api/integracoes/logs/summary/route.ts` | GET | Resumo de logs |
+| `src/app/api/lm-models/bulk-update/route.ts` | PATCH | Bulk update is_active em lm_models (body: modelIds, isActive) |
 
 ### 9.3 Server Actions
 
@@ -362,3 +375,5 @@ Variável de ambiente: `AI_SERVICE_URL` (fallback localhost:8000). Token de sess
 | API chat/sessions/metrics | `src/app/api/agents/[id]/chat/`, `src/app/api/sessions/`, `src/app/api/agents/[id]/metrics/` |
 | Actions (lm-models, lm-providers, agent-types) | `src/app/actions/` |
 | Sync Espaider | `src/lib/sync/espaider-sync.ts`, `src/app/api/integracoes/sync/` |
+| Integrações (CRUD, setup, logs) | `src/app/api/integracoes/`, `src/app/integracoes/` |
+| Bulk update modelos | `src/app/api/lm-models/bulk-update/` |

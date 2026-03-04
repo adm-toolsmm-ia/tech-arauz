@@ -29,7 +29,6 @@ export function PdfExportButton({ contentRef, title, className }: PdfExportButto
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
             };
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await html2pdf().set(opt as any).from(contentRef.current).save();
         } catch (err) {
             console.error('[PdfExportButton] export error:', err);

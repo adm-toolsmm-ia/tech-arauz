@@ -23,6 +23,10 @@ export interface DashboardProjectLike {
   fase_atual?: string | null;
   aprovador_atual?: string | null;
   last_update?: string | null;
+  complexidade_tecnica?: string | null;
+  created_at?: string | null;
+  budgets?: { value: number; currency: string }[];
+  histories?: { date: string; step_from?: string }[];
 }
 
 export interface DashboardKpis {
@@ -41,6 +45,9 @@ export interface DashboardKpis {
   completedLastMonth: number;
   completionRate: number;
   topAreas: Array<[string, number]>;
+  totalBudgetValue: number;
+  projectsWithHighImpact: number;
+  avgLeadTimeDays: number;
 }
 
 function normalizeStatus(s: string | null | undefined): string {
@@ -79,6 +86,47 @@ export function computeTopAreas(
 
 export function computeCompletionRate(total: number, completed: number): number {
   return total > 0 ? Math.round((completed / total) * 100) : 0;
+}
+
+export function computeTotalBudget(projects: DashboardProjectLike[]): number {
+  return projects.reduce((total, p) => {
+    const pBudget = p.budgets?.reduce((sum, b) => sum + (b.value || 0), 0) || 0;
+    return total + pBudget;
+  }, 0);
+}
+
+export function computeHighImpactProjects(projects: DashboardProjectLike[]): number {
+  return projects.filter(p => p.impacto_estrategico?.toLowerCase() === 'alto' && isConsideredActive(p.status)).length;
+}
+
+/**
+ * computeLeadTime — Average days from project start → data_encerramento
+ * Uses the earliest history entry date as "start", falls back to created_at.
+ * Only counts completed projects with a valid encerramento date.
+ */
+export function computeLeadTime(projects: DashboardProjectLike[]): number {
+  const completedWithDates = projects.filter(
+    (p) => normalizeStatus(p.status) === 'concluído' && p.data_encerramento,
+  );
+
+  if (completedWithDates.length === 0) return 0;
+
+  const totalDays = completedWithDates.reduce((sum, p) => {
+    const closedAt = new Date(p.data_encerramento!);
+    // Earliest history date or created_at as project start
+    const historyDates = (p.histories || []).map((h) => new Date(h.date).getTime()).filter(Boolean);
+    const startMs =
+      historyDates.length > 0
+        ? Math.min(...historyDates)
+        : p.created_at
+          ? new Date(p.created_at).getTime()
+          : closedAt.getTime();
+
+    const days = Math.max(0, Math.round((closedAt.getTime() - startMs) / 86_400_000));
+    return sum + days;
+  }, 0);
+
+  return Math.round(totalDays / completedWithDates.length);
 }
 
 export function computeDashboardKpis(projects: DashboardProjectLike[]): DashboardKpis {
@@ -129,6 +177,9 @@ export function computeDashboardKpis(projects: DashboardProjectLike[]): Dashboar
   const completedLastMonth = countCompletedInMonth(projects, lastMonth);
   const completionRate = computeCompletionRate(totalProjects, completedProjects);
   const topAreas = computeTopAreas(projects);
+  const totalBudgetValue = computeTotalBudget(projects);
+  const projectsWithHighImpact = computeHighImpactProjects(projects);
+  const avgLeadTimeDays = computeLeadTime(projects);
 
   return {
     totalProjects,
@@ -146,5 +197,8 @@ export function computeDashboardKpis(projects: DashboardProjectLike[]): Dashboar
     completedLastMonth,
     completionRate,
     topAreas,
+    totalBudgetValue,
+    projectsWithHighImpact,
+    avgLeadTimeDays,
   };
 }

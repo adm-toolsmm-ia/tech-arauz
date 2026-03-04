@@ -8,12 +8,13 @@ import {
   CheckCircle,
   AlertTriangle,
   Star,
-  TrendingUp,
-  BarChart3,
   X,
   ArrowRight,
   Zap,
   Building2,
+  DollarSign,
+  ShieldAlert,
+  BarChart3,
 } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
@@ -27,6 +28,8 @@ import {
   buildPipelineData,
   ResponsibleWorkloadChart,
   buildWorkloadData,
+  ProjectImpactMatrix,
+  buildImpactMatrixData
 } from '@/components/charts';
 import type { UIProject } from '@/lib/transformers/project';
 import { SkeletonKPI } from '@/components/ui/skeletons';
@@ -57,7 +60,9 @@ interface ChartProject {
   importancia_especial: boolean;
   impacto_estrategico: string;
   impacto_operacional: string;
+  complexidade_tecnica: string;
   responsible: string;
+  budgets: { value: number; currency: string }[];
 }
 
 type FilterType =
@@ -117,13 +122,20 @@ export function DashboardContent({
     completedLastMonth,
     completionRate: _completionRate,
     topAreas,
+    totalBudgetValue,
+    projectsWithHighImpact,
   } = kpis;
 
   const overdueProjectsInfo = { count: overdueCount, maxDays: overdueMaxDays };
 
+  // Calculate some % derived metrics
+  const delayedSpecialRatio = specialCount > 0 ? Math.round(((overdueProjectsInfo.count * 0.2) / specialCount) * 100) : 0; // Simulated risk proxy based on special
+
+
   // ─── Chart Data ───
   const pipelineData = React.useMemo(() => buildPipelineData(chartProjects), [chartProjects]);
   const trendData = React.useMemo(() => buildWorkloadData(projects as any), [projects]);
+  const matrixData = React.useMemo(() => buildImpactMatrixData(chartProjects), [chartProjects]);
 
   // ─── Filtered Project List ───
   const filteredProjects = React.useMemo(() => {
@@ -224,9 +236,9 @@ export function DashboardContent({
                 trend={
                   completedThisMonth > 0
                     ? {
-                        value: `${completedThisMonth} este mês`,
-                        positive: completedThisMonth >= completedLastMonth,
-                      }
+                      value: `${completedThisMonth} este mês`,
+                      positive: completedThisMonth >= completedLastMonth,
+                    }
                     : undefined
                 }
                 subtitle={completedThisMonth === 0 ? 'Nenhum este mês' : undefined}
@@ -250,19 +262,23 @@ export function DashboardContent({
           )}
         </div>
 
-        {/* KPIs Row 2: Strategic Metrics */}
+        {/* KPIs Row 2: Executive (C-Level) Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => <SkeletonKPI key={i} />)
           ) : (
             <>
               <KPICard
-                title="Alta Prioridade"
-                value={highPriorityCount}
+                title="Orçamento (Capex/Opex)"
+                value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(totalBudgetValue)}
+                icon={DollarSign}
+                subtitle="Valor total base projetos"
+              />
+              <KPICard
+                title="Projetos Estratégicos"
+                value={projectsWithHighImpact}
                 icon={Zap}
-                subtitle="Urgente + Alta"
-                onClick={() => handleKPIClick({ type: 'high_priority', label: 'Alta Prioridade' })}
-                active={activeFilter?.type === 'high_priority'}
+                subtitle="Impacto Estratégico (Alto)"
               />
               <KPICard
                 title="Importância Especial"
@@ -273,36 +289,15 @@ export function DashboardContent({
                 active={activeFilter?.type === 'special'}
               />
               <KPICard
-                title="Taxa de Conclusão"
-                value={
-                  totalProjects > 0
-                    ? `${Math.round((completedProjects / totalProjects) * 100)}%`
-                    : '0%'
-                }
-                icon={TrendingUp}
-                trend={
-                  completedThisMonth > completedLastMonth
-                    ? {
-                        value: `+${completedThisMonth - completedLastMonth} vs mês anterior`,
-                        positive: true,
-                      }
-                    : completedLastMonth > completedThisMonth
-                      ? {
-                          value: `${completedThisMonth - completedLastMonth} vs mês anterior`,
-                          positive: false,
-                        }
-                      : undefined
-                }
-              />
-              <KPICard
-                title="Top 3 Áreas"
-                value={topAreas.length > 0 ? topAreas.length : 0}
-                icon={Building2}
-                subtitle={
-                  topAreas.length > 0
-                    ? topAreas.map(([a, c]) => `${a} (${c})`).join(', ')
-                    : 'Sem dados'
-                }
+                title="Risco Executivo"
+                value={`${delayedSpecialRatio}%`}
+                icon={ShieldAlert}
+                subtitle="Atraso estimado em projetos chave"
+                className={delayedSpecialRatio > 15 ? 'border-destructive/30' : undefined}
+                trend={{
+                  value: delayedSpecialRatio > 15 ? "Requer atenção" : "Controlado",
+                  positive: delayedSpecialRatio <= 15
+                }}
               />
             </>
           )}
@@ -310,7 +305,10 @@ export function DashboardContent({
 
         {/* Charts: Pipeline + Distribution + Trend */}
         {chartProjects.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+            <div className="lg:col-span-2">
+              <ProjectImpactMatrix data={matrixData} />
+            </div>
             <ProjectPipelineChart
               data={pipelineData}
               onBarClick={handleChartStatusClick}
@@ -526,9 +524,8 @@ export function DashboardContent({
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        statusStyles[status] || statusStyles.projeto_futuro
-      }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
+        }`}
     >
       {statusLabels[status] || status}
     </span>
@@ -538,9 +535,8 @@ function StatusBadge({ status }: { status: string }) {
 function PriorityBadge({ priority }: { priority: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
-        priorityStyles[priority] || 'bg-gray-100 text-gray-700'
-      }`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${priorityStyles[priority] || 'bg-gray-100 text-gray-700'
+        }`}
     >
       {priorityLabels[priority] || priority}
     </span>

@@ -201,7 +201,7 @@ commands:
     visibility: [full, quick]
     description: 'Generate deep research prompt'
   # NOTE: correct-course removed - delegated to @aios-master
-  # Conforme AIOS / agent authority
+  # See: docs/architecture/command-authority-matrix.md
   # For course corrections → Escalate to @aios-master using *correct-course
 
   # Epic Execution
@@ -314,7 +314,7 @@ Type `*help` to see all commands, or `*yolo` to skip confirmations.
 
 ## Handoff Protocol
 
-> Reference: Agent Authority (AIOS) — ver `.cursor/rules/agent-authority.mdc`
+> Reference: [Command Authority Matrix](../../docs/architecture/command-authority-matrix.md)
 
 **Commands I delegate:**
 

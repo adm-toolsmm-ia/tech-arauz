@@ -115,4 +115,4 @@ async function operation() {
 ```
 
 ---
-*Synkra AIOS Cursor Configuration v1.0* 
+*Synkra AIOS Cursor Configuration v1.0*

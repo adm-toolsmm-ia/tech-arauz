@@ -150,7 +150,7 @@ commands:
 
   # Process Management
   # NOTE: correct-course removed - delegated to @aios-master
-  # Conforme AIOS / agent authority
+  # See: docs/architecture/command-authority-matrix.md
   # For course corrections → Escalate to @aios-master using *correct-course
 
   # Utilities
@@ -224,7 +224,7 @@ Type `*help` to see all commands.
 
 ## Handoff Protocol
 
-> Reference: Agent Authority (AIOS) — ver `.cursor/rules/agent-authority.mdc`
+> Reference: [Command Authority Matrix](../../docs/architecture/command-authority-matrix.md)
 
 **Commands I delegate:**
 

@@ -70,7 +70,6 @@ Gate minimo por story:
 ## Agent Shortcuts
 
 Preferencia de ativacao no Codex CLI:
-
 1. Use `/skills` e selecione `aios-<agent-id>` vindo de `.codex/skills` (ex.: `aios-architect`)
 2. Se preferir, use os atalhos abaixo (`@architect`, `/architect`, etc.)
 

@@ -12,6 +12,7 @@ import {
   Zap,
   Database,
   MessageSquare,
+  Activity,
 } from 'lucide-react';
 import type { NavGroup, NavItem } from './sidebar-types';
 
@@ -19,7 +20,9 @@ export const menuConfig: NavGroup[] = [
   {
     group: 'Inteligência',
     items: [
-      { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+      { title: 'Dashboard Projetos', url: '/dashboard/projetos', icon: LayoutDashboard },
+      { title: 'Dashboard Operações', url: '/dashboard/operacoes', icon: Activity },
+      { title: 'Documentação', url: '/documentacao', icon: FileText },
       // { title: 'Relatórios', url: '/relatorios', icon: FileText, badge: 'Em Breve' },
     ],
   },

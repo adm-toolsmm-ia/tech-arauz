@@ -310,13 +310,13 @@ export interface TempoPermanenciaMapeado {
  */
 export interface HoraLancadaMapeada {
   id_espaider: number;
-  projeto_id_espaider: number;   // ID da solicitação (FK para projects)
-  solicitacao_id: number;        // IDSOLICITACAO
-  pasta_consultivo_id: number | null; // PASTACONSULTIVO_ID
-  profissional: string;          // PROFISSIONAL
-  horas: number | null;          // HORAS
-  data_lancamento: Date | null;  // DATALANCAMENTO
-  tipo_lancamento: string;       // TIPOLANCAMENTO
+  projeto_id_espaider: number;   // ID numérico da solicitação (bate com projects.espaider_id)
+  solicitacao_id: number;        // SOLICITACAO_IDENTIFICADOR (numérico)
+  pasta_consultivo_id: string | null; // PASTACONSULTIVO — string original ex: "CS.34433"
+  profissional: string;          // COLABORADOR
+  horas: number | null;          // HORASORIGINAISHOR (convertido para decimal)
+  data_lancamento: Date | null;  // DATA
+  tipo_lancamento: string;       // ATIVIDADE
   espaider_raw?: RegistroEspaider;
 }
 

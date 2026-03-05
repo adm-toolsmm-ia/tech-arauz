@@ -459,16 +459,16 @@ export function mapearHoraLancada(registro: RegistroEspaider): HoraLancadaMapead
   const solIdStr = getCampoValor(campos, 'SOLICITACAO_IDENTIFICADOR');
   const pastaStr = getCampoValor(campos, 'PASTACONSULTIVO');
 
-  // Extrai ID numérico da Pasta Consultivo (ex: "CS.34433" -> 34433)
-  const pastaId = pastaStr ? parseInt(pastaStr.replace(/\D/g, ''), 10) || null : null;
+  // SOLICITACAO_IDENTIFICADOR é o ID numérico do projeto no Espaider
   const projetoId = solIdStr ? parseInt(solIdStr, 10) || 0 : 0;
 
   return {
     id_espaider: registro.IDEspaider,
-    // Se solIdStr não existir, projeto_id_espaider será 0. O espaider-sync se encarregará de buscar usando pasta_consultivo_id.
+    // Usado no lookup primário: bate com projects.espaider_id
     projeto_id_espaider: projetoId,
     solicitacao_id: projetoId,
-    pasta_consultivo_id: pastaId,
+    // Mantido como string original (ex: "CS.34433") para lookup secundário via pastaMap
+    pasta_consultivo_id: pastaStr || null,
     profissional: getCampoValor(campos, 'COLABORADOR') || '',
     horas: parseTimeStr(getCampoValor(campos, 'HORASORIGINAISHOR')),
     data_lancamento: parseData(getCampoValor(campos, 'DATA')),

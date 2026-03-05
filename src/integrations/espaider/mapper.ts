@@ -398,7 +398,7 @@ export function mapearAprovador(registro: RegistroEspaider): AprovadorMapeado {
  */
 const CAMPOS_TEMPO_PERMANENCIA = [
   'IDREGISTROPAI',
-  'FASE',
+  'APROVADOR',
   'RESPONSAVEL',
   'SITUACAO',
   'TEMPOPERMANENCIA',
@@ -416,7 +416,7 @@ export function mapearTempoPermanencia(registro: RegistroEspaider): TempoPermane
   return {
     id_espaider: registro.IDEspaider,
     projeto_id_espaider: parseInt(getCampoValor(campos, 'IDREGISTROPAI') || '0', 10),
-    fase: getCampoValor(campos, 'FASE'),
+    fase: getCampoValor(campos, 'APROVADOR'),
     responsavel: getCampoValor(campos, 'RESPONSAVEL'),
     situacao: getCampoValor(campos, 'SITUACAO'),
     tempo_permanencia_dias: tempoBruto ? parseFloat(tempoBruto.replace(',', '.')) || null : null,

@@ -69,8 +69,10 @@ export function ProjectsFilters({
               value={currentSortValue}
               onValueChange={(val) => {
                 if (onSortChange) {
-                  const [key, direction] = val.split('-');
-                  onSortChange({ key, direction: direction as 'asc' | 'desc' });
+                  const lastDash = val.lastIndexOf('-');
+                  const key = val.slice(0, lastDash);
+                  const direction = val.slice(lastDash + 1) as 'asc' | 'desc';
+                  onSortChange({ key, direction });
                 }
               }}
             >

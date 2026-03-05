@@ -42,6 +42,8 @@ class AgentService:
         status: Optional[str] = None,
         tag: Optional[str] = None,
         search: Optional[str] = None,
+        usage_type: Optional[str] = None,
+        show_in_shortcut: Optional[bool] = None,
         page: int = 1,
         page_size: int = 20,
     ) -> tuple[list[AgentHeadModel], int]:
@@ -50,6 +52,10 @@ class AgentService:
         
         if status:
             query = query.eq("status", status)
+        if usage_type:
+            query = query.eq("usage_type", usage_type)
+        if show_in_shortcut is not None:
+            query = query.eq("show_in_shortcut", show_in_shortcut)
         if tag and tag != "":
             # Search in tags array
             query = query.contains("tags", [tag])
@@ -61,6 +67,10 @@ class AgentService:
         count_query = self.supabase.table("agents").select("id", count="exact").eq("tenant_id", tenant_id)
         if status:
             count_query = count_query.eq("status", status)
+        if usage_type:
+            count_query = count_query.eq("usage_type", usage_type)
+        if show_in_shortcut is not None:
+            count_query = count_query.eq("show_in_shortcut", show_in_shortcut)
         if tag and tag != "":
             count_query = count_query.contains("tags", [tag])
         if search:

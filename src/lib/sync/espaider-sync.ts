@@ -27,6 +27,8 @@ import {
   mapearHistorico,
   mapearOrcamento,
   mapearAprovador,
+  mapearTempoPermanencia,
+  mapearHoraLancada,
   mapearRegistros,
 } from '@/integrations/espaider/mapper';
 
@@ -822,6 +824,18 @@ function descricaoToDataset(descricao: string | null | undefined): EspaiderDatas
     noAccents.includes('approver')
   )
     return 'Aprovadores';
+  if (
+    noAccents.includes('tempospermanencia') ||
+    noAccents.includes('tempopermanencia') ||
+    noAccents.includes('permanencia')
+  )
+    return 'TempoPermanencia';
+  if (
+    noAccents.includes('horaslancadas') ||
+    noAccents.includes('horalancada') ||
+    noAccents.includes('horas')
+  )
+    return 'HorasLancadas';
   return null;
 }
 
@@ -926,6 +940,8 @@ export async function executeSyncAll(
           childResult = await syncHistoriesFromRegistros(supabase, tenantId, logs, registros);
         } else if (dataset === 'Orcamentos') {
           childResult = await syncBudgetsFromRegistros(supabase, tenantId, logs, registros);
+        } else if (dataset === 'TempoPermanencia') {
+          childResult = await syncTempoPermanenciaFromRegistros(supabase, tenantId, logs, registros);
         } else {
           childResult = await syncApproversFromRegistros(supabase, tenantId, logs, registros);
         }
@@ -937,7 +953,7 @@ export async function executeSyncAll(
           err instanceof Error
             ? err.message
             : (err as any)?.message ||
-              'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+            'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
         logs.push(createLog('error', dataset, `Falha ao buscar ${urlFilho.Descricao}: ${msg}`));
         results.push({
           dataset,
@@ -961,6 +977,37 @@ export async function executeSyncAll(
   if (apiConfig) {
     const totalErrors = results.reduce((s, r) => s + r.errors, 0);
     await updateApiSyncStatus(supabase, apiConfig.id, totalErrors === 0 ? 'success' : 'failed');
+  }
+
+  // 3. Sync Horas Lancadas (API independente) — roda após projetos
+  const horasConfig = apiConfigs.get('horas_lancadas');
+  if (horasConfig) {
+    logs.push(createLog('info', 'HorasLancadas', 'Iniciando sync de Horas Lançadas (API independente)...'));
+    try {
+      const horasResult = await syncHorasLancadas(supabase, tenantId, logs, horasConfig);
+      results.push(horasResult);
+      await logSyncResult(supabase, tenantId, 'HorasLancadas', horasResult);
+      await updateApiSyncStatus(
+        supabase,
+        horasConfig.id,
+        horasResult.errors === 0 ? 'success' : 'failed',
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+      logs.push(createLog('error', 'HorasLancadas', `Falha no sync: ${msg}`));
+      results.push({
+        dataset: 'HorasLancadas',
+        total: 0,
+        created: 0,
+        updated: 0,
+        errors: 1,
+        durationMs: 0,
+      });
+    }
+  } else {
+    logs.push(
+      createLog('info', 'HorasLancadas', 'API horas_lancadas não configurada — pulando sync'),
+    );
   }
 
   // Aggregate
@@ -1851,6 +1898,360 @@ async function syncApproversFromRegistros(
 
   return {
     dataset: 'Aprovadores',
+    total: created + updated + errors,
+    created,
+    updated,
+    errors,
+    durationMs: Date.now() - start,
+  };
+}
+
+// =============================================================================
+// Novos datasets: TempoPermanencia + HorasLancadas
+// =============================================================================
+
+/**
+ * Sync tempo de permanência from pre-fetched registros (via ListaURLFilhos).
+ * API: BI_SOLICITACOES_PROJETOSESPAIDER_TEMPOSPERMANENCIA
+ */
+async function syncTempoPermanenciaFromRegistros(
+  supabase: SupabaseClient,
+  tenantId: string,
+  logs: SyncLogEntry[],
+  registros: import('@/integrations/espaider/types').RegistroEspaider[],
+): Promise<DatasetSyncResult> {
+  const start = Date.now();
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  try {
+    logs.push(
+      createLog(
+        'info',
+        'TempoPermanencia',
+        `Processando ${registros.length} registros brutos da API`,
+      ),
+    );
+
+    const mapped = mapearRegistros(registros, mapearTempoPermanencia);
+    logs.push(createLog('info', 'TempoPermanencia', `${mapped.length} registros mapeados`));
+
+    if (mapped.length === 0) {
+      logs.push(createLog('warn', 'TempoPermanencia', 'Nenhum registro mapeado — pulando upsert'));
+      return {
+        dataset: 'TempoPermanencia',
+        total: 0,
+        created: 0,
+        updated: 0,
+        errors: 0,
+        durationMs: Date.now() - start,
+      };
+    }
+
+    const projectMap = await getProjectIdMap(supabase, tenantId, logs);
+
+    const { data: existing } = await supabase
+      .from('project_tempo_permanencia')
+      .select('espaider_id')
+      .eq('tenant_id', tenantId);
+    const existingIds = new Set(
+      (existing || []).map((r: { espaider_id: number }) => r.espaider_id),
+    );
+
+    const rows = mapped
+      .filter((r) => projectMap.has(r.projeto_id_espaider))
+      .map((r) => ({
+        tenant_id: tenantId,
+        espaider_id: r.id_espaider,
+        project_id: projectMap.get(r.projeto_id_espaider)!,
+        fase: r.fase || null,
+        responsavel: r.responsavel || null,
+        situacao: r.situacao || null,
+        tempo_permanencia_dias: r.tempo_permanencia_dias ?? null,
+        data_inicio: r.data_inicio ? r.data_inicio.toISOString().split('T')[0] : null,
+        data_fim: r.data_fim ? r.data_fim.toISOString().split('T')[0] : null,
+        espaider_raw: r.espaider_raw || null,
+      }));
+
+    const orphans = mapped.length - rows.length;
+    if (orphans > 0) {
+      logs.push(
+        createLog(
+          'warn',
+          'TempoPermanencia',
+          `${orphans} registros ignorados (projeto pai não encontrado)`,
+          { orphans },
+        ),
+      );
+    }
+
+    logs.push(
+      createLog('info', 'TempoPermanencia', `${rows.length} registros prontos para upsert`),
+    );
+
+    if (rows.length > 0) {
+      const { error } = await supabase
+        .from('project_tempo_permanencia')
+        .upsert(rows, { onConflict: 'tenant_id,espaider_id' });
+
+      if (error) {
+        logs.push(
+          createLog('error', 'TempoPermanencia', `Erro no upsert: ${error.message}`, {
+            code: error.code,
+            details: error.details,
+          }),
+        );
+        errors = rows.length;
+      } else {
+        for (const row of rows) {
+          if (existingIds.has(row.espaider_id)) updated++;
+          else created++;
+        }
+        logs.push(
+          createLog(
+            'success',
+            'TempoPermanencia',
+            `Upsert concluído: ${created} novos, ${updated} atualizados`,
+          ),
+        );
+      }
+    } else {
+      logs.push(
+        createLog('warn', 'TempoPermanencia', 'Nenhum registro a inserir após filtros'),
+      );
+    }
+  } catch (err) {
+    const msg =
+      err instanceof Error
+        ? err.message
+        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+    logs.push(
+      createLog('error', 'TempoPermanencia', `Falha no processamento: ${msg}`, {
+        stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
+      }),
+    );
+    errors++;
+  }
+
+  return {
+    dataset: 'TempoPermanencia',
+    total: created + updated + errors,
+    created,
+    updated,
+    errors,
+    durationMs: Date.now() - start,
+  };
+}
+
+/**
+ * Sync lançamentos de horas (API independente).
+ * API: BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS
+ *
+ * Chama exportarDados diretamente e faz upsert em project_horas_lancadas.
+ * Deve ser chamado após syncProjects para garantir que o projectMap esteja populado.
+ */
+export async function syncHorasLancadas(
+  supabase: SupabaseClient,
+  tenantId: string,
+  logs: SyncLogEntry[],
+  apiConfig?: EspaiderApiRow,
+): Promise<DatasetSyncResult> {
+  const start = Date.now();
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  try {
+    const identificador =
+      apiConfig?.identificador || 'BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS';
+    logs.push(
+      createLog('info', 'HorasLancadas', `Buscando dados do Espaider (${identificador})...`),
+    );
+
+    const response = await exportarDados({
+      identificador,
+      baseUrl: apiConfig?.base_url,
+      token: apiConfig?.token,
+    });
+    const registros = response.ListaRegistros || [];
+
+    logs.push(
+      createLog('info', 'HorasLancadas', `${registros.length} registros recebidos da API`, {
+        count: registros.length,
+      }),
+    );
+
+    if (registros.length === 0) {
+      logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro retornado — pulando upsert'));
+      return {
+        dataset: 'HorasLancadas',
+        total: 0,
+        created: 0,
+        updated: 0,
+        errors: 0,
+        durationMs: Date.now() - start,
+      };
+    }
+
+    return await syncHorasLancadasFromRegistros(supabase, tenantId, logs, registros);
+  } catch (err) {
+    const msg =
+      err instanceof Error
+        ? err.message
+        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+    logs.push(createLog('error', 'HorasLancadas', `Falha ao buscar dados: ${msg}`));
+    errors++;
+  }
+
+  return {
+    dataset: 'HorasLancadas',
+    total: errors,
+    created,
+    updated,
+    errors,
+    durationMs: Date.now() - start,
+  };
+}
+
+/**
+ * Sync horas lançadas from pre-fetched registros.
+ * Mantém consistência com o padrão das outras funções FromRegistros.
+ */
+async function syncHorasLancadasFromRegistros(
+  supabase: SupabaseClient,
+  tenantId: string,
+  logs: SyncLogEntry[],
+  registros: import('@/integrations/espaider/types').RegistroEspaider[],
+): Promise<DatasetSyncResult> {
+  const start = Date.now();
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  try {
+    logs.push(
+      createLog(
+        'info',
+        'HorasLancadas',
+        `Processando ${registros.length} registros brutos da API`,
+      ),
+    );
+
+    // Log campos disponíveis no primeiro registro para debug
+    if (registros.length > 0 && registros[0].ListaCampos) {
+      const camposDisponiveis = registros[0].ListaCampos.map((c) => c.Identificador);
+      logs.push(
+        createLog('info', 'HorasLancadas', `Campos disponíveis: ${camposDisponiveis.join(', ')}`, {
+          campos: camposDisponiveis,
+        }),
+      );
+    }
+
+    const mapped = mapearRegistros(registros, mapearHoraLancada);
+    logs.push(createLog('info', 'HorasLancadas', `${mapped.length} registros mapeados`));
+
+    if (mapped.length === 0) {
+      logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro mapeado — pulando upsert'));
+      return {
+        dataset: 'HorasLancadas',
+        total: 0,
+        created: 0,
+        updated: 0,
+        errors: 0,
+        durationMs: Date.now() - start,
+      };
+    }
+
+    const projectMap = await getProjectIdMap(supabase, tenantId, logs);
+
+    const { data: existing } = await supabase
+      .from('project_horas_lancadas')
+      .select('espaider_id')
+      .eq('tenant_id', tenantId);
+    const existingIds = new Set(
+      (existing || []).map((r: { espaider_id: number }) => r.espaider_id),
+    );
+
+    const rows = mapped
+      .filter((r) => projectMap.has(r.projeto_id_espaider))
+      .map((r) => ({
+        tenant_id: tenantId,
+        espaider_id: r.id_espaider,
+        project_id: projectMap.get(r.projeto_id_espaider)!,
+        solicitacao_id: r.solicitacao_id || null,
+        pasta_consultivo_id: r.pasta_consultivo_id ?? null,
+        profissional: r.profissional || null,
+        horas: r.horas ?? null,
+        data_lancamento: r.data_lancamento ? r.data_lancamento.toISOString().split('T')[0] : null,
+        tipo_lancamento: r.tipo_lancamento || null,
+        espaider_raw: r.espaider_raw || null,
+      }));
+
+    const orphans = mapped.length - rows.length;
+    if (orphans > 0) {
+      const orphanIds = mapped
+        .filter((r) => !projectMap.has(r.projeto_id_espaider))
+        .map((r) => r.projeto_id_espaider)
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .slice(0, 10);
+      logs.push(
+        createLog(
+          'warn',
+          'HorasLancadas',
+          `${orphans} registros ignorados (projeto pai não encontrado). IDs: ${orphanIds.join(', ')}`,
+          { orphanParentIds: orphanIds },
+        ),
+      );
+    }
+
+    logs.push(createLog('info', 'HorasLancadas', `${rows.length} registros prontos para upsert`));
+
+    if (rows.length > 0) {
+      const { error } = await supabase
+        .from('project_horas_lancadas')
+        .upsert(rows, { onConflict: 'tenant_id,espaider_id' });
+
+      if (error) {
+        logs.push(
+          createLog('error', 'HorasLancadas', `Erro no upsert: ${error.message}`, {
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+          }),
+        );
+        errors = rows.length;
+      } else {
+        for (const row of rows) {
+          if (existingIds.has(row.espaider_id)) updated++;
+          else created++;
+        }
+        logs.push(
+          createLog(
+            'success',
+            'HorasLancadas',
+            `Upsert concluído: ${created} novos, ${updated} atualizados`,
+          ),
+        );
+      }
+    } else {
+      logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro a inserir após filtros'));
+    }
+  } catch (err) {
+    const msg =
+      err instanceof Error
+        ? err.message
+        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+    logs.push(
+      createLog('error', 'HorasLancadas', `Falha no processamento: ${msg}`, {
+        stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
+      }),
+    );
+    errors++;
+  }
+
+  return {
+    dataset: 'HorasLancadas',
     total: created + updated + errors,
     created,
     updated,

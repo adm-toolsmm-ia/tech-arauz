@@ -526,6 +526,9 @@ async def list_agents_v2(
     status: Optional[str] = Query(None),
     tag: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    usage_type: Optional[str] = Query(None),
+    show_in_shortcut: Optional[bool] = Query(None),
+    limit: Optional[int] = Query(None, ge=1, le=100),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     token_data: dict = Depends(get_token_data),
@@ -542,23 +545,28 @@ async def list_agents_v2(
         supabase = await get_supabase_client(request)
         service = AgentService(supabase)
         
+        # Support `limit` as shortcut for page_size (used by GlobalChatbot)
+        effective_page_size = min(limit, 100) if limit else page_size
+        
         agents, total = await service.list_agents(
             tenant_id=tenant_id,
             status=status,
             tag=tag,
             search=search,
+            usage_type=usage_type,
+            show_in_shortcut=show_in_shortcut,
             page=page,
-            page_size=page_size,
+            page_size=effective_page_size,
         )
         
-        logger.info("Listed %d agents for tenant %s", len(agents), tenant_id)
+        logger.info("Listed %d agents for tenant %s (usage_type=%s, show_in_shortcut=%s)", len(agents), tenant_id, usage_type, show_in_shortcut)
         
         return {
             "agents": [a.model_dump() for a in agents],
             "total": total,
             "page": page,
-            "page_size": page_size,
-            "has_next": (page * page_size) < total,
+            "page_size": effective_page_size,
+            "has_next": (page * effective_page_size) < total,
         }
     except AgentServiceError as e:
         logger.warning("Agent service error: %s", str(e))

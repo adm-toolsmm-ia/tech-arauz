@@ -13,6 +13,8 @@ import type {
   HistoricoMapeado,
   OrcamentoMapeado,
   AprovadorMapeado,
+  TempoPermanenciaMapeado,
+  HoraLancadaMapeada,
 } from './types';
 
 // =============================================================================
@@ -386,6 +388,80 @@ export function mapearAprovador(registro: RegistroEspaider): AprovadorMapeado {
     responsavel: getCampoValor(campos, 'RESPONSAVEL'),
     pontos_atencao: getCampoValor(campos, 'PONTOSATENCAO'),
     espaider_raw: registro, // JSON bruto da API para rastreabilidade
+  };
+}
+
+/**
+ * Campos mapeados para Tempos de Permanência
+ * API: BI_SOLICITACOES_PROJETOSESPAIDER_TEMPOSPERMANENCIA
+ * Identificadores inferidos — ajustar após inspecionar espaider_raw do 1º sync
+ */
+const CAMPOS_TEMPO_PERMANENCIA = [
+  'IDREGISTROPAI',
+  'FASE',
+  'RESPONSAVEL',
+  'SITUACAO',
+  'TEMPOPERMANENCIA',
+  'DATAINICIO',
+  'DATAFIM',
+];
+
+/**
+ * Mapeia registro Espaider para TempoPermanenciaMapeado
+ */
+export function mapearTempoPermanencia(registro: RegistroEspaider): TempoPermanenciaMapeado {
+  const campos = registro.ListaCampos;
+  const tempoBruto = getCampoValor(campos, 'TEMPOPERMANENCIA');
+
+  return {
+    id_espaider: registro.IDEspaider,
+    projeto_id_espaider: parseInt(getCampoValor(campos, 'IDREGISTROPAI') || '0', 10),
+    fase: getCampoValor(campos, 'FASE'),
+    responsavel: getCampoValor(campos, 'RESPONSAVEL'),
+    situacao: getCampoValor(campos, 'SITUACAO'),
+    tempo_permanencia_dias: tempoBruto ? parseFloat(tempoBruto.replace(',', '.')) || null : null,
+    data_inicio: parseData(getCampoValor(campos, 'DATAINICIO')),
+    data_fim: parseData(getCampoValor(campos, 'DATAFIM')),
+    espaider_raw: registro,
+  };
+}
+
+/**
+ * Campos mapeados para Horas Lançadas
+ * API: BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS (API independente)
+ * Identificadores inferidos — ajustar após inspecionar espaider_raw do 1º sync
+ */
+const CAMPOS_HORA_LANCADA = [
+  'IDREGISTROPAI',
+  'IDSOLICITACAO',
+  'PASTACONSULTIVO_ID',
+  'PROFISSIONAL',
+  'HORAS',
+  'DATALANCAMENTO',
+  'TIPOLANCAMENTO',
+];
+
+/**
+ * Mapeia registro Espaider para HoraLancadaMapeada
+ */
+export function mapearHoraLancada(registro: RegistroEspaider): HoraLancadaMapeada {
+  const campos = registro.ListaCampos;
+  const horasBruto = getCampoValor(campos, 'HORAS');
+  const pastaBruto = getCampoValor(campos, 'PASTACONSULTIVO_ID');
+
+  return {
+    id_espaider: registro.IDEspaider,
+    projeto_id_espaider: parseInt(
+      getCampoValor(campos, 'IDREGISTROPAI') || getCampoValor(campos, 'IDSOLICITACAO') || '0',
+      10,
+    ),
+    solicitacao_id: parseInt(getCampoValor(campos, 'IDSOLICITACAO') || '0', 10),
+    pasta_consultivo_id: pastaBruto ? parseInt(pastaBruto, 10) || null : null,
+    profissional: getCampoValor(campos, 'PROFISSIONAL'),
+    horas: horasBruto ? parseFloat(horasBruto.replace(',', '.')) || null : null,
+    data_lancamento: parseData(getCampoValor(campos, 'DATALANCAMENTO')),
+    tipo_lancamento: getCampoValor(campos, 'TIPOLANCAMENTO'),
+    espaider_raw: registro,
   };
 }
 

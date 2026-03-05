@@ -100,7 +100,7 @@ export function GlobalChatbot() {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.response || 'Desculpe, não consegui gerar uma resposta.',
+        content: data.response || data.answer || 'Desculpe, não consegui gerar uma resposta.',
         timestamp: new Date(),
       };
 
@@ -195,11 +195,10 @@ export function GlobalChatbot() {
                   {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div
-                        className={`max-w-xs px-3 py-2 rounded-lg ${
-                          msg.role === 'user'
+                        className={`max-w-xs px-3 py-2 rounded-lg ${msg.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-foreground'
-                        }`}
+                          }`}
                       >
                         <p className="text-sm">{msg.content}</p>
                         {msg.role === 'assistant' && (

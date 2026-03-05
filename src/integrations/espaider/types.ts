@@ -17,7 +17,9 @@ export type EspaiderDataset =
   | 'Requisitos'
   | 'Historicos'
   | 'Orcamentos'
-  | 'Aprovadores';
+  | 'Aprovadores'
+  | 'TempoPermanencia'
+  | 'HorasLancadas';
 
 /**
  * Parâmetros para a função exportarDados
@@ -284,6 +286,38 @@ export interface AprovadorMapeado {
   responsavel: string; // RESPONSAVEL
   pontos_atencao: string; // PONTOSATENCAO
   espaider_raw?: RegistroEspaider; // JSON bruto da API
+}
+
+/**
+ * Tempo de Permanência por fase mapeado (interface filha de Projetos)
+ * API: BI_SOLICITACOES_PROJETOSESPAIDER_TEMPOSPERMANENCIA
+ */
+export interface TempoPermanenciaMapeado {
+  id_espaider: number;
+  projeto_id_espaider: number;  // IDREGISTROPAI
+  fase: string;                 // FASE
+  responsavel: string;          // RESPONSAVEL
+  situacao: string;             // SITUACAO
+  tempo_permanencia_dias: number | null; // TEMPOPERMANENCIA (numérico)
+  data_inicio: Date | null;     // DATAINICIO
+  data_fim: Date | null;        // DATAFIM
+  espaider_raw?: RegistroEspaider;
+}
+
+/**
+ * Hora lançada por profissional mapeada
+ * API: BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS
+ */
+export interface HoraLancadaMapeada {
+  id_espaider: number;
+  projeto_id_espaider: number;   // ID da solicitação (FK para projects)
+  solicitacao_id: number;        // IDSOLICITACAO
+  pasta_consultivo_id: number | null; // PASTACONSULTIVO_ID
+  profissional: string;          // PROFISSIONAL
+  horas: number | null;          // HORAS
+  data_lancamento: Date | null;  // DATALANCAMENTO
+  tipo_lancamento: string;       // TIPOLANCAMENTO
+  espaider_raw?: RegistroEspaider;
 }
 
 // =============================================================================

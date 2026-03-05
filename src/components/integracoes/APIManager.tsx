@@ -197,11 +197,10 @@ export function APIManager({ onViewLogs, onSyncComplete }: APIManagerProps) {
         {/* Sync feedback inline */}
         {syncMessage && (
           <div
-            className={`mt-2 rounded-md px-3 py-2 text-sm ${
-              syncMessage.type === 'success'
+            className={`mt-2 rounded-md px-3 py-2 text-sm ${syncMessage.type === 'success'
                 ? 'bg-green-500/10 text-green-700 dark:text-green-400'
                 : 'bg-destructive/10 text-destructive'
-            }`}
+              }`}
           >
             {syncMessage.type === 'success' ? (
               <CheckCircle2 className="mr-1.5 inline h-4 w-4" />
@@ -267,7 +266,17 @@ export function APIManager({ onViewLogs, onSyncComplete }: APIManagerProps) {
                       variant="ghost"
                       size="sm"
                       className="flex-1"
-                      onClick={() => onViewLogs?.(api.tipo === 'projetos' ? 'Projetos' : undefined)}
+                      onClick={() => {
+                        const datasetMap: Record<string, string> = {
+                          projetos: 'Projetos',
+                          completo: 'Projetos',
+                          entregas: 'Entregas',
+                          cronogramas: 'Cronogramas',
+                          requisitos: 'Requisitos',
+                          horas_lancadas: 'HorasLancadas',
+                        };
+                        onViewLogs?.(datasetMap[api.tipo]);
+                      }}
                       title="Ver logs desta API"
                     >
                       <Eye className="mr-1 h-3 w-3" />

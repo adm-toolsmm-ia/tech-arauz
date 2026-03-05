@@ -20,7 +20,15 @@ type IntegracaoPayload = {
 function buildTokenForStorage(token: string | undefined): string | null {
   const normalized = typeof token === 'string' ? token.trim() : '';
   if (!normalized) return 'PREENCHER_TOKEN';
-  if (!hasIntegrationTokenSecret()) return null;
+  if (!hasIntegrationTokenSecret()) {
+    // Fallback: store plaintext when encryption secret is not configured.
+    // resolveApiToken() in espaider-sync.ts handles plaintext tokens natively.
+    console.warn(
+      '[integracoes] INTEGRATION_TOKEN_SECRET not set — storing token in plaintext. ' +
+      'Configure the secret for encrypted storage.',
+    );
+    return normalized;
+  }
   return encryptIntegrationToken(normalized);
 }
 
@@ -123,15 +131,6 @@ export async function POST(req: NextRequest) {
     }
 
     const tokenToStore = buildTokenForStorage(body.token);
-    if (!tokenToStore) {
-      return NextResponse.json(
-        {
-          error:
-            'INTEGRATION_TOKEN_SECRET nao configurado. Configure o segredo para salvar tokens de integracao com criptografia.',
-        },
-        { status: 500 },
-      );
-    }
 
     const { data, error } = await supabase
       .from('espaider_apis')
@@ -207,15 +206,6 @@ export async function PUT(req: NextRequest) {
 
     if (Object.prototype.hasOwnProperty.call(body, 'token')) {
       const tokenToStore = buildTokenForStorage(body.token);
-      if (!tokenToStore) {
-        return NextResponse.json(
-          {
-            error:
-              'INTEGRATION_TOKEN_SECRET nao configurado. Configure o segredo para atualizar tokens de integracao com criptografia.',
-          },
-          { status: 500 },
-        );
-      }
       updates.token = tokenToStore;
     }
 

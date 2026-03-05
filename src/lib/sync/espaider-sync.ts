@@ -1915,8 +1915,9 @@ async function syncApproversFromRegistros(
 // =============================================================================
 
 /**
- * Sync tempo de permanência from pre-fetched registros (via ListaURLFilhos).
+ * [REFATORADO] Sync tempo de permanência from pre-fetched registros (via ListaURLFilhos).
  * API: BI_SOLICITACOES_PROJETOSESPAIDER_TEMPOSPERMANENCIA
+ * Padrão: idêntico ao syncApproversFromRegistros
  */
 async function syncTempoPermanenciaFromRegistros(
   supabase: SupabaseClient,
@@ -1930,65 +1931,30 @@ async function syncTempoPermanenciaFromRegistros(
   let errors = 0;
 
   try {
-    logs.push(
-      createLog(
-        'info',
-        'TempoPermanencia',
-        `Processando ${registros.length} registros brutos da API`,
-      ),
-    );
+    logs.push(createLog('info', 'TempoPermanencia', `Processando ${registros.length} registros brutos da API`));
 
     // Diagnóstico: campos disponíveis no primeiro registro
     if (registros.length > 0 && registros[0].ListaCampos) {
       const camposDisponiveis = registros[0].ListaCampos.map((c) => c.Identificador);
-      logs.push(
-        createLog('info', 'TempoPermanencia', `Campos disponíveis: ${camposDisponiveis.join(', ')}`, {
-          campos: camposDisponiveis,
-        }),
-      );
+      logs.push(createLog('info', 'TempoPermanencia', `Campos disponíveis: ${camposDisponiveis.join(', ')}`, { campos: camposDisponiveis }));
     }
 
     const mapped = mapearRegistros(registros, mapearTempoPermanencia);
     logs.push(createLog('info', 'TempoPermanencia', `${mapped.length} registros mapeados`));
 
-    // Diagnóstico: amostra do mapeamento com campos brutos
-    if (mapped.length > 0) {
-      const sample = mapped[0];
-      const rawCampos = sample.espaider_raw?.ListaCampos?.reduce(
-        (acc: Record<string, string>, c) => { acc[c.Identificador] = c.Valor ?? ''; return acc; },
-        {},
-      );
-      logs.push(
-        createLog(
-          'info',
-          'TempoPermanencia',
-          `Amostra mapeada: espaider_id=${sample.id_espaider}, projeto_pai=${sample.projeto_id_espaider}, fase=${sample.fase || '(vazio)'}`,
-          { sample: { id: sample.id_espaider, pai: sample.projeto_id_espaider, fase: sample.fase, tempo: sample.tempo_permanencia_dias }, rawCampos },
-        ),
-      );
+    if (mapped.length === 0) {
+      logs.push(createLog('warn', 'TempoPermanencia', 'Nenhum registro mapeado'));
+      return { dataset: 'TempoPermanencia', total: 0, created: 0, updated: 0, errors: 0, durationMs: Date.now() - start };
     }
 
-    if (mapped.length === 0) {
-      logs.push(createLog('warn', 'TempoPermanencia', 'Nenhum registro mapeado — pulando upsert'));
-      return {
-        dataset: 'TempoPermanencia',
-        total: 0,
-        created: 0,
-        updated: 0,
-        errors: 0,
-        durationMs: Date.now() - start,
-      };
-    }
+    // Amostra
+    const s = mapped[0];
+    logs.push(createLog('info', 'TempoPermanencia', `Amostra: espaider_id=${s.id_espaider}, projeto_pai=${s.projeto_id_espaider}, fase=${s.fase || '(vazio)'}`, { sample: { id: s.id_espaider, pai: s.projeto_id_espaider, fase: s.fase, tempo: s.tempo_permanencia_dias } }));
 
     const projectMap = await getProjectIdMap(supabase, tenantId, logs);
 
-    const { data: existing } = await supabase
-      .from('project_tempo_permanencia')
-      .select('espaider_id')
-      .eq('tenant_id', tenantId);
-    const existingIds = new Set(
-      (existing || []).map((r: { espaider_id: number }) => r.espaider_id),
-    );
+    const { data: existing } = await supabase.from('project_tempo_permanencia').select('espaider_id').eq('tenant_id', tenantId);
+    const existingIds = new Set((existing || []).map((r: { espaider_id: number }) => r.espaider_id));
 
     const rows = mapped
       .filter((r) => projectMap.has(r.projeto_id_espaider))
@@ -2007,80 +1973,41 @@ async function syncTempoPermanenciaFromRegistros(
 
     const orphans = mapped.length - rows.length;
     if (orphans > 0) {
-      logs.push(
-        createLog(
-          'warn',
-          'TempoPermanencia',
-          `${orphans} registros ignorados (projeto pai não encontrado)`,
-          { orphans },
-        ),
-      );
+      const orphanIds = mapped.filter((r) => !projectMap.has(r.projeto_id_espaider)).map((r) => r.projeto_id_espaider).filter((v, i, a) => a.indexOf(v) === i).slice(0, 10);
+      logs.push(createLog('warn', 'TempoPermanencia', `${orphans} ignorados (projeto pai não encontrado). IDs pai: ${orphanIds.join(', ')}`, { orphanParentIds: orphanIds }));
     }
 
-    logs.push(
-      createLog('info', 'TempoPermanencia', `${rows.length} registros prontos para upsert`),
-    );
+    logs.push(createLog('info', 'TempoPermanencia', `${rows.length} registros prontos para upsert`));
 
     if (rows.length > 0) {
-      const { error } = await supabase
-        .from('project_tempo_permanencia')
-        .upsert(rows, { onConflict: 'tenant_id,espaider_id' });
-
+      const { error } = await supabase.from('project_tempo_permanencia').upsert(rows, { onConflict: 'tenant_id,espaider_id' });
       if (error) {
-        logs.push(
-          createLog('error', 'TempoPermanencia', `Erro no upsert: ${error.message}`, {
-            code: error.code,
-            details: error.details,
-          }),
-        );
+        logs.push(createLog('error', 'TempoPermanencia', `Erro no upsert: ${error.message}`, { code: error.code, details: error.details, hint: error.hint }));
         errors = rows.length;
       } else {
         for (const row of rows) {
           if (existingIds.has(row.espaider_id)) updated++;
           else created++;
         }
-        logs.push(
-          createLog(
-            'success',
-            'TempoPermanencia',
-            `Upsert concluído: ${created} novos, ${updated} atualizados`,
-          ),
-        );
+        logs.push(createLog('success', 'TempoPermanencia', `Upsert concluído: ${created} novos, ${updated} atualizados`));
       }
     } else {
-      logs.push(
-        createLog('warn', 'TempoPermanencia', 'Nenhum registro a inserir após filtros'),
-      );
+      logs.push(createLog('warn', 'TempoPermanencia', 'Nenhum registro a inserir após filtros'));
     }
   } catch (err) {
-    const msg =
-      err instanceof Error
-        ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
-    logs.push(
-      createLog('error', 'TempoPermanencia', `Falha no processamento: ${msg}`, {
-        stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
-      }),
-    );
+    const msg = err instanceof Error ? err.message : (err as any)?.message || 'Erro desconhecido';
+    logs.push(createLog('error', 'TempoPermanencia', `Falha no processamento: ${msg}`, { stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined }));
     errors++;
   }
 
-  return {
-    dataset: 'TempoPermanencia',
-    total: created + updated + errors,
-    created,
-    updated,
-    errors,
-    durationMs: Date.now() - start,
-  };
+  return { dataset: 'TempoPermanencia', total: created + updated + errors, created, updated, errors, durationMs: Date.now() - start };
 }
 
 /**
- * Sync lançamentos de horas (API independente).
+ * [REFATORADO] Sync lançamentos de horas (API independente).
  * API: BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS
  *
- * Chama exportarDados diretamente e faz upsert em project_horas_lancadas.
- * Deve ser chamado após syncProjects para garantir que o projectMap esteja populado.
+ * Deve ser chamado após syncProjects para garantir que projectMap esteja populado.
  */
 export async function syncHorasLancadas(
   supabase: SupabaseClient,
@@ -2094,265 +2021,125 @@ export async function syncHorasLancadas(
   let errors = 0;
 
   try {
-    const identificador =
-      apiConfig?.identificador || 'BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS';
-    logs.push(
-      createLog('info', 'HorasLancadas', `Buscando dados do Espaider (${identificador})...`),
-    );
+    const identificador = apiConfig?.identificador || 'BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS';
+    logs.push(createLog('info', 'HorasLancadas', `Buscando dados do Espaider (${identificador})...`));
 
-    const response = await exportarDados({
-      identificador,
-      baseUrl: apiConfig?.base_url,
-      token: apiConfig?.token,
-    });
+    const response = await exportarDados({ identificador, baseUrl: apiConfig?.base_url, token: apiConfig?.token });
     const registros = response.ListaRegistros || [];
 
-    logs.push(
-      createLog('info', 'HorasLancadas', `${registros.length} registros recebidos da API`, {
-        count: registros.length,
-      }),
-    );
+    logs.push(createLog('info', 'HorasLancadas', `${registros.length} registros recebidos da API`, { count: registros.length }));
 
     if (registros.length === 0) {
       logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro retornado — pulando upsert'));
-      return {
-        dataset: 'HorasLancadas',
-        total: 0,
-        created: 0,
-        updated: 0,
-        errors: 0,
-        durationMs: Date.now() - start,
-      };
+      return { dataset: 'HorasLancadas', total: 0, created: 0, updated: 0, errors: 0, durationMs: Date.now() - start };
     }
 
-    return await syncHorasLancadasFromRegistros(supabase, tenantId, logs, registros);
-  } catch (err) {
-    const msg =
-      err instanceof Error
-        ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
-    logs.push(createLog('error', 'HorasLancadas', `Falha ao buscar dados: ${msg}`));
-    errors++;
-  }
-
-  return {
-    dataset: 'HorasLancadas',
-    total: errors,
-    created,
-    updated,
-    errors,
-    durationMs: Date.now() - start,
-  };
-}
-
-/**
- * Sync horas lançadas from pre-fetched registros.
- * Mantém consistência com o padrão das outras funções FromRegistros.
- */
-async function syncHorasLancadasFromRegistros(
-  supabase: SupabaseClient,
-  tenantId: string,
-  logs: SyncLogEntry[],
-  registros: import('@/integrations/espaider/types').RegistroEspaider[],
-): Promise<DatasetSyncResult> {
-  const start = Date.now();
-  let created = 0;
-  let updated = 0;
-  let errors = 0;
-
-  try {
-    logs.push(
-      createLog(
-        'info',
-        'HorasLancadas',
-        `Processando ${registros.length} registros brutos da API`,
-      ),
-    );
-
-    // Log campos disponíveis no primeiro registro para debug
-    if (registros.length > 0 && registros[0].ListaCampos) {
+    // Diagnóstico: campos disponíveis
+    if (registros[0]?.ListaCampos) {
       const camposDisponiveis = registros[0].ListaCampos.map((c) => c.Identificador);
-      logs.push(
-        createLog('info', 'HorasLancadas', `Campos disponíveis: ${camposDisponiveis.join(', ')}`, {
-          campos: camposDisponiveis,
-        }),
-      );
+      logs.push(createLog('info', 'HorasLancadas', `Campos disponíveis: ${camposDisponiveis.join(', ')}`, { campos: camposDisponiveis }));
+      // Valores do 1o registro
+      const valoresAmostra: Record<string, string> = {};
+      registros[0].ListaCampos.forEach((c) => { valoresAmostra[c.Identificador] = c.Valor ?? ''; });
+      logs.push(createLog('info', 'HorasLancadas', 'Valores do 1o registro (amostra bruta)', { valores: valoresAmostra }));
     }
 
     const mapped = mapearRegistros(registros, mapearHoraLancada);
     logs.push(createLog('info', 'HorasLancadas', `${mapped.length} registros mapeados`));
 
-    // Diagnóstico: amostra do mapeamento com campos brutos
-    if (mapped.length > 0) {
-      const sample = mapped[0];
-      const rawCampos = sample.espaider_raw?.ListaCampos?.reduce(
-        (acc: Record<string, string>, c) => { acc[c.Identificador] = c.Valor ?? ''; return acc; },
-        {},
-      );
-      logs.push(
-        createLog(
-          'info',
-          'HorasLancadas',
-          `Amostra mapeada: espaider_id=${sample.id_espaider}, projeto_pai=${sample.projeto_id_espaider}, profissional=${sample.profissional || '(vazio)'}`,
-          {
-            sample: {
-              id: sample.id_espaider,
-              pai: sample.projeto_id_espaider,
-              solicitacao_id: sample.solicitacao_id,
-              profissional: sample.profissional,
-              pasta_consultivo_id: sample.pasta_consultivo_id,
-              horas: sample.horas,
-            },
-            rawCampos,
-          },
-        ),
-      );
-    }
-
     if (mapped.length === 0) {
-      logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro mapeado — pulando upsert'));
-      return {
-        dataset: 'HorasLancadas',
-        total: 0,
-        created: 0,
-        updated: 0,
-        errors: 0,
-        durationMs: Date.now() - start,
-      };
+      logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro mapeado'));
+      return { dataset: 'HorasLancadas', total: 0, created: 0, updated: 0, errors: 0, durationMs: Date.now() - start };
     }
 
+    // Amostra mapeada
+    const s = mapped[0];
+    logs.push(createLog('info', 'HorasLancadas', `Amostra mapeada: espaider_id=${s.id_espaider}, projeto_pai=${s.projeto_id_espaider}, pasta_id=${s.pasta_consultivo_id}, profissional=${s.profissional || '(vazio)'}`, { sample: s }));
+
+    // Mapa principal: espaider_id -> project UUID
     const projectMap = await getProjectIdMap(supabase, tenantId, logs);
 
-    // Mapa secundário: pasta_consultivo (string) -> project UUID
-    // Necessário pois a API de Horas retorna PASTACONSULTIVO (ex: "CS.34433"), não ID numérico
-    const { data: projectsWithPasta } = await supabase
+    // Mapa secundário: pasta_consultivo (string "CS.XXXXX") -> project UUID
+    const { data: projsComPasta } = await supabase
       .from('projects')
       .select('id, pasta_consultivo')
       .eq('tenant_id', tenantId)
       .not('pasta_consultivo', 'is', null);
     const pastaMap = new Map<string, string>();
-    for (const p of projectsWithPasta || []) {
+    for (const p of projsComPasta || []) {
       if (p.pasta_consultivo) pastaMap.set(p.pasta_consultivo.trim().toUpperCase(), p.id);
     }
-    logs.push(
-      createLog('info', 'HorasLancadas', `PastaMap carregado: ${pastaMap.size} projetos com pasta_consultivo`, {
-        pastaMapped: Array.from(pastaMap.keys()).slice(0, 5),
-      }),
-    );
+    logs.push(createLog('info', 'HorasLancadas', `PastaMap: ${pastaMap.size} projetos com pasta_consultivo`, { exemplos: Array.from(pastaMap.keys()).slice(0, 5) }));
 
-    const { data: existing } = await supabase
-      .from('project_horas_lancadas')
-      .select('espaider_id')
-      .eq('tenant_id', tenantId);
-    const existingIds = new Set(
-      (existing || []).map((r: { espaider_id: number }) => r.espaider_id),
-    );
+    // Busca espaider_ids existentes para diff created/updated
+    const { data: existing } = await supabase.from('project_horas_lancadas').select('espaider_id').eq('tenant_id', tenantId);
+    const existingIds = new Set((existing || []).map((r: { espaider_id: number }) => r.espaider_id));
 
-    // Resolve project_id: tenta por espaider_id numérico, depois por pasta_consultivo string
-    const resolveProjectId = (r: (typeof mapped)[0], rawPasta: string | null): string | null => {
-      if (projectMap.has(r.projeto_id_espaider) && r.projeto_id_espaider > 0) {
-        return projectMap.get(r.projeto_id_espaider)!;
+    // Resolve project_id: tenta espaider_id numérico primeiro, depois pasta_consultivo string
+    const rows: Record<string, unknown>[] = [];
+    const orphanSamples: unknown[] = [];
+
+    for (const r of mapped) {
+      // Tenta por espaider_id numérico
+      let projectId: string | undefined = projectMap.get(r.projeto_id_espaider);
+
+      // Fallback: busca pelo PASTACONSULTIVO bruto no registro da API
+      if (!projectId && r.pasta_consultivo_id) {
+        const pastaRaw = String(r.pasta_consultivo_id).trim().toUpperCase();
+        projectId = pastaMap.get(pastaRaw);
+        if (!projectId) {
+          // Tenta também via campo espaider_raw direto
+          const pastaValor = r.espaider_raw?.ListaCampos?.find((c) => c.Identificador === 'PASTACONSULTIVO')?.Valor;
+          if (pastaValor) projectId = pastaMap.get(pastaValor.trim().toUpperCase());
+        }
       }
-      if (rawPasta) {
-        const key = rawPasta.trim().toUpperCase();
-        if (pastaMap.has(key)) return pastaMap.get(key)!;
-      }
-      return null;
-    };
 
-    // Extrair o rawPasta de cada registro mapeado
-    const rows = mapped
-      .map((r) => {
-        const rawPastaField = r.espaider_raw?.ListaCampos?.find((c) => c.Identificador === 'PASTACONSULTIVO')?.Valor ?? null;
-        const projectId = resolveProjectId(r, rawPastaField);
-        return { r, projectId, rawPasta: rawPastaField };
-      })
-      .filter(({ projectId }) => projectId !== null)
-      .map(({ r, projectId, rawPasta }) => ({
+      if (!projectId) {
+        orphanSamples.push({ id: r.id_espaider, pai: r.projeto_id_espaider, pasta: r.pasta_consultivo_id });
+        continue;
+      }
+
+      rows.push({
         tenant_id: tenantId,
         espaider_id: r.id_espaider,
-        project_id: projectId!,
+        project_id: projectId,
         solicitacao_id: r.solicitacao_id || null,
-        pasta_consultivo_id: rawPasta || null,
+        pasta_consultivo_id: r.pasta_consultivo_id ? String(r.pasta_consultivo_id) : null,
         profissional: r.profissional || null,
         horas: r.horas ?? null,
         data_lancamento: r.data_lancamento ? r.data_lancamento.toISOString().split('T')[0] : null,
         tipo_lancamento: r.tipo_lancamento || null,
         espaider_raw: r.espaider_raw || null,
-      }));
+      });
+    }
 
-    const orphans = mapped.length - rows.length;
-    if (orphans > 0) {
-      // Diagnóstico dos orphans: mostrar os valores de PASTACONSULTIVO que não bateram
-      const orphanSamples = mapped
-        .map((r) => {
-          const pasta = r.espaider_raw?.ListaCampos?.find((c) => c.Identificador === 'PASTACONSULTIVO')?.Valor ?? null;
-          const resolved = resolveProjectId(r, pasta);
-          return resolved ? null : { id: r.id_espaider, pai: r.projeto_id_espaider, pasta };
-        })
-        .filter(Boolean)
-        .slice(0, 5);
-      logs.push(
-        createLog(
-          'warn',
-          'HorasLancadas',
-          `${orphans} registros ignorados (projeto pai não encontrado). Amostras: ${JSON.stringify(orphanSamples)}`,
-          { orphanSamples },
-        ),
-      );
+    const orphanCount = mapped.length - rows.length;
+    if (orphanCount > 0) {
+      logs.push(createLog('warn', 'HorasLancadas', `${orphanCount} ignorados (projeto pai não encontrado). Amostras: ${JSON.stringify(orphanSamples.slice(0, 5))}`, { orphanCount, orphanSamples: orphanSamples.slice(0, 5) }));
     }
 
     logs.push(createLog('info', 'HorasLancadas', `${rows.length} registros prontos para upsert`));
 
     if (rows.length > 0) {
-      const { error } = await supabase
-        .from('project_horas_lancadas')
-        .upsert(rows, { onConflict: 'tenant_id,espaider_id' });
-
+      const { error } = await supabase.from('project_horas_lancadas').upsert(rows, { onConflict: 'tenant_id,espaider_id' });
       if (error) {
-        logs.push(
-          createLog('error', 'HorasLancadas', `Erro no upsert: ${error.message}`, {
-            code: error.code,
-            details: error.details,
-            hint: error.hint,
-          }),
-        );
+        logs.push(createLog('error', 'HorasLancadas', `Erro no upsert: ${error.message}`, { code: error.code, details: error.details, hint: error.hint }));
         errors = rows.length;
       } else {
         for (const row of rows) {
-          if (existingIds.has(row.espaider_id)) updated++;
+          if (existingIds.has(row.espaider_id as number)) updated++;
           else created++;
         }
-        logs.push(
-          createLog(
-            'success',
-            'HorasLancadas',
-            `Upsert concluído: ${created} novos, ${updated} atualizados`,
-          ),
-        );
+        logs.push(createLog('success', 'HorasLancadas', `Upsert concluído: ${created} novos, ${updated} atualizados`));
       }
     } else {
       logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro a inserir após filtros'));
     }
   } catch (err) {
-    const msg =
-      err instanceof Error
-        ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
-    logs.push(
-      createLog('error', 'HorasLancadas', `Falha no processamento: ${msg}`, {
-        stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
-      }),
-    );
+    const msg = err instanceof Error ? err.message : (err as any)?.message || 'Erro desconhecido';
+    logs.push(createLog('error', 'HorasLancadas', `Falha no processamento: ${msg}`, { stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined }));
     errors++;
   }
 
-  return {
-    dataset: 'HorasLancadas',
-    total: created + updated + errors,
-    created,
-    updated,
-    errors,
-    durationMs: Date.now() - start,
-  };
+  return { dataset: 'HorasLancadas', total: created + updated + errors, created, updated, errors, durationMs: Date.now() - start };
 }

@@ -827,13 +827,12 @@ function descricaoToDataset(descricao: string | null | undefined): EspaiderDatas
   if (
     noAccents.includes('tempospermanencia') ||
     noAccents.includes('tempopermanencia') ||
-    noAccents.includes('permanencia')
+    noAccents.includes('tempo_permanencia')
   )
     return 'TempoPermanencia';
   if (
     noAccents.includes('horaslancadas') ||
-    noAccents.includes('horalancada') ||
-    noAccents.includes('horas')
+    noAccents.includes('horas_lancadas')
   )
     return 'HorasLancadas';
   return null;
@@ -1030,9 +1029,13 @@ export async function executeSyncAll(
     }),
   );
 
-  // Persist detailed logs for history (LogViewer)
-  const globalRequestId = generateRequestId();
-  await persistLogEntries(supabase, tenantId, globalRequestId, logs);
+  // Persist detailed logs for history (LogViewer) — always, even on partial failure
+  try {
+    const globalRequestId = generateRequestId();
+    await persistLogEntries(supabase, tenantId, globalRequestId, logs);
+  } catch (logPersistErr) {
+    console.error('[sync] Failed to persist log entries:', logPersistErr);
+  }
 
   return {
     success,

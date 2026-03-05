@@ -827,7 +827,8 @@ function descricaoToDataset(descricao: string | null | undefined): EspaiderDatas
   if (
     noAccents.includes('tempospermanencia') ||
     noAccents.includes('tempopermanencia') ||
-    noAccents.includes('tempo_permanencia')
+    noAccents.includes('tempo_permanencia') ||
+    noAccents.includes('tempospermancencia') // Erro de digitação na API do Espaider
   )
     return 'TempoPermanencia';
   if (
@@ -1950,15 +1951,19 @@ async function syncTempoPermanenciaFromRegistros(
     const mapped = mapearRegistros(registros, mapearTempoPermanencia);
     logs.push(createLog('info', 'TempoPermanencia', `${mapped.length} registros mapeados`));
 
-    // Diagnóstico: amostra do mapeamento
+    // Diagnóstico: amostra do mapeamento com campos brutos
     if (mapped.length > 0) {
       const sample = mapped[0];
+      const rawCampos = sample.espaider_raw?.ListaCampos?.reduce(
+        (acc: Record<string, string>, c) => { acc[c.Identificador] = c.Valor ?? ''; return acc; },
+        {},
+      );
       logs.push(
         createLog(
           'info',
           'TempoPermanencia',
           `Amostra mapeada: espaider_id=${sample.id_espaider}, projeto_pai=${sample.projeto_id_espaider}, fase=${sample.fase || '(vazio)'}`,
-          { sample: { id: sample.id_espaider, pai: sample.projeto_id_espaider, fase: sample.fase } },
+          { sample: { id: sample.id_espaider, pai: sample.projeto_id_espaider, fase: sample.fase, tempo: sample.tempo_permanencia_dias }, rawCampos },
         ),
       );
     }
@@ -2177,9 +2182,13 @@ async function syncHorasLancadasFromRegistros(
     const mapped = mapearRegistros(registros, mapearHoraLancada);
     logs.push(createLog('info', 'HorasLancadas', `${mapped.length} registros mapeados`));
 
-    // Diagnóstico: amostra do mapeamento
+    // Diagnóstico: amostra do mapeamento com campos brutos
     if (mapped.length > 0) {
       const sample = mapped[0];
+      const rawCampos = sample.espaider_raw?.ListaCampos?.reduce(
+        (acc: Record<string, string>, c) => { acc[c.Identificador] = c.Valor ?? ''; return acc; },
+        {},
+      );
       logs.push(
         createLog(
           'info',
@@ -2191,7 +2200,10 @@ async function syncHorasLancadasFromRegistros(
               pai: sample.projeto_id_espaider,
               solicitacao_id: sample.solicitacao_id,
               profissional: sample.profissional,
+              pasta_consultivo_id: sample.pasta_consultivo_id,
+              horas: sample.horas,
             },
+            rawCampos,
           },
         ),
       );
@@ -2211,6 +2223,23 @@ async function syncHorasLancadasFromRegistros(
 
     const projectMap = await getProjectIdMap(supabase, tenantId, logs);
 
+    // Mapa secundário: pasta_consultivo (string) -> project UUID
+    // Necessário pois a API de Horas retorna PASTACONSULTIVO (ex: "CS.34433"), não ID numérico
+    const { data: projectsWithPasta } = await supabase
+      .from('projects')
+      .select('id, pasta_consultivo')
+      .eq('tenant_id', tenantId)
+      .not('pasta_consultivo', 'is', null);
+    const pastaMap = new Map<string, string>();
+    for (const p of projectsWithPasta || []) {
+      if (p.pasta_consultivo) pastaMap.set(p.pasta_consultivo.trim().toUpperCase(), p.id);
+    }
+    logs.push(
+      createLog('info', 'HorasLancadas', `PastaMap carregado: ${pastaMap.size} projetos com pasta_consultivo`, {
+        pastaMapped: Array.from(pastaMap.keys()).slice(0, 5),
+      }),
+    );
+
     const { data: existing } = await supabase
       .from('project_horas_lancadas')
       .select('espaider_id')
@@ -2219,14 +2248,32 @@ async function syncHorasLancadasFromRegistros(
       (existing || []).map((r: { espaider_id: number }) => r.espaider_id),
     );
 
+    // Resolve project_id: tenta por espaider_id numérico, depois por pasta_consultivo string
+    const resolveProjectId = (r: (typeof mapped)[0], rawPasta: string | null): string | null => {
+      if (projectMap.has(r.projeto_id_espaider) && r.projeto_id_espaider > 0) {
+        return projectMap.get(r.projeto_id_espaider)!;
+      }
+      if (rawPasta) {
+        const key = rawPasta.trim().toUpperCase();
+        if (pastaMap.has(key)) return pastaMap.get(key)!;
+      }
+      return null;
+    };
+
+    // Extrair o rawPasta de cada registro mapeado
     const rows = mapped
-      .filter((r) => projectMap.has(r.projeto_id_espaider))
-      .map((r) => ({
+      .map((r) => {
+        const rawPastaField = r.espaider_raw?.ListaCampos?.find((c) => c.Identificador === 'PASTACONSULTIVO')?.Valor ?? null;
+        const projectId = resolveProjectId(r, rawPastaField);
+        return { r, projectId, rawPasta: rawPastaField };
+      })
+      .filter(({ projectId }) => projectId !== null)
+      .map(({ r, projectId, rawPasta }) => ({
         tenant_id: tenantId,
         espaider_id: r.id_espaider,
-        project_id: projectMap.get(r.projeto_id_espaider)!,
+        project_id: projectId!,
         solicitacao_id: r.solicitacao_id || null,
-        pasta_consultivo_id: r.pasta_consultivo_id ?? null,
+        pasta_consultivo_id: rawPasta || null,
         profissional: r.profissional || null,
         horas: r.horas ?? null,
         data_lancamento: r.data_lancamento ? r.data_lancamento.toISOString().split('T')[0] : null,
@@ -2236,17 +2283,21 @@ async function syncHorasLancadasFromRegistros(
 
     const orphans = mapped.length - rows.length;
     if (orphans > 0) {
-      const orphanIds = mapped
-        .filter((r) => !projectMap.has(r.projeto_id_espaider))
-        .map((r) => r.projeto_id_espaider)
-        .filter((v, i, a) => a.indexOf(v) === i)
-        .slice(0, 10);
+      // Diagnóstico dos orphans: mostrar os valores de PASTACONSULTIVO que não bateram
+      const orphanSamples = mapped
+        .map((r) => {
+          const pasta = r.espaider_raw?.ListaCampos?.find((c) => c.Identificador === 'PASTACONSULTIVO')?.Valor ?? null;
+          const resolved = resolveProjectId(r, pasta);
+          return resolved ? null : { id: r.id_espaider, pai: r.projeto_id_espaider, pasta };
+        })
+        .filter(Boolean)
+        .slice(0, 5);
       logs.push(
         createLog(
           'warn',
           'HorasLancadas',
-          `${orphans} registros ignorados (projeto pai não encontrado). IDs: ${orphanIds.join(', ')}`,
-          { orphanParentIds: orphanIds },
+          `${orphans} registros ignorados (projeto pai não encontrado). Amostras: ${JSON.stringify(orphanSamples)}`,
+          { orphanSamples },
         ),
       );
     }

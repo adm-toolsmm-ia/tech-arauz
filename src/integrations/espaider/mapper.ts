@@ -429,38 +429,50 @@ export function mapearTempoPermanencia(registro: RegistroEspaider): TempoPermane
 /**
  * Campos mapeados para Horas Lançadas
  * API: BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS (API independente)
- * Identificadores inferidos — ajustar após inspecionar espaider_raw do 1º sync
  */
 const CAMPOS_HORA_LANCADA = [
-  'IDREGISTROPAI',
-  'IDSOLICITACAO',
-  'PASTACONSULTIVO_ID',
-  'PROFISSIONAL',
-  'HORAS',
-  'DATALANCAMENTO',
-  'TIPOLANCAMENTO',
+  'SOLICITACAO_IDENTIFICADOR',
+  'PASTACONSULTIVO',
+  'COLABORADOR',
+  'HORASORIGINAISHOR',
+  'DATA',
+  'ATIVIDADE',
 ];
+
+/**
+ * Função utilitária para converter "00:33" em decimal "0.55" ou reter apenas float
+ */
+function parseTimeStr(timeStr: string | undefined): number | null {
+  if (!timeStr) return null;
+  if (timeStr.includes(':')) {
+    const [h, m] = timeStr.split(':');
+    return parseInt(h, 10) + parseInt(m, 10) / 60;
+  }
+  return parseFloat(timeStr.replace(',', '.')) || null;
+}
 
 /**
  * Mapeia registro Espaider para HoraLancadaMapeada
  */
 export function mapearHoraLancada(registro: RegistroEspaider): HoraLancadaMapeada {
   const campos = registro.ListaCampos;
-  const horasBruto = getCampoValor(campos, 'HORAS');
-  const pastaBruto = getCampoValor(campos, 'PASTACONSULTIVO_ID');
+  const solIdStr = getCampoValor(campos, 'SOLICITACAO_IDENTIFICADOR');
+  const pastaStr = getCampoValor(campos, 'PASTACONSULTIVO');
+
+  // Extrai ID numérico da Pasta Consultivo (ex: "CS.34433" -> 34433)
+  const pastaId = pastaStr ? parseInt(pastaStr.replace(/\D/g, ''), 10) || null : null;
+  const projetoId = solIdStr ? parseInt(solIdStr, 10) || 0 : 0;
 
   return {
     id_espaider: registro.IDEspaider,
-    projeto_id_espaider: parseInt(
-      getCampoValor(campos, 'IDREGISTROPAI') || getCampoValor(campos, 'IDSOLICITACAO') || '0',
-      10,
-    ),
-    solicitacao_id: parseInt(getCampoValor(campos, 'IDSOLICITACAO') || '0', 10),
-    pasta_consultivo_id: pastaBruto ? parseInt(pastaBruto, 10) || null : null,
-    profissional: getCampoValor(campos, 'PROFISSIONAL'),
-    horas: horasBruto ? parseFloat(horasBruto.replace(',', '.')) || null : null,
-    data_lancamento: parseData(getCampoValor(campos, 'DATALANCAMENTO')),
-    tipo_lancamento: getCampoValor(campos, 'TIPOLANCAMENTO'),
+    // Se solIdStr não existir, projeto_id_espaider será 0. O espaider-sync se encarregará de buscar usando pasta_consultivo_id.
+    projeto_id_espaider: projetoId,
+    solicitacao_id: projetoId,
+    pasta_consultivo_id: pastaId,
+    profissional: getCampoValor(campos, 'COLABORADOR') || '',
+    horas: parseTimeStr(getCampoValor(campos, 'HORASORIGINAISHOR')),
+    data_lancamento: parseData(getCampoValor(campos, 'DATA')),
+    tipo_lancamento: getCampoValor(campos, 'ATIVIDADE') || '',
     espaider_raw: registro,
   };
 }

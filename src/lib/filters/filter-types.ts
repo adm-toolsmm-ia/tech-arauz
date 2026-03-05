@@ -85,6 +85,14 @@ export interface FilterState {
 }
 
 /**
+ * Filter Sort Configuration
+ */
+export interface SortConfig {
+  key: string;
+  direction: 'asc' | 'desc';
+}
+
+/**
  * Filter bar props
  */
 export interface FilterBarProps {
@@ -94,10 +102,12 @@ export interface FilterBarProps {
   onSearchChange?: (search: string) => void;
   onViewModeChange?: (mode: string) => void;
   onAgendaPeriodChange?: (period: string) => void;
+  onSortChange?: (sort: SortConfig | null) => void;
   initialFilters?: FilterState;
   initialSearch?: string;
   initialViewMode?: string;
   initialAgendaPeriod?: string;
+  initialSort?: SortConfig | null;
   className?: string;
 }
 

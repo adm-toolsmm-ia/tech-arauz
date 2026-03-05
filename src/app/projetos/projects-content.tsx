@@ -121,6 +121,8 @@ export function ProjectsContent({
     updateFilter,
     setSearch,
     setViewMode: setFilterViewMode,
+    sortConfig,
+    setSortConfig,
     resetAllFilters,
     registry,
   } = useProjetosFilters(projects);
@@ -207,6 +209,7 @@ export function ProjectsContent({
           search={search}
           viewMode={activeViewMode}
           agendaPeriod={agendaPeriod}
+          sortConfig={sortConfig}
           isSyncing={isSyncing}
           onUpdateFilter={updateFilter}
           onResetFilters={() => {
@@ -216,6 +219,7 @@ export function ProjectsContent({
           onSearchChange={setSearch}
           onViewModeChange={handleViewModeChange}
           onAgendaPeriodChange={setAgendaPeriod}
+          onSortChange={setSortConfig}
           onSync={handleSync}
         />
 

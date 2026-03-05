@@ -7,7 +7,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FilterState, FilterDefinition, FilterPersistenceConfig } from '@/lib/filters/filter-types';
+import { FilterState, FilterDefinition, FilterPersistenceConfig, SortConfig } from '@/lib/filters/filter-types';
 import {
   resetFilters,
   clearFilters as clearFiltersUtil,
@@ -23,20 +23,24 @@ interface UseFilterStateOptions {
   definitions: FilterDefinition[];
   persistence?: FilterPersistenceConfig;
   initialViewMode?: string; // Override default (e.g. from registry viewModes[].default)
+  initialSort?: SortConfig | null;
   onFiltersChange?: (filters: FilterState) => void;
   onSearchChange?: (search: string) => void;
   onViewModeChange?: (mode: string) => void;
+  onSortChange?: (sort: SortConfig | null) => void;
 }
 
 interface UseFilterStateReturn {
   filters: FilterState;
   search: string;
   viewMode: string;
+  sortConfig: SortConfig | null;
   definitions: FilterDefinition[];
   setFilters: (filters: FilterState) => void;
   updateFilter: (filterId: string, value: any) => void;
   setSearch: (search: string) => void;
   setViewMode: (mode: string) => void;
+  setSortConfig: (config: SortConfig | null) => void;
   resetAllFilters: () => void;
   clearFilters: (filterIds?: string[]) => void;
   activeFilterCount: number;
@@ -53,19 +57,34 @@ export function useFilterState(options: UseFilterStateOptions): UseFilterStateRe
     definitions,
     persistence = { enabled: false },
     initialViewMode,
+    initialSort = null,
     onFiltersChange,
     onSearchChange,
     onViewModeChange,
+    onSortChange,
   } = options;
 
   // Initialize filters (from localStorage or defaults)
-  const initialFilters = useMemo(() => {
+  const [initialFilters, initialSortConfig] = useMemo(() => {
+    let savedFilters = resetFilters(definitions);
+    let savedSort = initialSort;
+
     if (persistence?.enabled) {
       const storageKey = persistence.storageKey || `filters-${moduleId}`;
-      return restoreFilters(storageKey, definitions);
+      savedFilters = restoreFilters(storageKey, definitions);
+
+      const sortStorageKey = `${storageKey}-sort`;
+      try {
+        const storedSort = localStorage.getItem(sortStorageKey);
+        if (storedSort) {
+          savedSort = JSON.parse(storedSort) as SortConfig;
+        }
+      } catch {
+        console.warn(`Failed to restore sort from key: ${sortStorageKey}`);
+      }
     }
-    return resetFilters(definitions);
-  }, [moduleId, definitions, persistence]);
+    return [savedFilters, savedSort] as const;
+  }, [moduleId, definitions, persistence, initialSort]);
 
   // State
   const [filters, setFiltersState] = useState<FilterState>(initialFilters);
@@ -73,6 +92,7 @@ export function useFilterState(options: UseFilterStateOptions): UseFilterStateRe
   const [viewMode, setViewModeState] = useState(
     initialViewMode ?? (definitions[0]?.group === 'viewMode' ? definitions[0].id : 'kanban'),
   );
+  const [sortConfig, setSortState] = useState<SortConfig | null>(initialSortConfig);
 
   // Callbacks
   const setFilters = useCallback(
@@ -117,6 +137,28 @@ export function useFilterState(options: UseFilterStateOptions): UseFilterStateRe
     [onViewModeChange],
   );
 
+  const setSortConfig = useCallback(
+    (newSort: SortConfig | null) => {
+      setSortState(newSort);
+      onSortChange?.(newSort);
+
+      if (persistence?.enabled) {
+        const storageKey = persistence.storageKey || `filters-${moduleId}`;
+        const sortStorageKey = `${storageKey}-sort`;
+        try {
+          if (newSort) {
+            localStorage.setItem(sortStorageKey, JSON.stringify(newSort));
+          } else {
+            localStorage.removeItem(sortStorageKey);
+          }
+        } catch {
+          console.warn(`Failed to persist sort with key: ${sortStorageKey}`);
+        }
+      }
+    },
+    [onSortChange, persistence, moduleId],
+  );
+
   const resetAllFilters = useCallback(() => {
     const defaultFilters = resetFilters(definitions);
     setFilters(defaultFilters);
@@ -159,11 +201,13 @@ export function useFilterState(options: UseFilterStateOptions): UseFilterStateRe
     filters,
     search,
     viewMode,
+    sortConfig,
     definitions,
     setFilters,
     updateFilter,
     setSearch,
     setViewMode,
+    setSortConfig,
     resetAllFilters,
     clearFilters,
     activeFilterCount,
@@ -180,9 +224,10 @@ export function useModuleFilters<T extends Record<string, any>>(
   moduleId: string,
   definitions: FilterDefinition[],
   data: T[],
-  filterFn: (data: T[], filters: FilterState, search: string) => T[],
+  filterFn: (data: T[], filters: FilterState, search: string, sortConfig?: SortConfig | null) => T[],
   options?: {
     persistence?: FilterPersistenceConfig;
+    initialSort?: SortConfig | null;
     onDataChange?: (filtered: T[]) => void;
   },
 ) {
@@ -190,13 +235,14 @@ export function useModuleFilters<T extends Record<string, any>>(
     moduleId,
     definitions,
     persistence: options?.persistence,
+    initialSort: options?.initialSort,
   });
 
   const filteredData = useMemo(() => {
-    const result = filterFn(data, filterState.filters, filterState.search);
+    const result = filterFn(data, filterState.filters, filterState.search, filterState.sortConfig);
     options?.onDataChange?.(result);
     return result;
-  }, [data, filterState.filters, filterState.search, filterFn, options]);
+  }, [data, filterState.filters, filterState.search, filterState.sortConfig, filterFn, options]);
 
   return {
     ...filterState,

@@ -21,6 +21,7 @@ import {
   navigateAgendaRefDate,
   type ProjectAgendaPeriod,
 } from '@/lib/domain/project-agenda';
+import { SortConfig } from '@/lib/filters/filter-types';
 
 /**
  * Project data interface (UI fields after transform).
@@ -197,6 +198,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
       enabled: true,
       storageKey: 'filters-projetos',
     },
+    initialSort: { key: 'data_movimentacao', direction: 'desc' },
   });
 
   const setAgendaPeriod = useCallback((period: string) => {
@@ -250,18 +252,43 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     delete otherFilters.sem_movimentacao;
     delete otherFilters.atrasado;
 
-    return applyFilters(data, otherFilters, {
+    const result = applyFilters(data, otherFilters, {
       search: filterState.search,
       searchFields: searchFieldsProjetos,
       matchMode: 'partial',
       caseSensitive: false,
     });
-  }, [projectsWithComputed, filterState.filters, filterState.search]);
+
+    if (filterState.sortConfig) {
+      result.sort((a, b) => {
+        let valA: any = a[filterState.sortConfig!.key as keyof ProjetosData];
+        let valB: any = b[filterState.sortConfig!.key as keyof ProjetosData];
+
+        if (filterState.sortConfig!.key === 'prazo_fase' || filterState.sortConfig!.key === 'end_date' || filterState.sortConfig!.key === 'data_movimentacao' || filterState.sortConfig!.key === 'last_update' || filterState.sortConfig!.key === 'start_date') {
+          valA = valA ? new Date(valA).getTime() : 0;
+          valB = valB ? new Date(valB).getTime() : 0;
+        } else if (typeof valA === 'string' && typeof valB === 'string') {
+          valA = valA.toLowerCase();
+          valB = valB.toLowerCase();
+        } else if (filterState.sortConfig!.key === 'importancia_especial') {
+          valA = valA ? 1 : 0;
+          valB = valB ? 1 : 0;
+        }
+
+        if (valA < valB) return filterState.sortConfig!.direction === 'asc' ? -1 : 1;
+        if (valA > valB) return filterState.sortConfig!.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [projectsWithComputed, filterState.filters, filterState.search, filterState.sortConfig]);
 
   return {
     filters: filterState.filters,
     search: filterState.search,
     viewMode: filterState.viewMode,
+    sortConfig: filterState.sortConfig,
     definitions: filterState.definitions,
     filteredData,
     agendaPeriod,
@@ -273,6 +300,7 @@ export function useProjetosFilters(projects: ProjetosData[]) {
     updateFilter: filterState.updateFilter,
     setSearch: filterState.setSearch,
     setViewMode: filterState.setViewMode,
+    setSortConfig: filterState.setSortConfig,
     setFilters: filterState.setFilters,
     resetAllFilters: filterState.resetAllFilters,
     clearFilters: filterState.clearFilters,

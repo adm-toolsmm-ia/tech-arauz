@@ -1937,8 +1937,31 @@ async function syncTempoPermanenciaFromRegistros(
       ),
     );
 
+    // Diagnóstico: campos disponíveis no primeiro registro
+    if (registros.length > 0 && registros[0].ListaCampos) {
+      const camposDisponiveis = registros[0].ListaCampos.map((c) => c.Identificador);
+      logs.push(
+        createLog('info', 'TempoPermanencia', `Campos disponíveis: ${camposDisponiveis.join(', ')}`, {
+          campos: camposDisponiveis,
+        }),
+      );
+    }
+
     const mapped = mapearRegistros(registros, mapearTempoPermanencia);
     logs.push(createLog('info', 'TempoPermanencia', `${mapped.length} registros mapeados`));
+
+    // Diagnóstico: amostra do mapeamento
+    if (mapped.length > 0) {
+      const sample = mapped[0];
+      logs.push(
+        createLog(
+          'info',
+          'TempoPermanencia',
+          `Amostra mapeada: espaider_id=${sample.id_espaider}, projeto_pai=${sample.projeto_id_espaider}, fase=${sample.fase || '(vazio)'}`,
+          { sample: { id: sample.id_espaider, pai: sample.projeto_id_espaider, fase: sample.fase } },
+        ),
+      );
+    }
 
     if (mapped.length === 0) {
       logs.push(createLog('warn', 'TempoPermanencia', 'Nenhum registro mapeado — pulando upsert'));
@@ -2153,6 +2176,26 @@ async function syncHorasLancadasFromRegistros(
 
     const mapped = mapearRegistros(registros, mapearHoraLancada);
     logs.push(createLog('info', 'HorasLancadas', `${mapped.length} registros mapeados`));
+
+    // Diagnóstico: amostra do mapeamento
+    if (mapped.length > 0) {
+      const sample = mapped[0];
+      logs.push(
+        createLog(
+          'info',
+          'HorasLancadas',
+          `Amostra mapeada: espaider_id=${sample.id_espaider}, projeto_pai=${sample.projeto_id_espaider}, profissional=${sample.profissional || '(vazio)'}`,
+          {
+            sample: {
+              id: sample.id_espaider,
+              pai: sample.projeto_id_espaider,
+              solicitacao_id: sample.solicitacao_id,
+              profissional: sample.profissional,
+            },
+          },
+        ),
+      );
+    }
 
     if (mapped.length === 0) {
       logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro mapeado — pulando upsert'));

@@ -13,7 +13,7 @@ import { createServiceClient } from '@/lib/supabase/service';
  * - page: Page number (default: 1)
  * - limit: Items per page (default: 50, max: 100)
  * - level: Filter by level (info, warn, error, success)
- * - dataset: Filter by dataset (Projetos, Entregas, Cronogramas, Requisitos, Historicos, Aprovadores, Orcamentos, Geral)
+ * - dataset: Filter by dataset (Projetos, Entregas, Cronogramas, Requisitos, Historicos, Aprovadores, Orcamentos, TempoPermanencia, HorasLancadas, Geral)
  * - startDate: ISO date string for range start
  * - endDate: ISO date string for range end
  * - requestId: Filter by specific sync request

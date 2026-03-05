@@ -105,6 +105,8 @@ const DATASETS = [
   'Historicos',
   'Aprovadores',
   'Orcamentos',
+  'TempoPermanencia',
+  'HorasLancadas',
 ];
 const LEVELS = ['info', 'warn', 'error', 'success'];
 

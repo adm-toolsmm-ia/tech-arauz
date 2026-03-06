@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/table';
 import { ChevronLeft, ChevronRight, RefreshCw, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
-import type { AgentSessionWithAgent, SessionsResponse } from '@/app/api/sessions/route';
+import type { AgentSessionWithAgent, SessionsResponse } from '@/lib/types/chat';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

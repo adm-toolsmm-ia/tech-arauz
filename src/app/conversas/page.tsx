@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+
 import { createClient } from '@/lib/supabase/server';
 import { ConversasContent } from './conversas-content';
 
@@ -19,24 +19,48 @@ export default async function ConversasPage() {
     redirect('/login');
   }
 
-  // Forward cookies from original request so /api/sessions can authenticate
-  const cookieStore = await cookies();
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join('; ');
+  // Fetch initial sessions data directly from DB
+  const limit = 10;
+  const { data: rawSessions, error: sessionsError, count } = await supabase
+    .from('agent_sessions')
+    .select(
+      `
+      id,
+      user_id,
+      agent_id,
+      agents(name),
+      started_at,
+      ended_at,
+      status,
+      message_count,
+      created_at,
+      updated_at
+    `,
+      { count: 'exact' }
+    )
+    .eq('user_id', user.id)
+    .order('started_at', { ascending: false })
+    .range(0, limit - 1);
 
-  // Fetch initial sessions data
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/sessions?page=1&limit=20`,
-    {
-      headers: cookieHeader ? { Cookie: cookieHeader } : {},
-    }
-  ).catch(() => null);
+  if (sessionsError) {
+    console.error('Error fetching initial sessions:', sessionsError);
+  }
 
-  const sessionsData = response?.ok
-    ? await response.json()
-    : { sessions: [], total: 0, page: 1, limit: 20, hasMore: false };
+  const sessionsData = {
+    sessions: (rawSessions || []).map((session: any) => ({
+      id: session.id,
+      user_id: session.user_id,
+      agent_id: session.agent_id,
+      agent_name: session.agents?.name || 'Unknown Agent',
+      started_at: session.started_at,
+      ended_at: session.ended_at,
+      status: session.status,
+      message_count: session.message_count,
+      created_at: session.created_at,
+      updated_at: session.updated_at,
+    })),
+    total: count || 0,
+  };
 
   // Fetch list of chatbot agents for filter
   const { data: agents, error: agentsError } = await supabase

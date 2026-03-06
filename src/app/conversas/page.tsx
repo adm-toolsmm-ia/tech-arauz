@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ConversasContent } from './conversas-content';
 
 export const metadata = {
-  title: 'Histórico de Conversas - Tech Arauz',
+  title: 'Chatbot AI - Tech Arauz',
   description: 'Histórico de todas as conversas com assistentes IA',
 };
 
@@ -54,7 +54,7 @@ export default async function ConversasPage() {
     <ConversasContent
       initialSessions={sessionsData.sessions || []}
       initialTotal={sessionsData.total || 0}
-      agents={(agents || []) as Array<{ id: string; name: string }> }
+      agents={(agents || []) as Array<{ id: string; name: string }>}
     />
   );
 }

@@ -8,8 +8,13 @@ export function isOverdue(
   status: string | null | undefined,
 ): boolean {
   if (!dateStr) return false;
-  const normalised = (status || '').toLowerCase();
-  if (normalised.includes('conclu') || normalised.includes('cancelado')) return false;
+  const normalised = (status || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  if (normalised !== 'em execucao') return false;
   try {
     const date = new Date(dateStr);
     const today = new Date();

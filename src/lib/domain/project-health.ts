@@ -22,11 +22,14 @@ export function getOverdueData(
   project: OverdueProjectLike,
   referenceDate = new Date(),
 ): { isOverdue: boolean; maxDays: number } {
-  if (!isConsideredActive(project.status)) return { isOverdue: false, maxDays: 0 };
+  // Atrasado apenas se o status for estritamente "em execucao"
+  const normalizedStatus = normalizeStatus(project.status);
+  if (normalizedStatus !== 'em execucao') {
+    return { isOverdue: false, maxDays: 0 };
+  }
 
-  const datesToCheck = [project.end_date, project.prazo_cronograma, project.prazo_aprovador]
-    .filter(Boolean)
-    .map((d) => new Date(d as string));
+  // Verifica apenas o prazo final do projeto (end_date)
+  const datesToCheck = [project.end_date].filter(Boolean).map((d) => new Date(d as string));
 
   if (datesToCheck.length === 0) return { isOverdue: false, maxDays: 0 };
 

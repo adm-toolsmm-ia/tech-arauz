@@ -76,7 +76,7 @@ export function ConversasContent({
         setTotal(data.total);
         setCurrentPage(page);
       } catch (error) {
-        toast.error('❌ Erro ao carregar histórico de conversas');
+        toast.error('❌ Erro ao carregar Chatbot AI');
         console.error(error);
       } finally {
         setIsLoading(false);
@@ -128,7 +128,7 @@ export function ConversasContent({
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <DashboardHeader
-        title="Histórico de Conversas"
+        title="Chatbot AI"
         subtitle="Consulte todas as suas conversas com assistentes IA"
       />
 

@@ -47,7 +47,6 @@ export const menuConfig: NavGroup[] = [
       { title: 'Agentes AI', url: '/agentes', icon: Bot, badge: 'MVP' },
       { title: 'Chatbot AI', url: '/conversas', icon: MessageSquare },
       { title: 'Integrações', url: '/integracoes', icon: Plug },
-      { title: 'Usuários', url: '/cadastros/usuarios', icon: UserPlus },
     ],
   },
   {
@@ -56,6 +55,7 @@ export const menuConfig: NavGroup[] = [
       { title: 'Tipos de Agentes', url: '/auxiliares/agent-types', icon: Settings },
       { title: 'Modelos IA', url: '/auxiliares/modelos-ia', icon: Database },
       { title: 'Provedores IA', url: '/auxiliares/lm-providers', icon: Zap },
+      { title: 'Usuários', url: '/cadastros/usuarios', icon: UserPlus },
     ],
   },
 ];

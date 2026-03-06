@@ -105,7 +105,9 @@ export async function GET(request: NextRequest) {
       id: session.id,
       user_id: session.user_id,
       agent_id: session.agent_id,
-      agent_name: session.agents?.name || 'Unknown Agent',
+      agent_name: Array.isArray(session.agents)
+        ? session.agents[0]?.name || 'Unknown Agent'
+        : session.agents?.name || 'Unknown Agent',
       started_at: session.started_at,
       ended_at: session.ended_at,
       status: session.status,

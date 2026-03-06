@@ -234,9 +234,11 @@ export function ConversasContent({
                       <TableRow key={session.id} className="hover:bg-gray-50">
                         <TableCell className="font-medium">{session.agent_name}</TableCell>
                         <TableCell className="text-sm text-gray-600">
-                          {format(new Date(session.started_at), 'dd MMM yyyy HH:mm', {
-                            locale: ptBR,
-                          })}
+                          {session.started_at && !isNaN(new Date(session.started_at).getTime())
+                            ? format(new Date(session.started_at), 'dd MMM yyyy HH:mm', {
+                              locale: ptBR,
+                            })
+                            : '-'}
                         </TableCell>
                         <TableCell>
                           <Badge

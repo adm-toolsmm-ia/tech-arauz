@@ -23,6 +23,15 @@ interface ProjectCardData {
   complexidade_tecnica?: string | null;
   mensagem_movimentacao?: string | null;
   data_movimentacao?: string | null;
+  tempos_permanencia?: Array<{
+    fase: string | null;
+    tempo_permanencia_dias: number | null;
+    situacao: string | null;
+  }>;
+  schedules?: Array<{
+    status: string | null;
+    atrasado?: boolean | null;
+  }>;
 }
 
 interface ProjectKanbanCardProps {
@@ -107,9 +116,9 @@ function ImpactBadge({ value }: { value: string }) {
         'h-5 px-2 text-[10px]',
         lower === 'alta' && 'border-red-300 text-red-700 dark:border-red-800 dark:text-red-300',
         (lower === 'media' || lower === 'médio') &&
-          'border-amber-300 text-amber-700 dark:border-amber-800 dark:text-amber-300',
+        'border-amber-300 text-amber-700 dark:border-amber-800 dark:text-amber-300',
         lower === 'baixa' &&
-          'border-green-300 text-green-700 dark:border-green-800 dark:text-green-300',
+        'border-green-300 text-green-700 dark:border-green-800 dark:text-green-300',
       )}
     >
       {value}
@@ -130,6 +139,17 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
   const faseSlug = project.fase_atual ? normalizeSlug(project.fase_atual) : '';
 
   const showAlerts = project.importancia_especial || isProjectOverdue || isDeadlineNear;
+
+  const currentPhaseTime = project.tempos_permanencia?.find(
+    (tp) => tp.fase === project.fase_atual || tp.situacao === 'Andamento' // Heurística Espaider para pegar a fase em andamento
+  );
+
+  const diasNaFase = currentPhaseTime?.tempo_permanencia_dias ?? null;
+
+  const totalAtividades = project.schedules?.length || 0;
+  const atividadesConcluidas = project.schedules?.filter(s => (s.status || '').toLowerCase() === 'concluído').length || 0;
+  const atividadesAtrasadas = project.schedules?.filter(s => s.atrasado).length || 0;
+  const hasCronograma = totalAtividades > 0;
 
   return (
     <div className="relative flex h-full flex-col">
@@ -240,12 +260,47 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
 
           {/* Fase Atual (se disponível) */}
           {project.fase_atual && (
-            <div className="flex items-start gap-1.5 text-xs">
-              <GitBranch className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              <div className="flex-1">
+            <div className="flex items-start justify-between gap-1.5 text-xs">
+              <div className="flex items-start gap-1.5 flex-1">
+                <GitBranch className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <span className="text-foreground/85">
                   {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
                 </span>
+              </div>
+              {diasNaFase !== null && (
+                <div
+                  className={cn(
+                    "shrink-0 font-medium px-1.5 py-0.5 rounded text-[10px]",
+                    diasNaFase > 30 ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                      : diasNaFase > 15 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                        : "bg-muted text-muted-foreground"
+                  )}
+                  title={`Este projeto já está há ${diasNaFase} dia(s) nesta etapa.`}
+                >
+                  {diasNaFase} d
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Cronograma (Opcional - Progress bar) */}
+          {hasCronograma && (
+            <div className="pt-1.5 pb-0.5">
+              <div className="flex items-center justify-between text-[10px] mb-1">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  Cronograma
+                </span>
+                <span className={cn("font-medium", atividadesAtrasadas > 0 ? "text-red-500" : "text-foreground/70")}>
+                  {atividadesConcluidas}/{totalAtividades}
+                  {atividadesAtrasadas > 0 && ` (${atividadesAtrasadas} atrasadas)`}
+                </span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className={cn("h-full", atividadesAtrasadas > 0 ? "bg-red-500" : "bg-primary")}
+                  style={{ width: `${(atividadesConcluidas / totalAtividades) * 100}%` }}
+                />
               </div>
             </div>
           )}

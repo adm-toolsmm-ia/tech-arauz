@@ -433,6 +433,7 @@ export function mapearTempoPermanencia(registro: RegistroEspaider): TempoPermane
 const CAMPOS_HORA_LANCADA = [
   'SOLICITACAO_IDENTIFICADOR',
   'PASTACONSULTIVO',
+  'PASTACONSULTIVO_ID',
   'COLABORADOR',
   'HORASORIGINAISHOR',
   'DATA',
@@ -458,17 +459,26 @@ export function mapearHoraLancada(registro: RegistroEspaider): HoraLancadaMapead
   const campos = registro.ListaCampos;
   const solIdStr = getCampoValor(campos, 'SOLICITACAO_IDENTIFICADOR');
   const pastaStr = getCampoValor(campos, 'PASTACONSULTIVO');
+  const pastaIdStr = getCampoValor(campos, 'PASTACONSULTIVO_ID');
 
   // SOLICITACAO_IDENTIFICADOR é o ID numérico do projeto no Espaider
-  const projetoId = solIdStr ? parseInt(solIdStr, 10) || 0 : 0;
+  // Em algumas bases, ele vem em formato text (ex: "CS.34433"), resultando em 0.
+  // Tentamos o campo IDENTIFICADOR como fallback robusto para o id pai real numérico
+  let projetoId = parseInt(solIdStr || '', 10) || 0;
+  if (!projetoId || Number.isNaN(projetoId)) {
+    const identId = getCampoValor(campos, 'IDENTIFICADOR');
+    projetoId = parseInt(identId || '', 10) || 0;
+  }
 
   return {
     id_espaider: registro.IDEspaider,
     // Usado no lookup primário: bate com projects.espaider_id
     projeto_id_espaider: projetoId,
     solicitacao_id: projetoId,
-    // Mantido como string original (ex: "CS.34433") para lookup secundário via pastaMap
-    pasta_consultivo_id: pastaStr || null,
+    // ID numérico exato da pasta (fallback robusto)
+    pasta_consultivo_id: parseInt(pastaIdStr || '', 10) || null,
+    // Mantido como string original (ex: "CS.34433") para lookup terciário via pastaMap
+    pasta_consultivo_texto: pastaStr || null,
     profissional: getCampoValor(campos, 'COLABORADOR') || '',
     horas: parseTimeStr(getCampoValor(campos, 'HORASORIGINAISHOR')),
     data_lancamento: parseData(getCampoValor(campos, 'DATA')),

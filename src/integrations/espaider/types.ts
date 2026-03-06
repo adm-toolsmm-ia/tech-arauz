@@ -312,7 +312,8 @@ export interface HoraLancadaMapeada {
   id_espaider: number;
   projeto_id_espaider: number;   // ID numérico da solicitação (bate com projects.espaider_id)
   solicitacao_id: number;        // SOLICITACAO_IDENTIFICADOR (numérico)
-  pasta_consultivo_id: string | null; // PASTACONSULTIVO — string original ex: "CS.34433"
+  pasta_consultivo_id: number | null; // PASTACONSULTIVO_ID — id numérico
+  pasta_consultivo_texto: string | null; // PASTACONSULTIVO — string original ex: "CS.34433"
   profissional: string;          // COLABORADOR
   horas: number | null;          // HORASORIGINAISHOR (convertido para decimal)
   data_lancamento: Date | null;  // DATA

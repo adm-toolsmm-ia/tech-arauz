@@ -16,18 +16,18 @@ export default async function ProjectsPage() {
     redirect('/login');
   }
 
-  // Buscar projetos com dados relacionados
   const { data: projects, error } = await supabase
     .from('projects')
     .select(
       `
-      *,
-      schedules:project_schedules(*),
-      deliveries:project_deliveries(*),
-      histories:project_histories(*),
-      approvers:project_approvers(*),
-      budgets:project_budgets(*)
-    `,
+        *,
+        schedules:project_schedules(*),
+        deliveries:project_deliveries(*),
+        histories:project_histories(*),
+        approvers:project_approvers(*),
+        budgets:project_budgets(*),
+        tempos_permanencia:project_tempo_permanencia(*)
+      `,
     )
     .order('created_at', { ascending: false });
 

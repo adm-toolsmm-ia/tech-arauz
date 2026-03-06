@@ -2059,7 +2059,19 @@ export async function syncHorasLancadas(
     // Mapa principal: espaider_id -> project UUID
     const projectMap = await getProjectIdMap(supabase, tenantId, logs);
 
-    // Mapa secundário: pasta_consultivo (string "CS.XXXXX") -> project UUID
+    // Mapa secundário 1: pasta_consultivo_id (numérico exato) -> project UUID
+    const { data: projsComPastaId } = await supabase
+      .from('projects')
+      .select('id, pasta_consultivo_id')
+      .eq('tenant_id', tenantId)
+      .not('pasta_consultivo_id', 'is', null);
+    const pastaIdMap = new Map<number, string>();
+    for (const p of projsComPastaId || []) {
+      if (p.pasta_consultivo_id) pastaIdMap.set(p.pasta_consultivo_id, p.id);
+    }
+    logs.push(createLog('info', 'HorasLancadas', `PastaIdMap: ${pastaIdMap.size} projetos com ID numérico de pasta_consultivo`));
+
+    // Mapa secundário 2: pasta_consultivo (string "CS.XXXXX") -> project UUID
     const { data: projsComPasta } = await supabase
       .from('projects')
       .select('id, pasta_consultivo')
@@ -2069,7 +2081,7 @@ export async function syncHorasLancadas(
     for (const p of projsComPasta || []) {
       if (p.pasta_consultivo) pastaMap.set(p.pasta_consultivo.trim().toUpperCase(), p.id);
     }
-    logs.push(createLog('info', 'HorasLancadas', `PastaMap: ${pastaMap.size} projetos com pasta_consultivo`, { exemplos: Array.from(pastaMap.keys()).slice(0, 5) }));
+    logs.push(createLog('info', 'HorasLancadas', `PastaMap: ${pastaMap.size} projetos com texto pasta_consultivo`, { exemplos: Array.from(pastaMap.keys()).slice(0, 5) }));
 
     // Busca espaider_ids existentes para diff created/updated
     const { data: existing } = await supabase.from('project_horas_lancadas').select('espaider_id').eq('tenant_id', tenantId);
@@ -2083,19 +2095,25 @@ export async function syncHorasLancadas(
       // Tenta por espaider_id numérico
       let projectId: string | undefined = projectMap.get(r.projeto_id_espaider);
 
-      // Fallback: busca pelo PASTACONSULTIVO bruto no registro da API
+      // Nova tentativa via pasta_consultivo_id (numérico exato) recém adicionado na API
       if (!projectId && r.pasta_consultivo_id) {
-        const pastaRaw = String(r.pasta_consultivo_id).trim().toUpperCase();
+        projectId = pastaIdMap.get(r.pasta_consultivo_id);
+      }
+
+      // Fallback legado: busca pelo PASTACONSULTIVO texto bruto
+      if (!projectId && r.pasta_consultivo_texto) {
+        const pastaRaw = r.pasta_consultivo_texto.trim().toUpperCase();
         projectId = pastaMap.get(pastaRaw);
-        if (!projectId) {
-          // Tenta também via campo espaider_raw direto
-          const pastaValor = r.espaider_raw?.ListaCampos?.find((c) => c.Identificador === 'PASTACONSULTIVO')?.Valor;
-          if (pastaValor) projectId = pastaMap.get(pastaValor.trim().toUpperCase());
-        }
+      }
+
+      // Fallback final: tenta via campo espaider_raw direto
+      if (!projectId) {
+        const pastaValor = r.espaider_raw?.ListaCampos?.find((c) => c.Identificador === 'PASTACONSULTIVO')?.Valor;
+        if (pastaValor) projectId = pastaMap.get(pastaValor.trim().toUpperCase());
       }
 
       if (!projectId) {
-        orphanSamples.push({ id: r.id_espaider, pai: r.projeto_id_espaider, pasta: r.pasta_consultivo_id });
+        orphanSamples.push({ id: r.id_espaider, pai: r.projeto_id_espaider, pastaId: r.pasta_consultivo_id, pastaTxt: r.pasta_consultivo_texto });
         continue;
       }
 
@@ -2104,7 +2122,7 @@ export async function syncHorasLancadas(
         espaider_id: r.id_espaider,
         project_id: projectId,
         solicitacao_id: r.solicitacao_id || null,
-        pasta_consultivo_id: r.pasta_consultivo_id ? String(r.pasta_consultivo_id) : null,
+        pasta_consultivo_id: r.pasta_consultivo_id || null,
         profissional: r.profissional || null,
         horas: r.horas ?? null,
         data_lancamento: r.data_lancamento ? r.data_lancamento.toISOString().split('T')[0] : null,

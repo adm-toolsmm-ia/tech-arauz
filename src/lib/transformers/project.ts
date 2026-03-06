@@ -64,6 +64,7 @@ export interface DBProject {
   histories?: DBHistory[];
   approvers?: DBApprover[];
   budgets?: DBBudget[];
+  tempos_permanencia?: DBTempoPermanencia[];
 }
 
 export interface DBSchedule {
@@ -151,6 +152,22 @@ export interface DBBudget {
   created_at: string;
 }
 
+export interface DBTempoPermanencia {
+  id: string;
+  tenant_id: string;
+  project_id: string;
+  espaider_id: number;
+  fase: string | null;
+  responsavel: string | null;
+  situacao: string | null;
+  tempo_permanencia_dias: number | null;
+  data_inicio: string | null;
+  data_fim: string | null;
+  espaider_raw: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // =============================================================================
 // UI types (match what components expect)
 // =============================================================================
@@ -204,6 +221,7 @@ export interface UIProject {
   histories?: UIHistory[];
   approvers?: UIApprover[];
   budgets?: UIBudget[];
+  tempos_permanencia?: UITempoPermanencia[];
 }
 
 export interface UIHistory {
@@ -229,6 +247,16 @@ export interface UIBudget {
   supplier: string;
   date: string;
   currency: string;
+}
+
+export interface UITempoPermanencia {
+  id: string;
+  fase: string | null;
+  responsavel: string | null;
+  situacao: string | null;
+  tempo_permanencia_dias: number | null;
+  data_inicio: string | null;
+  data_fim: string | null;
 }
 
 export interface UISchedule {
@@ -363,6 +391,7 @@ export function dbProjectToUI(row: DBProject): UIProject {
     histories: row.histories?.map(dbHistoryToUI),
     approvers: row.approvers?.map(dbApproverToUI),
     budgets: row.budgets?.map(dbBudgetToUI),
+    tempos_permanencia: row.tempos_permanencia?.map(dbTempoPermanenciaToUI),
   };
 }
 
@@ -394,6 +423,18 @@ export function dbBudgetToUI(row: DBBudget): UIBudget {
     supplier: row.provider || '-',
     date: row.quotation_date || '',
     currency: row.moeda || 'BRL',
+  };
+}
+
+export function dbTempoPermanenciaToUI(row: DBTempoPermanencia): UITempoPermanencia {
+  return {
+    id: row.id,
+    fase: row.fase || '-',
+    responsavel: row.responsavel || '-',
+    situacao: row.situacao || '-',
+    tempo_permanencia_dias: row.tempo_permanencia_dias || 0,
+    data_inicio: row.data_inicio || null,
+    data_fim: row.data_fim || null,
   };
 }
 

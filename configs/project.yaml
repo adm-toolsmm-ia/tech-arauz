@@ -3,7 +3,7 @@
 # ==============================================================================
 # Centraliza: projeto, stack, integrações, design_system, coding_standards.
 # Regras de IDE (ex.: Cursor) são adapters que apontam para este arquivo e
-# para .aios-core/ (AIOS). Última atualização: 2026-02-25
+# para .aiox-core/ (AIOS). Última atualização: 2026-02-25
 # ==============================================================================
 
 project:

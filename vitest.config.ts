@@ -14,7 +14,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
-    exclude: ['.aios-core/**', 'services/**', 'node_modules/**'],
+    exclude: ['.aiox-core/**', 'services/**', 'node_modules/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

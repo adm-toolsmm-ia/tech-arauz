@@ -33,6 +33,8 @@ export interface DashboardKpis {
   totalProjects: number;
   coreActiveCount: number;
   activeProjects: number;
+  startedCount: number;
+  futureCount: number;
   completedProjects: number;
   inHomologationCount: number;
   inProductionCount: number;
@@ -138,6 +140,8 @@ export function computeDashboardKpis(projects: DashboardProjectLike[]): Dashboar
   const totalProjects = projects.length;
   const coreActiveCount = projects.filter((p) => isConsideredActive(p.status)).length;
   const activeProjects = projects.filter((p) => normalizeStatus(p.status) === 'em execução').length;
+  const startedCount = projects.filter((p) => normalizeStatus(p.status) === 'iniciado').length;
+  const futureCount = projects.filter((p) => normalizeStatus(p.status) === 'projeto futuro').length;
   const completedProjects = countCompleted(projects);
 
   const inHomologationCount = projects.filter((p) => {
@@ -185,6 +189,8 @@ export function computeDashboardKpis(projects: DashboardProjectLike[]): Dashboar
     totalProjects,
     coreActiveCount,
     activeProjects,
+    startedCount,
+    futureCount,
     completedProjects,
     inHomologationCount,
     inProductionCount,

@@ -28,8 +28,14 @@ import {
   buildPipelineData,
   ResponsibleWorkloadChart,
   buildWorkloadData,
-  ProjectImpactMatrix,
-  buildImpactMatrixData
+  ProjectsByDeadlineChart,
+  buildMonthlyDeadlineData,
+  ProjectsByPhaseChart,
+  buildPhaseData,
+  CompletedProjectsTrendChart,
+  buildCompletedTrendData,
+  ProjectsByAreaDashboard,
+  buildAreaDashboardData,
 } from '@/components/charts';
 import type { UIProject } from '@/lib/transformers/project';
 import { SkeletonKPI } from '@/components/ui/skeletons';
@@ -110,6 +116,8 @@ export function DashboardContent({
     totalProjects,
     coreActiveCount,
     activeProjects,
+    startedCount,
+    futureCount,
     completedProjects,
     inHomologationCount,
     inProductionCount,
@@ -131,11 +139,13 @@ export function DashboardContent({
   // Calculate some % derived metrics
   const delayedSpecialRatio = specialCount > 0 ? Math.round(((overdueProjectsInfo.count * 0.2) / specialCount) * 100) : 0; // Simulated risk proxy based on special
 
-
   // ─── Chart Data ───
   const pipelineData = React.useMemo(() => buildPipelineData(chartProjects), [chartProjects]);
   const trendData = React.useMemo(() => buildWorkloadData(projects as any), [projects]);
-  const matrixData = React.useMemo(() => buildImpactMatrixData(chartProjects), [chartProjects]);
+  const deadlineData = React.useMemo(() => buildMonthlyDeadlineData(chartProjects), [chartProjects]);
+  const phaseData = React.useMemo(() => buildPhaseData(chartProjects), [chartProjects]);
+  const completedTrendData = React.useMemo(() => buildCompletedTrendData(chartProjects), [chartProjects]);
+  const areaData = React.useMemo(() => buildAreaDashboardData(chartProjects), [chartProjects]);
 
   // ─── Filtered Project List ───
   const filteredProjects = React.useMemo(() => {
@@ -185,6 +195,10 @@ export function DashboardContent({
 
   const handleChartPhaseClick = (fase: string) => {
     handleKPIClick({ type: 'by_phase', label: `Fase: ${fase}`, value: fase });
+  };
+
+  const handleChartAreaClick = (area: string) => {
+    handleKPIClick({ type: 'by_area', label: `Área: ${area}`, value: area });
   };
 
   const handleProjectClick = (project: UIProject) => {
@@ -269,16 +283,20 @@ export function DashboardContent({
           ) : (
             <>
               <KPICard
-                title="Orçamento (Capex/Opex)"
-                value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(totalBudgetValue)}
-                icon={DollarSign}
-                subtitle="Valor total base projetos"
+                title="Iniciados"
+                value={startedCount}
+                icon={FolderOpen}
+                subtitle="Começaram a execução"
+                onClick={() => handleKPIClick({ type: 'by_status', label: 'Projetos Iniciados', value: 'iniciado' })}
+                active={activeFilter?.type === 'by_status' && activeFilter.value === 'iniciado'}
               />
               <KPICard
-                title="Projetos Estratégicos"
-                value={projectsWithHighImpact}
-                icon={Zap}
-                subtitle="Impacto Estratégico (Alto)"
+                title="Projetos Futuros"
+                value={futureCount}
+                icon={Clock}
+                subtitle="Pipeline planejado"
+                onClick={() => handleKPIClick({ type: 'by_status', label: 'Projetos Futuros', value: 'projeto futuro' })}
+                active={activeFilter?.type === 'by_status' && activeFilter.value === 'projeto futuro'}
               />
               <KPICard
                 title="Importância Especial"
@@ -288,34 +306,45 @@ export function DashboardContent({
                 onClick={() => handleKPIClick({ type: 'special', label: 'Importância Especial' })}
                 active={activeFilter?.type === 'special'}
               />
-              <KPICard
-                title="Risco Executivo"
-                value={`${delayedSpecialRatio}%`}
-                icon={ShieldAlert}
-                subtitle="Atraso estimado em projetos chave"
-                className={delayedSpecialRatio > 15 ? 'border-destructive/30' : undefined}
-                trend={{
-                  value: delayedSpecialRatio > 15 ? "Requer atenção" : "Controlado",
-                  positive: delayedSpecialRatio <= 15
-                }}
-              />
             </>
           )}
         </div>
 
         {/* Charts: Pipeline + Distribution + Trend */}
         {chartProjects.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-            <div className="lg:col-span-2">
-              <ProjectImpactMatrix data={matrixData} />
+          <>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <ProjectPipelineChart
+                data={pipelineData}
+                onBarClick={handleChartStatusClick}
+                activeStatus={activeFilter?.type === 'by_status' ? activeFilter.value : null}
+              />
+              <ProjectsByPhaseChart
+                data={phaseData}
+                onBarClick={handleChartPhaseClick}
+                activePhase={activeFilter?.type === 'by_phase' ? activeFilter.value : null}
+              />
             </div>
-            <ProjectPipelineChart
-              data={pipelineData}
-              onBarClick={handleChartStatusClick}
-              activeStatus={activeFilter?.type === 'by_status' ? activeFilter.value : null}
-            />
-            <ResponsibleWorkloadChart data={trendData} />
-          </div>
+
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <ProjectsByAreaDashboard
+                data={areaData}
+                onAreaClick={handleChartAreaClick}
+                activeArea={activeFilter?.type === 'by_area' ? activeFilter.value : null}
+              />
+              <ProjectsByDeadlineChart
+                data={deadlineData}
+                className="lg:col-span-2"
+                // Optional click handler to filter by end_date substring:
+                // onBarClick={(month) => handleKPIClick({ ... })}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <ResponsibleWorkloadChart data={trendData} />
+              <CompletedProjectsTrendChart data={completedTrendData} />
+            </div>
+          </>
         )}
 
         {/* Filtered Project List (appears when a KPI/chart is clicked) */}

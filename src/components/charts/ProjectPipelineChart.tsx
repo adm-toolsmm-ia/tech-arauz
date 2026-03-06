@@ -23,6 +23,7 @@ interface ProjectPipelineChartProps {
   data: PipelineData[];
   onBarClick?: (status: string) => void;
   activeStatus?: string | null;
+  className?: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -58,9 +59,10 @@ export function ProjectPipelineChart({
   data,
   onBarClick,
   activeStatus,
+  className,
 }: ProjectPipelineChartProps) {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">Pipeline de Projetos</CardTitle>
       </CardHeader>
@@ -87,16 +89,17 @@ export function ProjectPipelineChart({
                 axisLine={false}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
-              <Bar
-                dataKey="count"
-                radius={[0, 4, 4, 0]}
-                animationBegin={0}
-                animationDuration={800}
-                animationEasing="ease-out"
-                onClick={(data) => onBarClick?.(data.status)}
-                style={onBarClick ? { cursor: 'pointer' } : undefined}
-              >
-                {data.map((entry) => (
+                <Bar
+                  dataKey="count"
+                  radius={[0, 4, 4, 0]}
+                  animationBegin={0}
+                  animationDuration={800}
+                  animationEasing="ease-out"
+                  onClick={(data) => onBarClick?.(data.status)}
+                  style={onBarClick ? { cursor: 'pointer' } : undefined}
+                  label={{ position: 'right', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
+                >
+                  {data.map((entry) => (
                   <Cell
                     key={entry.status}
                     fill={statusColors[entry.status] || '#6b7280'}

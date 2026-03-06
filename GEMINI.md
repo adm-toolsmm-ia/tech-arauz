@@ -9,8 +9,8 @@
 
 | Documento                            | Caminho                                      |
 | ------------------------------------ | -------------------------------------------- |
-| Constituição (6 regras inegociáveis) | `.aios-core/constitution.md`                 |
-| Agentes AIOS                         | `.aios-core/development/agents/`             |
+| Constituição (6 regras inegociáveis) | `.aiox-core/constitution.md`                 |
+| Agentes AIOS                         | `.aiox-core/development/agents/`             |
 | Skills técnicas                      | `.agent/skills/`                             |
 | Protocolo de orquestração (6 fases)  | `.agent/workflows/orchestration-protocol.md` |
 | Memória histórica                    | `.agent/memory/`                             |

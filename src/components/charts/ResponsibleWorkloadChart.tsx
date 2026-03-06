@@ -19,6 +19,8 @@ interface WorkloadData {
 
 interface ResponsibleWorkloadChartProps {
   data: WorkloadData[];
+  className?: string;
+  onBarClick?: (responsible: string) => void;
 }
 
 function CustomTooltip({
@@ -40,9 +42,9 @@ function CustomTooltip({
   );
 }
 
-export function ResponsibleWorkloadChart({ data }: ResponsibleWorkloadChartProps) {
+export function ResponsibleWorkloadChart({ data, className, onBarClick }: ResponsibleWorkloadChartProps) {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">Carga de Trabalho (Ativos)</CardTitle>
       </CardHeader>
@@ -83,6 +85,8 @@ export function ResponsibleWorkloadChart({ data }: ResponsibleWorkloadChartProps
                   animationBegin={0}
                   animationDuration={800}
                   animationEasing="ease-out"
+                  onClick={(data) => onBarClick?.(data.responsible)}
+                  style={onBarClick ? { cursor: 'pointer' } : undefined}
                 >
                   {data.map((entry, index) => (
                     <Cell key={entry.responsible} fill="hsl(var(--primary))" />

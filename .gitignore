@@ -90,3 +90,7 @@ Thumbs.db
 
 # Claude Code worktrees (temporary isolated branches)
 .claude/worktrees/
+
+# AIOX Local (AIOX)
+.aiox-core/local/
+.aiox/install-log.txt

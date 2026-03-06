@@ -64,23 +64,10 @@ export default async function ConversasPage() {
     total: count || 0,
   };
 
-  // Fetch list of chatbot agents for filter
-  const { data: agents, error: agentsError } = await supabase
-    .from('agents')
-    .select('id, name')
-    .eq('usage_type', 'chatbot')
-    .eq('status', 'published')
-    .order('name', { ascending: true });
-
-  if (agentsError) {
-    console.error('Error fetching agents:', agentsError);
-  }
-
   return (
     <ConversasContent
       initialSessions={sessionsData.sessions || []}
       initialTotal={sessionsData.total || 0}
-      agents={(agents || []) as Array<{ id: string; name: string }>}
     />
   );
 }

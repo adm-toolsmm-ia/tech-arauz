@@ -1,20 +1,10 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -23,282 +13,97 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ChevronLeft, ChevronRight, RefreshCw, MessageSquare } from 'lucide-react';
-import { toast } from 'sonner';
-import type { AgentSessionWithAgent, SessionsResponse } from '@/lib/types/chat';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { MessageSquare, ArrowRight } from 'lucide-react';
+import type { AgentSessionWithAgent } from '@/lib/types/chat';
 
 interface ConversasContentProps {
   initialSessions: AgentSessionWithAgent[];
   initialTotal: number;
-  agents: Array<{ id: string; name: string }>;
 }
 
 const STATUS_CONFIG = {
-  active: { label: 'Ativa', color: 'bg-green-50', badge: 'default' as const },
-  paused: { label: 'Pausada', color: 'bg-yellow-50', badge: 'secondary' as const },
-  closed: { label: 'Fechada', color: 'bg-gray-50', badge: 'outline' as const },
+  active: { label: 'Em Andamento', badge: 'default' as const },
+  paused: { label: 'Pausada', badge: 'secondary' as const },
+  closed: { label: 'Finalizada', badge: 'outline' as const },
 };
 
-export function ConversasContent({
-  initialSessions,
-  initialTotal,
-  agents,
-}: ConversasContentProps) {
+export function ConversasContent({ initialSessions, initialTotal }: ConversasContentProps) {
   const router = useRouter();
-  const [sessions, setSessions] = useState<AgentSessionWithAgent[]>(initialSessions);
-  const [total, setTotal] = useState(initialTotal);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [limit] = useState(10);
-  const [selectedAgentId, setSelectedAgentId] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch sessions with filters
-  const fetchSessions = useCallback(
-    async (page: number) => {
-      setIsLoading(true);
-      try {
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-        });
-
-        if (selectedAgentId !== 'all') {
-          params.append('agent_id', selectedAgentId);
-        }
-
-        const response = await fetch(`/api/sessions?${params.toString()}`);
-        if (!response.ok) throw new Error('Erro ao carregar conversas');
-
-        const data: SessionsResponse = await response.json();
-        setSessions(data.sessions);
-        setTotal(data.total);
-        setCurrentPage(page);
-      } catch (error) {
-        toast.error('❌ Erro ao carregar Chatbot AI');
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [selectedAgentId, limit]
-  );
-
-  // Trigger fetch when filter changes
-  const handleFilterChange = useCallback(
-    (agentId: string) => {
-      setSelectedAgentId(agentId);
-      setCurrentPage(1);
-      fetchSessions(1);
-    },
-    [fetchSessions]
-  );
-
-  // Handle pagination
-  const handlePreviousPage = useCallback(() => {
-    if (currentPage > 1) {
-      fetchSessions(currentPage - 1);
-    }
-  }, [currentPage, fetchSessions]);
-
-  const handleNextPage = useCallback(() => {
-    const maxPage = Math.ceil(total / limit);
-    if (currentPage < maxPage) {
-      fetchSessions(currentPage + 1);
-    }
-  }, [currentPage, total, limit, fetchSessions]);
-
-  const handleRefresh = useCallback(async () => {
-    await fetchSessions(currentPage);
-    toast.success('✅ Conversas recarregadas!');
-  }, [currentPage, fetchSessions]);
-
-  // Handle reopen conversation
-  const handleReopenConversation = useCallback(
-    (session: AgentSessionWithAgent) => {
-      router.push(`/agentes/${session.agent_id}/chat?sessionId=${session.id}`);
-    },
-    [router]
-  );
-
-  const maxPage = Math.ceil(total / limit);
-  const hasMore = currentPage < maxPage;
+  const handleOpenChat = (sessionId: string, agentId: string) => {
+    // Rota futura ou atual para visualização simples do chat
+    router.push(`/agentes/${agentId}/chat?sessionId=${sessionId}`);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="flex flex-col min-h-screen bg-muted/30">
       <DashboardHeader
-        title="Chatbot AI"
-        subtitle="Consulte todas as suas conversas com assistentes IA"
+        title="Histórico de Conversas"
+        subtitle="Gerencie e visualize as sessões registradas pelo assistente."
       />
 
-      <div className="grid gap-6">
-        {/* Stats Cards */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Total de Conversas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{total}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Conversas Ativas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {sessions.filter((s) => s.status === 'active').length}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Mensagens Totais
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {sessions.reduce((sum, s) => sum + (s.message_count || 0), 0)}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters and Controls */}
+      <div className="flex-1 p-6 space-y-6">
         <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle>Conversas Registradas</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={isLoading}
-              >
-                <RefreshCw className="h-4 w-4 mr-1" />
-                Atualizar
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4 mb-4 flex-col sm:flex-row">
-              <Select value={selectedAgentId} onValueChange={handleFilterChange}>
-                <SelectTrigger className="w-full sm:w-64">
-                  <SelectValue placeholder="Filtrar por assistente..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os assistentes</SelectItem>
-                  {agents.map((agent) => (
-                    <SelectItem key={agent.id} value={agent.id}>
-                      {agent.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Table or Empty State */}
-            {sessions.length === 0 ? (
-              <EmptyState
-                icon={MessageSquare}
-                title="Nenhuma conversa encontrada"
-                description={
-                  selectedAgentId !== 'all'
-                    ? 'Nenhuma conversa com este assistente'
-                    : 'Comece uma conversa com um assistente!'
-                }
-              />
+          <CardContent className="p-0">
+            {initialSessions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <h3 className="text-lg font-medium text-foreground">Nenhuma conversa encontrada</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  O histórico de chat para sua conta está vazio no momento.
+                </p>
+              </div>
             ) : (
-              <div className="border rounded-lg overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50 hover:bg-gray-50">
-                      <TableHead className="font-semibold">Assistente</TableHead>
-                      <TableHead className="font-semibold">Início</TableHead>
-                      <TableHead className="font-semibold">Status</TableHead>
-                      <TableHead className="font-semibold text-right">Mensagens</TableHead>
-                      <TableHead className="font-semibold text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sessions.map((session) => (
-                      <TableRow key={session.id} className="hover:bg-gray-50">
-                        <TableCell className="font-medium">{session.agent_name}</TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {session.started_at && !isNaN(new Date(session.started_at).getTime())
-                            ? format(new Date(session.started_at), 'dd MMM yyyy HH:mm', {
-                              locale: ptBR,
-                            })
-                            : '-'}
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="w-[250px] font-semibold">Assistente / IA</TableHead>
+                    <TableHead className="font-semibold">Início</TableHead>
+                    <TableHead className="font-semibold">Última Atualização</TableHead>
+                    <TableHead className="font-semibold">Mensagens</TableHead>
+                    <TableHead className="font-semibold">Status</TableHead>
+                    <TableHead className="text-right font-semibold">Ação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {initialSessions.map((session) => {
+                    const statusCfg = STATUS_CONFIG[session.status as keyof typeof STATUS_CONFIG] || { label: session.status, badge: 'outline' };
+                    
+                    return (
+                      <TableRow key={session.id} className="hover:bg-muted/30 transition-colors">
+                        <TableCell className="font-medium text-foreground">
+                          {session.agent_name || 'Desconhecido'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {session.started_at ? new Date(session.started_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {session.updated_at ? new Date(session.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {session.message_count || 0}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={
-                              STATUS_CONFIG[session.status as keyof typeof STATUS_CONFIG]?.badge ||
-                              'outline'
-                            }
-                          >
-                            {
-                              STATUS_CONFIG[session.status as keyof typeof STATUS_CONFIG]?.label ||
-                              session.status
-                            }
+                          <Badge variant={statusCfg.badge} className="font-medium">
+                            {statusCfg.label}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right text-sm">
-                          {session.message_count} {session.message_count === 1 ? 'msg' : 'msgs'}
-                        </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
+                          <Button 
+                            variant="ghost" 
                             size="sm"
-                            onClick={() => handleReopenConversation(session)}
+                            className="text-primary hover:text-primary hover:bg-primary/10"
+                            onClick={() => handleOpenChat(session.id, session.agent_id)}
                           >
-                            Reabrir
+                            Visualizar <ArrowRight className="ml-2 h-4 w-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-
-            {/* Pagination */}
-            {sessions.length > 0 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <div className="text-sm text-gray-600">
-                  Página {currentPage} de {Math.ceil(total / limit)} ({total} total)
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1 || isLoading}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Anterior
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNextPage}
-                    disabled={!hasMore || isLoading}
-                  >
-                    Próximo
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>

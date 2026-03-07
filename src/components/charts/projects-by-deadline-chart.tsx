@@ -9,17 +9,20 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  LabelList,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Calendar } from 'lucide-react';
 import { getYearMonthKey, DashboardProjectLike } from '@/lib/domain/kpi-calculations';
-import { isConsideredActive } from '@/lib/domain/project-health';
 
 interface MonthlyDeadlineData {
   month: string;
   label: string;
-  count: number;
+  iniciado: number;
+  em_execucao: number;
+  concluido: number;
+  total: number;
 }
 
 interface ProjectsByDeadlineChartProps {
@@ -27,6 +30,14 @@ interface ProjectsByDeadlineChartProps {
   className?: string;
   onBarClick?: (month: string) => void;
   activeMonth?: string | null;
+}
+
+function normalizeStatus(s: string | null | undefined): string {
+  return (s || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 function CustomTooltip({
@@ -42,7 +53,7 @@ function CustomTooltip({
     <div className="rounded-lg border bg-popover px-3 py-2 text-sm shadow-md">
       <p className="font-medium">{data.label}</p>
       <p className="text-muted-foreground">
-        {data.count} {data.count === 1 ? 'projeto' : 'projetos'}
+        Total: {data.total} · Iniciado: {data.iniciado} · Em execução: {data.em_execucao} · Concluídos: {data.concluido}
       </p>
     </div>
   );
@@ -57,14 +68,14 @@ export function ProjectsByDeadlineChart({
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">Cronograma de Entregas (Prazo Final)</CardTitle>
+        <CardTitle className="text-base font-medium">Cronograma de Projetos por Prazo Final</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[280px]">
           {data.length === 0 ? (
             <EmptyState
               title="Sem dados de prazo"
-              description="Nenhum projeto ativo com prazo final definido."
+              description="Nenhum projeto com prazo final definido."
               icon={Calendar}
               className="h-[280px] py-8"
             />
@@ -89,19 +100,59 @@ export function ProjectsByDeadlineChart({
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
                 <Bar
-                  dataKey="count"
-                  radius={[4, 4, 0, 0]}
-                  animationBegin={0}
-                  animationDuration={800}
-                  animationEasing="ease-out"
+                  dataKey="iniciado"
+                  stackId="a"
+                  fill="hsl(var(--chart-2))"
+                  radius={[0, 0, 0, 0]}
+                  name="Iniciado"
                   onClick={(entry) => onBarClick?.(entry.month)}
                   style={onBarClick ? { cursor: 'pointer' } : undefined}
-                  label={{ position: 'top', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
                 >
                   {data.map((entry) => (
                     <Cell
-                      key={entry.month}
-                      fill="hsl(var(--primary))"
+                      key={`iniciado-${entry.month}`}
+                      fill="hsl(var(--chart-2))"
+                      opacity={activeMonth && activeMonth !== entry.month ? 0.3 : 1}
+                    />
+                  ))}
+                </Bar>
+                <Bar
+                  dataKey="em_execucao"
+                  stackId="a"
+                  fill="hsl(var(--chart-1))"
+                  radius={[0, 0, 0, 0]}
+                  name="Em execução"
+                  onClick={(entry) => onBarClick?.(entry.month)}
+                  style={onBarClick ? { cursor: 'pointer' } : undefined}
+                >
+                  {data.map((entry) => (
+                    <Cell
+                      key={`em_execucao-${entry.month}`}
+                      fill="hsl(var(--chart-1))"
+                      opacity={activeMonth && activeMonth !== entry.month ? 0.3 : 1}
+                    />
+                  ))}
+                </Bar>
+                <Bar
+                  dataKey="concluido"
+                  stackId="a"
+                  fill="hsl(var(--chart-3))"
+                  radius={[4, 4, 0, 0]}
+                  name="Concluídos"
+                  onClick={(entry) => onBarClick?.(entry.month)}
+                  style={onBarClick ? { cursor: 'pointer' } : undefined}
+                >
+                  <LabelList
+                    dataKey="total"
+                    position="top"
+                    fill="currentColor"
+                    fontSize={12}
+                    fontWeight={500}
+                  />
+                  {data.map((entry) => (
+                    <Cell
+                      key={`concluido-${entry.month}`}
+                      fill="hsl(var(--chart-3))"
                       opacity={activeMonth && activeMonth !== entry.month ? 0.3 : 1}
                     />
                   ))}
@@ -116,16 +167,28 @@ export function ProjectsByDeadlineChart({
 }
 
 export function buildMonthlyDeadlineData(projects: DashboardProjectLike[]): MonthlyDeadlineData[] {
-  const counts: Record<string, number> = {};
+  const byMonth: Record<
+    string,
+    { iniciado: number; em_execucao: number; concluido: number }
+  > = {};
 
   projects.forEach((p) => {
-    // Apenas projetos ativos que tem prazo final definido
-    if (isConsideredActive(p.status) && p.prazo_final) {
-      const d = new Date(p.prazo_final);
-      if (!isNaN(d.getTime())) {
-        const monthKey = getYearMonthKey(d);
-        counts[monthKey] = (counts[monthKey] || 0) + 1;
-      }
+    if (!p.prazo_final) return;
+    const d = new Date(p.prazo_final);
+    if (isNaN(d.getTime())) return;
+
+    const monthKey = getYearMonthKey(d);
+    if (!byMonth[monthKey]) {
+      byMonth[monthKey] = { iniciado: 0, em_execucao: 0, concluido: 0 };
+    }
+
+    const status = normalizeStatus(p.status);
+    if (status === 'iniciado') {
+      byMonth[monthKey].iniciado += 1;
+    } else if (status === 'concluido') {
+      byMonth[monthKey].concluido += 1;
+    } else {
+      byMonth[monthKey].em_execucao += 1;
     }
   });
 
@@ -133,15 +196,19 @@ export function buildMonthlyDeadlineData(projects: DashboardProjectLike[]): Mont
     'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
   ];
 
-  return Object.entries(counts)
+  return Object.entries(byMonth)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([monthKey, count]) => {
+    .map(([monthKey, counts]) => {
       const [year, m] = monthKey.split('-');
       const label = `${monthNames[parseInt(m, 10) - 1]} ${year}`;
+      const total = counts.iniciado + counts.em_execucao + counts.concluido;
       return {
         month: monthKey,
         label,
-        count,
+        iniciado: counts.iniciado,
+        em_execucao: counts.em_execucao,
+        concluido: counts.concluido,
+        total,
       };
     });
 }

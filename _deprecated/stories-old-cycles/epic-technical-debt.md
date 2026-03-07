@@ -36,13 +36,16 @@ Este épico era baseado em um PRD antigo de padronização UX/UI. Conteúdo simi
 
 ---
 
-## 🗂️ Location
+## ⚡ AIOX Framework Replacement
 
-**Backup completo:** `_deprecated/stories-old-cycles/epic-technical-debt.md`
+Este épico foi completamente **supercedido** pelo AIOX Brownfield Discovery Workflow:
+- **FASE 1-9:** Mar 6-7, 2026 (Assessment completo)
+- **FASE 10:** Implementation planning (próximo — aguardando aprovação)
+- **Phase 1-3:** 180-300 horas distribuídas em 3 meses
 
 ---
 
-**Archived by:** Orion (aiox-master)
+**Archived By:** Aria (Architect)
 **AIOX Protocol:** Brownfield Discovery Cleanup (Mar 7, 2026)
 
 *Conteúdo completo do épico original está em git history se necessário*

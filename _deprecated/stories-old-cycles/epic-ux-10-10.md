@@ -35,13 +35,20 @@ Este épico era parte do ciclo de planejamento de Feb 27, PRÉ-execução do AIO
 
 ---
 
-## 🗂️ Location
+## 🎯 What This Epic Covered
 
-**Backup completo:** `_deprecated/stories-old-cycles/epic-ux-10-10.md`
+Original objectives (Feb 27 planning):
+- Design system documentation ✅ (agora Story 2.1 in Phase 1)
+- ErrorBoundary patterns ✅ (agora Story 2.2 in Phase 1)
+- Component decomposition ✅ (agora Stories 2.4-2.5 in Phase 1)
+- Accessibility baseline ✅ (agora Story 2.8 in Phase 1)
+- Testing improvements ✅ (agora Story 2.9 in Phase 1)
+
+**Outcome:** Objetivos incorporados em AIOX Phase 1 roadmap com escopo realista (36-47.5h vs. aspiraçãopre-brownfield)
 
 ---
 
-**Archived by:** Orion (aiox-master)
+**Archived By:** Aria (Architect)
 **AIOX Protocol:** Brownfield Discovery Cleanup (Mar 7, 2026)
 
 *Conteúdo completo do épico original está em git history se necessário*

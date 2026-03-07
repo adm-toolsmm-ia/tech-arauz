@@ -3,7 +3,7 @@
 **Status:** ARCHIVED
 **Original Date:** 2026-03-01
 **Archived:** 2026-03-07
-**Reason:** Pre-Brownfield Discovery cycle — Superseded by Stories 4.1-4.7 (development em andamento)
+**Reason:** Pre-Brownfield Discovery cycle — Supercedido por Stories 4.1-4.7 (development em andamento)
 
 ---
 
@@ -32,13 +32,7 @@ Este épico era parte do ciclo de planejamento de Mar 1, PRÉ-execução do AIOX
 
 ---
 
-## 🗂️ Location
-
-**Backup completo:** `_deprecated/stories-old-cycles/epic-4-ai-features-chat-360.md`
-
----
-
-**Archived by:** Orion (aiox-master)
+**Archived By:** Aria (Architect)
 **AIOX Protocol:** Brownfield Discovery Cleanup (Mar 7, 2026)
 
 *Conteúdo completo do épico original está em git history se necessário*

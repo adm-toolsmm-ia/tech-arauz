@@ -22,6 +22,8 @@ import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { SplitView } from '@/components/views/SplitView';
 import { AreaCockpit } from '@/components/organization/AreaCockpit';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { AreasCardView } from './components/AreasCardView';
+import { AreasKanbanView } from './components/AreasKanbanView';
 import { useAreasFilters } from '@/hooks/useOrganizacaoFilters';
 import {
   createAreaAction,
@@ -312,6 +314,14 @@ export function AreasContent({ areas: initialAreas }: AreasContentProps) {
                       }
                     : undefined
                 }
+              />
+            ) : viewMode === 'cards' ? (
+              <AreasCardView areas={filteredData} onAreaClick={setSelectedArea} />
+            ) : viewMode === 'kanban' ? (
+              <AreasKanbanView
+                areas={filteredData}
+                selectedAreaId={selectedArea?.id}
+                onAreaClick={setSelectedArea}
               />
             ) : (
               <Card>

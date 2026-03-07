@@ -28,12 +28,17 @@ export function useAreasFilters(areas: OrgArea[]) {
     },
   });
 
-  const filteredData = applyFilters(areas, filterState.filters, {
+  const areasWithComputed = areas.map((a) => ({
+    ...a,
+    com_nucleos: (a.nuclei_count ?? 0) > 0 ? 'true' : 'false',
+  }));
+
+  const filteredData = applyFilters(areasWithComputed, filterState.filters, {
     search: filterState.search,
     searchFields: searchFieldsAreas,
     matchMode: 'partial',
     caseSensitive: false,
-  });
+  }) as OrgArea[];
 
   return {
     filters: filterState.filters,

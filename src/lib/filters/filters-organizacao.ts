@@ -3,14 +3,27 @@
  * Configuração centralizada de filtros para Áreas, Processos, etc.
  */
 
-import { List, LayoutGrid } from 'lucide-react';
+import { List, LayoutGrid, Layers, Columns3 } from 'lucide-react';
 import type { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
  * Filter Definitions para Áreas
  * Search fields: name, description, objective
  */
-export const filterDefinitionsAreas: FilterDefinition[] = [];
+export const filterDefinitionsAreas: FilterDefinition[] = [
+  {
+    id: 'com_nucleos',
+    label: 'Com Núcleos',
+    type: 'select',
+    options: [
+      { value: 'true', label: 'Sim' },
+      { value: 'false', label: 'Não' },
+    ],
+    quickFilter: true,
+    icon: Layers,
+    description: 'Filtrar áreas que possuem núcleos cadastrados',
+  },
+];
 
 /**
  * Filter Registry para o módulo Organização (Áreas)
@@ -21,7 +34,8 @@ export const filterRegistryAreas: FilterRegistry = {
   searchable: true,
   viewModes: [
     { id: 'list', label: 'Lista', icon: List, default: true },
-    { id: 'kanban', label: 'Kanban', icon: LayoutGrid },
+    { id: 'cards', label: 'Cards', icon: LayoutGrid },
+    { id: 'kanban', label: 'Kanban', icon: Columns3 },
   ],
 };
 

@@ -14,6 +14,7 @@ import {
   MessageSquare,
   Activity,
   Building2,
+  Building,
   GitBranch,
   FolderCog,
 } from 'lucide-react';
@@ -47,6 +48,7 @@ export const menuConfig: NavGroup[] = [
   {
     group: 'Organização',
     items: [
+      { title: 'Empresa', url: '/organizacao/empresa', icon: Building },
       { title: 'Áreas', url: '/organizacao/areas', icon: Building2 },
       { title: 'Processos', url: '/organizacao/processos', icon: GitBranch },
       { title: 'Recursos', url: '/organizacao/recursos', icon: FolderCog },

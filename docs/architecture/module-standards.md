@@ -1,164 +1,310 @@
-# Module Engineering and UX Standards (Projects Baseline)
+# Module Engineering Standards — Padrão de Referência
 
-**Data:** 2026-03-07
-**Status:** Current — Validado e alinhado com projeto (AIOX Phase 2)
-**Última atualização:** 2026-03-07
-**Baseline de referência:** Módulo `projetos`
+**Data:** 2026-03-07  
+**Status:** Normativo  
+**Baseline único:** Módulo `projetos` (`src/app/projetos/`)
 
-## 1. Objetivo
+---
 
-Definir um padrao unico para criar novas tabelas, modulos e paginas com consistencia de engenharia, UX e arquitetura, para uso humano e por agentes AI.
+## 1. Objetivo e Escopo
 
-## 2. Evidencias do baseline (projetos)
+Este documento define o padrão obrigatório para criação de novas tabelas, módulos e páginas no Tech Arauz. É a **fonte de verdade** para:
 
-Arquitetura validada observada:
+- Engenharia de software (estrutura, camadas, responsabilidades)
+- Arquitetura de frontend (SSR, client components, data fetching)
+- UX/UI (layout, filtros, views, acessibilidade)
+- Uso por agentes AI (contexto, checklist, anti-padrões)
 
-- Server page com auth + fetch + transform: `src/app/projetos/page.tsx`
-- Client content rico com KPIs, filtros, Kanban/Lista e detalhe lateral: `src/app/projetos/projects-content.tsx`
-- Componentes base reutilizados:
-  - `src/components/layout/DashboardHeader.tsx`
-  - `src/components/dashboard/KPICard.tsx`
-  - `src/components/filters/FilterBar.tsx`
-  - `src/components/views/KanbanBoard.tsx`
-  - `src/components/views/ProjectListView.tsx`
-  - `src/components/views/SplitView.tsx`
+**Regra:** O módulo `projetos` é a referência canônica. Todo novo módulo deve replicar sua estrutura e padrões, adaptando ao contexto do domínio.
 
-## 3. Blueprint obrigatorio para novo modulo
+---
 
-### 3.1 Camada de dados (tabela)
+## 2. Arquitetura de Software
 
-Nova tabela deve seguir padrao multi-tenant:
+### 2.1 Camadas
+
+| Camada | Responsabilidade | Localização |
+|--------|------------------|-------------|
+| **Server Page** | Auth, fetch, transformação DB→UI | `page.tsx` |
+| **Client Content** | Orquestração, estado, renderização | `*-content.tsx` |
+| **Components** | KPIs, filtros, views, cockpit | `components/` |
+| **Filters** | Definições, registry, search fields | `src/lib/filters/filters-*.ts` |
+| **Hook** | Estado de filtros, ordenação, dados filtrados | `src/hooks/use*Filters.ts` |
+
+### 2.2 Fluxo de Dados
+
+```
+page.tsx (SSR)
+  → createClient() + auth
+  → query Supabase
+  → transform (DB → UI)
+  → <*Content data={...} />
+
+*-content.tsx (Client)
+  → use*Filters(data)
+  → filteredData, filters, viewMode, sortConfig
+  → <*Filters /> + <*KanbanView | *ListView />
+  → <SplitView><*Cockpit /></SplitView>
+```
+
+### 2.3 Referências de Código (Projetos)
+
+| Camada | Arquivo |
+|--------|---------|
+| Server Page | `src/app/projetos/page.tsx` |
+| Client Content | `src/app/projetos/projects-content.tsx` |
+| Filters Wrapper | `src/app/projetos/components/ProjectsFilters.tsx` |
+| KPIs | `src/app/projetos/components/ProjectsKPIBar.tsx` |
+| Kanban | `src/app/projetos/components/ProjectsKanbanView.tsx` |
+| Lista | `src/app/projetos/components/ProjectsListView.tsx` (wrapper) |
+| Hook | `src/hooks/useProjetosFilters.ts` |
+| Registry | `src/lib/filters/filters-projetos.ts` |
+| Card Kanban | `src/components/project/ProjectKanbanCard.tsx` |
+| Lista compartilhada | `src/components/views/ProjectListView.tsx` |
+
+---
+
+## 3. Estrutura de Arquivos Obrigatória
+
+```
+src/app/<modulo>/
+├── page.tsx                    # Server: auth + fetch + transform
+├── <modulo>-content.tsx        # Client: orquestrador
+└── components/
+    ├── <Modulo>KPIBar.tsx      # KPIs (ou inline se módulo muito simples)
+    ├── <Modulo>Filters.tsx     # FilterBar + ViewModeBar + ordenação + ações
+    ├── <Modulo>KanbanView.tsx  # KanbanBoard + card customizado
+    └── <Modulo>ListView.tsx    # wrapper de lista (ou equivalente)
+
+src/lib/filters/
+└── filters-<modulo>.ts         # filterDefinitions + filterRegistry + searchFields
+
+src/hooks/
+└── use<Modulo>Filters.ts        # useFilterState + applyFilters + sort
+```
+
+---
+
+## 4. Camada de Dados (Tabela)
+
+### 4.1 Padrão Multi-Tenant Obrigatório
 
 - `id uuid` como PK
 - `tenant_id uuid` com FK para `tenants(id)`
 - `created_at` e `updated_at`
-- indices por `tenant_id` e campos de listagem/filtro
-- RLS habilitado com policy por `tenant_id = get_user_tenant_id()`
-- unique composto por tenant quando necessario (ex.: `(tenant_id, slug)`)
+- Índices por `tenant_id` e campos de listagem/filtro
+- RLS habilitado com policy `tenant_id = get_user_tenant_id()`
+- Unique composto por tenant quando necessário (ex.: `(tenant_id, slug)`)
 
-### 3.2 Camada de pagina (server)
+---
 
-Cada modulo deve ter `page.tsx` server-side com:
+## 5. Camada Server (page.tsx)
 
-1. `createClient()`
+### 5.1 Padrão Obrigatório
+
+1. `createClient()` (Supabase server)
 2. `supabase.auth.getUser()`
-3. `redirect('/login')` sem usuario
-4. query principal com dados relacionais necessarios
-5. transformacao DB -> UI quando houver diferenca de schema
-6. render de `*-content.tsx` client
+3. `redirect('/login')` se não houver usuário
+4. Query principal com dados relacionais necessários
+5. Transformação DB → UI quando houver diferença de schema
+6. Render de `*-content.tsx` passando dados
 
-### 3.3 Camada client (conteudo do modulo)
+### 5.2 Exemplo (Projetos)
 
-Estrutura minima:
+```tsx
+// src/app/projetos/page.tsx
+const supabase = await createClient();
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) redirect('/login');
 
-1. `DashboardHeader` no topo (padrao sticky global)
-2. bloco de KPIs no topo da area de conteudo
-3. `FilterBar` padronizado (busca + filtros + view toggle)
-4. area de visualizacao (`KanbanBoard`, lista e/ou grid)
-5. `SplitView` para detalhe do registro selecionado
-6. `Dialog` para criar/editar registro
+const { data, error } = await supabase.from('projects').select('*, ...').order('created_at', { ascending: false });
+const uiData = (data || []).map(dbToUI);
 
-### 3.4 Estado e filtros
+return <ErrorBoundary><ProjectsContent projects={uiData} /></ErrorBoundary>;
+```
 
-- Usar hook `use<Modulo>Filters` com `useFilterState`
-- Manter `filterRegistry` do modulo em `src/lib/filters/*`
-- Evitar filtro local paralelo fora do registry (single source of truth)
+---
 
-## 4. Padrao de design por componente (obrigatorio)
+## 6. Camada Client (*-content.tsx)
 
-## 4.1 Kanban padrao
+### 6.1 Ordem Obrigatória dos Elementos
 
-- Usar `KanbanBoard` como base unica de DnD
-- Colunas orientadas ao contexto do modulo (nao hardcode generico)
-- Card visual padrao com:
-  - titulo e identificador
-  - badges de status/prioridade
-  - metadados contextuais do modulo
-- Clique no card abre detalhe no `SplitView`
+```
+1. DashboardHeader (título + subtítulo)
+2. [Opcional] Banners específicos do módulo
+3. <div className="flex-1 space-y-6 p-6">
+   a. <p className="sr-only" role="status" aria-live="polite">{listAnnouncement}</p>
+   b. Bloco KPIs (<Modulo>KPIBar)
+   c. Bloco Filtros (<Modulo>Filters)
+   d. Bloco View (Kanban | Lista | Agenda | Cards)
+   e. SplitView (detalhe lateral com *Cockpit)
+```
 
-## 4.2 Dashboard topo padrao
+### 6.2 Estado Mínimo
 
-- Sempre no topo da pagina de modulo
-- KPIs com `KPICard` e grid responsivo
-- KPI clicavel deve filtrar resultado quando aplicavel
-- Lista deve refletir o mesmo recorte dos KPIs/filtros
+- `selectedItem` para SplitView
+- `viewMode` (ou via hook)
+- Dados filtrados via `use*Filters`
 
-## 4.3 Visualizacao em lista padrao
+---
 
-- Lista em `Card` com tabela responsiva (desktop + mobile)
-- Ordenacao por colunas chave
-- Estados padrao: loading, vazio, sem resultado, erro
-- Selecao de linha abre `SplitView` no mesmo comportamento do Kanban
+## 7. Componentes Padrão
 
-## 4.4 Filtros padrao
+### 7.1 KPIs
 
-- `FilterBar` no topo da area de listagem
-- Busca global + quick filters + filtros avancados
-- Atalhos e reset de filtros padronizados
-- Filtros devem ser contextuais ao modulo, sem ruido de outros dominios
+- Usar `KPICard` de `@/components/dashboard/KPICard`
+- Props: `icon`, `title`, `value`, `subtitle`, `active`, `onClick`
+- KPIs clicáveis devem filtrar a lista quando aplicável
+- Grid responsivo: `grid-cols-2 md:grid-cols-3 xl:grid-cols-6`
 
-## 4.5 Cards de criacao, edicao e visualizacao
+### 7.2 Filtros
 
-- Criar/editar: `Dialog` com validacao e feedback (`toast`)
-- Visualizar: `SplitView` + componente `*Cockpit`
-- Excluir: confirmar com componente UI dedicado (evitar `confirm()` nativo)
+- Componente `<Modulo>Filters` que encapsula:
+  - **Ordenação** (Select) à esquerda (quando view ≠ agenda)
+  - **ViewModeBar** à direita
+  - **FilterBar** com `registry`, `filters`, `search`, `onUpdateFilter`, `onResetFilters`
+  - **Ações secundárias** (ex.: Sync) ao lado
+- FilterBar implementa atalho **Ctrl+K** para foco na busca
 
-## 4.6 Posicionamento padrao de elementos
+### 7.3 Kanban
 
-- Header global: titulo/subtitulo + controles globais (tema/notificacoes)
-- Area de modulo:
-  - linha 1: KPIs
-  - linha 2: filtros + acoes secundarias (ex.: sync)
-  - linha 3: Kanban/Lista/Grid
-  - lateral: detalhe (`SplitView`)
-- CTA primaria ("Novo ...") no topo a direita da area do modulo
+- Usar `KanbanBoard` de `@/components/views/KanbanBoard`
+- Colunas orientadas ao contexto do módulo (não genéricas)
+- `renderItemContent` com card customizado (título, identificador, badges, metadados)
+- `onItemClick` → abre SplitView com Cockpit
+- `selectedId` para highlight
 
-## 5. Gaps atuais identificados (fornecedores/modelos)
+### 7.4 Lista
 
-Atualização após Story 2.7 (alinhamento de auxiliares ao baseline):
+- Componente com tabela desktop + cards mobile
+- Ordenação por colunas ou Select integrado ao hook
+- Clique na linha/card → abre SplitView
+- Estados: loading, vazio, sem resultado, erro
 
-1. `modelos-ia` foi alinhado ao baseline com `FilterBar` controlado, filtros centralizados, CRUD básico de create/delete e feedback async padronizado.
-2. `lm-providers` foi alinhado com confirmação de exclusão via `Dialog` (sem `confirm()` nativo) e quick filters de status/origem.
-3. ✅ `agent-types` — gap resolvido na Story 2.7: substituído `confirm()` nativo por Dialog de confirmação padronizado; conteúdo decomposto em subcomponentes (`AgentTypeListItem`, `AgentTypeFormDialog`); arquivo reduzido de 771 para ~290 linhas.
-4. Gap residual: módulos auxiliares ainda repetem parte do scaffold manual e podem evoluir para um layout base compartilhado (próxima oportunidade de refactor).
+### 7.5 SplitView e Cockpit
 
-## 6. Checklist de entrega para novos modulos (gate de workflow)
+- `SplitView` com `isOpen`, `onClose`, `title`, `subtitle`, `width`
+- Conteúdo: componente `*Cockpit` com dados completos do registro
+- Clique em card/linha em qualquer view → `setSelectedItem(item)`
 
-Antes de concluir qualquer story de novo modulo/tabela:
+### 7.6 CRUD
 
-- [ ] Tabela criada com `tenant_id`, RLS e indices essenciais
+- **Criar/Editar:** `Dialog` com validação e feedback (`toast`)
+- **Visualizar:** `SplitView` + `*Cockpit`
+- **Excluir:** `Dialog` de confirmação (nunca `confirm()` nativo)
+
+---
+
+## 8. Hook de Filtros — Contrato Obrigatório
+
+O hook `use<Modulo>Filters` deve retornar:
+
+```ts
+{
+  filters: FilterState;
+  search: string;
+  viewMode: string;
+  sortConfig: SortConfig | null;     // obrigatório se lista ordenável
+  filteredData: T[];
+  updateFilter: (key: string, value: any) => void;
+  setSearch: (value: string) => void;
+  setViewMode: (mode: string) => void;
+  setSortConfig: (config: SortConfig | null) => void;
+  resetAllFilters: () => void;
+  registry: FilterRegistry;          // { filters, viewModes, searchable, agendaPeriods? }
+}
+```
+
+Opcional (view agenda): `agendaPeriod`, `agendaRefDate`, `navigateAgenda`, `setAgendaPeriod`.
+
+---
+
+## 9. Filter Registry
+
+```ts
+// src/lib/filters/filters-<modulo>.ts
+export const filterDefinitions<Modulo>: FilterDefinition[] = [
+  { id, label, type, options, quickFilter, icon, group?, ... }
+];
+
+export const filterRegistry<Modulo>: FilterRegistry = {
+  moduleId: '<modulo>',
+  filters: filterDefinitions<Modulo>,
+  searchable: true,
+  viewModes: [ { id, label, icon }, ... ],
+  agendaPeriods: [ ... ],  // se view agenda
+};
+
+export const searchFields<Modulo> = ['campo1', 'campo2'];
+```
+
+---
+
+## 10. Acessibilidade
+
+- `role="status"` e `aria-live="polite"` no anúncio da lista (`listAnnouncement`)
+- Cards/linhas clicáveis: `role="button"`, `tabIndex={0}`, `onKeyDown` para Enter/Space
+- Ctrl+K → foco na busca (FilterBar)
+
+---
+
+## 11. Data Fetching
+
+Todo módulo DEVE seguir [data-fetching-patterns.md](./data-fetching-patterns.md):
+
+| Operação | Padrão |
+|----------|--------|
+| Leitura inicial (SSR) | Server Component + query Supabase |
+| Mutação / CRUD | Server Action |
+| Serviço externo (AI, APIs) | API Route |
+| Estado real-time | Client Service (Zustand) — requer aprovação |
+
+---
+
+## 12. Padrões que NÃO Devem Ser Utilizados
+
+| Anti-padrão | Padrão correto |
+|-------------|----------------|
+| `confirm()` nativo para exclusão | `Dialog` de confirmação |
+| ViewModeBar e FilterBar separados no content | Componente `<Modulo>Filters` que encapsula ambos |
+| Lista/Kanban inline no content | Componentes `*KanbanView` e `*ListView` |
+| Hook sem `sortConfig` para lista ordenável | Hook com `sortConfig` e `setSortConfig` |
+| KPIs estáticos sem interação | KPIs clicáveis com `onClick` que filtra (quando aplicável) |
+| Filtros locais fora do registry | Single source of truth em `filters-*.ts` + hook |
+| Colunas Kanban genéricas hardcoded | Colunas dinâmicas baseadas no domínio |
+| Card Kanban minimalista sem metadados | Card com título, identificador, badges, metadados contextuais |
+
+---
+
+## 13. Checklist de Entrega (Gate de Workflow)
+
+Antes de concluir story de novo módulo/tabela:
+
+- [ ] Tabela com `tenant_id`, RLS, índices
 - [ ] `page.tsx` server com auth guard e query principal
-- [ ] `*-content.tsx` com DashboardHeader + KPIs + FilterBar + view principal
-- [ ] Kanban e Lista seguindo componentes base compartilhados
-- [ ] SplitView + Cockpit para detalhes
-- [ ] Dialog de criacao/edicao com validacao e feedback padrao
-- [ ] Estados de loading, vazio, erro e sem resultado cobertos
-- [ ] Filtros centralizados em hook/registry do modulo
-- [ ] Checklist e file list da story atualizados
+- [ ] `*-content.tsx` com DashboardHeader → KPIs → Filters → View → SplitView
+- [ ] `<Modulo>Filters` encapsulando FilterBar + ViewModeBar + ordenação
+- [ ] Hook com `sortConfig`, `registry` completo
+- [ ] Kanban e Lista em componentes dedicados
+- [ ] SplitView + *Cockpit para detalhes
+- [ ] Dialog para criar/editar; Dialog para confirmar exclusão
+- [ ] Estados loading, vazio, sem resultado, erro
+- [ ] A11y: sr-only, teclado em cards/linhas
 
-## 8. Data Fetching Obrigatorio por Tipo de Operacao
+---
 
-Todo novo modulo ou feature DEVE seguir os padroes definidos em [data-fetching-patterns.md](./data-fetching-patterns.md).
+## 14. Política para Agentes AI
 
-Resumo normativo:
+Este documento é **normativo** para:
 
-| Tipo de Operacao | Padrao Obrigatorio |
-|-----------------|-------------------|
-| Leitura para renderizacao inicial (SSR) | Server Component + Query Supabase direta |
-| Mutacao / CRUD autenticado | Server Action |
-| Chamada a servico externo (AI, Espaider, webhooks) | API Route |
-| Estado real-time ou dual source | Client Service (Zustand) — requer aprovacao arquitetural |
+- Nova tabela
+- Novo módulo/página
+- Refactor de módulo existente
 
-**Regra de ouro:** Comece sempre pelo padrao mais simples. Adicione complexidade apenas com justificativa tecnica documentada na story.
+**Instruções para agentes:**
 
-ADR de referencia: [ADR-005 — Data Fetching Patterns Formais](./adr/ADR-005-data-fetching-patterns.md)
-
-## 7. Politica para agentes AI
-
-Agentes devem tratar este documento como padrao normativo para qualquer feature de:
-
-- nova tabela
-- novo modulo/pagina
-- refactor de modulo existente
-
-Se houver excecao de contexto, a excecao deve ser documentada na story com justificativa tecnica.
+1. Consulte `src/app/projetos/` como referência canônica antes de implementar
+2. Siga a estrutura de arquivos da seção 3
+3. Respeite o contrato do hook (seção 8) e o filter registry (seção 9)
+4. Evite todos os anti-padrões da seção 12
+5. Exceções devem ser documentadas na story com justificativa técnica

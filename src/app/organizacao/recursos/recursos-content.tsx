@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useSearchParams } from 'next/navigation';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { OrgBreadcrumb } from '@/components/organization/OrgBreadcrumb';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,12 +16,20 @@ interface RecursosContentProps {
   documents: unknown[];
 }
 
+const VALID_TABS = ['sistemas', 'fornecedores', 'servicos', 'documentos'] as const;
+
 export function RecursosContent({
   systems,
   suppliers,
   services,
   documents,
 }: RecursosContentProps) {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const defaultTab = VALID_TABS.includes(tabParam as (typeof VALID_TABS)[number])
+    ? tabParam
+    : 'sistemas';
+
   const hasAny = systems.length > 0 || suppliers.length > 0 || services.length > 0 || documents.length > 0;
 
   return (
@@ -40,7 +49,7 @@ export function RecursosContent({
             description="Cadastre sistemas, fornecedores, serviços e documentos utilizados na operação."
           />
         ) : (
-          <Tabs defaultValue="sistemas">
+          <Tabs defaultValue={defaultTab}>
             <TabsList>
               <TabsTrigger value="sistemas">
                 Sistemas ({systems.length})

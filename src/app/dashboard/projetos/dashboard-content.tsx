@@ -17,7 +17,9 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
+import { ErpReadOnlyBanner } from '@/components/shared/erp-readonly-banner';
 import { KPICard } from '@/components/dashboard/KPICard';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +50,8 @@ import {
 import { getOverdueData, isConsideredActive } from '@/lib/domain/project-health';
 import { isHighPriorityProject } from '@/lib/domain/project-priority';
 import { computeDashboardKpis } from '@/lib/domain/kpi-calculations';
+import { syncEspaiderAction } from '@/app/actions/sync';
+import { feedback } from '@/lib/feedback';
 
 interface Profile {
   id: string;
@@ -105,7 +109,26 @@ export function DashboardContent({
 }: DashboardContentProps) {
   const [activeFilter, setActiveFilter] = React.useState<ActiveFilter | null>(null);
   const [selectedProject, setSelectedProject] = React.useState<UIProject | null>(null);
+  const [isSyncing, setIsSyncing] = React.useState(false);
   const filteredListRef = React.useRef<HTMLDivElement>(null);
+
+  const handleSync = React.useCallback(async () => {
+    setIsSyncing(true);
+    feedback.info('Iniciando sincronização com Espaider...');
+    try {
+      const result = await syncEspaiderAction();
+      if (result.success) {
+        feedback.success(result.message);
+        window.location.reload();
+      } else {
+        feedback.error(result.message);
+      }
+    } catch {
+      feedback.error('Erro inesperado na sincronização. Tente novamente.');
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
 
   // ─── KPI Calculations (domain-extracted) ───
   const now = React.useMemo(() => new Date(), []);
@@ -215,6 +238,10 @@ export function DashboardContent({
         title={`Bem-vindo, ${profile?.full_name || user.email?.split('@')[0]}!`}
         subtitle="Painel de gestão de projetos"
       />
+
+      <div className="px-6 pt-4">
+        <ErpReadOnlyBanner variant="page" />
+      </div>
 
       <div className="flex-1 space-y-6 p-6">
         <p className="sr-only" role="status" aria-live="polite">
@@ -376,9 +403,13 @@ export function DashboardContent({
               </CardHeader>
               <CardContent>
                 {filteredProjects.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-muted-foreground">
-                    Nenhum projeto encontrado para este filtro.
-                  </div>
+                  <EmptyState
+                    title="Nenhum projeto encontrado"
+                    description="Ajuste os filtros ou limpe para ver todos os projetos."
+                    secondaryLabel="Fechar"
+                    onSecondary={() => setActiveFilter(null)}
+                    className="py-8"
+                  />
                 ) : (
                   <div className="space-y-2">
                     {filteredProjects.map((project) => {
@@ -390,7 +421,10 @@ export function DashboardContent({
                           tabIndex={0}
                           onClick={() => handleProjectClick(project)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleProjectClick(project);
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleProjectClick(project);
+                            }
                           }}
                           className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
@@ -428,7 +462,7 @@ export function DashboardContent({
                           <div className="ml-4 flex flex-shrink-0 items-center gap-3">
                             {project.priority && <PriorityBadge priority={project.priority} />}
                             <StatusBadge status={project.status} />
-                            <ArrowRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                            <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                           </div>
                         </div>
                       );
@@ -447,34 +481,41 @@ export function DashboardContent({
           </CardHeader>
           <CardContent>
             {projects.length === 0 ? (
-              <div className="py-12 text-center">
-                <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <h3 className="mt-4 text-lg font-medium">Nenhum projeto encontrado</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Sincronize com o Espaider para importar projetos.
-                </p>
-              </div>
-            ) : (
+              <EmptyState
+                title="Nenhum projeto encontrado"
+                description="Sincronize com o Espaider para importar projetos."
+                icon={FolderOpen}
+                actionLabel={isSyncing ? 'Sincronizando...' : 'Sincronizar'}
+                onAction={handleSync}
+                className="py-12"
+              />
+            ) : (() => {
+              const recentProjects = projects
+                .filter((p) => {
+                  const s = (p.status || '').trim().toLowerCase();
+                  if (s !== 'iniciado' && s !== 'em execução' && s !== 'concluído') return false;
+                  const lastMove = p.last_update;
+                  if (!lastMove) return false;
+                  const diffTime = now.getTime() - new Date(lastMove).getTime();
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  return diffDays >= 0 && diffDays <= 7;
+                })
+                .sort((a, b) => {
+                  const d1 = new Date(b.last_update || 0).getTime();
+                  const d2 = new Date(a.last_update || 0).getTime();
+                  return d1 - d2;
+                })
+                .slice(0, 8);
+              return recentProjects.length === 0 ? (
+                <EmptyState
+                  title="Nenhum projeto recente"
+                  description="Nenhum projeto com movimentação nos últimos 7 dias."
+                  icon={Clock}
+                  className="py-12"
+                />
+              ) : (
               <div className="space-y-2">
-                {projects
-                  .filter((p) => {
-                    const s = (p.status || '').trim().toLowerCase();
-                    if (s !== 'iniciado' && s !== 'em execução' && s !== 'concluído') return false;
-
-                    const lastMove = p.last_update;
-                    if (!lastMove) return false;
-
-                    const diffTime = now.getTime() - new Date(lastMove).getTime();
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    return diffDays >= 0 && diffDays <= 7;
-                  })
-                  .sort((a, b) => {
-                    const d1 = new Date(b.last_update || 0).getTime();
-                    const d2 = new Date(a.last_update || 0).getTime();
-                    return d1 - d2;
-                  })
-                  .slice(0, 8)
-                  .map((project) => (
+                {recentProjects.map((project) => (
                     <div
                       key={project.id}
                       role="button"
@@ -513,12 +554,13 @@ export function DashboardContent({
                       </div>
                       <div className="ml-4 flex flex-shrink-0 items-center gap-3">
                         <StatusBadge status={project.status} />
-                        <ArrowRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                        <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                       </div>
                     </div>
                   ))}
               </div>
-            )}
+              );
+            })()}
           </CardContent>
         </Card>
       </div>

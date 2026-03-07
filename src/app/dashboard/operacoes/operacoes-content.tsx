@@ -4,7 +4,6 @@ import * as React from 'react';
 import { User } from '@supabase/supabase-js';
 import {
     Activity,
-    Users,
     Timer,
     AlertTriangle,
     ArrowRight,
@@ -13,13 +12,25 @@ import {
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import type { UIProject, DBProject } from '@/lib/transformers/project';
 import { SkeletonKPI } from '@/components/ui/skeletons';
-// Optional components for basic rendering, we can expand later
 import { ProjectPipelineChart, buildPipelineData } from '@/components/charts';
+import { HistoryMovementsChart } from '@/components/dashboard/operation/history-movements-chart';
+import { HistoryVolumeChart } from '@/components/charts/history-volume-chart';
+import { HistoryTransitionsChart } from '@/components/charts/history-transitions-chart';
+import { SplitView } from '@/components/views/SplitView';
+import { ProjectCockpit } from '@/components/project/ProjectCockpit';
+import { ProjectListView } from '@/components/views/ProjectListView';
+import { EmptyState } from '@/components/ui/EmptyState';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { isConsideredActive } from '@/lib/domain/project-health';
 import { computeDashboardKpis } from '@/lib/domain/kpi-calculations';
+import { statusLabels } from '@/lib/constants/phase-labels';
 
 interface Profile {
     id: string;
@@ -41,7 +52,7 @@ interface ChartProject {
     complexidade_tecnica: string;
     responsible: string;
     budgets: { value: number; currency: string }[];
-    histories?: { date: string; step_from?: string }[];
+    histories?: { date: string; step_from?: string; step_to?: string }[];
 }
 
 interface OperacoesContentProps {
@@ -90,6 +101,21 @@ export function OperacoesContent({
         [chartProjects],
     );
 
+    const [selectedProject, setSelectedProject] = React.useState<UIProject | null>(null);
+    const [activeStatusFilter, setActiveStatusFilter] = React.useState<string | null>(null);
+
+    const displayedProjects = React.useMemo(() => {
+        let list = activeProjects;
+        if (activeStatusFilter) {
+            list = list.filter((p) => (p.status || '').toLowerCase() === activeStatusFilter.toLowerCase());
+        }
+        return list;
+    }, [activeProjects, activeStatusFilter]);
+
+    const handlePipelineBarClick = React.useCallback((status: string) => {
+        setActiveStatusFilter((prev) => (prev === status ? null : status));
+    }, []);
+
     return (
         <div className="flex flex-col">
             <DashboardHeader
@@ -110,20 +136,40 @@ export function OperacoesContent({
                                 icon={Activity}
                                 subtitle="Ativos na esteira"
                             />
-                            <KPICard
-                                title="Aprovação Pendente"
-                                value={inApprovalCount}
-                                icon={UserCheck}
-                                subtitle="Aguardando aprovadores"
-                                className={inApprovalCount > 0 ? "border-amber-500/30" : undefined}
-                            />
-                            <KPICard
-                                title="Sobrecarga (WIP)"
-                                value={wipSummary.overloadedCount}
-                                icon={AlertTriangle}
-                                subtitle="Pessoas c/ +3 projetos ativos"
-                                className={wipSummary.overloadedCount > 0 ? "border-destructive/30" : undefined}
-                            />
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div>
+                                            <KPICard
+                                                title="Aprovação Pendente"
+                                                value={inApprovalCount}
+                                                icon={UserCheck}
+                                                subtitle="Aguardando aprovadores"
+                                                className={inApprovalCount > 0 ? "border-amber-500/30" : undefined}
+                                            />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Projetos com status contendo &quot;aprov&quot;</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div>
+                                            <KPICard
+                                                title="Sinal de sobrecarga"
+                                                value={wipSummary.overloadedCount}
+                                                icon={AlertTriangle}
+                                                subtitle="Pessoas c/ +3 projetos ativos"
+                                                className={wipSummary.overloadedCount > 0 ? "border-destructive/30" : undefined}
+                                            />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Heurística: pessoas com mais de 3 projetos ativos simultâneos</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                             <KPICard
                                 title="Lead Time Médio"
                                 value={kpis.avgLeadTimeDays > 0 ? `${kpis.avgLeadTimeDays}d` : '—'}
@@ -134,25 +180,81 @@ export function OperacoesContent({
                     )}
                 </div>
 
+                {/* View principal: lista de projetos ativos */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Projetos no Funil</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                            {activeStatusFilter
+                                ? `Filtrado por: ${statusLabels[activeStatusFilter] ?? activeStatusFilter}`
+                                : 'Clique em uma barra do Pipeline para filtrar'}
+                        </p>
+                    </CardHeader>
+                    <CardContent>
+                        {displayedProjects.length === 0 ? (
+                            <EmptyState
+                                title={activeStatusFilter ? 'Nenhum projeto neste status' : 'Nenhum projeto ativo'}
+                                description={
+                                    activeStatusFilter
+                                        ? 'Tente outro filtro ou limpe o filtro.'
+                                        : 'Não há projetos em execução no momento.'
+                                }
+                                icon={Activity}
+                                className="py-12"
+                            />
+                        ) : (
+                            <ProjectListView
+                                projects={displayedProjects as any[]}
+                                onSelectProject={(id) => {
+                                    const p = projects.find((x) => x.id === id);
+                                    if (p) setSelectedProject(p);
+                                }}
+                            />
+                        )}
+                    </CardContent>
+                </Card>
+
                 {/* Charts */}
                 {chartProjects.length > 0 && (
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                        <ProjectPipelineChart
-                            data={pipelineData}
-                            activeStatus={null}
-                        />
-                        {/* Movimentações / Ranking chart could go here */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Histórico e Produtividade</CardTitle>
-                            </CardHeader>
-                            <CardContent className="h-[350px] flex items-center justify-center text-muted-foreground">
-                                <p>Gráfico de Movimentações (Em breve)</p>
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                            <ProjectPipelineChart
+                                data={pipelineData}
+                                activeStatus={activeStatusFilter}
+                                onBarClick={handlePipelineBarClick}
+                            />
+                            <HistoryMovementsChart projects={projects as any[]} />
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                            <HistoryVolumeChart projects={projects as any[]} />
+                            <HistoryTransitionsChart projects={projects as any[]} />
+                        </div>
+                    </>
                 )}
             </div>
+
+            {selectedProject && (
+                <SplitView
+                    isOpen={!!selectedProject}
+                    onClose={() => setSelectedProject(null)}
+                    title={selectedProject.project_name || 'Visão 360'}
+                    subtitle={
+                        selectedProject
+                            ? `${selectedProject.espaider_code}${selectedProject.pasta_consultivo ? ` • ${selectedProject.pasta_consultivo}` : ''}`
+                            : undefined
+                    }
+                    width="wide"
+                >
+                    <ProjectCockpit
+                        project={selectedProject}
+                        schedules={selectedProject.schedules || []}
+                        deliveries={selectedProject.deliveries || []}
+                        histories={selectedProject.histories || []}
+                        approvers={selectedProject.approvers || []}
+                        budgets={selectedProject.budgets || []}
+                    />
+                </SplitView>
+            )}
         </div>
     );
 }

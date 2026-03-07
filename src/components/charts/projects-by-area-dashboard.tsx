@@ -13,7 +13,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DashboardProjectLike } from '@/lib/domain/kpi-calculations';
 import { isConsideredActive } from '@/lib/domain/project-health';
-import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { BarChart3 } from 'lucide-react';
 
 interface AreaData {
   area: string;
@@ -29,13 +30,31 @@ interface ProjectsByAreaDashboardProps {
   activeArea?: string | null;
 }
 
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: AreaData }>;
+}) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="rounded-lg border bg-popover px-3 py-2 text-sm shadow-md">
+      <p className="font-medium">{d.area}</p>
+      <p className="text-muted-foreground">
+        Total: {d.total} · Concluídos: {d.completed} · Ativos: {d.active}
+      </p>
+    </div>
+  );
+}
+
 export function ProjectsByAreaDashboard({
   data,
   className,
   onAreaClick,
   activeArea,
 }: ProjectsByAreaDashboardProps) {
-  // Sort areas by total descending to show the biggest areas first
   const sortedData = [...data].sort((a, b) => b.total - a.total);
 
   return (
@@ -46,53 +65,72 @@ export function ProjectsByAreaDashboard({
       </CardHeader>
       <CardContent>
         {sortedData.length === 0 ? (
-          <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-            Sem dados de áreas
-          </div>
+          <EmptyState
+            title="Sem dados de áreas"
+            description="Nenhum projeto com área definida para exibir."
+            icon={BarChart3}
+            className="h-[280px] py-8"
+          />
         ) : (
-          <div className="space-y-4 pt-2">
-            {sortedData.map((areaData) => {
-              const isActive = activeArea === areaData.area;
-              return (
-                <div
-                  key={areaData.area}
-                  role="button"
-                  tabIndex={0}
-                  className={`relative cursor-pointer overflow-hidden rounded-lg border p-4 transition-all hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                    isActive ? 'border-primary ring-1 ring-primary' : ''
-                  }`}
-                  onClick={() => onAreaClick?.(areaData.area)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      onAreaClick?.(areaData.area);
-                    }
-                  }}
+          <div className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={sortedData}
+                layout="vertical"
+                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+                <XAxis
+                  type="number"
+                  className="fill-muted-foreground text-xs"
+                  allowDecimals={false}
+                />
+                <YAxis
+                  dataKey="area"
+                  type="category"
+                  width={120}
+                  className="fill-muted-foreground text-xs"
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => (v.length > 18 ? `${v.substring(0, 18)}...` : v)}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
+                <Bar
+                  dataKey="completed"
+                  stackId="a"
+                  fill="hsl(var(--chart-3))"
+                  radius={[0, 0, 0, 0]}
+                  name="Concluídos"
+                  onClick={(entry) => onAreaClick?.(entry.area)}
+                  style={onAreaClick ? { cursor: 'pointer' } : undefined}
                 >
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold">{areaData.area}</h4>
-                    <span className="text-2xl font-bold">{areaData.total}</span>
-                  </div>
-                  <div className="mt-3 flex gap-4 text-sm">
-                    <div className="space-y-1">
-                      <p className="text-muted-foreground">Concluídos</p>
-                      <p className="font-medium text-emerald-500">{areaData.completed}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-muted-foreground">Ativos</p>
-                      <p className="font-medium text-blue-500">{areaData.active}</p>
-                    </div>
-                  </div>
-                  {/* Subtle bar background to indicate volume graphically */}
-                  <div
-                    className="absolute inset-x-0 bottom-0 h-1 bg-primary/20"
-                    style={{
-                      width: `${(areaData.total / sortedData[0].total) * 100}%`,
-                    }}
-                  />
-                </div>
-              );
-            })}
+                  {sortedData.map((entry) => (
+                    <Cell
+                      key={`completed-${entry.area}`}
+                      fill="hsl(var(--chart-3))"
+                      opacity={activeArea && activeArea !== entry.area ? 0.4 : 1}
+                    />
+                  ))}
+                </Bar>
+                <Bar
+                  dataKey="active"
+                  stackId="a"
+                  fill="hsl(var(--chart-1))"
+                  radius={[0, 4, 4, 0]}
+                  name="Ativos"
+                  onClick={(entry) => onAreaClick?.(entry.area)}
+                  style={onAreaClick ? { cursor: 'pointer' } : undefined}
+                >
+                  {sortedData.map((entry) => (
+                    <Cell
+                      key={`active-${entry.area}`}
+                      fill="hsl(var(--chart-1))"
+                      opacity={activeArea && activeArea !== entry.area ? 0.4 : 1}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         )}
       </CardContent>

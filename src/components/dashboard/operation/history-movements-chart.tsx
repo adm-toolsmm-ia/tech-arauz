@@ -13,6 +13,8 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Activity } from 'lucide-react';
 
 interface HistoryMovementData {
   entity: string;
@@ -105,9 +107,12 @@ export function HistoryMovementsChart({ projects }: HistoryMovementsChartProps) 
       <CardContent>
         <div className="h-[280px]">
           {data.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-              Nenhuma movimentação no período
-            </div>
+            <EmptyState
+              title="Nenhuma movimentação no período"
+              description="Não há registros em project_histories para o período selecionado."
+              icon={Activity}
+              className="h-full py-8"
+            />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -170,11 +175,11 @@ function buildData(projects: Array<any>, period: FilterPeriod, type: FilterType)
         if (period === '30days' && diffDays > 30) return;
       }
 
-      // Group by type (responsible user of the history vs overall area of the project)
+      // Group by type: responsible_to/responsible_from (h.to/h.from) or project area
       let entityKey = 'Não identificado';
-      
       if (type === 'responsible') {
-        entityKey = h.user?.full_name || 'Usuário Sistema';
+        entityKey = (h.to || h.from || '-').trim();
+        if (entityKey === '-') entityKey = 'Não identificado';
       } else if (type === 'area') {
         entityKey = (p.area || 'Sem área').trim();
       }

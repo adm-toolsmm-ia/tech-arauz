@@ -55,6 +55,7 @@ export default async function OperacoesPage() {
         histories: (p.histories || []).map((h) => ({
             date: h.date ?? '',
             step_from: h.step_from ?? '',
+            step_to: h.step_to ?? '',
         })),
     }));
 

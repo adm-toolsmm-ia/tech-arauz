@@ -50,7 +50,7 @@ export const menuConfig: NavGroup[] = [
     items: [
       { title: 'Empresa', url: '/organizacao/empresa', icon: Building },
       { title: 'Áreas', url: '/organizacao/areas', icon: Building2 },
-      { title: 'Processos', url: '/organizacao/processos', icon: GitBranch },
+      { title: 'Núcleos', url: '/organizacao/nucleos', icon: GitBranch },
       { title: 'Recursos', url: '/organizacao/recursos', icon: FolderCog },
     ],
   },

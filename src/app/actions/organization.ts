@@ -139,6 +139,7 @@ export async function createNucleusAction(payload: NucleusPayload): Promise<OrgA
 
   if (error) return { success: false, message: `Erro ao criar núcleo: ${error.message}` };
   revalidatePath('/organizacao/areas');
+  revalidatePath('/organizacao/nucleos');
   revalidatePath('/organizacao/processos');
   return { success: true, message: `Núcleo "${created.name}" criado!`, data: created as OrgNucleus };
 }
@@ -159,6 +160,7 @@ export async function updateNucleusAction(
 
   if (error) return { success: false, message: `Erro ao atualizar núcleo: ${error.message}` };
   revalidatePath('/organizacao/areas');
+  revalidatePath('/organizacao/nucleos');
   revalidatePath('/organizacao/processos');
   return { success: true, message: 'Núcleo atualizado!', data: updated as OrgNucleus };
 }
@@ -172,6 +174,7 @@ export async function deleteNucleusAction(id: string): Promise<OrgActionResult> 
 
   if (error) return { success: false, message: `Erro ao excluir núcleo: ${error.message}` };
   revalidatePath('/organizacao/areas');
+  revalidatePath('/organizacao/nucleos');
   revalidatePath('/organizacao/processos');
   return { success: true, message: `Núcleo "${existing?.name ?? 'N/A'}" excluído!` };
 }

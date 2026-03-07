@@ -165,14 +165,15 @@
 | Story | Owner | Effort | Start | Target End | Status | Blocker |
 |-------|-------|--------|-------|-----------|--------|---------|
 | 5.1: DB Indexes | Dara | 5-7.5h | 2026-03-07 | 2026-03-13 | ✅ DEPLOYED | None |
-| 5.2: Design Tokens | Uma/Dex | 5.5-9h | 2026-03-07 | 2026-03-14 | ✅ QA APPROVED | None |
-| 5.3: Storybook | Uma/Dex | 7-8h | 2026-03-07 | 2026-03-17 | 📋 READY FOR QA | None |
-| 5.4: RLS Tests | Dara | 4-5h | 2026-03-17 | 2026-03-20 | 🔒 BLOCKED | 5.1 complete |
-| 5.5: A11y Testing | Uma | 6-8h | 2026-03-17 | 2026-03-24 | 🔒 BLOCKED | 5.3 complete |
+| 5.2: Design Tokens | Uma/Dex | 5.5-9h | 2026-03-07 | 2026-03-14 | ✅ DEPLOYED | None |
+| 5.3: Storybook | Uma/Dex | 7-8h | 2026-03-07 | 2026-03-17 | ✅ DEPLOYED | None |
+| 5.4: RLS Tests | Dara | 4-5h | 2026-03-07 | 2026-03-20 | 📋 CREATED - READY FOR PO | None ✅ |
+| 5.5: A11y Testing | Uma | 6-8h | 2026-03-17 | 2026-03-24 | 🔒 BLOCKED | 5.3 complete ✅ |
 
 **Total EPIC 5 Effort:**
-- Completed: 3.5h (5.1) + 4.2h (5.2) + 1.25h (5.3) = **8.95h of 28-37.5h**
-- **Progress: 24-32% in FASE 11 (Week 1 of 3)**
+- Deployed: 3.5h (5.1) + 4.2h (5.2) + 1.25h (5.3) = **8.95h**
+- Created: 0h (5.4 story created, awaiting @po validation)
+- **Progress: 24-32% in FASE 11 (3/5 stories deployed, Week 1 of 3)**
 
 ---
 

@@ -1,18 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
-import {
-  Building,
-  Building2,
-  GitBranch,
-  Monitor,
-  Truck,
-  Wrench,
-  FileText,
-  ChevronRight,
-  Pencil,
-} from 'lucide-react';
+import { Building, Building2, Pencil, List, LayoutGrid } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,83 +15,49 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
+import { SplitView } from '@/components/views/SplitView';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { updateTenantAction } from '@/app/actions/tenant';
 import type { TenantInfo, Tenant360Counts } from '@/app/actions/tenant';
+import { AreaCockpit } from '@/components/organization/AreaCockpit';
+import { ProcessCockpit } from '@/components/organization/ProcessCockpit';
+import { SystemCockpit } from '@/components/organization/SystemCockpit';
+import { SupplierCockpit } from '@/components/organization/SupplierCockpit';
+import { ServiceCockpit } from '@/components/organization/ServiceCockpit';
+import { DocumentCockpit } from '@/components/organization/DocumentCockpit';
+import { EmpresaListView } from './components/EmpresaListView';
+import { EmpresaKanbanView } from './components/EmpresaKanbanView';
 import { toast } from 'sonner';
+import type { EmpresaVinculo } from './types';
+
+const EMPRESA_VIEW_REGISTRY = {
+  moduleId: 'organizacao-empresa',
+  filters: [],
+  viewModes: [
+    { id: 'list', label: 'Lista', icon: List, default: true },
+    { id: 'kanban', label: 'Kanban', icon: LayoutGrid },
+  ],
+};
 
 interface EmpresaContentProps {
   tenant: TenantInfo | null;
   counts: Tenant360Counts;
+  vinculos: EmpresaVinculo[];
   error?: string;
 }
 
-const VINCULOS = [
-  {
-    id: 'areas',
-    title: 'Áreas',
-    description: 'Grandes domínios da organização',
-    countKey: 'areas' as keyof Tenant360Counts,
-    href: '/organizacao/areas',
-    icon: Building2,
-    color: 'text-primary',
-    bgColor: 'bg-primary/10',
-  },
-  {
-    id: 'processos',
-    title: 'Processos',
-    description: 'Fluxos operacionais',
-    countKey: 'processes' as keyof Tenant360Counts,
-    href: '/organizacao/processos',
-    icon: GitBranch,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-500/10',
-  },
-  {
-    id: 'sistemas',
-    title: 'Sistemas',
-    description: 'Softwares utilizados',
-    countKey: 'systems' as keyof Tenant360Counts,
-    href: '/organizacao/recursos?tab=sistemas',
-    icon: Monitor,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-500/10',
-  },
-  {
-    id: 'fornecedores',
-    title: 'Fornecedores',
-    description: 'Empresas externas',
-    countKey: 'suppliers' as keyof Tenant360Counts,
-    href: '/organizacao/recursos?tab=fornecedores',
-    icon: Truck,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-500/10',
-  },
-  {
-    id: 'servicos',
-    title: 'Serviços',
-    description: 'Serviços operacionais',
-    countKey: 'services' as keyof Tenant360Counts,
-    href: '/organizacao/recursos?tab=servicos',
-    icon: Wrench,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-500/10',
-  },
-  {
-    id: 'documentos',
-    title: 'Documentos',
-    description: 'Modelos e checklists',
-    countKey: 'documents' as keyof Tenant360Counts,
-    href: '/organizacao/recursos?tab=documentos',
-    icon: FileText,
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-500/10',
-  },
-];
-
-export function EmpresaContent({ tenant, counts, error }: EmpresaContentProps) {
+export function EmpresaContent({
+  tenant,
+  counts,
+  vinculos,
+  error,
+}: EmpresaContentProps) {
   const [isEditOpen, setIsEditOpen] = React.useState(false);
   const [editName, setEditName] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
+  const [viewMode, setViewMode] = React.useState<'list' | 'kanban'>('list');
+  const [selectedVinculo, setSelectedVinculo] = React.useState<EmpresaVinculo | null>(null);
 
   React.useEffect(() => {
     if (tenant) setEditName(tenant.name);
@@ -159,6 +114,9 @@ export function EmpresaContent({ tenant, counts, error }: EmpresaContentProps) {
     );
   }
 
+  const totalVinculos = vinculos.length;
+  const listAnnouncement = `Lista com ${totalVinculos} vínculo(s) organizacionais.`;
+
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
@@ -189,31 +147,65 @@ export function EmpresaContent({ tenant, counts, error }: EmpresaContentProps) {
 
         <div>
           <h2 className="mb-4 text-lg font-semibold">Visão 360º — Vínculos</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {VINCULOS.map((v) => {
-              const Icon = v.icon;
-              const count = counts[v.countKey] ?? 0;
-              return (
-                <Link key={v.id} href={v.href}>
-                  <Card className="transition-shadow hover:shadow-md">
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className={`flex size-12 items-center justify-center rounded-lg ${v.bgColor}`}>
-                        <Icon className={`size-6 ${v.color}`} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium">{v.title}</p>
-                        <p className="text-sm text-muted-foreground">{v.description}</p>
-                        <p className="mt-1 text-xs font-medium text-muted-foreground">
-                          {count} cadastrado(s)
-                        </p>
-                      </div>
-                      <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
+
+          {totalVinculos === 0 ? (
+            <EmptyState
+              icon={Building2}
+              title="Nenhum vínculo cadastrado"
+              description="Cadastre áreas, processos, sistemas, fornecedores, serviços e documentos para visualizar a visão 360º."
+              actionLabel="Ver Áreas"
+              onAction={() => (window.location.href = '/organizacao/areas')}
+            />
+          ) : (
+            <>
+              <div className="mb-4 flex justify-end">
+                <ViewModeBar
+                  moduleId="organizacao-empresa"
+                  registry={EMPRESA_VIEW_REGISTRY}
+                  activeViewMode={viewMode}
+                  onViewModeChange={(mode) => setViewMode(mode as 'list' | 'kanban')}
+                />
+              </div>
+
+              <p className="sr-only" role="status" aria-live="polite">
+                {listAnnouncement}
+              </p>
+
+              <div className="flex gap-6">
+                <div className="min-w-0 flex-1">
+                  {viewMode === 'kanban' ? (
+                    <EmpresaKanbanView
+                      vinculos={vinculos}
+                      selectedId={selectedVinculo?.id}
+                      onItemClick={setSelectedVinculo}
+                    />
+                  ) : (
+                    <EmpresaListView
+                      vinculos={vinculos}
+                      selectedId={selectedVinculo?.id}
+                      onItemClick={setSelectedVinculo}
+                    />
+                  )}
+                </div>
+
+                <SplitView
+                  isOpen={!!selectedVinculo}
+                  onClose={() => setSelectedVinculo(null)}
+                  title={selectedVinculo?.name ?? ''}
+                  subtitle={
+                    selectedVinculo
+                      ? `${selectedVinculo.type === 'areas' ? 'Área' : selectedVinculo.type === 'processos' ? 'Processo' : selectedVinculo.type === 'sistemas' ? 'Sistema' : selectedVinculo.type === 'fornecedores' ? 'Fornecedor' : selectedVinculo.type === 'servicos' ? 'Serviço' : 'Documento'}`
+                      : undefined
+                  }
+                  width="lg"
+                >
+                  {selectedVinculo && (
+                    <EmpresaCockpitRenderer vinculo={selectedVinculo} />
+                  )}
+                </SplitView>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -248,4 +240,29 @@ export function EmpresaContent({ tenant, counts, error }: EmpresaContentProps) {
       </Dialog>
     </div>
   );
+}
+
+function EmpresaCockpitRenderer({ vinculo }: { vinculo: EmpresaVinculo }) {
+  switch (vinculo.type) {
+    case 'areas':
+      return <AreaCockpit area={vinculo.entity} />;
+    case 'processos':
+      return (
+        <ProcessCockpit
+          process={vinculo.entity}
+          areaName={vinculo.areaName}
+          nucleusName={vinculo.nucleusName}
+        />
+      );
+    case 'sistemas':
+      return <SystemCockpit system={vinculo.entity} />;
+    case 'fornecedores':
+      return <SupplierCockpit supplier={vinculo.entity} />;
+    case 'servicos':
+      return <ServiceCockpit service={vinculo.entity} />;
+    case 'documentos':
+      return <DocumentCockpit document={vinculo.entity} />;
+    default:
+      return null;
+  }
 }

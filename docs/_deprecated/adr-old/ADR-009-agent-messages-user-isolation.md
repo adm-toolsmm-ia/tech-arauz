@@ -1,7 +1,8 @@
-# ADR-009: Isolamento por Usuário em agent_messages
+# ADR-009: Isolamento por Usuário em agent_messages [ARCHIVED]
 
-**Status:** Aceito  
-**Data:** 2026-03-01  
+**Data:** 2026-03-01
+**Status:** Archived — Will be superseded by updated ADR post-AIOX Phase 2
+**Última atualização:** 2026-03-07
 **Contexto:** Correção de Gaps Críticos — Governança Corporativa 10/10
 
 ## Decisão

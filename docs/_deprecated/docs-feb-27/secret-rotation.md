@@ -1,8 +1,10 @@
 # Secret Rotation Procedure
 
-Data: 2026-02-28
-Story: 2.26 — Security Hardening
-Revisão: Trimestral
+**Data:** 2026-02-28
+**Status:** Archived — Superseded by system-architecture.md and security documentation
+**Última atualização:** 2026-03-07
+**Story:** 2.26 — Security Hardening
+**Revisão:** Trimestral
 
 ## 1. Secrets Críticos
 

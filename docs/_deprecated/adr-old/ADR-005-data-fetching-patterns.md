@@ -1,7 +1,8 @@
-# ADR-005 — Data Fetching Patterns Formais
+# ADR-005 — Data Fetching Patterns Formais [ARCHIVED]
 
-**Status:** Aceito
 **Data:** 2026-02-28
+**Status:** Archived — Will be superseded by updated ADR post-AIOX Phase 2
+**Última atualização:** 2026-03-07
 **Autor:** Aria (architect)
 **Epic:** UX-EPIC-01 / Story 2.11
 

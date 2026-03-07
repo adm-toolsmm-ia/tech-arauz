@@ -1,7 +1,9 @@
 # Log Retention Policy
 
-Data da revisao: 2026-02-26
-Scope: Story 1.3 - CI and Observability Hardening
+**Data:** 2026-02-26
+**Status:** Archived — Story 1.3 complete, merged into system architecture
+**Última atualização:** 2026-03-07
+**Escopo:** Story 1.3 - CI and Observability Hardening
 
 ## 1. Objetivo
 

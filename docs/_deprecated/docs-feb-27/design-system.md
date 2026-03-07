@@ -1,9 +1,9 @@
-# [ARCHIVED] Design System — Pre-Brownfield (Feb 27)
+# Design System — Pre-Brownfield [ARCHIVED]
 
-**Status:** ARCHIVED
-**Original Date:** 2026-02-27
-**Archived:** 2026-03-07
-**Reason:** Superseded by AIOX Frontend Spec (FASE 3)
+**Data:** 2026-02-27
+**Status:** Archived — Superseded by AIOX Frontend Spec (FASE 3)
+**Última atualização:** 2026-03-07
+**Motivo:** AIOX Brownfield Discovery (FASE 3) reavaliou e consolidou design em frontend-spec.md
 
 ---
 

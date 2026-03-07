@@ -1,7 +1,9 @@
 # Authorization Matrix (DB x API)
 
-Data da revisao: 2026-02-26
-Scope: Story 1.1 - Hardening RLS and Secrets
+**Data:** 2026-02-26
+**Status:** Archived — Integrated into system-architecture.md (AIOX Phase 1)
+**Última atualização:** 2026-03-07
+**Escopo:** Story 1.1 - Hardening RLS and Secrets
 
 ## 1. Princípios
 

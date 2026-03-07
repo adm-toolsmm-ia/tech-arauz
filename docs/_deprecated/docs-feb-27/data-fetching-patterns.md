@@ -1,8 +1,10 @@
 # Data Fetching Patterns — Tech Arauz Portal
 
-Data da formalizacao: 2026-02-28
-Responsavel: Aria (architect)
-ADR de referencia: [ADR-005](./adr/ADR-005-data-fetching-patterns.md)
+**Data:** 2026-02-28
+**Status:** Archived — Superseded by module-standards.md and AIOX formal architecture
+**Última atualização:** 2026-03-07
+**Responsável:** Aria (architect)
+**Referência ADR:** [ADR-005](./adr/ADR-005-data-fetching-patterns.md)
 
 ---
 

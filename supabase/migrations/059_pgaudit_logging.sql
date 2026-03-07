@@ -187,7 +187,10 @@ $$ LANGUAGE plpgsql;
 -- =============================================================================
 -- FASE 7: Verification View
 -- =============================================================================
-CREATE OR REPLACE VIEW public.rls_audit_summary AS
+-- DROP necessário: CREATE OR REPLACE não permite alterar nomes de colunas.
+-- A view rls_audit_summary pode existir de migrations anteriores (026, 040) com estrutura diferente.
+DROP VIEW IF EXISTS public.rls_audit_summary;
+CREATE VIEW public.rls_audit_summary AS
 SELECT
     table_name,
     COUNT(*) as total_operations,

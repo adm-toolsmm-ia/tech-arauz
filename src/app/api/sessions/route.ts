@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 import type { AgentSessionWithAgent, SessionsResponse } from '@/lib/types/chat';
 
 /**

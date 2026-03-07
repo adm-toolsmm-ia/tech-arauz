@@ -22,7 +22,7 @@ Atualmente o `ProjectKanbanCard` só exibe "Prazo crítico", "Prazo Final", mas 
 
 **Cronograma:** Da mesma forma, faltam indicativos visuais no Kanban se o projeto está com a entrega X atrasada no cronograma, ou uma barrinha simples (ex: "X/Y entregas").
 
-**Solução:** 
+**Solução:**
 1. Expandir o fetch da Kanban para buscar `project_tempo_permanencia` atrelado ao registro do projeto.
 2. Injetar um Badge/texto de destaque (se atrasado: vermelho, se no prazo: cinza) mostrando os dias.
 3. Adicionar uma representação visual simples de Cronograma/Entregas na List View ou no Kanban (dependendo do que não poluir o card). O usuário aprovou testar para ver como fica.
@@ -45,6 +45,7 @@ Adicionar a modelagem das relações necessárias para as novas exibições.
 Atualizar `ProjectKanbanCard.tsx` adicionando as props de dias e a pílula visual indicando a duração na fase _current_.
 
 ---
+
 **CodeRabbit Integration**
 - [ ] Enviar PR com as modificações listadas para review estrito de UI/CSS
 - [ ] Checagem especial: Certificar-se que o card do Kanban mantém a mesma altura/layout responsivo em telas HD e Full HD após exibir a nova informação.

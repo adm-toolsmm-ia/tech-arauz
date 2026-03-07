@@ -1,0 +1,134 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Welcome" />
+
+# Welcome to Tech Arauz Storybook 👋
+
+This is the **component library and design system documentation** for Tech Arauz.
+
+## What is Storybook?
+
+Storybook is an open-source tool for building and testing UI components in isolation. It helps you:
+
+- 📖 **Document** all components with examples and variations
+- 🧪 **Test** components interactively
+- 🎨 **Showcase** your design system
+- 👥 **Collaborate** visually with designers and developers
+- 📱 **Develop** faster with hot reload
+
+## Getting Started
+
+### 1. **Explore Components**
+Browse the sidebar on the left to view all available components and their variations.
+
+### 2. **Review Design Tokens**
+Visit the **Design Tokens** section to see all 80+ tokens (colors, typography, effects) used throughout the design system.
+
+### 3. **Try Interactive Stories**
+Click on "Interactions" to test component behavior, try different props, and see real-time updates.
+
+### 4. **View Documentation**
+Each component story includes:
+- **Props table**: Interactive prop editor
+- **Code examples**: Copy-paste ready code
+- **Accessibility notes**: WCAG AA compliance info
+- **Usage guidelines**: Best practices
+
+## Quick Links
+
+- 📁 **Source**: Storybook configuration in `.storybook/`
+- 🎨 **Design Tokens**: View in Design System > Design Tokens
+- 📚 **Docs**: See `design/README.md` for integration guide
+- 🔧 **Config**: Tailwind integration in `tailwind.config.ts`
+
+## Development
+
+### Run Locally
+```bash
+npm run storybook
+```
+Storybook will open on `http://localhost:6006`
+
+### Build for Production
+```bash
+npm run build-storybook
+```
+
+## Component Organization
+
+Components are organized by category:
+
+- **UI**: Basic building blocks (Button, Card, Input, Select, etc.)
+- **Forms**: Form-related components
+- **Layout**: Layout components (Header, Sidebar, etc.)
+- **Features**: Complex feature components
+- **Pages**: Full page examples
+
+## Design System
+
+Our design system is built on:
+
+- **Framework**: Next.js 14 + React 18
+- **Styling**: Tailwind CSS 3.4 + Design Tokens
+- **Components**: Shadcn/UI
+- **Icons**: Lucide React
+- **Forms**: React Hook Form + Zod
+
+### Token Categories (80+)
+
+- **Colors (40+)**: Semantic, status, priority, type, sidebar, chart
+- **Typography (2)**: Sans (Inter), Display (DM Sans)
+- **Effects (13)**: Shadows, border-radius, animations
+
+Learn more in the **Design Tokens** section →
+
+## 🎯 Goals
+
+1. ✅ **80+ Design Tokens Documented** — See Design Tokens page
+2. ✅ **20+ Key Components** — Browse the component library
+3. ✅ **Interactive Examples** — Try prop variations
+4. ✅ **Accessibility First** — WCAG AA compliance noted
+5. ✅ **Zero Breaking Changes** — All components backward compatible
+
+## 📝 Contributing
+
+When adding new components:
+
+1. Create a `.stories.tsx` file next to the component
+2. Document all props with `argTypes`
+3. Include multiple story variations
+4. Add accessibility notes
+5. Test in light and dark modes
+
+Example story structure:
+```tsx
+import type { Meta, StoryObj } from '@storybook/react'
+import { MyComponent } from './MyComponent'
+
+const meta = {
+  title: 'Category/MyComponent',
+  component: MyComponent,
+  tags: ['autodocs'],
+} satisfies Meta<typeof MyComponent>
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const Default: Story = {
+  args: { /* ... */ }
+}
+```
+
+## 🚀 What's Next?
+
+1. Browse components in the sidebar
+2. Review the Design Tokens section
+3. Try interactive prop changes
+4. Check accessibility guidelines
+5. Copy code examples to your project
+
+---
+
+**Built with ❤️ using Storybook 7 + Next.js + Tailwind CSS**
+
+Need help? Check `design/README.md` or the individual component documentation pages.

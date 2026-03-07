@@ -1,0 +1,132 @@
+# Design System Tokens
+
+Welcome to the Tech Arauz Design System! This page documents all 80+ design tokens extracted in DTCG format.
+
+## Token Categories
+
+### Colors (40+)
+
+#### Semantic Colors
+The foundation of our design system - used consistently across all UI components.
+
+- **Primary**: Brand navy color (`hsl(222.2 47.4% 11.2%)`)
+- **Secondary**: Supporting slate color
+- **Accent**: Highlight purple
+- **Destructive**: Error/danger red
+- **Success**: Success green
+- **Warning**: Warning orange
+
+#### Status Colors
+Specific colors for ticket/project status indicators:
+- **Novo** (New): Purple
+- **Em-Atendimento** (In Progress): Blue
+- **Aguardando** (Waiting): Orange
+- **Resolvido** (Resolved): Green
+- **Cancelado** (Cancelled): Gray
+
+#### Priority Colors
+Visual indicators for priority levels:
+- **Alta** (High): Red
+- **Normal** (Normal): Yellow
+- **Baixa** (Low): Blue
+
+#### Type Colors
+Ticket type indicators:
+- **Erro** (Bug): Red
+- **Duvida** (Question): Blue
+- **Suporte** (Support): Green
+- **Ajuste** (Adjustment): Yellow
+- **Melhoria** (Enhancement): Purple
+
+#### Chart Colors
+Data visualization palette (5 colors for multi-series charts)
+
+### Typography (2)
+
+- **Sans**: Inter (primary body text)
+- **Display**: DM Sans (headings, display text)
+
+### Effects (13)
+
+#### Shadows
+- **Soft**: Subtle elevation (`0 2px 8px rgba(0,0,0,0.06)`)
+- **Medium**: Standard elevation
+- **Card**: Card surface elevation
+- **Card-Hover**: Hover state elevation
+- **Elevated**: Heavy elevation
+- **Inner-Glow**: Inner glow effect
+
+#### Border Radius
+- **lg**: Large radius (8px)
+- **md**: Medium radius (6px)
+- **sm**: Small radius (4px)
+
+#### Animations
+- **Accordion-Down**: Expand animation (0.2s)
+- **Accordion-Up**: Collapse animation (0.2s)
+- **Scale-In**: Zoom-in animation (0.2s)
+- **Slide-In-Left**: Left slide animation (0.2s)
+
+## Usage Guidelines
+
+### Colors in Tailwind
+```jsx
+// Using semantic colors
+<button className="bg-primary text-primary-foreground">
+  Primary Action
+</button>
+
+// Using status colors
+<span className="text-status-novo">New</span>
+<span className="text-status-resolvido">Resolved</span>
+
+// Using chart colors
+<div className="bg-chart-1">Series 1</div>
+```
+
+### Typography in Tailwind
+```jsx
+// Body text (sans)
+<p className="font-sans">Regular text</p>
+
+// Headings (display)
+<h1 className="font-display">Page Title</h1>
+```
+
+### Effects in Tailwind
+```jsx
+// Shadows
+<div className="shadow-card hover:shadow-card-hover">Card</div>
+
+// Border radius
+<button className="rounded-lg">Large radius</button>
+
+// Animations
+<div className="animate-scale-in">Appears with zoom</div>
+```
+
+## Token Maintenance
+
+Tokens are defined in `design/tokens.json` and automatically integrated with Tailwind CSS via `tailwind.config.ts`.
+
+To **add a new token**:
+1. Edit `design/tokens.json`
+2. Follow DTCG format with `$type`, `$value`, and `$description`
+3. Run `npm run build` to validate
+4. Update this documentation
+
+To **update a token value**:
+1. Modify the `$value` in `design/tokens.json`
+2. Changes cascade automatically to all components using CSS variables
+3. No Tailwind rebuild needed
+
+## Design System Links
+
+- **Source**: `design/tokens.json` (DTCG format)
+- **Schema**: `design/tokens.schema.json` (validation)
+- **Config**: `tailwind.config.ts` (Tailwind integration)
+- **Guide**: `design/README.md` (detailed documentation)
+
+---
+
+Created with ❤️ using DTCG (Design Tokens Community Group) standard.

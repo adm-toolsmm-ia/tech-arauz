@@ -13,6 +13,9 @@ import {
   Database,
   MessageSquare,
   Activity,
+  Building2,
+  GitBranch,
+  FolderCog,
 } from 'lucide-react';
 import type { NavGroup, NavItem } from './sidebar-types';
 
@@ -39,6 +42,14 @@ export const menuConfig: NavGroup[] = [
         url: '/cronogramas',
         icon: CalendarDays,
       },
+    ],
+  },
+  {
+    group: 'Organização',
+    items: [
+      { title: 'Áreas', url: '/organizacao/areas', icon: Building2 },
+      { title: 'Processos', url: '/organizacao/processos', icon: GitBranch },
+      { title: 'Recursos', url: '/organizacao/recursos', icon: FolderCog },
     ],
   },
   {

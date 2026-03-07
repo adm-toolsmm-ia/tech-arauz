@@ -1,0 +1,178 @@
+/**
+ * Organization types — AI Organizational Bootstrap
+ * Aligned with supabase/migrations/060_org_bootstrap_schema.sql
+ */
+
+export type OrgActivityComplexity = 'low' | 'medium' | 'high';
+export type OrgActivityPriority = 'low' | 'normal' | 'high';
+
+export interface OrgArea {
+  id: string;
+  tenant_id: string;
+  name: string;
+  description: string | null;
+  objective: string | null;
+  responsible_roles: string[];
+  documentation: OrgDocumentation;
+  created_at: string;
+  updated_at: string;
+  nuclei_count?: number;
+}
+
+export interface OrgNucleus {
+  id: string;
+  tenant_id: string;
+  area_id: string;
+  name: string;
+  description: string | null;
+  objective: string | null;
+  responsible_roles: string[];
+  documentation: OrgDocumentation;
+  created_at: string;
+  updated_at: string;
+  area?: OrgArea | null;
+}
+
+export interface OrgProcess {
+  id: string;
+  tenant_id: string;
+  area_id: string | null;
+  nucleus_id: string | null;
+  name: string;
+  description: string | null;
+  objective: string | null;
+  inputs: OrgInputOutput[];
+  outputs: OrgInputOutput[];
+  responsible_roles: string[];
+  risks: string[];
+  impacts: string[];
+  documentation: OrgDocumentation;
+  created_at: string;
+  updated_at: string;
+  area?: OrgArea | null;
+  nucleus?: OrgNucleus | null;
+}
+
+export interface OrgRoutine {
+  id: string;
+  tenant_id: string;
+  process_id: string;
+  name: string;
+  description: string | null;
+  objective: string | null;
+  responsible_roles: string[];
+  documentation: OrgDocumentation;
+  created_at: string;
+  updated_at: string;
+  process?: OrgProcess | null;
+}
+
+export interface OrgActivity {
+  id: string;
+  tenant_id: string;
+  routine_id: string;
+  name: string;
+  description: string | null;
+  objective: string | null;
+  complexity: OrgActivityComplexity;
+  priority: OrgActivityPriority;
+  required_role: string | null;
+  average_execution_time: number | null;
+  inputs: OrgInputOutput[];
+  outputs: OrgInputOutput[];
+  risks: string[];
+  impacts: string[];
+  documentation: OrgActivityDocumentation;
+  created_at: string;
+  updated_at: string;
+  routine?: OrgRoutine | null;
+}
+
+export interface OrgSystem {
+  id: string;
+  tenant_id: string;
+  name: string;
+  description: string | null;
+  purpose: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrgSystemResource {
+  id: string;
+  tenant_id: string;
+  system_id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+  system?: OrgSystem | null;
+}
+
+export interface OrgSupplier {
+  id: string;
+  tenant_id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrgService {
+  id: string;
+  tenant_id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrgDocument {
+  id: string;
+  tenant_id: string;
+  name: string;
+  type: string | null;
+  description: string | null;
+  associated_process_id: string | null;
+  created_at: string;
+  updated_at: string;
+  process?: OrgProcess | null;
+}
+
+export interface OrgCompanyType {
+  id: string;
+  tenant_id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrgBootstrapTemplate {
+  id: string;
+  company_type_id: string;
+  entity_type: string;
+  payload: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrgDocumentation {
+  procedures?: string;
+  instructions?: string;
+  best_practices?: string;
+  internal_guidelines?: string;
+  common_errors?: string;
+}
+
+export interface OrgActivityDocumentation extends OrgDocumentation {
+  step_by_step?: string;
+  guidelines?: string;
+}
+
+export interface OrgInputOutput {
+  name: string;
+  description?: string;
+  required?: boolean;
+}

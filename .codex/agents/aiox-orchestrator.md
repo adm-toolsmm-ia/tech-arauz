@@ -1,8 +1,8 @@
-# Agent Redirect: db-sage → data-engineer
+# Agent Redirect: aiox-orchestrator → aiox-master
 
 **DEPRECATED:** This agent has been renamed/merged.
 
-Use `@data-engineer` instead.
+Use `@aiox-master` instead.
 
 ---
 
@@ -10,8 +10,8 @@ Use `@data-engineer` instead.
 
 | Property | Value |
 |----------|-------|
-| Old ID | @db-sage |
-| New ID | @data-engineer |
+| Old ID | @aiox-orchestrator |
+| New ID | @aiox-master |
 | Status | Deprecated |
 
 ---

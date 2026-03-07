@@ -11,6 +11,8 @@ import {
   Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Layers } from 'lucide-react';
 import { DashboardProjectLike } from '@/lib/domain/kpi-calculations';
 import { isConsideredActive } from '@/lib/domain/project-health';
 
@@ -60,9 +62,12 @@ export function ProjectsByPhaseChart({
       <CardContent>
         <div className="h-[280px]">
           {data.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-              Sem dados de fases
-            </div>
+            <EmptyState
+              title="Sem dados de fases"
+              description="Nenhum projeto ativo com fase definida para exibir."
+              icon={Layers}
+              className="h-[280px] py-8"
+            />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

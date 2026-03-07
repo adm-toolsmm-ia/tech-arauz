@@ -45,6 +45,7 @@ export default async function DashboardPage() {
     fase_atual: p.fase_atual || '',
     area: p.area || '',
     prazo_final: p.prazo_final || '',
+    prazo_cronograma: p.prazo_cronograma || '',
     data_encerramento: p.data_encerramento || '',
     prioridade: p.prioridade || '',
     importancia_especial: p.importancia_especial || false,

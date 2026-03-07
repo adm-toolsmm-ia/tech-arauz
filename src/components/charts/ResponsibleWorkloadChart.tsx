@@ -11,6 +11,8 @@ import {
   Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Users } from 'lucide-react';
 
 interface WorkloadData {
   responsible: string;
@@ -51,9 +53,12 @@ export function ResponsibleWorkloadChart({ data, className, onBarClick }: Respon
       <CardContent>
         <div className="h-[280px]">
           {data.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-              Sem dados de responsáveis
-            </div>
+            <EmptyState
+              title="Sem dados de responsáveis"
+              description="Nenhum projeto ativo com responsável definido para exibir."
+              icon={Users}
+              className="h-[280px] py-8"
+            />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

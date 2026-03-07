@@ -17,6 +17,8 @@ Os dashboards do Tech Arauz fornecem visões executivas e operacionais sobre pro
 | `/dashboard/projetos` | Dashboard Projetos | Visão executiva de portfólio, KPIs, gráficos e projetos recentes |
 | `/dashboard/operacoes` | Dashboard Operações | Visão de fluxo, gargalos, SLA e históricos de movimentação |
 
+**Nota:** A rota `/dashboard/operacao` (singular) redireciona para `/dashboard/operacoes` por compatibilidade.
+
 ---
 
 ## 2. Dashboard Projetos
@@ -69,6 +71,7 @@ O componente `ProjectsByAreaDashboard` exibe dados em **gráfico de barras horiz
 
 ```
 DashboardHeader
+ErpReadOnlyBanner (variant page)
 KPIs (Projetos no Funil, Aprovação Pendente, Sinal de sobrecarga, Lead Time)
 View principal: lista de projetos ativos (ProjectListView)
 Charts (Pipeline, Histórico Movimentações, Volume, Transições)

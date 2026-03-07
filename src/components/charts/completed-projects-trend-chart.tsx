@@ -1,20 +1,18 @@
 'use client';
 
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
   LineChart,
   Line,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { TrendingUp } from 'lucide-react';
 import { getYearMonthKey, DashboardProjectLike } from '@/lib/domain/kpi-calculations';
-import { isConsideredActive } from '@/lib/domain/project-health';
 
 interface MonthlyCompletedData {
   month: string;
@@ -62,9 +60,12 @@ export function CompletedProjectsTrendChart({
       <CardContent>
         <div className="h-[280px]">
           {data.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-              Sem dados de conclusão
-            </div>
+            <EmptyState
+              title="Sem dados de conclusão"
+              description="Nenhum projeto concluído para exibir a tendência mensal."
+              icon={TrendingUp}
+              className="h-[280px] py-8"
+            />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
@@ -107,8 +108,9 @@ export function buildCompletedTrendData(projects: DashboardProjectLike[]): Month
 
   projects.forEach((p) => {
     const status = (p.status || '').trim().toLowerCase();
-    if (status === 'concluído' && p.end_date) {
-      const d = new Date(p.end_date);
+    const closureDate = p.data_encerramento || p.end_date;
+    if (status === 'concluído' && closureDate) {
+      const d = new Date(closureDate);
       if (!isNaN(d.getTime())) {
         const monthKey = getYearMonthKey(d);
         counts[monthKey] = (counts[monthKey] || 0) + 1;

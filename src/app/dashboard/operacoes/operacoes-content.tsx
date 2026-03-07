@@ -10,6 +10,7 @@ import {
     UserCheck,
 } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
+import { ErpReadOnlyBanner } from '@/components/shared/erp-readonly-banner';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { UIProject, DBProject } from '@/lib/transformers/project';
@@ -122,6 +123,10 @@ export function OperacoesContent({
                 title="Operações"
                 subtitle="Visão de Fluxo, Gargalos e SLA"
             />
+
+            <div className="px-6 pt-4">
+                <ErpReadOnlyBanner variant="page" />
+            </div>
 
             <div className="flex-1 space-y-6 p-6">
                 {/* KPIs Row */}

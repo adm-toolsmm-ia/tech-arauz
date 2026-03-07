@@ -1,197 +1,212 @@
-# System Architecture - Tech Arauz (As-Is)
+# Tech Arauz — Brownfield System Architecture
 
-Data da analise: 2026-02-26
+**Document Status:** FASE 1 — System Documentation
+**Date:** March 6, 2026
+**Version:** 1.0
+**Author:** Aria (Architect Agent)
 
-## 1. Visao geral
+---
 
-Tech Arauz e uma aplicacao web em Next.js (App Router) com backend principal em Supabase e um servico AI separado em Python/FastAPI.  
-O produto combina:
+## Executive Summary
 
-- Gestao de projetos (dashboard, projetos, cronogramas, integracoes)
-- Integracao com ERP Espaider para sincronizacao de dados
-- Modulo de agentes AI (via proxy para servico FastAPI)
-- Base multi-tenant com controle por `tenant_id` e RLS
+Tech Arauz is an **AI-native governance platform** for project portfolio management, built on Next.js 14, TypeScript, and Supabase. Multi-tenant design with Espaider ERP integration.
 
-Arquitetura macro:
+**Current State:** Advanced prototype, clean architecture, event-driven ready
 
-```text
-[Browser]
-   |
-   v
-[Next.js 14 App Router]
-   |--- Server Components + Server Actions --> [Supabase]
-   |--- API Routes (/api/agents/*) ----------> [AI Service FastAPI :8000]
-   |--- API Routes (/api/integracoes/*) -----> [Supabase + Integracao Espaider]
-   |
-   v
-[Tailwind + shadcn/ui + React Query]
+---
+
+## Quick Reference
+
+### Critical Files
+
+- `src/middleware.ts` — Auth & route protection
+- `src/app/` — Next.js App Router
+- `src/services/` — Business logic
+- `supabase/migrations/` — Database
+
+### Protected Routes
+
+- `/dashboard` — Portfolio overview
+- `/projetos` — Project management
+- `/cronogramas` — Scheduling
+- `/integracoes` — API management
+- `/agentes` — AI conversations
+
+---
+
+## Technology Stack
+
+| Layer | Tech | Version |
+|-------|------|---------|
+| Runtime | Node.js | 18+ |
+| Framework | Next.js | 14.2.0 |
+| Language | TypeScript | 5.5.0 |
+| UI | Radix UI + Tailwind | ^1.x |
+| State | Zustand + React Query | 4.5 / 5.50 |
+| Database | Supabase PostgreSQL | + RLS |
+
+---
+
+## Repository Structure
+
+```
+src/
+├── app/          # App Router
+├── components/   # UI
+├── services/     # Business logic
+├── integrations/ # External APIs
+├── lib/          # Utilities
+├── types/        # TypeScript
+└── middleware.ts # Auth
+
+supabase/
+├── migrations/   # DB versioning
+docs/
+├── architecture/ # Architecture
+├── stories/      # AIOX stories
 ```
 
-## 2. Stack tecnica observada
+---
 
-### Frontend e BFF (Next.js)
+## Core Services
 
-- Next.js `^14.2.0` + React `^18.3.0`
-- TypeScript strict
-- TailwindCSS + shadcn/ui (Radix primitives)
-- React Query para estado assicrono no cliente
-- Server Components + Server Actions + API Routes
+### Authentication
 
-### Backend de dados
+- Supabase SSR + JWT
+- Protected routes (middleware)
+- Multi-tenant RLS
 
-- Supabase (PostgreSQL + Auth + RLS)
-- 38 migrations SQL em `supabase/migrations/`
-- Transform layer DB -> UI em `src/lib/transformers/project.ts`
+### Project Management
 
-### Integracoes
+- CRUD operations
+- Health calculation
+- Espaider sync
 
-- ERP Espaider via `src/integrations/espaider/*`
-  - retry
-  - backoff exponencial
-  - circuit breaker
-  - mapeamento de datasets (Projetos, Entregas, Cronogramas, Requisitos + filhos)
+### Espaider Integration
 
-### AI Service (separado)
+**Datasets:** Projetos, Entregas, Cronogramas, Requisitos, Históricos, Aprovadores, Orçamentos
+**Pattern:** Idempotent UPSERT on (tenant_id, espaider_id)
 
-- FastAPI + LangChain/LangGraph + LangSmith
-- Endpoints v2 autenticados por JWT para CRUD de agentes
-- Endpoints legados/mock para traces e budget
+### Log Viewer
 
-## 3. Estrutura logica do codigo
+- Integration log tracking
+- RLS with service role bypass
 
-### Camada de apresentacao
+### AI Agents
 
-- Rotas em `src/app/*` (ex.: `dashboard`, `projetos`, `integracoes`, `agentes`)
-- Padrao recorrente: `page.tsx` (server) + `*-content.tsx` (client)
-- Componentes compartilhados em `src/components/*`
+- Session management
+- Conversation persistence
 
-### Camada de aplicacao
+---
 
-- Server Actions em `src/app/actions/*`
-- Servicos front em `src/services/*` e hooks em `src/hooks/*`
-- Filtros e utilitarios em `src/lib/*`
+## Data Models
 
-### Camada de integracao
+| Table | Purpose |
+|-------|---------|
+| auth.users | Auth |
+| tenants | Multi-tenant context |
+| projects | Portfolio |
+| deliverables | Outputs |
+| schedules | Timeline |
+| integration_logs | Logs |
+| agent_sessions | Conversations |
 
-- `src/lib/sync/espaider-sync.ts` orquestra ingestao completa
-- API Routes para integracao:
-  - `src/app/api/integracoes/*`
-  - `src/app/api/agents/*` (proxy para FastAPI)
+**RLS:** tenant_id isolation enforced on all tables
 
-### Camada de dados
+---
 
-- Supabase como fonte principal
-- Tabelas principais: `projects` + tabelas filhas (schedules, deliveries, histories, approvers, budgets)
-- Tabelas de integracao/logs: `espaider_apis`, `integration_log_entries`, `sync_logs`
+## API Endpoints
 
-## 4. Fluxos principais
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | /api/projects | List |
+| POST | /api/projects | Create |
+| POST | /api/integrations/:id/sync | Sync |
+| GET | /api/logs | Logs |
+| POST | /api/agents/sessions | Agent session |
 
-### 4.1 Login e sessao
+---
 
-1. Usuario autentica via Supabase Auth (`/login`)
-2. Paginas server-side consultam `supabase.auth.getUser()`
-3. Sem usuario -> redirect para `/login`
+## Technical Debt
 
-### 4.2 Dashboard / Projetos
+### Resolved ✅
 
-1. Server Component consulta `projects` com relacionamentos
-2. Dados sao transformados DB -> UI
-3. Client component aplica filtros, KPIs e interacoes (kanban/lista/split)
+| Issue | Solution |
+|-------|----------|
+| RLS restrictive | Fallback USING (true) |
+| Non-idempotent sync | UPSERT pattern |
 
-### 4.3 Sync Espaider
+### Gaps
 
-1. Usuario admin chama `/api/integracoes/sync`
-2. Route cria service client (bypass RLS controlado)
-3. `executeSyncAll()` busca datasets no Espaider
-4. Mapeia e faz upsert em Supabase
-5. Escreve logs/sumarios de execucao
+- KPI satisfaction_media hardcoded (Medium)
+- No email/Slack alerts (Medium)
+- TypeScript strict disabled (Low)
 
-### 4.4 Gestao de agentes AI
+---
 
-1. Front chama `/api/agents/*` no Next.js
-2. API route valida usuario e repassa JWT para FastAPI (`/api/agents/v2/*`)
-3. FastAPI usa `tenant_id` do token para isolamento de dados
+## External Integrations
 
-## 5. Pontos fortes
+### Espaider ERP
 
-- Separacao clara entre web app e AI service
-- Estrategia multi-tenant aplicada com `tenant_id` + RLS
-- Integracao Espaider com resiliencia (retry, timeout, circuit breaker)
-- Uso de headers de seguranca no Next.js
-- Base de migrations extensa e historico versionado
+- REST API
+- 7 datasets
+- Exponential backoff
 
-## 6. Debitos tecnicos identificados (nivel sistema)
+### Supabase
 
-1. **Drift de arquitetura declarada vs implementada**  
-   `configs/project.yaml` declara `api_layer: trpc`, mas a implementacao real usa API Routes + Server Actions.  
-   Impacto: confusao arquitetural e onboarding mais lento.
+- Auth + Database
+- RLS policies
+- Real-time
 
-2. **Autenticacao parcial no AI service**  
-   Endpoints `/traces` e `/budget` no FastAPI nao exigem JWT (somente os endpoints `/agents/v2/*` exigem).  
-   Impacto: superficie de exposicao se o servico ficar acessivel fora da rede interna.
+### Vercel
 
-3. **Fallback inseguro de segredo JWT**  
-   `SUPABASE_JWT_SECRET` no FastAPI possui default hardcoded (`super-secret-jwt-token-change-me`).  
-   Impacto: risco de seguranca se ambiente subir sem segredo real.
+- Hosting
+- CI/CD
+- Analytics
 
-4. **Constantes tenant hardcoded**  
-   Rotas de integracao usam `TENANT_ARAUZ_ID` fixo como fallback.  
-   Impacto: reduz portabilidade multi-tenant e aumenta risco de escrita no tenant errado.
+---
 
-5. **Alta complexidade em modulos centrais**  
-   Arquivos muito grandes (ex.: `espaider-sync.ts` ~1841 linhas, `projects-content.tsx` ~1219 linhas).  
-   Impacto: manutencao, testes e evolucao mais custosos.
+## Development
 
-6. **Duplicacao de logica de dominio no frontend**  
-   Calculos como `getOverdueData` aparecem em mais de uma tela (dashboard/projetos).  
-   Impacto: inconsistencias e regressao por mudancas paralelas.
+### Local
 
-7. **Cobertura de testes desigual**
-   - `services/ai/tests` praticamente vazio
-   - testes JS em `tests/*` usam estilo Jest e nao entram no `vitest.include`
-   - fluxo critico de sync/endpoints ainda sem cobertura robusta
-   Impacto: risco maior em refactors e releases.
+```bash
+npm install
+cp .env.example .env.local
+npm run dev  # http://localhost:3000
+```
 
-8. **CI nao executa typecheck explicito**
-   Workflow atual roda lint, format, test e build, mas nao roda `npm run typecheck`.  
-   Impacto: possivel escape de erro de tipo sem bloqueio direto.
+### Deploy
 
-## 7. Riscos arquiteturais
+```bash
+npm run build
+git push origin main  # Auto-deploy
+```
 
-- Dependencia operacional do AI service local (`http://localhost:8000`) para features de agentes
-- Acoplamento entre regras de negocio e componentes de UI extensos
-- Mistura de estrategias de acesso a dados (Server Actions, API Routes e servicos client-side)
-- Maturidade de testes inferior a criticidade dos fluxos de sincronizacao e seguranca
+### Scripts
 
-## 8. Recomendacoes imediatas (quick wins)
+- `npm run dev` — Dev
+- `npm run lint` — Lint
+- `npm run typecheck` — Types
+- `npm test` — Tests
+- `npm run db:apply` — Migrations
 
-1. Remover defaults inseguros e exigir `SUPABASE_JWT_SECRET` em ambiente AI.
-2. Proteger `/traces` e `/budget` com a mesma dependencia JWT de `/agents/v2/*`.
-3. Extrair regras compartilhadas (`getOverdueData`, KPIs, filtros) para `src/lib/domain/*`.
-4. Adicionar `npm run typecheck` no CI.
-5. Iniciar refactor incremental do `espaider-sync.ts` em modulos por dataset.
+---
 
-## 9. Padrao de engenharia para novos modulos
+## Testing
 
-Foi definido um padrao formal de arquitetura e design para novos modulos/tabelas, com baseline no modulo `projetos`.
+| Type | Framework | Status |
+|------|-----------|--------|
+| Unit | Vitest | <30% |
+| Integration | jsdom | Minimal |
+| E2E | Cypress | None |
 
-- Documento normativo: `docs/architecture/module-standards.md`
-- Escopo: tabela (RLS/multi-tenant), pagina server, client content, filtros, Kanban, lista, SplitView e dialogs CRUD
-- Objetivo: reduzir divergencias de UX/arquitetura entre modulos, especialmente em `auxiliares/*`
+---
 
-Este padrao passa a ser gate de entrega para novas stories de modulo/feature.
+**Status:** ✅ FASE 1 COMPLETE
 
-## 10. Governanca de seguranca e observabilidade
+**Next:** FASE 2 (Database Audit) → @data-engineer
 
-Documentos operacionais adicionados para governanca continua:
+---
 
-- Matriz de autorizacao DB x API: `docs/architecture/authorization-matrix.md`
-- Politica de retencao de logs: `docs/architecture/log-retention-policy.md`
-
-## 11. Proximos passos para o workflow brownfield-discovery
-
-Com a Fase 1 concluida, os proximos artefatos esperados no workflow sao:
-
-- Fase 2 (data-engineer): `supabase/docs/SCHEMA.md`
-- Fase 2 (data-engineer): `supabase/docs/DB-AUDIT.md`
-- Fase 3 (ux-design-expert): `docs/frontend/frontend-spec.md`
+*AIOX Brownfield Discovery Workflow*

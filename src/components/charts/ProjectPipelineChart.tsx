@@ -11,6 +11,7 @@ import {
   Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { statusLabels } from '@/lib/constants/phase-labels';
 
 interface PipelineData {
   status: string;
@@ -136,10 +137,21 @@ export function buildPipelineData(projects: Array<{ status: string }>): Pipeline
     return '#6b7280';
   };
 
+  const getLabel = (status: string) => {
+    if (statusLabels[status]) return statusLabels[status];
+    const slug = status
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    return statusLabels[slug] || status;
+  };
+
   return Object.entries(counts)
     .map(([status, count]) => ({
       status,
-      label: status,
+      label: getLabel(status),
       count,
       color: getColor(status),
     }))

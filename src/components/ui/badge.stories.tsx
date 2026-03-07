@@ -1,3 +1,4 @@
+import React, { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { Badge } from './badge'
 
@@ -131,24 +132,24 @@ export const Sizes: Story = {
 }
 
 // Closeable badges (with custom onClick)
-export const Closeable: Story = {
-  render: () => {
-    const [badges, setBadges] = React.useState(['React', 'Next.js', 'TypeScript'])
-    return (
-      <div className="flex gap-2 flex-wrap">
-        {badges.map((badge) => (
-          <Badge
-            key={badge}
-            variant="secondary"
-            className="cursor-pointer hover:opacity-75"
-            onClick={() => setBadges(badges.filter((b) => b !== badge))}
-          >
-            {badge} ×
-          </Badge>
-        ))}
-      </div>
-    )
-  },
+const CloseableBadgesComponent = () => {
+  const [badges, setBadges] = useState(['React', 'Next.js', 'TypeScript'])
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {badges.map((badge) => (
+        <Badge
+          key={badge}
+          variant="secondary"
+          className="cursor-pointer hover:opacity-75"
+          onClick={() => setBadges(badges.filter((b) => b !== badge))}
+        >
+          {badge} ×
+        </Badge>
+      ))}
+    </div>
+  )
 }
 
-import React
+export const Closeable: Story = {
+  render: () => <CloseableBadgesComponent />,
+}

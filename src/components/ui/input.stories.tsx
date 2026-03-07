@@ -103,16 +103,16 @@ export const Sizes: Story = {
   render: () => (
     <div className="space-y-4 w-80">
       <div>
-        <label className="text-sm font-medium">Small</label>
-        <Input placeholder="Small input" className="h-8 text-sm" />
+        <label htmlFor="input-small" className="text-sm font-medium">Small</label>
+        <Input id="input-small" placeholder="Small input" className="h-8 text-sm" />
       </div>
       <div>
-        <label className="text-sm font-medium">Default</label>
-        <Input placeholder="Default input" />
+        <label htmlFor="input-default" className="text-sm font-medium">Default</label>
+        <Input id="input-default" placeholder="Default input" />
       </div>
       <div>
-        <label className="text-sm font-medium">Large</label>
-        <Input placeholder="Large input" className="h-12 text-lg" />
+        <label htmlFor="input-large" className="text-sm font-medium">Large</label>
+        <Input id="input-large" placeholder="Large input" className="h-12 text-lg" />
       </div>
     </div>
   ),
@@ -136,16 +136,16 @@ export const Form: Story = {
   render: () => (
     <div className="space-y-4 w-80">
       <div className="space-y-1">
-        <label className="text-sm font-medium">Email</label>
-        <Input type="email" placeholder="your@email.com" />
+        <label htmlFor="input-email" className="text-sm font-medium">Email</label>
+        <Input id="input-email" type="email" placeholder="your@email.com" />
       </div>
       <div className="space-y-1">
-        <label className="text-sm font-medium">Name</label>
-        <Input type="text" placeholder="Full Name" />
+        <label htmlFor="input-name" className="text-sm font-medium">Name</label>
+        <Input id="input-name" type="text" placeholder="Full Name" />
       </div>
       <div className="space-y-1">
-        <label className="text-sm font-medium">Age</label>
-        <Input type="number" placeholder="25" min="0" max="120" />
+        <label htmlFor="input-age" className="text-sm font-medium">Age</label>
+        <Input id="input-age" type="number" placeholder="25" min="0" max="120" />
       </div>
     </div>
   ),
@@ -154,7 +154,7 @@ export const Form: Story = {
 // Focus state
 export const Focused: Story = {
   render: () => (
-    <Input autoFocus placeholder="This input is auto-focused" />
+    <Input placeholder="This input shows focus state example" />
   ),
 }
 

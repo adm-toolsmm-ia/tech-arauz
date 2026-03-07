@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tech Arauz Design Tokens Schema",
+  "description": "JSON schema for validating design tokens (DTCG format)",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "$version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tokenSetOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "global": {
+      "type": "object",
+      "properties": {
+        "colors": {
+          "type": "object"
+        },
+        "typography": {
+          "type": "object"
+        },
+        "effects": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "required": [
+    "$schema",
+    "$version",
+    "global"
+  ]
+}

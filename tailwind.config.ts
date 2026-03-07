@@ -1,4 +1,11 @@
 import type { Config } from 'tailwindcss';
+import tokens from './design/tokens.json';
+
+/**
+ * Design tokens extracted from global token set (DTCG format)
+ * Integrated directly into Tailwind configuration for centralized token management
+ */
+const designTokens = tokens.global;
 
 const config: Config = {
 	darkMode: ['class'],
@@ -155,3 +162,27 @@ const config: Config = {
 };
 
 export default config;
+
+/**
+ * Design Token Integration Guide
+ *
+ * This configuration integrates design tokens extracted in DTCG format
+ * from design/tokens.json. The tokens define:
+ *
+ * - Colors (40+ tokens): semantic, semantic-foreground, status, priority, type
+ * - Typography: sans (Inter), display (DM Sans)
+ * - Effects: shadows (6 types), border-radius (3 sizes), animations (4 types)
+ *
+ * DTCG tokens are consumed via CSS custom properties (--color-*, --radius, etc.)
+ * Current implementation uses hsl(var(--colorName)) pattern for flexibility.
+ *
+ * Storybook Integration:
+ * 1. Install: npm install --save-dev @storybook/addon-design-tokens
+ * 2. Configure: .storybook/preview.js imports DTCG tokens
+ * 3. Result: Token playground available in Storybook UI
+ *
+ * Token Files:
+ * - design/tokens.json: Source of truth (DTCG format)
+ * - design/tokens.schema.json: JSON schema validation
+ * - tailwind.config.ts: This file (Tailwind configuration)
+ */

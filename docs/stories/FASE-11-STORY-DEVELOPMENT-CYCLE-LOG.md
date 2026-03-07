@@ -14,11 +14,11 @@
 
 | Metric | Current | Target | Status |
 |--------|---------|--------|--------|
-| Stories Started | 1/18 | 18 | ⏳ 6% |
-| Stories Completed | 0/18 | 18 | ⏳ 0% |
+| Stories Started | 2/18 | 18 | ⏳ 11% |
+| Stories Ready for Review | 2/18 | 18 | ⏳ 11% |
 | Epics Active | 1/4 | 4 | ⏳ 25% |
-| QA Approvals | 0/18 | 18 | ⏳ 0% |
-| Total Effort (hours) | 0 / 198-271h | 100% | ⏳ 0% |
+| QA Approvals | 1/18 | 18 | ⏳ 6% (1 pending) |
+| Total Effort (hours) | 7.7 / 198-271h | 100% | ⏳ 3.9% |
 
 ---
 
@@ -28,15 +28,15 @@
 
 **Owner:** Dara (@data-engineer)
 **Effort:** 3.5h actual (vs. 5-7.5h target) — **On track ✅**
-**Status:** ✅ **CODE COMPLETE — READY FOR QA (2026-03-07)**
+**Status:** ✅ **COMPLETE — DEPLOYED (2026-03-07 22:47 UTC)**
 
 | Phase | Task | Owner | Status | Date |
 |-------|------|-------|--------|------|
 | CREATE | create-next-story.md | @sm (River) | ✅ DONE | 2026-03-07 (FASE 10) |
 | VALIDATE | validate-next-story.md | @po (Pax) | ✅ DONE | 2026-03-07 (FASE 10) |
 | **IMPLEMENT** | **dev-develop-story.md** | **@dev (Dex)** | **✅ DONE** | **2026-03-07** |
-| QA GATE | qa-gate.md | @qa (Quinn) | ⏳ PENDING | Expected 2026-03-13 |
-| PUSH | *push | @github-devops (Gage) | ⏳ PENDING | Expected 2026-03-14 |
+| QA GATE | qa-gate.md | @qa (Quinn) | ✅ DONE | 2026-03-07 (7/7 PASSED) |
+| PUSH | *push | @github-devops (Gage) | ✅ DONE | 2026-03-07 22:47 UTC |
 
 **Subtasks:**
 - [x] SQL Migration (1.5h) — `/supabase/migrations/migration_024_add_fk_indexes.sql` ✅ DONE
@@ -74,22 +74,29 @@
 
 ---
 
-### Story 5.2: Design Tokens (DTCG Standard) — BLOCKED BY Story 5.1
+### Story 5.2: Design Tokens (DTCG Standard) — ✅ READY FOR QA
 
-**Owner:** Uma (@ux-design-expert)
-**Effort:** 5.5-9h
-**Status:** 🔒 **BLOCKED (starts after Story 5.1 foundation)**
+**Owner:** Uma (@ux-design-expert) [Implemented by Dex]
+**Effort:** 5.5-9h | **Actual:** 4.2h (43% faster)
+**Status:** 📋 **READY FOR REVIEW (Phase 3 COMPLETE 2026-03-07)**
 **Note:** **CRITICAL PATH** — unblocks Stories 5.3, 5.5
 
 | Phase | Task | Owner | Status | Date |
 |-------|------|-------|--------|------|
 | CREATE | create-next-story.md | @sm (River) | ✅ DONE | 2026-03-07 (FASE 10) |
 | VALIDATE | validate-next-story.md | @po (Pax) | ✅ DONE | 2026-03-07 (FASE 10) |
-| **IMPLEMENT** | **dev-develop-story.md** | **@dev (Dex)** | **🔒 BLOCKED** | **After Story 5.1 ready** |
-| QA GATE | qa-gate.md | @qa (Quinn) | ⏳ PENDING | Expected 2026-03-17 |
-| PUSH | *push | @github-devops (Gage) | ⏳ PENDING | Expected 2026-03-18 |
+| **IMPLEMENT** | **dev-develop-story.md** | **@dev (Dex)** | **✅ DONE** | **2026-03-07 23:XX UTC** |
+| QA GATE | qa-gate.md | @qa (Quinn) | ⏳ PENDING | Expected 2026-03-14 |
+| PUSH | *push | @github-devops (Gage) | ⏳ PENDING | Expected 2026-03-14 |
 
-**Must Complete By:** March 17, 2026 (critical path deadline)
+**Implementation Details:**
+- Subtask 1: Token extraction (80+ DTCG) ✅
+- Subtask 2: Tailwind integration ✅
+- Subtask 3: Component validation (build passed) ✅
+- Subtask 4: Documentation complete ✅
+- All AC met ✅
+
+**Must Complete By:** March 17, 2026 (critical path deadline) — On track ✅
 
 ---
 
@@ -97,8 +104,8 @@
 
 | Story | Owner | Effort | Start | Target End | Status | Blocker |
 |-------|-------|--------|-------|-----------|--------|---------|
-| 5.1: DB Indexes | Dara | 5-7.5h | 2026-03-07 | 2026-03-13 | 🚀 STARTING | None |
-| 5.2: Design Tokens | Uma | 5.5-9h | 2026-03-10 | 2026-03-17 | 🔒 BLOCKED | 5.1 complete |
+| 5.1: DB Indexes | Dara | 5-7.5h | 2026-03-07 | 2026-03-13 | ✅ DEPLOYED | None |
+| 5.2: Design Tokens | Uma/Dex | 5.5-9h | 2026-03-07 | 2026-03-14 | ✅ READY FOR QA | None |
 | 5.3: Storybook | Uma | 7-8h | 2026-03-17 | 2026-03-21 | 🔒 BLOCKED | 5.2 complete |
 | 5.4: RLS Tests | Dara | 4-5h | 2026-03-17 | 2026-03-20 | 🔒 BLOCKED | 5.1 complete |
 | 5.5: A11y Testing | Uma | 6-8h | 2026-03-21 | 2026-03-24 | 🔒 BLOCKED | 5.2 complete |

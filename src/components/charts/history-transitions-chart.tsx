@@ -85,11 +85,11 @@ export function HistoryTransitionsChart({
                 <YAxis
                   dataKey="step"
                   type="category"
-                  width={140}
+                  width={220}
                   className="fill-muted-foreground text-xs"
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(v) => (v.length > 22 ? `${v.substring(0, 22)}...` : v)}
+                  tickFormatter={(v) => (v.length > 38 ? `${v.substring(0, 38)}...` : v)}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
                 <Bar dataKey="count" radius={[0, 4, 4, 0]} fill="hsl(var(--chart-2))">

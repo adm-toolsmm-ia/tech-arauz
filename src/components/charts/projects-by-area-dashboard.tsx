@@ -88,11 +88,11 @@ export function ProjectsByAreaDashboard({
                 <YAxis
                   dataKey="area"
                   type="category"
-                  width={120}
+                  width={220}
                   className="fill-muted-foreground text-xs"
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(v) => (v.length > 18 ? `${v.substring(0, 18)}...` : v)}
+                  tickFormatter={(v) => (v.length > 38 ? `${v.substring(0, 38)}...` : v)}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
                 <Bar

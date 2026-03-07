@@ -83,7 +83,7 @@ export function ProjectPipelineChart({
               <YAxis
                 dataKey="label"
                 type="category"
-                width={120}
+                width={180}
                 className="fill-muted-foreground text-xs"
                 tickLine={false}
                 axisLine={false}

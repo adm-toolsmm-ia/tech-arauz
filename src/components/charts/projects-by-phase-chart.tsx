@@ -79,12 +79,12 @@ export function ProjectsByPhaseChart({
                 <YAxis
                   dataKey="label"
                   type="category"
-                  width={140}
+                  width={220}
                   className="fill-muted-foreground text-xs"
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(value) =>
-                    value.length > 20 ? `${value.substring(0, 20)}...` : value
+                    value.length > 38 ? `${value.substring(0, 38)}...` : value
                   }
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />

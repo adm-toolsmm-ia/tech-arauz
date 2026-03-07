@@ -33,9 +33,9 @@ export const filterRegistryAreas: FilterRegistry = {
   filters: filterDefinitionsAreas,
   searchable: true,
   viewModes: [
-    { id: 'list', label: 'Lista', icon: List, default: true },
+    { id: 'kanban', label: 'Kanban', icon: Columns3, default: true },
+    { id: 'list', label: 'Lista', icon: List },
     { id: 'cards', label: 'Cards', icon: LayoutGrid },
-    { id: 'kanban', label: 'Kanban', icon: Columns3 },
   ],
 };
 
@@ -79,9 +79,9 @@ export const filterRegistryNucleos: FilterRegistry = {
   filters: filterDefinitionsNucleos,
   searchable: true,
   viewModes: [
-    { id: 'list', label: 'Lista', icon: List, default: true },
+    { id: 'kanban', label: 'Kanban', icon: Columns3, default: true },
+    { id: 'list', label: 'Lista', icon: List },
     { id: 'cards', label: 'Cards', icon: LayoutGrid },
-    { id: 'kanban', label: 'Kanban', icon: Columns3 },
   ],
 };
 

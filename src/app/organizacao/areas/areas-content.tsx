@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { SplitView } from '@/components/views/SplitView';
-import { AreaCockpit } from '@/components/organization/AreaCockpit';
+import { AreaCockpit360 } from '@/components/organization/AreaCockpit360';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AreasCardView } from './components/AreasCardView';
 import { AreasKanbanView } from './components/AreasKanbanView';
@@ -37,6 +37,10 @@ import { Building2 } from 'lucide-react';
 
 interface AreasContentProps {
   areas: OrgArea[];
+  linkedData?: {
+    nucleiByAreaId: Record<string, import('@/types/organization').OrgNucleus[]>;
+    processesByAreaId: Record<string, import('@/types/organization').OrgProcess[]>;
+  };
 }
 
 interface AreaFormData {
@@ -53,7 +57,10 @@ const DEFAULT_FORM: AreaFormData = {
   responsible_roles: [],
 };
 
-export function AreasContent({ areas: initialAreas }: AreasContentProps) {
+export function AreasContent({
+  areas: initialAreas,
+  linkedData = { nucleiByAreaId: {}, processesByAreaId: {} },
+}: AreasContentProps) {
   const [areas, setAreas] = React.useState<OrgArea[]>(initialAreas);
   const [selectedArea, setSelectedArea] = React.useState<OrgArea | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
@@ -365,11 +372,13 @@ export function AreasContent({ areas: initialAreas }: AreasContentProps) {
             onClose={() => setSelectedArea(null)}
             title={selectedArea?.name ?? ''}
             subtitle={selectedArea ? `${selectedArea.nuclei_count ?? 0} núcleo(s)` : undefined}
-            width="lg"
+            width="wide"
           >
             {selectedArea && (
-              <AreaCockpit
+              <AreaCockpit360
                 area={selectedArea}
+                nuclei={linkedData.nucleiByAreaId[selectedArea.id] ?? []}
+                processes={linkedData.processesByAreaId[selectedArea.id] ?? []}
                 onEdit={() => handleOpenEdit(selectedArea)}
               />
             )}

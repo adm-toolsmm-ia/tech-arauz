@@ -3,7 +3,10 @@ import { createClient } from '@/lib/supabase/server';
 import {
   dbAreaToUI,
   dbProcessToUI,
+  dbNucleusToUI,
+  dbRoutineToUI,
   dbSystemToUI,
+  dbSystemResourceToUI,
   dbSupplierToUI,
   dbServiceToUI,
   dbOrgDocumentToUI,
@@ -11,7 +14,10 @@ import {
 import type {
   DBOrgArea,
   DBOrgProcess,
+  DBOrgNucleus,
+  DBOrgRoutine,
   DBOrgSystem,
+  DBOrgSystemResource,
   DBOrgSupplier,
   DBOrgService,
   DBOrgDocument,
@@ -38,15 +44,19 @@ export default async function EmpresaPage() {
     { data: areasRaw },
     { data: processesRaw },
     { data: nucleiRaw },
+    { data: routinesRaw },
     { data: systemsRaw },
+    { data: resourcesRaw },
     { data: suppliersRaw },
     { data: servicesRaw },
     { data: documentsRaw },
   ] = await Promise.all([
     supabase.from('org_areas').select('*').order('name', { ascending: true }),
     supabase.from('org_processes').select('*').order('name', { ascending: true }),
-    supabase.from('org_nuclei').select('id, name, area_id').order('name'),
+    supabase.from('org_nuclei').select('*').order('name', { ascending: true }),
+    supabase.from('org_routines').select('*').order('name', { ascending: true }),
     supabase.from('org_systems').select('*').order('name', { ascending: true }),
+    supabase.from('org_system_resources').select('*').order('name', { ascending: true }),
     supabase.from('org_suppliers').select('*').order('name', { ascending: true }),
     supabase.from('org_services').select('*').order('name', { ascending: true }),
     supabase.from('org_documents').select('*').order('name', { ascending: true }),
@@ -61,17 +71,56 @@ export default async function EmpresaPage() {
     (areasRaw ?? []).map((a: { id: string; name: string }) => [a.id, a.name]),
   );
   const nucleusMap = new Map(
-    (nucleiRaw ?? []).map((n: { id: string; name: string; area_id: string }) => [n.id, n.name]),
+    (nucleiRaw ?? []).map((n: { id: string; name: string }) => [n.id, n.name]),
+  );
+  const processMap = new Map(
+    (processesRaw ?? []).map((p: { id: string; name: string }) => [p.id, p.name]),
   );
 
   const areas = ((areasRaw as DBOrgArea[]) ?? []).map((row) =>
     dbAreaToUI(row, nucleiCountByArea[row.id] ?? 0),
   );
   const processes = ((processesRaw as DBOrgProcess[]) ?? []).map((row) => dbProcessToUI(row));
+  const nuclei = ((nucleiRaw as DBOrgNucleus[]) ?? []).map((row) => dbNucleusToUI(row));
+  const routines = ((routinesRaw as DBOrgRoutine[]) ?? []).map((row) => dbRoutineToUI(row));
   const systems = ((systemsRaw as DBOrgSystem[]) ?? []).map((row) => dbSystemToUI(row));
+  const systemResources = ((resourcesRaw as DBOrgSystemResource[]) ?? []).map((row) =>
+    dbSystemResourceToUI(row),
+  );
   const suppliers = ((suppliersRaw as DBOrgSupplier[]) ?? []).map((row) => dbSupplierToUI(row));
   const services = ((servicesRaw as DBOrgService[]) ?? []).map((row) => dbServiceToUI(row));
   const documents = ((documentsRaw as DBOrgDocument[]) ?? []).map((row) => dbOrgDocumentToUI(row));
+
+  const nucleiByAreaId = nuclei.reduce<Record<string, typeof nuclei>>((acc, n) => {
+    const list = acc[n.area_id] ?? [];
+    list.push(n);
+    acc[n.area_id] = list;
+    return acc;
+  }, {});
+
+  const processesByAreaId = processes.reduce<Record<string, typeof processes>>((acc, p) => {
+    if (!p.area_id) return acc;
+    const list = acc[p.area_id] ?? [];
+    list.push(p);
+    acc[p.area_id] = list;
+    return acc;
+  }, {});
+
+  const routinesByProcessId = routines.reduce<Record<string, typeof routines>>((acc, r) => {
+    const list = acc[r.process_id] ?? [];
+    list.push(r);
+    acc[r.process_id] = list;
+    return acc;
+  }, {});
+
+  const resourcesBySystemId = systemResources.reduce<
+    Record<string, typeof systemResources>
+  >((acc, r) => {
+    const list = acc[r.system_id] ?? [];
+    list.push(r);
+    acc[r.system_id] = list;
+    return acc;
+  }, {});
 
   const vinculos: EmpresaVinculo[] = [
     ...areas.map((a) => ({
@@ -120,6 +169,13 @@ export default async function EmpresaPage() {
         tenant={result.tenant}
         counts={result.counts}
         vinculos={vinculos}
+        linkedData={{
+          nucleiByAreaId,
+          processesByAreaId,
+          routinesByProcessId,
+          resourcesBySystemId,
+          processMap: Object.fromEntries(processMap),
+        }}
         error={result.error}
       />
     </ErrorBoundary>

@@ -355,7 +355,7 @@ export function NucleosContent({
                 ? `${selectedNucleus.area_name ?? 'Sem área'} · ${selectedNucleus.processes_count ?? 0} processo(s)`
                 : undefined
             }
-            width="lg"
+            width="wide"
           >
             {selectedNucleus && (
               <NucleusCockpit360

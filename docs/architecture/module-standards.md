@@ -276,7 +276,48 @@ Todo módulo DEVE seguir [data-fetching-patterns.md](./data-fetching-patterns.md
 
 ---
 
-## 13. Checklist de Entrega (Gate de Workflow)
+## 13. Type Safety — Evitar Falhas no Deploy
+
+O build de produção (`next build`) executa `tsc` e falha se houver erros de tipo. Padrões para evitar quebra no deploy:
+
+### 13.1 `null` vs `undefined` em props de componentes
+
+Muitos componentes (shadcn/ui, Radix) esperam `string | undefined`, não `string | null`. APIs como `URLSearchParams.get()` retornam `string | null`.
+
+**NÃO fazer:**
+```tsx
+const tab = searchParams.get('tab');
+<Tabs defaultValue={tab} />  // Type error: null não assignable to string | undefined
+```
+
+**Fazer:**
+```tsx
+const tab = searchParams.get('tab');
+const defaultTab: string = tab && VALID_TABS.includes(tab) ? tab : 'sistemas';
+<Tabs defaultValue={defaultTab} />
+```
+
+Ou usar fallback explícito: `defaultValue={value ?? undefined}` ou `defaultValue={value ?? 'fallback'}`.
+
+### 13.2 Gate local antes do push
+
+Rodar localmente antes de push/deploy:
+
+```bash
+npm run lint ; npm run typecheck
+```
+
+Se falhar localmente, falhará no Vercel. Resolver erros de tipo antes de commitar.
+
+### 13.3 Valores de query/params
+
+- `searchParams.get('x')` → `string | null`
+- `searchParams.get('x') ?? undefined` → `string | undefined`
+- Para props que exigem `string`, usar fallback: `(value ?? 'default')` ou `value || 'default'`
+
+---
+
+## 14. Checklist de Entrega (Gate de Workflow)
 
 Antes de concluir story de novo módulo/tabela:
 
@@ -293,7 +334,7 @@ Antes de concluir story de novo módulo/tabela:
 
 ---
 
-## 14. Política para Agentes AI
+## 15. Política para Agentes AI
 
 Este documento é **normativo** para:
 
@@ -307,4 +348,5 @@ Este documento é **normativo** para:
 2. Siga a estrutura de arquivos da seção 3
 3. Respeite o contrato do hook (seção 8) e o filter registry (seção 9)
 4. Evite todos os anti-padrões da seção 12
-5. Exceções devem ser documentadas na story com justificativa técnica
+5. Rode `npm run typecheck` antes de push (seção 13)
+6. Exceções devem ser documentadas na story com justificativa técnica

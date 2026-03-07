@@ -26,9 +26,10 @@ export function RecursosContent({
 }: RecursosContentProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const defaultTab = VALID_TABS.includes(tabParam as (typeof VALID_TABS)[number])
-    ? tabParam
-    : 'sistemas';
+  const defaultTab: string =
+    tabParam && VALID_TABS.includes(tabParam as (typeof VALID_TABS)[number])
+      ? tabParam
+      : 'sistemas';
 
   const hasAny = systems.length > 0 || suppliers.length > 0 || services.length > 0 || documents.length > 0;
 

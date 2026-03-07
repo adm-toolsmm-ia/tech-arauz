@@ -1,8 +1,8 @@
 # Story 5.4: RLS (Row Level Security) Policies & Testing
 
 **Story ID:** 5.4 | **Epic:** EPIC 5 | **Effort:** 4-5h | **Owner:** Dara (@data-engineer)
-**Status:** Ready for Review | **Priority:** HIGH | **Timeline:** Week 1-2 (March 17-24, 2026)
-**Completed:** 2026-03-07 23:55 UTC | **Actual Effort:** 3.2h (ahead of schedule) | **Pushed:** Commit 622be09
+**Status:** ✅ DONE/DEPLOYED | **Priority:** HIGH | **Timeline:** Week 1-2 (March 17-24, 2026)
+**Completed:** 2026-03-07 23:58 UTC | **Actual Effort:** 3.2h (33% ahead of schedule) | **Pushed:** 2026-03-08 00:00 UTC (f8f1a32 → origin/main)
 
 ## User Story
 

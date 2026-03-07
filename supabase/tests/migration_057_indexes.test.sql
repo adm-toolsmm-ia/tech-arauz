@@ -1,4 +1,4 @@
--- Tests for Migration 024: Foreign Key Indexes
+-- Tests for Migration 057: Foreign Key Indexes
 -- Story 5.1: Database Indexes & Performance Baseline
 -- Date: 2026-03-07
 -- Purpose: Validate index creation, reversibility, and zero breaking changes

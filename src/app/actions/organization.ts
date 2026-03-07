@@ -251,6 +251,7 @@ export async function createRoutineAction(payload: RoutinePayload): Promise<OrgA
 
   if (error) return { success: false, message: `Erro ao criar rotina: ${error.message}` };
   revalidatePath('/organizacao/processos');
+  revalidatePath('/organizacao/rotinas');
   return { success: true, message: `Rotina "${created.name}" criada!`, data: created as OrgRoutine };
 }
 
@@ -270,6 +271,7 @@ export async function updateRoutineAction(
 
   if (error) return { success: false, message: `Erro ao atualizar rotina: ${error.message}` };
   revalidatePath('/organizacao/processos');
+  revalidatePath('/organizacao/rotinas');
   return { success: true, message: 'Rotina atualizada!', data: updated as OrgRoutine };
 }
 
@@ -282,6 +284,7 @@ export async function deleteRoutineAction(id: string): Promise<OrgActionResult> 
 
   if (error) return { success: false, message: `Erro ao excluir rotina: ${error.message}` };
   revalidatePath('/organizacao/processos');
+  revalidatePath('/organizacao/rotinas');
   return { success: true, message: `Rotina "${existing?.name ?? 'N/A'}" excluída!` };
 }
 

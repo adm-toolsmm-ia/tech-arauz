@@ -49,6 +49,7 @@ interface NucleusFormData {
   name: string;
   description: string;
   objective: string;
+  responsible_roles: string;
 }
 
 const DEFAULT_FORM: NucleusFormData = {
@@ -56,6 +57,7 @@ const DEFAULT_FORM: NucleusFormData = {
   name: '',
   description: '',
   objective: '',
+  responsible_roles: '',
 };
 
 export function NucleosContent({
@@ -110,12 +112,14 @@ export function NucleosContent({
     }
     setIsLoading(true);
     try {
+      const parseRoles = (s: string) =>
+        s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
       const result = await createNucleusAction({
         area_id: formData.area_id,
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
-        responsible_roles: [],
+        responsible_roles: parseRoles(formData.responsible_roles),
         documentation: {},
       });
       if (result.success && result.data) {
@@ -146,11 +150,13 @@ export function NucleosContent({
     }
     setIsLoading(true);
     try {
+      const parseRoles = (s: string) =>
+        s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
       const result = await updateNucleusAction(editingNucleus.id, {
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
-        responsible_roles: editingNucleus.responsible_roles,
+        responsible_roles: parseRoles(formData.responsible_roles),
         documentation: editingNucleus.documentation,
       });
       if (result.success && result.data) {
@@ -182,6 +188,7 @@ export function NucleosContent({
       name: nucleus.name,
       description: nucleus.description ?? '',
       objective: nucleus.objective ?? '',
+      responsible_roles: (nucleus.responsible_roles ?? []).join(', '),
     });
     setIsFormOpen(true);
   }, []);
@@ -431,6 +438,15 @@ export function NucleosContent({
                 onChange={(e) => setFormData((p) => ({ ...p, objective: e.target.value }))}
                 placeholder="Objetivo do núcleo"
                 rows={2}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="nucleus-roles">Roles responsáveis (separados por vírgula)</Label>
+              <Input
+                id="nucleus-roles"
+                value={formData.responsible_roles}
+                onChange={(e) => setFormData((p) => ({ ...p, responsible_roles: e.target.value }))}
+                placeholder="ex.: coordenador, analista"
               />
             </div>
           </div>

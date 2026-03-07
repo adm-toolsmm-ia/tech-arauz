@@ -47,14 +47,14 @@ interface AreaFormData {
   name: string;
   description: string;
   objective: string;
-  responsible_roles: string[];
+  responsible_roles: string;
 }
 
 const DEFAULT_FORM: AreaFormData = {
   name: '',
   description: '',
   objective: '',
-  responsible_roles: [],
+  responsible_roles: '',
 };
 
 export function AreasContent({
@@ -99,6 +99,9 @@ export function AreasContent({
     setEditingArea(null);
   }, []);
 
+  const parseRoles = (s: string) =>
+    s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
+
   const handleCreate = React.useCallback(async () => {
     if (!formData.name.trim()) {
       toast.error('Nome é obrigatório');
@@ -110,7 +113,7 @@ export function AreasContent({
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
-        responsible_roles: formData.responsible_roles,
+        responsible_roles: parseRoles(formData.responsible_roles),
         documentation: {},
       });
       if (result.success && result.data) {
@@ -140,7 +143,7 @@ export function AreasContent({
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
-        responsible_roles: formData.responsible_roles,
+        responsible_roles: parseRoles(formData.responsible_roles),
         documentation: editingArea.documentation,
       });
       if (result.success && result.data) {
@@ -166,7 +169,7 @@ export function AreasContent({
       name: area.name,
       description: area.description ?? '',
       objective: area.objective ?? '',
-      responsible_roles: area.responsible_roles ?? [],
+      responsible_roles: (area.responsible_roles ?? []).join(', '),
     });
     setIsFormOpen(true);
   }, []);
@@ -425,6 +428,15 @@ export function AreasContent({
                 onChange={(e) => setFormData((p) => ({ ...p, objective: e.target.value }))}
                 placeholder="Objetivo da área"
                 rows={2}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="area-roles">Roles responsáveis (separados por vírgula)</Label>
+              <Input
+                id="area-roles"
+                value={formData.responsible_roles}
+                onChange={(e) => setFormData((p) => ({ ...p, responsible_roles: e.target.value }))}
+                placeholder="ex.: coordenador, analista_senior"
               />
             </div>
           </div>

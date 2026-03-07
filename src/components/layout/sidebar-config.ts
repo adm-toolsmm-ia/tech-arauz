@@ -17,6 +17,10 @@ import {
   Building,
   GitBranch,
   FolderCog,
+  Monitor,
+  Truck,
+  Wrench,
+  ClipboardList,
 } from 'lucide-react';
 import type { NavGroup, NavItem } from './sidebar-types';
 
@@ -51,7 +55,12 @@ export const menuConfig: NavGroup[] = [
       { title: 'Empresa', url: '/organizacao/empresa', icon: Building },
       { title: 'Áreas', url: '/organizacao/areas', icon: Building2 },
       { title: 'Núcleos', url: '/organizacao/nucleos', icon: GitBranch },
-      { title: 'Recursos', url: '/organizacao/recursos', icon: FolderCog },
+      { title: 'Processos', url: '/organizacao/processos', icon: GitBranch },
+      { title: 'Rotinas', url: '/organizacao/rotinas', icon: ClipboardList },
+      { title: 'Sistemas', url: '/organizacao/recursos?tab=sistemas', icon: Monitor },
+      { title: 'Fornecedores', url: '/organizacao/recursos?tab=fornecedores', icon: Truck },
+      { title: 'Serviços', url: '/organizacao/recursos?tab=servicos', icon: Wrench },
+      { title: 'Documentos', url: '/organizacao/recursos?tab=documentos', icon: FileText },
     ],
   },
   {

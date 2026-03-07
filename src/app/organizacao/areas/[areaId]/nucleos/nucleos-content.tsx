@@ -38,12 +38,14 @@ interface NucleusFormData {
   name: string;
   description: string;
   objective: string;
+  responsible_roles: string;
 }
 
 const DEFAULT_FORM: NucleusFormData = {
   name: '',
   description: '',
   objective: '',
+  responsible_roles: '',
 };
 
 function NucleusCockpit({
@@ -65,6 +67,12 @@ function NucleusCockpit({
         <div>
           <p className="text-xs text-muted-foreground">Objetivo</p>
           <p className="text-sm">{nucleus.objective}</p>
+        </div>
+      )}
+      {(nucleus.responsible_roles?.length ?? 0) > 0 && (
+        <div>
+          <p className="text-xs text-muted-foreground">Roles responsáveis</p>
+          <p className="text-sm">{nucleus.responsible_roles!.join(', ')}</p>
         </div>
       )}
       {onEdit && (
@@ -101,12 +109,14 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
     }
     setIsLoading(true);
     try {
+      const parseRoles = (s: string) =>
+        s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
       const result = await createNucleusAction({
         area_id: areaId,
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
-        responsible_roles: [],
+        responsible_roles: parseRoles(formData.responsible_roles),
         documentation: {},
       });
       if (result.success && result.data) {
@@ -132,11 +142,13 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
     }
     setIsLoading(true);
     try {
+      const parseRoles = (s: string) =>
+        s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
       const result = await updateNucleusAction(editingNucleus.id, {
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
-        responsible_roles: editingNucleus.responsible_roles,
+        responsible_roles: parseRoles(formData.responsible_roles),
         documentation: editingNucleus.documentation,
       });
       if (result.success && result.data) {
@@ -162,6 +174,7 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
       name: nucleus.name,
       description: nucleus.description ?? '',
       objective: nucleus.objective ?? '',
+      responsible_roles: (nucleus.responsible_roles ?? []).join(', '),
     });
     setIsFormOpen(true);
   }, []);
@@ -324,6 +337,15 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
                 onChange={(e) => setFormData((p) => ({ ...p, objective: e.target.value }))}
                 placeholder="Objetivo do núcleo"
                 rows={2}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="nucleus-roles">Roles responsáveis (separados por vírgula)</Label>
+              <Input
+                id="nucleus-roles"
+                value={formData.responsible_roles}
+                onChange={(e) => setFormData((p) => ({ ...p, responsible_roles: e.target.value }))}
+                placeholder="ex.: coordenador, analista"
               />
             </div>
           </div>

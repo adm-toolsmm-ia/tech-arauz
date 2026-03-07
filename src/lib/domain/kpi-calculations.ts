@@ -14,6 +14,7 @@ export interface DashboardProjectLike {
   data_encerramento?: string | null;
   importancia_especial?: boolean | null;
   end_date?: string | null;
+  prazo_final?: string | null;
   prazo_cronograma?: string | null;
   prazo_aprovador?: string | null;
   priority?: string | null;

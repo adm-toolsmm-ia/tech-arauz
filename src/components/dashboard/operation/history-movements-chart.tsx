@@ -144,6 +144,7 @@ export function HistoryMovementsChart({ projects }: HistoryMovementsChartProps) 
                   animationBegin={0}
                   animationDuration={800}
                   animationEasing="ease-out"
+                  label={{ position: 'right', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
                 >
                   {data.map((entry) => (
                     <Cell key={entry.entity} fill="hsl(var(--primary))" />

@@ -92,6 +92,7 @@ export function ResponsibleWorkloadChart({ data, className, onBarClick }: Respon
                   animationEasing="ease-out"
                   onClick={(data) => onBarClick?.(data.responsible)}
                   style={onBarClick ? { cursor: 'pointer' } : undefined}
+                  label={{ position: 'right', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
                 >
                   {data.map((entry, index) => (
                     <Cell key={entry.responsible} fill="hsl(var(--primary))" />

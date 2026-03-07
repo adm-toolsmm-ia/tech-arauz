@@ -101,6 +101,7 @@ export function ProjectsByPhaseChart({
                   animationEasing="ease-out"
                   onClick={(data) => onBarClick?.(data.phase)}
                   style={onBarClick ? { cursor: 'pointer' } : undefined}
+                  label={{ position: 'right', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
                 >
                   {data.map((entry) => (
                     <Cell

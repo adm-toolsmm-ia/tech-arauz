@@ -92,7 +92,12 @@ export function HistoryTransitionsChart({
                   tickFormatter={(v) => (v.length > 38 ? `${v.substring(0, 38)}...` : v)}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]} fill="hsl(var(--chart-2))">
+                <Bar
+                  dataKey="count"
+                  radius={[0, 4, 4, 0]}
+                  fill="hsl(var(--chart-2))"
+                  label={{ position: 'right', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
+                >
                   {data.map((entry) => (
                     <Cell key={entry.step} fill="hsl(var(--chart-2))" />
                   ))}

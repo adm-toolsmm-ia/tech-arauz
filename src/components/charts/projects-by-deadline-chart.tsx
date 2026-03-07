@@ -64,7 +64,7 @@ export function ProjectsByDeadlineChart({
           {data.length === 0 ? (
             <EmptyState
               title="Sem dados de prazo"
-              description="Nenhum projeto ativo com prazo de cronograma definido."
+              description="Nenhum projeto ativo com prazo final definido."
               icon={Calendar}
               className="h-[280px] py-8"
             />
@@ -96,6 +96,7 @@ export function ProjectsByDeadlineChart({
                   animationEasing="ease-out"
                   onClick={(entry) => onBarClick?.(entry.month)}
                   style={onBarClick ? { cursor: 'pointer' } : undefined}
+                  label={{ position: 'top', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
                 >
                   {data.map((entry) => (
                     <Cell
@@ -118,9 +119,9 @@ export function buildMonthlyDeadlineData(projects: DashboardProjectLike[]): Mont
   const counts: Record<string, number> = {};
 
   projects.forEach((p) => {
-    // Apenas projetos ativos que tem prazo no cronograma
-    if (isConsideredActive(p.status) && p.prazo_cronograma) {
-      const d = new Date(p.prazo_cronograma);
+    // Apenas projetos ativos que tem prazo final definido
+    if (isConsideredActive(p.status) && p.prazo_final) {
+      const d = new Date(p.prazo_final);
       if (!isNaN(d.getTime())) {
         const monthKey = getYearMonthKey(d);
         counts[monthKey] = (counts[monthKey] || 0) + 1;

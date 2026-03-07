@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  LabelList,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DashboardProjectLike } from '@/lib/domain/kpi-calculations';
@@ -121,6 +122,13 @@ export function ProjectsByAreaDashboard({
                   onClick={(entry) => onAreaClick?.(entry.area)}
                   style={onAreaClick ? { cursor: 'pointer' } : undefined}
                 >
+                  <LabelList
+                    dataKey="total"
+                    position="right"
+                    fill="currentColor"
+                    fontSize={12}
+                    fontWeight={500}
+                  />
                   {sortedData.map((entry) => (
                     <Cell
                       key={`active-${entry.area}`}

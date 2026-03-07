@@ -82,7 +82,12 @@ export function HistoryVolumeChart({ projects, groupBy = 'week' }: HistoryVolume
                   axisLine={false}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-1))">
+                <Bar
+                  dataKey="count"
+                  radius={[4, 4, 0, 0]}
+                  fill="hsl(var(--chart-1))"
+                  label={{ position: 'top', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
+                >
                   {data.map((entry) => (
                     <Cell key={entry.period} fill="hsl(var(--chart-1))" />
                   ))}

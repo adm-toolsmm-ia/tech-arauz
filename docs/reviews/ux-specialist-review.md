@@ -1,7 +1,7 @@
 # FASE 6 — UX/Design Specialist Review (Brownfield Discovery)
 
 **Document Status:** FASE 6 — Frontend/UX Validation ✅ APPROVED
-**Date:** March 6, 2026
+**Data:** 2026-03-06
 **Version:** 1.0
 **Reviewed By:** Uma (UX/Design Expert)
 **Framework:** AIOX Brownfield Discovery Workflow

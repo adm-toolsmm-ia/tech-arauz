@@ -2,7 +2,7 @@
 
 Data: 2026-03-06
 Versão: 1.0
-Base: Plano Dashboards 10/10, module-standards.md, design-system.md
+Base: module-standards.md (padrão obrigatório para novos módulos)
 
 ---
 
@@ -140,7 +140,5 @@ Utilizar `EmptyState` em todos os cenários:
 
 ## 5. Referências
 
-- [module-standards.md](./module-standards.md) — Blueprint obrigatório
-- [design-system.md](../design-system.md) — Tokens e componentes
-- [data-fetching-patterns.md](./data-fetching-patterns.md) — Padrões de dados
-- [SCHEMA.md](../../supabase/docs/SCHEMA.md) — Estrutura do banco (project_histories)
+- [module-standards.md](./module-standards.md) — Blueprint obrigatório para novos dashboards
+- [SCHEMA.md](../../supabase/docs/SCHEMA.md) — Estrutura do banco (project_histories, visualizações de dados)

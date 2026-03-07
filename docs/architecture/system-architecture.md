@@ -1,7 +1,7 @@
 # Tech Arauz — Brownfield System Architecture
 
 **Document Status:** FASE 1 — System Documentation
-**Date:** March 6, 2026
+**Data:** 2026-03-06
 **Version:** 1.0
 **Author:** Aria (Architect Agent)
 

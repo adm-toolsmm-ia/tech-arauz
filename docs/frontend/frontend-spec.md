@@ -1,6 +1,6 @@
 # Tech Arauz — Frontend/UX Specification
 
-**Date:** March 6, 2026  
+**Data:** 2026-03-06  
 **Version:** 1.0  
 **Author:** Uma (UX Design Expert)
 

@@ -1,6 +1,6 @@
 # Dados e schema — Tech Arauz
 
-Pasta canônica para documentação de **arquitetura de dados** e artefatos consumidos por engenharia de AI (AIOS, agentes, LLMs).
+Pasta canônica para documentação de **arquitetura de dados** e artefatos consumidos por engenharia de AI (AIOX, agentes, LLMs).
 
 ## Conteúdo
 
@@ -10,8 +10,8 @@ Pasta canônica para documentação de **arquitetura de dados** e artefatos cons
 
 ## Uso
 
-- **Arquitetura / AIOS:** Use esta pasta como fonte de verdade para estrutura de dados em docs de arquitetura e em prompts de agentes.
-- **Relatório de contexto IA (construção de agentes no front):** `docs/reports/portal-tech-ai-agents-context.md` — consolida schema, configurações, rotinas de agentes e uso de IA no portal; use como contexto para prompts e engenharia de agentes.
+- **Arquitetura / AIOX:** Use esta pasta como fonte de verdade para estrutura de dados em docs de arquitetura e em prompts de agentes AIOX.
+- **Contexto IA:** Referência de schema para construção de prompts de agentes (@dev, @architect, @analyst) que necessitam contexto de modelo de dados. Veja `frontend-spec.md` e `system-architecture.md` para contexto de engenharia de agentes.
 
 ## Atualização
 

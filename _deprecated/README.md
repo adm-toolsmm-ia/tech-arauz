@@ -50,6 +50,24 @@ _deprecated/.agent/agents/orchestrator.md
 
 ## Conteúdo Atual
 
+### Lote 2026-03 (AIOX Brownfield Cleanup - Docs Standardization)
+
+| Pasta | Conteúdo | Origem | Motivo |
+|-------|----------|--------|--------|
+| `docs-feb-27/` | 9 arquivos pré-Brownfield | `docs/` | Documentação descontinuada (Fev 2026, supersedida por AIOX FASES 1-9) |
+| `adr-old/` | 2 ADRs antigos (ADR-005, ADR-009) | `docs/architecture/adr/` | Serão substituídos por novos ADRs pós-AIOX |
+| `audits/` | 7 relatórios de auditoria/cleanup | `docs/` (raiz) | Metadocumentação de processo AIOX (CLEANUP, DOCS-AUDIT, etc.) |
+| `stories-old-cycles/` | Epics antigos descontinuados | `docs/stories/` | Ciclos de desenvolvimento encerrados (epic-4, epic-5, epic-ux, epic-technical-debt) |
+
+**Exemplo de conteúdo em `docs-feb-27/`:**
+- `data-fetching-patterns.md` — Integrado em `module-standards.md`
+- `design-system.md` — Supersedido por `frontend-spec.md` (AIOX FASE 3)
+- `PLANO-ACAO-10-10.md` — Pré-Brownfield, consolidado em technical-debt-assessment
+- `personas.md` — Pré-UX specialist review (não validado)
+- `portal-tech-ai-evolution-masterplan.md` — AIOS-era, deprecated 2026-03-06
+
+### Lote Anterior (AIOS Migration)
+
 | Arquivo                                   | Origem Original  | Substituído Por  |
 | ----------------------------------------- | ---------------- | ---------------- |
 | `.agent/agents/orchestrator.md`           | `.agent/agents/` | `@aios-master`   |

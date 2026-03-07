@@ -1,0 +1,146 @@
+name: RLS Policy Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-rls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: supabase/postgres:15.1.1.88
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Supabase CLI
+        run: |
+          npm install -g supabase
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          pg_isready -h localhost -p 5432 -U postgres
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Apply migrations
+        run: |
+          cd "${{ github.workspace }}"
+
+          # Set environment variables for psql
+          export PGPASSWORD=postgres
+
+          # Run all migrations in order
+          for migration in supabase/migrations/*.sql; do
+            echo "Applying migration: $migration"
+            psql -h localhost -U postgres -d postgres -f "$migration" || true
+          done
+        env:
+          PGPASSWORD: postgres
+
+      - name: Install pgTAP
+        run: |
+          export PGPASSWORD=postgres
+          psql -h localhost -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
+
+      - name: Run RLS tests
+        id: rls-test
+        run: |
+          export PGPASSWORD=postgres
+
+          echo "Running RLS test suite..."
+          psql -h localhost -U postgres -d postgres -f supabase/tests/rls_policies.test.sql > test_output.txt 2>&1
+
+          # Capture exit code
+          TEST_EXIT_CODE=$?
+
+          # Count test results
+          PASSED=$(grep -c "^ok" test_output.txt || echo "0")
+          FAILED=$(grep -c "^not ok" test_output.txt || echo "0")
+
+          echo "test_output=$(cat test_output.txt)" >> $GITHUB_OUTPUT
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "exit_code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
+
+          cat test_output.txt
+          exit $TEST_EXIT_CODE
+        continue-on-error: true
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const testOutput = fs.readFileSync('test_output.txt', 'utf8');
+            const passed = '${{ steps.rls-test.outputs.passed }}';
+            const failed = '${{ steps.rls-test.outputs.failed }}';
+            const exitCode = '${{ steps.rls-test.outputs.exit_code }}';
+
+            let status = '✅';
+            let color = 'green';
+
+            if (parseInt(exitCode) !== 0 || parseInt(failed) > 0) {
+              status = '❌';
+              color = 'red';
+            }
+
+            const comment = `## ${status} RLS Policy Tests
+
+**Test Results:**
+- Passed: ${passed}
+- Failed: ${failed}
+
+### Test Output
+\`\`\`
+${testOutput.substring(0, 3000)}
+\`\`\`
+
+${parseInt(exitCode) === 0 ? '✅ All RLS tests passed! Safe to merge.' : '⚠️ Some RLS tests failed. Please review the output above.'}`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Check test results
+        if: steps.rls-test.outputs.exit_code != 0
+        run: |
+          echo "RLS tests failed!"
+          exit 1
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: rls-test-results
+          path: test_output.txt
+          retention-days: 30

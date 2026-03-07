@@ -13,6 +13,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
+    "test:rls": "supabase test db -- supabase/tests/rls_policies.test.sql",
+    "test:rls:watch": "watch 'npm run test:rls' supabase/tests/",
     "typecheck": "tsc --noEmit",
     "a11y:check": "next lint --max-warnings=0",
     "audit:rls": "node ./scripts/ci/check-rls-audit.mjs",

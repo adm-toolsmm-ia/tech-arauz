@@ -5,6 +5,7 @@ import { Providers } from '@/components/providers';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { SkipNavigation } from '@/components/a11y/SkipNavigation';
 import { GlobalChatbot } from '@/components/chat/GlobalChatbot';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -38,6 +39,7 @@ export default function RootLayout({
           </ErrorBoundary>
           <GlobalChatbot />
         </Providers>
+        <SpeedInsights />
       </body>
     </html>
   );

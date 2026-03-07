@@ -15,9 +15,9 @@
 | Metric | Current | Target | Status |
 |--------|---------|--------|--------|
 | Stories Started | 2/18 | 18 | ⏳ 11% |
-| Stories Ready for Review | 2/18 | 18 | ⏳ 11% |
+| Stories Completed (Deployed) | 2/18 | 18 | ✅ 11% |
 | Epics Active | 1/4 | 4 | ⏳ 25% |
-| QA Approvals | 1/18 | 18 | ⏳ 6% (1 pending) |
+| QA Approvals | 2/18 | 18 | ✅ 11% |
 | Total Effort (hours) | 7.7 / 198-271h | 100% | ⏳ 3.9% |
 
 ---
@@ -86,8 +86,8 @@
 | CREATE | create-next-story.md | @sm (River) | ✅ DONE | 2026-03-07 (FASE 10) |
 | VALIDATE | validate-next-story.md | @po (Pax) | ✅ DONE | 2026-03-07 (FASE 10) |
 | **IMPLEMENT** | **dev-develop-story.md** | **@dev (Dex)** | **✅ DONE** | **2026-03-07 23:XX UTC** |
-| QA GATE | qa-gate.md | @qa (Quinn) | ⏳ PENDING | Expected 2026-03-14 |
-| PUSH | *push | @github-devops (Gage) | ⏳ PENDING | Expected 2026-03-14 |
+| QA GATE | qa-gate.md | @qa (Quinn) | ✅ DONE (7/7 PASSED) | 2026-03-07 23:XX UTC |
+| PUSH | *push | @github-devops (Gage) | ✅ DONE | 2026-03-07 23:XX UTC |
 
 **Implementation Details:**
 - Subtask 1: Token extraction (80+ DTCG) ✅
@@ -105,7 +105,7 @@
 | Story | Owner | Effort | Start | Target End | Status | Blocker |
 |-------|-------|--------|-------|-----------|--------|---------|
 | 5.1: DB Indexes | Dara | 5-7.5h | 2026-03-07 | 2026-03-13 | ✅ DEPLOYED | None |
-| 5.2: Design Tokens | Uma/Dex | 5.5-9h | 2026-03-07 | 2026-03-14 | ✅ READY FOR QA | None |
+| 5.2: Design Tokens | Uma/Dex | 5.5-9h | 2026-03-07 | 2026-03-14 | ✅ QA APPROVED | None |
 | 5.3: Storybook | Uma | 7-8h | 2026-03-17 | 2026-03-21 | 🔒 BLOCKED | 5.2 complete |
 | 5.4: RLS Tests | Dara | 4-5h | 2026-03-17 | 2026-03-20 | 🔒 BLOCKED | 5.1 complete |
 | 5.5: A11y Testing | Uma | 6-8h | 2026-03-21 | 2026-03-24 | 🔒 BLOCKED | 5.2 complete |

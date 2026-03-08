@@ -57,6 +57,21 @@ function createLog(
   return entry;
 }
 
+/**
+ * Type-safe error message extraction
+ * Handles Error instances, objects with message property, and unknown types
+ */
+function getErrorMessage(err: unknown, fallback = 'Erro desconhecido'): string {
+  if (err instanceof Error) {
+    return err.message;
+  }
+  if (err && typeof err === 'object' && 'message' in err) {
+    const msg = (err as Record<string, unknown>).message;
+    if (typeof msg === 'string') return msg;
+  }
+  return fallback;
+}
+
 // =============================================================================
 // API config loading from espaider_apis table
 // =============================================================================
@@ -345,7 +360,7 @@ export async function syncProjects(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Projetos', `Falha ao buscar dados: ${msg}`));
     errors++;
   }
@@ -502,7 +517,7 @@ export async function syncDeliveries(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Entregas', `Falha ao buscar dados: ${msg}`));
     errors++;
   }
@@ -639,7 +654,7 @@ export async function syncSchedules(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Cronogramas', `Falha ao buscar dados: ${msg}`));
     errors++;
   }
@@ -770,7 +785,7 @@ export async function syncRequirements(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Requisitos', `Falha ao buscar dados: ${msg}`));
     errors++;
   }
@@ -971,7 +986,7 @@ export async function executeSyncAll(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Geral', `Falha ao buscar ListaURLFilhos: ${msg}`));
   }
 
@@ -1138,7 +1153,7 @@ async function syncDeliveriesFromRegistros(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Entregas', `Falha no processamento: ${msg}`));
     errors++;
   }
@@ -1242,7 +1257,7 @@ async function syncSchedulesFromRegistros(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Cronogramas', `Falha no processamento: ${msg}`));
     errors++;
   }
@@ -1340,7 +1355,7 @@ async function syncRequirementsFromRegistros(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(createLog('error', 'Requisitos', `Falha no processamento: ${msg}`));
     errors++;
   }
@@ -1603,7 +1618,7 @@ async function syncHistoriesFromRegistros(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(
       createLog('error', 'Historicos', `Falha no processamento: ${msg}`, {
         stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
@@ -1741,7 +1756,7 @@ async function syncBudgetsFromRegistros(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(
       createLog('error', 'Orcamentos', `Falha no processamento: ${msg}`, {
         stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
@@ -1895,7 +1910,7 @@ async function syncApproversFromRegistros(
     const msg =
       err instanceof Error
         ? err.message
-        : (err as any)?.message || 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)';
+        : getErrorMessage(err, 'Falha de conexão/acesso à API do Espaider (Erro desconhecido)');
     logs.push(
       createLog('error', 'Aprovadores', `Falha no processamento: ${msg}`, {
         stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
@@ -2065,7 +2080,7 @@ async function syncTempoPermanenciaFromRegistros(
       logs.push(createLog('warn', 'TempoPermanencia', 'Nenhum registro a inserir após filtros'));
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : (err as any)?.message || 'Erro desconhecido';
+    const msg = getErrorMessage(err, 'Erro desconhecido');
     logs.push(
       createLog('error', 'TempoPermanencia', `Falha no processamento: ${msg}`, {
         stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
@@ -2323,7 +2338,7 @@ export async function syncHorasLancadas(
       logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro a inserir após filtros'));
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : (err as any)?.message || 'Erro desconhecido';
+    const msg = getErrorMessage(err, 'Erro desconhecido');
     logs.push(
       createLog('error', 'HorasLancadas', `Falha no processamento: ${msg}`, {
         stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,

@@ -139,7 +139,7 @@ export function getActiveFilterInfo(
 
       return `${def.label}: ${value}`;
     })
-    .filter(Boolean) as string[];
+    .filter((item): item is string => item != null);
 
   return {
     count: activeFilters.length,
@@ -250,7 +250,8 @@ export function restoreFilters(key: string, definitions: FilterDefinition[]): Fi
     const stored = localStorage.getItem(key);
     if (!stored) return resetFilters(definitions);
 
-    const filters = JSON.parse(stored) as FilterState;
+    const parsed = JSON.parse(stored);
+    const filters = typeof parsed === 'object' && parsed !== null ? (parsed as FilterState) : {};
     // Validate against definitions
     const validated: FilterState = {};
 

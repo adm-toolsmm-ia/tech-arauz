@@ -48,12 +48,24 @@ export const useNotificationStore = create<NotificationState>()(
     {
       name: 'tech-arauz-notifications',
       version: 1,
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: unknown, version: number): NotificationState => {
         // Handle any schema migrations here
         if (version === 1) {
-          return persistedState as NotificationState;
+          // Validate that persistedState has the expected structure
+          if (
+            persistedState &&
+            typeof persistedState === 'object' &&
+            'notifications' in persistedState &&
+            Array.isArray((persistedState as Record<string, unknown>).notifications)
+          ) {
+            return persistedState as NotificationState;
+          }
+          // Fallback to default state if validation fails
+          return { notifications: [] };
         }
-        return persistedState;
+        return persistedState && typeof persistedState === 'object' && 'notifications' in persistedState
+          ? (persistedState as NotificationState)
+          : { notifications: [] };
       },
     },
   ),

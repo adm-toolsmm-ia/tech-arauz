@@ -21,6 +21,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PeriodSelector } from '@/components/dashboard/PeriodSelector';
 import { TeamFilter } from '@/components/dashboard/TeamFilter';
+import { ResponsablePerformanceTable } from '@/components/dashboard/ResponsablePerformanceTable';
 import { usePerformanceData } from '@/hooks/usePerformanceData';
 import { isConsideredActive } from '@/lib/domain/project-health';
 import { computeDashboardKpis } from '@/lib/domain/kpi-calculations';
@@ -346,32 +347,13 @@ export function OperacoesContent({
               )}
             </div>
 
-            {/* Performance Table (Placeholder for Subtask 7.2.3) */}
+            {/* Performance Table (Subtask 7.2.3) */}
             <Card>
               <CardHeader>
                 <CardTitle>Desempenho por Responsável</CardTitle>
               </CardHeader>
               <CardContent>
-                {performanceLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    Carregando dados de performance...
-                  </div>
-                ) : performanceMetrics && performanceMetrics.length > 0 ? (
-                  <div className="text-sm text-muted-foreground">
-                    <p>{performanceMetrics.length} responsáveis encontrados</p>
-                    <p className="mt-2">
-                      A tabela interativa com sorting, paginação e export será implementada no Subtask
-                      7.2.3
-                    </p>
-                  </div>
-                ) : (
-                  <EmptyState
-                    title="Nenhum dado de performance"
-                    description="Não há dados para os filtros selecionados"
-                    icon={Timer}
-                    className="py-12"
-                  />
-                )}
+                <ResponsablePerformanceTable data={performanceMetrics || []} loading={performanceLoading} />
               </CardContent>
             </Card>
           </div>

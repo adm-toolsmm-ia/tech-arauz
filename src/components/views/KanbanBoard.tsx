@@ -91,7 +91,12 @@ function formatRelativeDate(dateStr: string): string {
 }
 
 // Default card content (Compact Director's View)
-function DefaultCardContent({ item }: { item: KanbanItem }) {
+
+interface DefaultCardContentProps {
+  item: KanbanItem;
+}
+
+const DefaultCardContent: React.FC<DefaultCardContentProps> = ({ item }) => {
   const lastMessage = item.metadata?.mensagem as string | undefined;
   const lastDate = item.metadata?.data_movimentacao as string | undefined;
 
@@ -148,7 +153,7 @@ function DefaultCardContent({ item }: { item: KanbanItem }) {
       </div>
     </div>
   );
-}
+};
 
 // Draggable Card Component (Cards 2.0)
 function DraggableCard({

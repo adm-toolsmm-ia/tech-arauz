@@ -73,7 +73,12 @@ const statusConfig = {
   },
 } as const;
 
-function TimelineItemCard({ item, index }: { item: TimelineItem; index: number }) {
+interface TimelineItemCardProps {
+  item: TimelineItem;
+  index: number;
+}
+
+const TimelineItemCard: React.FC<TimelineItemCardProps> = ({ item, index }) => {
   const config = statusConfig[item.status];
   const Icon = config.icon;
   const TypeIcon = item.type === 'schedule' ? Calendar : Package;
@@ -120,7 +125,7 @@ function TimelineItemCard({ item, index }: { item: TimelineItem; index: number }
       </div>
     </div>
   );
-}
+};
 
 export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ schedules, deliveries }) => {
   const timelineItems = useMemo(() => {

@@ -107,7 +107,11 @@ function TextWithTooltip({
   return <span className={className}>{displayText}</span>;
 }
 
-function ImpactBadge({ value }: { value: string }) {
+interface ImpactBadgeProps {
+  value: string;
+}
+
+const ImpactBadge: React.FC<ImpactBadgeProps> = ({ value }) => {
   const lower = value.toLowerCase();
   return (
     <Badge
@@ -124,7 +128,7 @@ function ImpactBadge({ value }: { value: string }) {
       {value}
     </Badge>
   );
-}
+};
 
 export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, projectIds }) => {
   const colorIdx = getProjectColorIndex(project.id, projectIds);

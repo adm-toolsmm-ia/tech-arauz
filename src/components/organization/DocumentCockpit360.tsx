@@ -12,16 +12,21 @@ interface DocumentCockpit360Props {
   onEdit?: () => void;
 }
 
-function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
+interface InfoFieldProps {
+  label: string;
+  value: string | null | undefined;
+}
+
+const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-medium">{value || '-'}</p>
     </div>
   );
-}
+};
 
-export function DocumentCockpit360({ document, processName, onEdit }: DocumentCockpit360Props) {
+export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({ document, processName, onEdit }) => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="principal" className="w-full">
@@ -103,4 +108,4 @@ export function DocumentCockpit360({ document, processName, onEdit }: DocumentCo
       </Tabs>
     </div>
   );
-}
+};

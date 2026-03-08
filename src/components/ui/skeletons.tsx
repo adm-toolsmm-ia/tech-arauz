@@ -1,7 +1,11 @@
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
-function SkeletonKPI({ className }: { className?: string }) {
+interface SkeletonKPIProps {
+  className?: string;
+}
+
+const SkeletonKPI: React.FC<SkeletonKPIProps> = ({ className }) => {
   return (
     <div className={cn('rounded-lg border bg-card p-6 shadow-soft', className)}>
       <div className="flex items-start justify-between">
@@ -14,9 +18,13 @@ function SkeletonKPI({ className }: { className?: string }) {
       </div>
     </div>
   );
+};
+
+interface SkeletonKanbanCardProps {
+  className?: string;
 }
 
-function SkeletonKanbanCard({ className }: { className?: string }) {
+const SkeletonKanbanCard: React.FC<SkeletonKanbanCardProps> = ({ className }) => {
   return (
     <div className={cn('rounded-lg border border-border/40 bg-card p-3', className)}>
       <div className="space-y-2">
@@ -46,9 +54,13 @@ function SkeletonKanbanCard({ className }: { className?: string }) {
       </div>
     </div>
   );
+};
+
+interface SkeletonTableRowProps {
+  className?: string;
 }
 
-function SkeletonTableRow({ className }: { className?: string }) {
+const SkeletonTableRow: React.FC<SkeletonTableRowProps> = ({ className }) => {
   return (
     <tr className={cn('border-b', className)}>
       <td className="px-3 py-3">
@@ -84,6 +96,6 @@ function SkeletonTableRow({ className }: { className?: string }) {
       </td>
     </tr>
   );
-}
+};
 
 export { SkeletonKPI, SkeletonKanbanCard, SkeletonTableRow };

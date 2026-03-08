@@ -7,7 +7,12 @@ import { useEffect } from 'react';
  * automaticamente no console do browser.
  * NÃO incluído em builds de produção.
  */
-export function AxeProvider({ children }: { children: React.ReactNode }) {
+
+interface AxeProviderProps {
+  children: React.ReactNode;
+}
+
+export const AxeProvider: React.FC<AxeProviderProps> = ({ children }) => {
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
       import('@axe-core/react').then(({ default: axe }) => {
@@ -21,4 +26,4 @@ export function AxeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return <>{children}</>;
-}
+};

@@ -13,16 +13,21 @@ interface AreaCockpit360Props {
   onEdit?: () => void;
 }
 
-function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
+interface InfoFieldProps {
+  label: string;
+  value: string | null | undefined;
+}
+
+const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-medium">{value || '-'}</p>
     </div>
   );
-}
+};
 
-export function AreaCockpit360({ area, nuclei, processes, onEdit }: AreaCockpit360Props) {
+export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({ area, nuclei, processes, onEdit }) => {
   const rolesDisplay =
     area.responsible_roles?.length > 0 ? area.responsible_roles.join(', ') : 'Não definido';
 
@@ -159,4 +164,4 @@ export function AreaCockpit360({ area, nuclei, processes, onEdit }: AreaCockpit3
       </Tabs>
     </div>
   );
-}
+};

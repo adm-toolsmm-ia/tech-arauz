@@ -11,14 +11,19 @@ interface ServiceCockpit360Props {
   onEdit?: () => void;
 }
 
-function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
+interface InfoFieldProps {
+  label: string;
+  value: string | null | undefined;
+}
+
+const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-medium">{value || '-'}</p>
     </div>
   );
-}
+};
 
 export const ServiceCockpit360: React.FC<ServiceCockpit360Props> = ({ service, onEdit }) => {
   return (

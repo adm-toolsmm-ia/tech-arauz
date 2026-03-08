@@ -38,7 +38,11 @@ function applyTheme(isDark: boolean) {
   }
 }
 
-export function DarkModeProvider({ children }: { children: React.ReactNode }) {
+interface DarkModeProviderProps {
+  children: React.ReactNode;
+}
+
+export const DarkModeProvider: React.FC<DarkModeProviderProps> = ({ children }) => {
   const [isDark, setIsDark] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -100,7 +104,7 @@ export function DarkModeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return <DarkModeContext.Provider value={value}>{children}</DarkModeContext.Provider>;
-}
+};
 
 export function useDarkMode(): DarkModeContextType {
   const context = React.useContext(DarkModeContext);

@@ -11,16 +11,21 @@ interface DocumentCockpitProps {
   onEdit?: () => void;
 }
 
-function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
+interface InfoFieldProps {
+  label: string;
+  value: string | null | undefined;
+}
+
+const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-medium">{value || '-'}</p>
     </div>
   );
-}
+};
 
-export function DocumentCockpit({ document, onEdit }: DocumentCockpitProps) {
+export const DocumentCockpit: React.FC<DocumentCockpitProps> = ({ document, onEdit }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -56,4 +61,4 @@ export function DocumentCockpit({ document, onEdit }: DocumentCockpitProps) {
       </Link>
     </div>
   );
-}
+};

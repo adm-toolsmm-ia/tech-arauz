@@ -7,7 +7,11 @@ import { DarkModeProvider } from './providers/DarkModeProvider';
 import { NotificationTester } from './notifications/NotificationTester';
 import { AxeProvider } from './providers/AxeProvider';
 
-export function Providers({ children }: { children: React.ReactNode }) {
+interface ProvidersProps {
+  children: React.ReactNode;
+}
+
+export const Providers: React.FC<ProvidersProps> = ({ children }) => {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -36,4 +40,4 @@ export function Providers({ children }: { children: React.ReactNode }) {
       </QueryClientProvider>
     </DarkModeProvider>
   );
-}
+};

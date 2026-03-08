@@ -1,0 +1,66 @@
+# Tech Arauz Design System
+
+Welcome to the Tech Arauz component library! 🎨
+
+This Storybook catalogs all 109 components organized by Atomic Design methodology:
+
+- **Atoms** (20): Base components — Button, Input, Label, Badge, etc.
+- **Molecules** (35): Simple combinations — FormField, Card, ListItem, etc.
+- **Organisms** (30): Complex sections — Modal, Table, Header, Sidebar, etc.
+- **Templates** (15): Page layouts — Dashboard, ProjectView, Settings, etc.
+- **Pages** (9): Specific instances — Dashboard, Projects, Profile, etc.
+
+## Using Design Tokens
+
+All components use centralized design tokens from `design/tokens.json`:
+
+- **Colors**: 44 tokens (primary, secondary, semantic, grayscale)
+- **Typography**: 17 tokens (fonts, sizes, weights, line-heights)
+- **Spacing**: 8 tokens (xs to 3xl, 4px to 48px)
+- **Borders**: 9 tokens (radii + widths)
+- **Shadows**: 5 tokens (sm to xl)
+
+## Navigation
+
+Browse the stories in the sidebar to explore:
+1. **Atoms** — Individual components
+2. **Molecules** — Component combinations
+3. **Organisms** — Complex UI sections
+4. **DesignTokens** — Token showcase with examples
+5. **Templates** & **Pages** — Full layouts
+
+## Testing & Quality
+
+Each story includes:
+- **Props documentation** (TypeScript)
+- **Interactive controls** (Storybook Knobs)
+- **Accessibility validation** (WCAG AA minimum)
+- **Visual regression detection** (ready for Chromatic)
+
+## Contribution
+
+To add new component stories:
+
+```bash
+# Create story file
+touch src/stories/atoms/YourComponent.stories.tsx
+
+# Story template
+import { Meta, StoryObj } from '@storybook/react';
+import { YourComponent } from '@/components/ui/YourComponent';
+
+const meta: Meta<typeof YourComponent> = {
+  title: 'Atoms/YourComponent',
+  component: YourComponent,
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: { /* props */ },
+};
+```
+
+Happy designing! ✨

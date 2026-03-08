@@ -379,7 +379,7 @@ tenants
 | Processos | — | Lista (Card + divide-y) | SplitView + ProcessCockpit |
 | Rotinas | — | Lista (Card + divide-y) | SplitView + RoutineCockpit360 |
 | Atividades | — | Lista (Card + divide-y) | SplitView + cockpit inline |
-| Recursos | — | — | Tabs (sem SplitView/cockpit; CRUD apenas via actions, UI em desenvolvimento) |
+| Recursos | — | Lista | Cards |
 
 ---
 
@@ -502,40 +502,43 @@ Comparação entre a estrutura de dados (schema) e o que o frontend reflete.
 | org_routines | rotinas, processos/[id]/rotinas | sim | sim | sim | |
 | org_activities | processos/.../atividades | sim | sim | sim | |
 
-### 11.2 Tabelas com backend pronto, UI incompleta
+### 11.2 Tabelas com cobertura completa (CRUD + UI) — Recursos
 
-| Tabela | Actions | UI | Gap |
-|--------|---------|-----|-----|
-| org_systems | create/update/delete | Cockpit 360 (read) na Empresa | Recursos: sem lista, sem formulários CRUD |
-| org_suppliers | create/update/delete | Cockpit 360 (read) na Empresa | Recursos: sem lista, sem formulários CRUD |
-| org_services | create/update/delete | Cockpit 360 (read) na Empresa | Recursos: sem lista, sem formulários CRUD |
-| org_documents | create/update/delete | Cockpit 360 (read) na Empresa | Recursos: sem lista, sem formulários CRUD |
-| org_system_resources | create/update/delete | SystemCockpit360 exibe lista (read) | Sem botão/form para criar/editar/excluir recursos |
+| Tabela | Página principal | Create | Update | Delete | Observação |
+|--------|------------------|--------|--------|--------|------------|
+| org_systems | recursos, empresa | sim | sim | sim | Lista/Cards + SplitView + Cockpit 360 |
+| org_suppliers | recursos, empresa | sim | sim | sim | Idem |
+| org_services | recursos, empresa | sim | sim | sim | Idem |
+| org_documents | recursos, empresa | sim | sim | sim | Idem |
+| org_system_resources | SystemCockpit360 (Empresa + Recursos) | sim | sim | sim | Tab Recursos no cockpit |
 
-### 11.3 Tabelas sem representação no frontend
+### 11.3 Tabelas N:N — Cobertura
 
 | Tabela | Uso no schema | Frontend |
 |--------|---------------|----------|
-| org_process_systems | N:N processo ↔ sistema | Não utilizado — nenhuma query, nenhuma UI |
-| org_activity_documents | N:N atividade ↔ documento | Não utilizado — nenhuma query, nenhuma UI |
-| org_company_types | Tipos de empresa (bootstrap) | Não utilizado — runBootstrapAction usa dados hardcoded |
-| org_bootstrap_templates | Templates por tipo de empresa | Não utilizado — runBootstrapAction não lê esta tabela |
+| org_process_systems | N:N processo ↔ sistema | **Implementado** — ProcessCockpit360 tab Sistemas; Empresa ProcessCockpit; add/remove via actions |
+| org_activity_documents | N:N atividade ↔ documento | **Implementado** — ActivityCockpit com link/unlink; addActivityDocumentAction, removeActivityDocumentAction |
 
-### 11.4 Empresa: vínculos somente leitura
+### 11.4 Empresa: vínculos com CRUD completo
 
-Na página Empresa, os vínculos **sistemas, fornecedores, serviços, documentos** são exibidos em cockpit (read-only). Não há:
+Na página Empresa, os vínculos **sistemas, fornecedores, serviços, documentos** têm:
 
-- Formulário para criar Sistema, Fornecedor, Serviço ou Documento
-- Botão Editar/Excluir nos cockpits SystemCockpit360, SupplierCockpit360, ServiceCockpit360, DocumentCockpit360 (onEdit não é passado)
+- Formulário para criar (openResourceCreate) e editar (handleResourceCreateOrUpdate)
+- Botões Editar/Excluir nos cockpits (onEdit, onDelete passados)
+- SystemCockpit360 com CRUD de recursos de sistema (onAddResource, onEditResource, onDeleteResource)
 
-Apenas **Áreas** e **Núcleos** têm formulários de criação na Empresa.
+**Áreas** e **Núcleos** também têm formulários de criação na Empresa.
 
-### 11.5 Resumo de lacunas
+### 11.5 Tabelas sem integração no frontend
+
+| Tabela | Uso no schema | Frontend |
+|--------|---------------|----------|
+| org_company_types | Tipos de empresa (bootstrap) | runBootstrapAction usa slug hardcoded; tabela populada pelo seed 061 |
+| org_bootstrap_templates | Templates por tipo de empresa | runBootstrapAction não lê; usa ESCRITORIO_JURIDICO_AREAS hardcoded |
+
+### 11.6 Lacunas restantes
 
 | Lacuna | Impacto |
 |--------|---------|
-| Recursos sem CRUD UI | Sistemas, fornecedores, serviços e documentos só existem via seed; usuário não pode cadastrar |
-| org_system_resources sem CRUD UI | Recursos de sistema exibidos, mas não editáveis |
-| org_process_systems ignorado | Relação processo ↔ sistema não modelada na UI |
-| org_activity_documents ignorado | Relação atividade ↔ documento não modelada na UI |
-| org_company_types / org_bootstrap_templates | Bootstrap usa dados fixos; tabelas não integradas |
+| org_company_types / org_bootstrap_templates | Bootstrap usa dados fixos; tabelas não integradas ao runBootstrapAction |
+| Processos/Rotinas sem hooks de filtro | Filtros e ordenação via useAreasFilters/useNucleosFilters; Processos e Rotinas não têm useProcessosFilters/useRotinasFilters dedicados |

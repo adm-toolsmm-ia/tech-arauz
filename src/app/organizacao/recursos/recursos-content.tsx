@@ -368,9 +368,10 @@ export function RecursosContent({
           toast.error(result.message);
         }
       } else if ('description' in itemToDelete && !('associated_process_id' in itemToDelete)) {
-        const result = await deleteServiceAction(itemToDelete.id);
+        const service = itemToDelete as any;
+        const result = await deleteServiceAction(service.id);
         if (result.success) {
-          setServices((prev) => prev.filter((s) => s.id !== itemToDelete.id));
+          setServices((prev) => prev.filter((s) => s.id !== service.id));
           setSelectedItem(null);
           toast.success(result.message);
         } else {
@@ -468,6 +469,14 @@ export function RecursosContent({
     services.length > 0 ||
     documents.length > 0;
 
+  const selectItem = React.useCallback(
+    (item: RecursosEntity) => {
+      setSelectedItem(item);
+      setSelectedTab(activeTab);
+    },
+    [activeTab],
+  );
+
   const renderList = (
     items: RecursosEntity[],
     icon: React.ElementType,
@@ -485,15 +494,11 @@ export function RecursosContent({
               key={item.id}
               role="button"
               tabIndex={0}
-              onClick={() => {
-                setSelectedItem(item);
-                setSelectedTab(activeTab);
-              }}
+              onClick={() => selectItem(item)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  setSelectedItem(item);
-                  setSelectedTab(activeTab);
+                  selectItem(item);
                 }
               }}
               className="flex cursor-pointer items-center gap-3 p-4 transition-colors hover:bg-muted/50"
@@ -515,6 +520,59 @@ export function RecursosContent({
       </CardContent>
     </Card>
   );
+
+  const renderCards = (
+    items: RecursosEntity[],
+    icon: React.ElementType,
+    iconBg: string,
+  ) => (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {items.length === 0 ? (
+        <div className="col-span-full rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+          Nenhum resultado encontrado.
+        </div>
+      ) : (
+        items.map((item) => (
+          <Card
+            key={item.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => selectItem(item)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                selectItem(item);
+              }
+            }}
+            className="cursor-pointer transition-colors hover:bg-muted/50"
+          >
+            <CardContent className="flex flex-col gap-3 p-4">
+              <div
+                className={`flex size-12 items-center justify-center rounded-xl ${iconBg}`}
+              >
+                {React.createElement(icon, { className: 'size-6 text-primary' })}
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium">{item.name}</p>
+                <p className="line-clamp-2 text-sm text-muted-foreground">
+                  {item.description ?? '-'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))
+      )}
+    </div>
+  );
+
+  const renderView = (
+    items: RecursosEntity[],
+    icon: React.ElementType,
+    iconBg: string,
+  ) =>
+    filterState.viewMode === 'cards'
+      ? renderCards(items, icon, iconBg)
+      : renderList(items, icon, iconBg);
 
   const renderCockpit = () => {
     if (!selectedItem || !selectedTab) return null;
@@ -596,6 +654,21 @@ export function RecursosContent({
     }
   };
 
+  const getNewButtonLabel = () => {
+    switch (activeTab) {
+      case 'sistemas':
+        return 'Novo Sistema';
+      case 'fornecedores':
+        return 'Novo Fornecedor';
+      case 'servicos':
+        return 'Novo Serviço';
+      case 'documentos':
+        return 'Novo Documento';
+      default:
+        return 'Novo';
+    }
+  };
+
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
@@ -608,7 +681,7 @@ export function RecursosContent({
         </div>
         <Button className="gap-2" onClick={openCreate}>
           <Plus className="h-4 w-4" />
-          Novo
+          {getNewButtonLabel()}
         </Button>
       </div>
 
@@ -663,7 +736,7 @@ export function RecursosContent({
               <TabsContent value="sistemas" className="mt-4">
                 <div className="flex gap-6">
                   <div className="min-w-0 flex-1">
-                    {renderList(
+                    {renderView(
                       filterState.filteredData as OrgSystem[],
                       Monitor,
                       'bg-amber-500/10',
@@ -693,7 +766,7 @@ export function RecursosContent({
               <TabsContent value="fornecedores" className="mt-4">
                 <div className="flex gap-6">
                   <div className="min-w-0 flex-1">
-                    {renderList(
+                    {renderView(
                       filterState.filteredData as OrgSupplier[],
                       Truck,
                       'bg-emerald-500/10',
@@ -727,7 +800,7 @@ export function RecursosContent({
               <TabsContent value="servicos" className="mt-4">
                 <div className="flex gap-6">
                   <div className="min-w-0 flex-1">
-                    {renderList(
+                    {renderView(
                       filterState.filteredData as OrgService[],
                       Wrench,
                       'bg-purple-500/10',
@@ -761,7 +834,7 @@ export function RecursosContent({
               <TabsContent value="documentos" className="mt-4">
                 <div className="flex gap-6">
                   <div className="min-w-0 flex-1">
-                    {renderList(
+                    {renderView(
                       filterState.filteredData as OrgDocument[],
                       FileText,
                       'bg-cyan-500/10',

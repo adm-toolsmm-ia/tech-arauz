@@ -423,6 +423,7 @@ export async function createSystemAction(
 
   if (error) return { success: false, message: `Erro ao criar sistema: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return {
     success: true,
     message: `Sistema "${created.name}" criado!`,
@@ -446,6 +447,7 @@ export async function updateSystemAction(
 
   if (error) return { success: false, message: `Erro ao atualizar sistema: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: 'Sistema atualizado!', data: updated as OrgSystem };
 }
 
@@ -462,6 +464,7 @@ export async function deleteSystemAction(id: string): Promise<OrgActionResult> {
 
   if (error) return { success: false, message: `Erro ao excluir sistema: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: `Sistema "${existing?.name ?? 'N/A'}" excluído!` };
 }
 
@@ -483,6 +486,7 @@ export async function createSystemResourceAction(
 
   if (error) return { success: false, message: `Erro ao criar recurso: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return {
     success: true,
     message: `Recurso "${created.name}" criado!`,
@@ -506,6 +510,7 @@ export async function updateSystemResourceAction(
 
   if (error) return { success: false, message: `Erro ao atualizar recurso: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: 'Recurso atualizado!', data: updated as OrgSystemResource };
 }
 
@@ -522,6 +527,7 @@ export async function deleteSystemResourceAction(id: string): Promise<OrgActionR
 
   if (error) return { success: false, message: `Erro ao excluir recurso: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: `Recurso "${existing?.name ?? 'N/A'}" excluído!` };
 }
 
@@ -543,6 +549,7 @@ export async function createSupplierAction(
 
   if (error) return { success: false, message: `Erro ao criar fornecedor: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return {
     success: true,
     message: `Fornecedor "${created.name}" criado!`,
@@ -566,6 +573,7 @@ export async function updateSupplierAction(
 
   if (error) return { success: false, message: `Erro ao atualizar fornecedor: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: 'Fornecedor atualizado!', data: updated as OrgSupplier };
 }
 
@@ -582,6 +590,7 @@ export async function deleteSupplierAction(id: string): Promise<OrgActionResult>
 
   if (error) return { success: false, message: `Erro ao excluir fornecedor: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: `Fornecedor "${existing?.name ?? 'N/A'}" excluído!` };
 }
 
@@ -603,6 +612,7 @@ export async function createServiceAction(
 
   if (error) return { success: false, message: `Erro ao criar serviço: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return {
     success: true,
     message: `Serviço "${created.name}" criado!`,
@@ -626,6 +636,7 @@ export async function updateServiceAction(
 
   if (error) return { success: false, message: `Erro ao atualizar serviço: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: 'Serviço atualizado!', data: updated as OrgService };
 }
 
@@ -642,6 +653,7 @@ export async function deleteServiceAction(id: string): Promise<OrgActionResult> 
 
   if (error) return { success: false, message: `Erro ao excluir serviço: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: `Serviço "${existing?.name ?? 'N/A'}" excluído!` };
 }
 
@@ -663,6 +675,7 @@ export async function createOrgDocumentAction(
 
   if (error) return { success: false, message: `Erro ao criar documento: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return {
     success: true,
     message: `Documento "${created.name}" criado!`,
@@ -686,6 +699,7 @@ export async function updateOrgDocumentAction(
 
   if (error) return { success: false, message: `Erro ao atualizar documento: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: 'Documento atualizado!', data: updated as OrgDocument };
 }
 
@@ -702,6 +716,7 @@ export async function deleteOrgDocumentAction(id: string): Promise<OrgActionResu
 
   if (error) return { success: false, message: `Erro ao excluir documento: ${error.message}` };
   revalidatePath('/organizacao/recursos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: `Documento "${existing?.name ?? 'N/A'}" excluído!` };
 }
 

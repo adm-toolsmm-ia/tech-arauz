@@ -166,8 +166,52 @@
 | Subtask | Status | Timeline | Components | LOC |
 |---------|--------|----------|-----------|-----|
 | 7.3.1 | ✅ COMPLETE | 4h ✓ | 4 charts | 800 |
-| 7.3.2 | ✅ COMPLETE | 1h ✓ | 2 new + 1 updated | 450 |
-| **Total Used** | **5h** | **20h budget** | **6 components** | **1,250 LOC** |
-| **Remaining** | **15h** | **Subtask 7.3.3-4** | | |
+| 7.3.2 | ✅ COMPLETE | 1.5h ✓ | 3 new + 1 updated | 570 |
+| **Total Used** | **5.5h** | **20h budget** | **7 components** | **1,370 LOC** |
+| **Remaining** | **14.5h** | **Subtask 7.3.3-4** | | |
 
-**Next:** Subtask 7.3.3 (Advanced features: drill-down export + filters) - 6-7h estimated
+**Commit:** `cfb90ec` feat(epic-7-a): Story 7.3 Phase 2 COMPLETE - Dashboard Analytics
+
+### Subtask 7.3.2 Final Implementation Summary:
+
+**Files Created:**
+1. `export-utils.ts` (120 LOC)
+   - `exportToCSV()`: Detailed CSV with metrics (Responsável, Movimentações, Tempo Médio, etc.)
+   - `exportToPDF()`: HTML-based PDF using html2pdf.js with formatted table layout
+   - `generateFilename()`: Consistent naming with date/person
+
+2. `ResponsableDetailModal.tsx` (250 LOC) - **Updated with export buttons**
+   - KPI summary card with gradient background
+   - Efficiency metrics with progress bar
+   - 3 performance insights (Conclusão, Ritmo, Velocidade)
+   - Date range filter (week/month/3months/year) for timeline
+   - **NEW:** CSV export button (Download icon)
+   - **NEW:** PDF export button (FileText icon)
+   - Responsive: KPI grid `grid-cols-2 md:grid-cols-4`
+
+3. `DetailMetricsChart.tsx` (200 LOC)
+   - LineChart: Movements over time with dual Y-axis (movements/duration)
+   - BarChart: Movements vs Completed comparison
+   - Summary stats: Avg movements, total completed, completion rate
+   - Date range filtering (dynamic data from person metrics)
+
+4. **Integration:**
+   - ResponsablePerformanceTable: Row click → Modal opens
+   - Keyboard support: Enter/Space to trigger modal
+   - All person data passed to modal
+
+**Quality Metrics:**
+- ✅ TypeScript: 0 errors (fixed html2pdf options type)
+- ✅ Code quality: 0 console logs, debuggers, TODOs
+- ✅ Responsive: Breakpoints validated (mobile → tablet → desktop)
+- ✅ Interaction: Full flow tested (click → modal → export → close)
+- ✅ Dark mode: All elements support dark: classes
+- ✅ Accessibility: ARIA labels, keyboard nav, focus management
+
+**Test Results:**
+- Dev server: ✅ Running (localhost:3001)
+- Responsive grid: ✅ Validated
+- Interaction flow: ✅ Complete
+- Export functions: ✅ Ready (CSV + PDF)
+
+**Next:** Subtask 7.3.3 (Advanced features: additional drill-down analytics, custom filters, performance optimization) - estimated 6-7h

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table';
 import type { PerformanceMetrics } from '@/app/dashboard/operacoes/actions';
 import { ResponsableDetailModal } from './ResponsableDetailModal';
+import { AdvancedFilters, type AdvancedFilterState } from './AdvancedFilters';
 
 type SortField = keyof PerformanceMetrics;
 type SortDirection = 'asc' | 'desc';
@@ -42,6 +43,11 @@ export function ResponsablePerformanceTable({
   const [currentPage, setCurrentPage] = React.useState(1);
   const [selectedPerson, setSelectedPerson] = React.useState<PerformanceMetrics | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [filters, setFilters] = React.useState<AdvancedFilterState>({
+    status: 'all',
+    completionRange: 'all',
+    searchTerm: '',
+  });
 
   const handleRowClick = (person: PerformanceMetrics) => {
     setSelectedPerson(person);
@@ -53,9 +59,60 @@ export function ResponsablePerformanceTable({
     setSelectedPerson(null);
   };
 
+  // Calculate performance status based on team averages
+  const getPerformanceStatus = React.useCallback((person: PerformanceMetrics, teamAvg: number) => {
+    if (teamAvg === 0) return 'above-avg';
+
+    const delta = ((person.total_movements - teamAvg) / teamAvg) * 100;
+    if (delta > 20) return 'high';
+    if (delta > 0) return 'above-avg';
+    return 'at-risk';
+  }, []);
+
+  // Calculate completion rate percentage
+  const getCompletionRate = React.useCallback((person: PerformanceMetrics): number => {
+    if (person.total_movements === 0) return 0;
+    return Math.round((person.projects_completed / person.total_movements) * 100);
+  }, []);
+
+  // Filter data based on advanced filters
+  const filteredData = React.useMemo(() => {
+    const teamAvg = data.length > 0
+      ? Math.round(data.reduce((sum, d) => sum + d.total_movements, 0) / data.length)
+      : 0;
+
+    return data.filter((person) => {
+      // Status filter
+      if (filters.status !== 'all') {
+        const status = getPerformanceStatus(person, teamAvg);
+        if (status !== filters.status) return false;
+      }
+
+      // Completion rate filter
+      if (filters.completionRange !== 'all') {
+        const completionRate = getCompletionRate(person);
+        const [minRate, maxRate] = filters.completionRange
+          .split('-')
+          .map((v) => parseInt(v, 10));
+
+        if (completionRate < minRate || completionRate > maxRate) return false;
+      }
+
+      // Search term filter
+      if (filters.searchTerm) {
+        const searchLower = filters.searchTerm.toLowerCase();
+        if (!person.responsible.toLowerCase().includes(searchLower)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [data, filters, getPerformanceStatus, getCompletionRate]);
+
   // Sort data
   const sortedData = React.useMemo(() => {
-    const sorted = [...data].sort((a, b) => {
+    const sorted = [...filteredData].sort((a, b) => {
       const aValue = a[sortField];
       const bValue = b[sortField];
 
@@ -68,7 +125,7 @@ export function ResponsablePerformanceTable({
       return sortDirection === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
     });
     return sorted;
-  }, [data, sortField, sortDirection]);
+  }, [filteredData, sortField, sortDirection]);
 
   // Paginate data
   const totalPages = Math.ceil(sortedData.length / ITEMS_PER_PAGE);
@@ -131,6 +188,14 @@ export function ResponsablePerformanceTable({
 
   return (
     <div className="space-y-4">
+      {/* Advanced Filters */}
+      <AdvancedFilters
+        value={filters}
+        onChange={setFilters}
+        activeCount={filteredData.length}
+        totalCount={data.length}
+      />
+
       {/* Export Button */}
       <div className="flex justify-end">
         <Button

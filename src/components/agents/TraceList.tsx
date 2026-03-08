@@ -55,7 +55,7 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export function TraceList({ traces, onTraceClick, className }: TraceListProps) {
+export const TraceList: React.FC<TraceListProps> = ({ traces, onTraceClick, className }) => {
   if (traces.length === 0) {
     return (
       <div className="py-12 text-center text-sm text-muted-foreground">
@@ -137,4 +137,4 @@ export function TraceList({ traces, onTraceClick, className }: TraceListProps) {
       })}
     </div>
   );
-}
+};

@@ -49,12 +49,12 @@ const statusBadgeColor = {
   deprecated: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
 };
 
-export function AgentCockpit({
+export const AgentCockpit: React.FC<AgentCockpitProps> = ({
   agent,
   agentTypes = [],
   providers = [],
   onEdit,
-}: AgentCockpitProps) {
+}) => {
   const selectedType = useMemo(
     () => agentTypes.find((t) => t.id === agent.agentTypeId),
     [agent.agentTypeId, agentTypes],
@@ -350,4 +350,4 @@ export function AgentCockpit({
       </Tabs>
     </div>
   );
-}
+};

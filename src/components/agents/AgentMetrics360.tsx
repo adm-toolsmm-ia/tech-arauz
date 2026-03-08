@@ -45,7 +45,7 @@ interface AgentMetrics360Props {
   agentId: string;
 }
 
-export function AgentMetrics360({ agentId }: AgentMetrics360Props) {
+export const AgentMetrics360: React.FC<AgentMetrics360Props> = ({ agentId }) => {
   const [selectedDateRange, setSelectedDateRange] = useState<'7d' | '30d' | '90d'>('7d');
   const [data, setData] = useState<MetricsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -252,4 +252,4 @@ export function AgentMetrics360({ agentId }: AgentMetrics360Props) {
       </Card>
     </div>
   );
-}
+};

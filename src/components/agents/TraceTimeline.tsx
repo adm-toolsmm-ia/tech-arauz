@@ -28,7 +28,7 @@ const stepLabels: Record<string, string> = {
   format_output: 'Formatar Saída',
 };
 
-export function TraceTimeline({ steps, className }: TraceTimelineProps) {
+export const TraceTimeline: React.FC<TraceTimelineProps> = ({ steps, className }) => {
   return (
     <div className={cn('space-y-0', className)}>
       {steps.map((step, idx) => {
@@ -82,4 +82,4 @@ export function TraceTimeline({ steps, className }: TraceTimelineProps) {
       })}
     </div>
   );
-}
+};

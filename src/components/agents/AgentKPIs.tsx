@@ -9,7 +9,7 @@ interface AgentKPIsProps {
   agents: UIAgent[];
 }
 
-export function AgentKPIs({ agents }: AgentKPIsProps) {
+export const AgentKPIs: React.FC<AgentKPIsProps> = ({ agents }) => {
   const totalAgents = agents.length;
   const publishedAgents = agents.filter((a) => a.status === 'published').length;
   const draftAgents = agents.filter((a) => a.status === 'draft').length;
@@ -28,4 +28,4 @@ export function AgentKPIs({ agents }: AgentKPIsProps) {
       <KPICard title="Execuções" value={totalExecutions} icon={Zap} subtitle="Total do período" />
     </div>
   );
-}
+};

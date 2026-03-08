@@ -40,13 +40,13 @@ const statusColor = {
   deprecated: 'text-red-700 bg-red-100 dark:bg-red-950 dark:text-red-200',
 };
 
-export function AgentEditSheet({
+export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
   agent,
   isOpen,
   providers,
   onClose,
   onSaved,
-}: AgentEditSheetProps) {
+}) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
@@ -555,4 +555,4 @@ export function AgentEditSheet({
       </SheetContent>
     </Sheet>
   );
-}
+};

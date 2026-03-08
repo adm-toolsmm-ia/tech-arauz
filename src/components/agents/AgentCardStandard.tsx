@@ -35,7 +35,7 @@ const getStatusStyle = (status: string) => {
   return statusStyles[status] || statusStyles.draft;
 };
 
-export function AgentCard({ agent, isSelected, onSelect, onEdit, onDelete }: AgentCardProps) {
+export const AgentCard: React.FC<AgentCardProps> = ({ agent, isSelected, onSelect, onEdit, onDelete }) => {
   const statusStyle = getStatusStyle(agent.status);
 
   return (
@@ -132,4 +132,4 @@ export function AgentCard({ agent, isSelected, onSelect, onEdit, onDelete }: Age
       </div>
     </div>
   );
-}
+};

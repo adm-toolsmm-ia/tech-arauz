@@ -24,7 +24,7 @@ interface AgentCardProps {
   onDuplicate?: () => void;
 }
 
-export function AgentCard({
+export const AgentCard: React.FC<AgentCardProps> = ({
   agent,
   agentTypeName,
   toolsCount = 0,
@@ -33,7 +33,7 @@ export function AgentCard({
   onEdit,
   onDelete,
   onDuplicate,
-}: AgentCardProps) {
+}) => {
   const statusColor = {
     draft: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
     published: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -194,4 +194,4 @@ export function AgentCard({
       </CardContent>
     </Card>
   );
-}
+};

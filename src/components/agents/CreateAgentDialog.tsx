@@ -35,11 +35,11 @@ interface CreateAgentDialogProps {
   isLoading?: boolean;
 }
 
-export function CreateAgentDialog({
+export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
   providers: initialProviders = [],
   onSuccess,
   isLoading: externalLoading = false,
-}: CreateAgentDialogProps) {
+}) => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -623,4 +623,4 @@ export function CreateAgentDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};

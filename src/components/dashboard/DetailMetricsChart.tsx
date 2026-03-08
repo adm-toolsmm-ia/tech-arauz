@@ -14,10 +14,11 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { PerformanceMetrics } from '@/app/dashboard/operacoes/actions';
+import type { DateRange } from './DateRangeFilter';
 
 interface DetailMetricsChartProps {
   person: PerformanceMetrics;
-  dateRange: 'week' | 'month' | '3months' | 'year';
+  dateRange: DateRange;
 }
 
 /**
@@ -32,16 +33,27 @@ interface DetailMetricsChartProps {
  */
 export function DetailMetricsChart({
   person,
-  dateRange = 'month',
+  dateRange = { type: 'month' },
 }: DetailMetricsChartProps) {
   // Generate synthetic timeline data based on person metrics
   const chartData = useMemo(() => {
-    const daysToShow = {
-      week: 7,
-      month: 30,
-      '3months': 90,
-      year: 365,
-    }[dateRange];
+    let daysToShow: number;
+
+    if (dateRange.type === 'custom' && dateRange.startDate && dateRange.endDate) {
+      // Custom range: calculate days between dates
+      const timeDiff = dateRange.endDate.getTime() - dateRange.startDate.getTime();
+      daysToShow = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    } else {
+      // Predefined range
+      const rangeMap: Record<'week' | 'month' | '3months' | 'year', number> = {
+        week: 7,
+        month: 30,
+        '3months': 90,
+        year: 365,
+      };
+      daysToShow = rangeMap[dateRange.type as 'week' | 'month' | '3months' | 'year'] || 30;
+
+    }
 
     // Create time series data simulating movements over time
     const data = [];
@@ -49,13 +61,24 @@ export function DetailMetricsChart({
 
     for (let i = 0; i < daysToShow; i += Math.max(1, Math.floor(daysToShow / 15))) {
       const dayOffset = i;
-      const dayLabel = dateRange === 'week'
-        ? new Date(Date.now() - (daysToShow - i) * 86400000).toLocaleDateString('pt-BR', { weekday: 'short' })
-        : dateRange === 'month'
-        ? new Date(Date.now() - (daysToShow - i) * 86400000).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' })
-        : dateRange === '3months'
-        ? new Date(Date.now() - (daysToShow - i) * 86400000).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' })
-        : new Date(Date.now() - (daysToShow - i) * 86400000).toLocaleDateString('pt-BR', { month: 'short' });
+
+      // Determine label format based on range type and duration
+      let dayLabel: string;
+      let baseDate: Date;
+
+      if (dateRange.type === 'custom' && dateRange.startDate && dateRange.endDate) {
+        baseDate = new Date(dateRange.startDate.getTime() + i * 86400000);
+      } else {
+        baseDate = new Date(Date.now() - (daysToShow - i) * 86400000);
+      }
+
+      if (daysToShow <= 7) {
+        dayLabel = baseDate.toLocaleDateString('pt-BR', { weekday: 'short' });
+      } else if (daysToShow <= 90) {
+        dayLabel = baseDate.toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' });
+      } else {
+        dayLabel = baseDate.toLocaleDateString('pt-BR', { month: 'short' });
+      }
 
       // Simulate variance in daily movements
       const baseMovements = Math.round(movementsPerDay * (0.7 + Math.random() * 0.6));

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import type { PerformanceMetrics } from '@/app/dashboard/operacoes/actions';
 import { DetailMetricsChart } from './DetailMetricsChart';
+import { DateRangeFilter, type DateRange } from './DateRangeFilter';
 import { exportToCSV, exportToPDF, exportToJSON, downloadJSON, generateFilename } from './export-utils';
 
 interface ResponsableDetailModalProps {
@@ -33,7 +34,11 @@ export function ResponsableDetailModal({
   person,
   allData,
 }: ResponsableDetailModalProps) {
-  const [dateRange, setDateRange] = useState<'week' | 'month' | '3months' | 'year'>('month');
+  const [dateRange, setDateRange] = useState<DateRange>({
+    type: 'month',
+    startDate: undefined,
+    endDate: undefined,
+  });
   const [showMetricsBreakdown, setShowMetricsBreakdown] = useState(true);
 
   if (!person) return null;
@@ -144,35 +149,17 @@ export function ResponsableDetailModal({
             </CardContent>
           </Card>
 
+          {/* Date Range Filter */}
+          <DateRangeFilter
+            value={dateRange}
+            onChange={setDateRange}
+            showCustomOption={true}
+          />
+
           {/* Timeline Chart */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Movimentações ao Longo do Tempo</CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    variant={dateRange === 'month' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setDateRange('month')}
-                  >
-                    Mês
-                  </Button>
-                  <Button
-                    variant={dateRange === '3months' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setDateRange('3months')}
-                  >
-                    3M
-                  </Button>
-                  <Button
-                    variant={dateRange === 'year' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setDateRange('year')}
-                  >
-                    Ano
-                  </Button>
-                </div>
-              </div>
+              <CardTitle className="text-base">Movimentações ao Longo do Tempo</CardTitle>
             </CardHeader>
             <CardContent>
               <DetailMetricsChart

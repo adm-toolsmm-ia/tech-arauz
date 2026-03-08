@@ -29,8 +29,8 @@ export function getOverdueData(
 
   // Verifica prazo da fase (se houver no novo model) e o prazo_cronograma (end_date)
   const datesToCheck = [project.end_date, project.prazo_cronograma]
-    .filter(Boolean)
-    .map((d) => new Date(d as string));
+    .filter((d): d is string => typeof d === 'string')
+    .map((d) => new Date(d));
 
   if (datesToCheck.length === 0) return { isOverdue: false, maxDays: 0 };
 

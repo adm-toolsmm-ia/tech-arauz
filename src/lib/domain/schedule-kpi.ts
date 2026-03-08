@@ -54,10 +54,13 @@ export function getOverdueSchedulesInfo(schedules: Schedule[]): OverdueInfo {
       isOverdue(s, now)
     ) {
       count++;
-      const d = new Date(s.data_prazo || (s.data_fim as string));
-      const diffTime = Math.abs(refMidnight.getTime() - d.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > maxDays) maxDays = diffDays;
+      const dateStr = s.data_prazo || s.data_fim;
+      if (dateStr) {
+        const d = new Date(dateStr);
+        const diffTime = Math.abs(refMidnight.getTime() - d.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays > maxDays) maxDays = diffDays;
+      }
     }
   });
   return { count, maxDays };

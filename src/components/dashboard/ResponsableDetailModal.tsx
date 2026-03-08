@@ -42,22 +42,22 @@ export function ResponsableDetailModal({
   const [showMetricsBreakdown, setShowMetricsBreakdown] = useState(true);
   const [activeTab, setActiveTab] = useState<'performance' | 'comparison' | 'insights'>('performance');
 
-  if (!person) return null;
-
-  // Memoize export handlers to prevent unnecessary DetailMetricsChart re-renders
-  // These are defined after null check to ensure person is always defined
+  // Memoize export handlers
   const handleExportJSON = useCallback(() => {
+    if (!person) return;
     const filename = generateFilename(person.responsible, 'json');
     const jsonData = exportToJSON(person, { allData, includeComparison: true });
     downloadJSON(jsonData, filename);
   }, [person, allData]);
 
   const handleExportCSV = useCallback(() => {
+    if (!person) return;
     const filename = generateFilename(person.responsible, 'csv');
     exportToCSV(person, filename, { allData, includeComparison: true });
   }, [person, allData]);
 
   const handleExportPDF = useCallback(() => {
+    if (!person) return;
     const filename = generateFilename(person.responsible, 'pdf');
     exportToPDF(person, filename, { allData, includeComparison: true });
   }, [person, allData]);
@@ -67,7 +67,7 @@ export function ResponsableDetailModal({
     setDateRange(range);
   }, []);
 
-  // Keyboard shortcuts - defined after all handlers
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Cmd+S or Ctrl+S: Save/Export
@@ -104,6 +104,8 @@ export function ResponsableDetailModal({
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
   }, [isOpen, activeTab, onClose, handleExportPDF]);
+
+  if (!person) return null;
 
   // Calculate derived metrics
   const efficiency = person.total_movements > 0

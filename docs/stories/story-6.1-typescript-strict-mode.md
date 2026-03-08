@@ -137,15 +137,28 @@ Para garantir type safety máxima, evitar erros em tempo de execução, e estabe
   - [x] Server/Client component types applied
   - [x] Async component return types validated
 
-### Subtask 6.1.4: Hooks & State (3-5h)
+### Subtask 6.1.4: Hooks & State (3-5h) ✅ COMPLETE (2026-03-08)
 
-- [ ] `src/hooks/` — Custom React hooks
-  - [ ] Retorno de hook tipado explicitamente
-  - [ ] Genéricos para hooks reutilizáveis
+**Progress:** 8/8 hooks with explicit return types ✅
 
-- [ ] Zustand stores — Type safety
-  - [ ] Store actions com tipos específicos
-  - [ ] State type validation
+- [x] `src/hooks/` — Custom React hooks
+  - [x] Retorno de hook tipado explicitamente (all 8 hooks)
+  - [x] Genéricos para hooks reutilizáveis (useModuleFilters<T>)
+
+**Hooks Completed:**
+1. useAsyncOperation.ts ✅ — `UseAsyncOperationReturn<T>`
+2. useAsyncFeedback.ts ✅ — `UseAsyncFeedbackReturn<T>`
+3. useNotifications.ts ✅ — `UseNotificationsReturn`
+4. usePagination.ts ✅ — `PaginationState`
+5. useSyncNotifications.ts ✅ — `UseSyncNotificationsReturn`
+6. useDarkMode.ts ✅ — `UseDarkModeReturn`
+7. useFilterState.ts ✅ — `UseFilterStateReturn`
+8. useModuleFilters.ts ✅ — `UseModuleFiltersReturn<T>`
+9. useFilterUrlSync.ts ✅ — return type `void`
+
+- [x] Zustand stores — Type safety
+  - [x] Store actions com tipos específicos
+  - [x] State type validation (migrate function fixed)
 
 ### Subtask 6.1.5: API Routes & Handlers (2-4h)
 

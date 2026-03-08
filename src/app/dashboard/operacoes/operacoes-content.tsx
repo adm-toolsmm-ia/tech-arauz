@@ -7,6 +7,7 @@ import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { ErpReadOnlyBanner } from '@/components/shared/erp-readonly-banner';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { UIProject, DBProject } from '@/lib/transformers/project';
 import { SkeletonKPI } from '@/components/ui/skeletons';
 import { ProjectPipelineChart, buildPipelineData } from '@/components/charts';
@@ -18,6 +19,9 @@ import { ProjectCockpit } from '@/components/project/ProjectCockpit';
 import { ProjectListView } from '@/components/views/ProjectListView';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { PeriodSelector } from '@/components/dashboard/PeriodSelector';
+import { TeamFilter } from '@/components/dashboard/TeamFilter';
+import { usePerformanceData } from '@/hooks/usePerformanceData';
 import { isConsideredActive } from '@/lib/domain/project-health';
 import { computeDashboardKpis } from '@/lib/domain/kpi-calculations';
 import { statusLabels } from '@/lib/constants/phase-labels';
@@ -104,6 +108,37 @@ export function OperacoesContent({
 
   const [selectedProject, setSelectedProject] = React.useState<UIProject | null>(null);
   const [activeStatusFilter, setActiveStatusFilter] = React.useState<string | null>(null);
+  const [activeTab, setActiveTab] = React.useState<string>('fluxo');
+
+  // Performance tab filters (with localStorage persistence)
+  const [performancePeriod, setPerformancePeriod] = React.useState<'semanal' | 'mensal' | 'trimestral' | 'semestral' | 'anual'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('performancePeriod');
+      return (saved as any) || 'mensal';
+    }
+    return 'mensal';
+  });
+
+  const [performanceTeam, setPerformanceTeam] = React.useState<'minha-equipe' | 'todos-envolvidos'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('performanceTeam');
+      return (saved as any) || 'minha-equipe';
+    }
+    return 'minha-equipe';
+  });
+
+  // Persist Performance tab selections to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('performancePeriod', performancePeriod);
+    localStorage.setItem('performanceTeam', performanceTeam);
+    localStorage.setItem('activeTab', activeTab);
+  }, [performancePeriod, performanceTeam, activeTab]);
+
+  // Fetch performance data
+  const { data: performanceMetrics, summary: performanceSummary, loading: performanceLoading } = usePerformanceData({
+    period: performancePeriod,
+    team_scope: performanceTeam,
+  });
 
   const displayedProjects = React.useMemo(() => {
     let list = activeProjects;
@@ -127,7 +162,18 @@ export function OperacoesContent({
         <ErpReadOnlyBanner variant="page" />
       </div>
 
-      <div className="flex-1 space-y-6 p-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <TabsList className="px-6 pt-4 bg-transparent border-b border-border">
+          <TabsTrigger value="fluxo" className="px-4">
+            Fluxo
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="px-4">
+            Performance
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="fluxo" className="flex-1">
+          <div className="flex-1 space-y-6 p-6">
         {/* KPIs Row */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
@@ -241,7 +287,96 @@ export function OperacoesContent({
             </div>
           </>
         )}
-      </div>
+        </div>
+        </TabsContent>
+
+        <TabsContent value="performance" className="flex-1">
+          <div className="flex-1 space-y-6 p-6">
+            {/* Performance Filters */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Filtros</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Período</label>
+                  <PeriodSelector value={performancePeriod} onChange={setPerformancePeriod} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Equipe</label>
+                  <TeamFilter value={performanceTeam} onChange={setPerformanceTeam} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Performance KPI Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {performanceLoading ? (
+                Array.from({ length: 4 }).map((_, i) => <SkeletonKPI key={i} />)
+              ) : performanceSummary ? (
+                <>
+                  <KPICard
+                    title="Top Performer"
+                    value={performanceSummary.top_performer}
+                    subtitle="Mais movimentações"
+                  />
+                  <KPICard
+                    title="Tempo Médio"
+                    value={`${performanceSummary.avg_tempo_per_person} dias`}
+                    subtitle="Por pessoa"
+                  />
+                  <KPICard
+                    title="Movimentações"
+                    value={performanceSummary.total_movements_period}
+                    subtitle="Total do período"
+                  />
+                  <KPICard
+                    title="Concluídos"
+                    value={performanceSummary.projects_completed_period}
+                    subtitle="Projetos encerrados"
+                  />
+                </>
+              ) : (
+                <>
+                  <KPICard title="Top Performer" value="-" subtitle="Sem dados" />
+                  <KPICard title="Tempo Médio" value="-" subtitle="Sem dados" />
+                  <KPICard title="Movimentações" value="-" subtitle="Sem dados" />
+                  <KPICard title="Concluídos" value="-" subtitle="Sem dados" />
+                </>
+              )}
+            </div>
+
+            {/* Performance Table (Placeholder for Subtask 7.2.3) */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Desempenho por Responsável</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {performanceLoading ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    Carregando dados de performance...
+                  </div>
+                ) : performanceMetrics && performanceMetrics.length > 0 ? (
+                  <div className="text-sm text-muted-foreground">
+                    <p>{performanceMetrics.length} responsáveis encontrados</p>
+                    <p className="mt-2">
+                      A tabela interativa com sorting, paginação e export será implementada no Subtask
+                      7.2.3
+                    </p>
+                  </div>
+                ) : (
+                  <EmptyState
+                    title="Nenhum dado de performance"
+                    description="Não há dados para os filtros selecionados"
+                    icon={Timer}
+                    className="py-12"
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {selectedProject && (
         <SplitView

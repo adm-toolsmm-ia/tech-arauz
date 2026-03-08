@@ -75,13 +75,14 @@ export function SplitView({
         aria-hidden="true"
       />
 
-      {/* Panel */}
+      {/* Panel - dialog-light-theme garante fundo claro e legibilidade (padrão AIOX 10/10) */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="split-view-title"
+        aria-describedby={subtitle ? 'split-view-subtitle' : undefined}
         className={cn(
-          'animate-slide-in-right fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l bg-background shadow-lg',
+          'dialog-light-theme animate-slide-in-right fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-border bg-background shadow-lg',
           widthClasses[width],
           className,
         )}
@@ -101,7 +102,11 @@ export function SplitView({
               <h2 id="split-view-title" className="text-lg font-semibold">
                 {title}
               </h2>
-              {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+              {subtitle && (
+                <p id="split-view-subtitle" className="text-sm text-muted-foreground">
+                  {subtitle}
+                </p>
+              )}
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">

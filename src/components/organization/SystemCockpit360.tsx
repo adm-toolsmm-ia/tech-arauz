@@ -21,7 +21,7 @@ function InfoField({ label, value }: { label: string; value: string | null | und
   );
 }
 
-export function SystemCockpit360({ system, resources, onEdit }: SystemCockpit360Props) {
+export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({ system, resources, onEdit }) => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="principal" className="w-full">
@@ -105,4 +105,4 @@ export function SystemCockpit360({ system, resources, onEdit }: SystemCockpit360
       </Tabs>
     </div>
   );
-}
+};

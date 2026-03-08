@@ -20,9 +20,9 @@ function InfoField({ label, value }: { label: string; value: string | null | und
       <p className="text-sm font-medium">{value || '-'}</p>
     </div>
   );
-}
+};
 
-export function NucleusCockpit360({ nucleus, areaId, onEdit, onDelete }: NucleusCockpit360Props) {
+export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({ nucleus, areaId, onEdit, onDelete }) => {
   const rolesDisplay =
     nucleus.responsible_roles?.length > 0 ? nucleus.responsible_roles.join(', ') : 'Não definido';
   const processesCount = nucleus.processes_count ?? 0;

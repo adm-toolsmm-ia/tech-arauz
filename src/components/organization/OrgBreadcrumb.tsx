@@ -12,7 +12,7 @@ interface OrgBreadcrumbProps {
   items: BreadcrumbItem[];
 }
 
-export function OrgBreadcrumb({ items }: OrgBreadcrumbProps) {
+export const OrgBreadcrumb: React.FC<OrgBreadcrumbProps> = ({ items }) => {
   return (
     <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-muted-foreground">
       <Link href="/organizacao/areas" className="transition-colors hover:text-foreground">
@@ -32,4 +32,4 @@ export function OrgBreadcrumb({ items }: OrgBreadcrumbProps) {
       ))}
     </nav>
   );
-}
+};

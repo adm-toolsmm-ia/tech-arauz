@@ -20,7 +20,7 @@ function InfoField({ label, value }: { label: string; value: string | null | und
   );
 }
 
-export function SupplierCockpit({ supplier, onEdit }: SupplierCockpitProps) {
+export const SupplierCockpit: React.FC<SupplierCockpitProps> = ({ supplier, onEdit }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -55,4 +55,4 @@ export function SupplierCockpit({ supplier, onEdit }: SupplierCockpitProps) {
       </Link>
     </div>
   );
-}
+};

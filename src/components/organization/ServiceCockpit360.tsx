@@ -20,7 +20,7 @@ function InfoField({ label, value }: { label: string; value: string | null | und
   );
 }
 
-export function ServiceCockpit360({ service, onEdit }: ServiceCockpit360Props) {
+export const ServiceCockpit360: React.FC<ServiceCockpit360Props> = ({ service, onEdit }) => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="principal" className="w-full">
@@ -70,4 +70,4 @@ export function ServiceCockpit360({ service, onEdit }: ServiceCockpit360Props) {
       </Tabs>
     </div>
   );
-}
+};

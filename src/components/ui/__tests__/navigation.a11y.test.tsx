@@ -26,7 +26,7 @@ describe('Navigation A11y', () => {
   it('should support semantic navigation landmarks', async () => {
     const { container, getByRole } = render(
       <nav aria-label="Primary navigation">
-        <ul role="list">
+        <ul>
           <li>
             <a href="/" aria-current="page">
               Home

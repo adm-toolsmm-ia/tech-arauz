@@ -15,7 +15,7 @@ import type { AgentSessionWithAgent, SessionsResponse } from '@/lib/types/chat';
  * - agent_id: string (optional)
  * - status: 'active' | 'paused' | 'closed' (optional)
  */
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createClient();
 

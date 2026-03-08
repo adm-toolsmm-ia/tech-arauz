@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { bulkUpdateLmModelsActiveAction } from '@/app/actions/lm-models';
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
     const { modelIds, isActive } = body;

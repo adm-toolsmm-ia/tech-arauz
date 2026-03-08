@@ -14,7 +14,7 @@ function logProxyError(operation: 'GET' | 'POST', error: unknown) {
   });
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<NextResponse> {
   const supabase = await createClient();
 
   // Auth check
@@ -116,7 +116,7 @@ async function fetchAgentsFromSupabase(
       }),
     );
 
-    return Response.json({
+    return NextResponse.json({
       agents,
       total: agents.length,
       page: 1,
@@ -129,7 +129,7 @@ async function fetchAgentsFromSupabase(
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   const supabase = await createClient();
 
   // Auth check

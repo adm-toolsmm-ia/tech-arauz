@@ -16,7 +16,7 @@ const TENANT_ARAUZ_ID = '00000000-0000-0000-0000-000000000001';
  * Uses service role to bypass RLS and ensure the API is properly inserted.
  * Requires authenticated admin user.
  */
-export async function POST() {
+export async function POST(): Promise<NextResponse> {
   // 1. Verify user is authenticated and is admin
   const supabase = await createClient();
   const {

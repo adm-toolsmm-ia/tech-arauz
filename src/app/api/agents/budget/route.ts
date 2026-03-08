@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   const supabase = await createClient();
 
   const {

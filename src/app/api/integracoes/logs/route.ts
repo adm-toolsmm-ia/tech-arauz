@@ -25,7 +25,7 @@ import { createServiceClient } from '@/lib/supabase/service';
  *   meta: { query_time_ms, returned_count }
  * }
  */
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   const startTime = Date.now();
 
   try {

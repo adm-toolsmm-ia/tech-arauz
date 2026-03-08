@@ -10,7 +10,7 @@ import { exportarDados } from '@/integrations/espaider/client';
  * Body: { base_url, token, identificador }
  * Returns: { success, totalRecords } or { success: false, error }
  */
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   const supabase = await createClient();
   const {
     data: { user },

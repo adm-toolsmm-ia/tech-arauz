@@ -38,7 +38,7 @@ function buildTokenForStorage(token: string | undefined): string | null {
  * AUTHORIZATION: authenticated users with role admin/user
  * RLS: filtered by tenant_id from user profile
  */
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   try {
     const supabase = await createClient();
     const {
@@ -95,7 +95,7 @@ export async function GET() {
 /**
  * POST /api/integracoes - Create a new API (admin only)
  */
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createClient();
     const {
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
 /**
  * PUT /api/integracoes - Update an existing API (admin only)
  */
-export async function PUT(req: NextRequest) {
+export async function PUT(req: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createClient();
     const {
@@ -235,7 +235,7 @@ export async function PUT(req: NextRequest) {
 /**
  * DELETE /api/integracoes?id=xxx - Remove an API (admin only)
  */
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createClient();
     const {

@@ -25,7 +25,7 @@ const TENANT_ARAUZ_ID = '00000000-0000-0000-0000-000000000001';
  *   details?: { ... }
  * }
  */
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   const startTime = Date.now();
   let requestBody: { apiId?: string } = {};
 

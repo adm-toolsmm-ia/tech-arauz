@@ -84,7 +84,10 @@ async function chatFallback(
   });
 }
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   const supabase = await createClient();
   const { id } = await params;
 

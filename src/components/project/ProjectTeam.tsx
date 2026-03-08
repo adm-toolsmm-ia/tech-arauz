@@ -80,7 +80,7 @@ function TeamMemberCard({
   );
 }
 
-export function ProjectTeam({ projectId, responsavel }: ProjectTeamProps) {
+export const ProjectTeam: React.FC<ProjectTeamProps> = ({ projectId, responsavel }) => {
   const team = useMemo(() => generateProjectTeam(responsavel, projectId), [responsavel, projectId]);
 
   const lead = team.find((m) => m.role === 'Responsavel');

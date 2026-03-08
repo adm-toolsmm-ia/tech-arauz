@@ -40,7 +40,7 @@ function CustomTooltip({
   );
 }
 
-export function CompletedByResponsibleChart({ projects }: CompletedByResponsibleChartProps) {
+export const CompletedByResponsibleChart: React.FC<CompletedByResponsibleChartProps> = ({ projects }) => {
   const data = buildData(projects);
 
   return (

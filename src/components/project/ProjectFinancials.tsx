@@ -21,7 +21,7 @@ interface ProjectFinancialsProps {
   projectId: string;
 }
 
-export function ProjectFinancials({ projectId }: ProjectFinancialsProps) {
+export const ProjectFinancials: React.FC<ProjectFinancialsProps> = ({ projectId }) => {
   const financials = useMemo(() => generateProjectFinancials(projectId), [projectId]);
 
   const chartData = financials.categories.map((cat) => ({

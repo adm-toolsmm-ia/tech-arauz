@@ -16,7 +16,7 @@ interface PhaseTimeMetricsProps {
   projects: Array<any>;
 }
 
-export function PhaseTimeMetrics({ projects }: PhaseTimeMetricsProps) {
+export const PhaseTimeMetrics: React.FC<PhaseTimeMetricsProps> = ({ projects }) => {
   const data = React.useMemo(() => buildPhaseMetrics(projects), [projects]);
 
   return (

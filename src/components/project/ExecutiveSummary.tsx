@@ -27,7 +27,7 @@ interface ExecutiveSummaryProps {
   }>;
 }
 
-export function ExecutiveSummary({ project, deliveries }: ExecutiveSummaryProps) {
+export const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({ project, deliveries }) => {
   const completedDeliveries = deliveries.filter((d) => d.completed).length;
   const totalDeliveries = deliveries.length;
   const completionRate =

@@ -47,7 +47,7 @@ function ToolbarButton({
   );
 }
 
-export function ProjectNotesEditor({ projectId, initialContent, onSave }: ProjectNotesEditorProps) {
+export const ProjectNotesEditor: React.FC<ProjectNotesEditorProps> = ({ projectId, initialContent, onSave }) => {
   const [isSaving, setIsSaving] = React.useState(false);
 
   const editor = useEditor({

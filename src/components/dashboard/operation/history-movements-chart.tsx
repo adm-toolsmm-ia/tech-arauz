@@ -47,7 +47,7 @@ function CustomTooltip({
   );
 }
 
-export function HistoryMovementsChart({ projects }: HistoryMovementsChartProps) {
+export const HistoryMovementsChart: React.FC<HistoryMovementsChartProps> = ({ projects }) => {
   const [period, setPeriod] = React.useState<FilterPeriod>('7days');
   const [type, setType] = React.useState<FilterType>('responsible');
 

@@ -122,7 +122,7 @@ function TimelineItemCard({ item, index }: { item: TimelineItem; index: number }
   );
 }
 
-export function ProjectTimeline({ schedules, deliveries }: ProjectTimelineProps) {
+export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ schedules, deliveries }) => {
   const timelineItems = useMemo(() => {
     const items: TimelineItem[] = [
       ...schedules.map((s) => ({

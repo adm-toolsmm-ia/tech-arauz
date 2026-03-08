@@ -37,7 +37,7 @@ const statusConfig = {
   },
 };
 
-export function HealthIndicatorCard({
+export const HealthIndicatorCard: React.FC<HealthIndicatorCardProps> = ({
   title,
   status,
   icon: Icon,

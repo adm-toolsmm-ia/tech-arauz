@@ -47,7 +47,7 @@ function CustomTooltip({
 export const HistoryTransitionsChart: React.FC<HistoryTransitionsChartProps> = ({
   projects,
   groupBy = 'step_to',
-}: HistoryTransitionsChartProps) {
+}) => {
   const data = React.useMemo(() => buildTransitionsData(projects, groupBy), [projects, groupBy]);
 
   return (
@@ -109,7 +109,7 @@ export const HistoryTransitionsChart: React.FC<HistoryTransitionsChartProps> = (
       </CardContent>
     </Card>
   );
-}
+};
 
 function buildTransitionsData(
   projects: Array<{ histories?: Array<{ step_to?: string; step_from?: string }> }>,

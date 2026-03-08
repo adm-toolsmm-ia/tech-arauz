@@ -43,7 +43,7 @@ export const HealthIndicatorCard: React.FC<HealthIndicatorCardProps> = ({
   icon: Icon,
   subtitle,
   className,
-}: HealthIndicatorCardProps) {
+}) => {
   const config = statusConfig[status];
 
   return (
@@ -80,4 +80,4 @@ export const HealthIndicatorCard: React.FC<HealthIndicatorCardProps> = ({
       </CardContent>
     </Card>
   );
-}
+};

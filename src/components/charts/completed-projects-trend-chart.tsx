@@ -51,7 +51,7 @@ export const CompletedProjectsTrendChart: React.FC<CompletedProjectsTrendChartPr
   className,
   onPointClick,
   activeMonth,
-}: CompletedProjectsTrendChartProps) {
+}) => {
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
@@ -108,7 +108,7 @@ export const CompletedProjectsTrendChart: React.FC<CompletedProjectsTrendChartPr
       </CardContent>
     </Card>
   );
-}
+};
 
 export function buildCompletedTrendData(projects: DashboardProjectLike[]): MonthlyCompletedData[] {
   const counts: Record<string, number> = {};

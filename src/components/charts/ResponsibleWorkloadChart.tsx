@@ -48,7 +48,7 @@ export const ResponsibleWorkloadChart: React.FC<ResponsibleWorkloadChartProps> =
   data,
   className,
   onBarClick,
-}: ResponsibleWorkloadChartProps) {
+}) => {
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
@@ -109,7 +109,7 @@ export const ResponsibleWorkloadChart: React.FC<ResponsibleWorkloadChartProps> =
       </CardContent>
     </Card>
   );
-}
+};
 
 // Helper to transform raw project data into workload data
 export function buildWorkloadData(

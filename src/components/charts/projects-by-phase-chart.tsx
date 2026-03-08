@@ -53,7 +53,7 @@ export const ProjectsByPhaseChart: React.FC<ProjectsByPhaseChartProps> = ({
   className,
   onBarClick,
   activePhase,
-}: ProjectsByPhaseChartProps) {
+}) => {
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
@@ -118,7 +118,7 @@ export const ProjectsByPhaseChart: React.FC<ProjectsByPhaseChartProps> = ({
       </CardContent>
     </Card>
   );
-}
+};
 
 export function buildPhaseData(projects: DashboardProjectLike[]): PhaseData[] {
   const counts: Record<string, number> = {};

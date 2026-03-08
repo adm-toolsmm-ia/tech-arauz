@@ -61,7 +61,7 @@ export const ProjectPipelineChart: React.FC<ProjectPipelineChartProps> = ({
   onBarClick,
   activeStatus,
   className,
-}: ProjectPipelineChartProps) {
+}) => {
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
@@ -114,7 +114,7 @@ export const ProjectPipelineChart: React.FC<ProjectPipelineChartProps> = ({
       </CardContent>
     </Card>
   );
-}
+};
 
 // Helper to transform raw project data into chart data
 export function buildPipelineData(projects: Array<{ status: string }>): PipelineData[] {

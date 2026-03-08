@@ -65,7 +65,7 @@ export const ProjectsByDeadlineChart: React.FC<ProjectsByDeadlineChartProps> = (
   className,
   onBarClick,
   activeMonth,
-}: ProjectsByDeadlineChartProps) {
+}) => {
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
@@ -164,7 +164,7 @@ export const ProjectsByDeadlineChart: React.FC<ProjectsByDeadlineChartProps> = (
       </CardContent>
     </Card>
   );
-}
+};
 
 export function buildMonthlyDeadlineData(projects: DashboardProjectLike[]): MonthlyDeadlineData[] {
   const byMonth: Record<string, { iniciado: number; em_execucao: number; concluido: number }> = {};

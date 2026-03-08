@@ -55,7 +55,7 @@ export const ProjectsByAreaDashboard: React.FC<ProjectsByAreaDashboardProps> = (
   className,
   onAreaClick,
   activeArea,
-}: ProjectsByAreaDashboardProps) {
+}) => {
   const sortedData = [...data].sort((a, b) => b.total - a.total);
 
   return (
@@ -144,7 +144,7 @@ export const ProjectsByAreaDashboard: React.FC<ProjectsByAreaDashboardProps> = (
       </CardContent>
     </Card>
   );
-}
+};
 
 export function buildAreaDashboardData(projects: DashboardProjectLike[]): AreaData[] {
   const map: Record<string, AreaData> = {};

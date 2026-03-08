@@ -37,7 +37,17 @@ export interface AsyncFeedbackState {
   clearInline: () => void;
 }
 
-export function useAsyncFeedback<T = unknown>(options: AsyncFeedbackOptions<T> = {}) {
+export interface UseAsyncFeedbackReturn<T> extends ReturnType<typeof useAsyncOperation<T>> {
+  execute: (fn: (signal?: AbortSignal) => Promise<T>) => Promise<T | null>;
+  inlineMessage: string | null;
+  inlineType: 'error' | 'success' | 'info' | null;
+  retryFn: (() => void) | null;
+  clearInline: () => void;
+}
+
+export function useAsyncFeedback<T = unknown>(
+  options: AsyncFeedbackOptions<T> = {},
+): UseAsyncFeedbackReturn<T> {
   const { feedbackMode = 'toast', operationLabel, showRetry = false, ...asyncOptions } = options;
 
   const [inlineMessage, setInlineMessage] = useState<string | null>(null);

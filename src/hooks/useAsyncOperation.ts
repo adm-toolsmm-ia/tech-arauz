@@ -8,7 +8,18 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function useAsyncOperation<T = unknown>(options: AsyncOperationOptions<T> = {}) {
+export interface UseAsyncOperationReturn<T> extends AsyncOperationState<T> {
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  execute: (operation: (signal?: AbortSignal) => Promise<T>) => Promise<T | null>;
+  reset: () => void;
+}
+
+export function useAsyncOperation<T = unknown>(
+  options: AsyncOperationOptions<T> = {},
+): UseAsyncOperationReturn<T> {
   const [state, setState] = useState<AsyncOperationState<T>>({
     status: 'idle',
     data: null,

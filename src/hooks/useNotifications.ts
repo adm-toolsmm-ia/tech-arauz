@@ -8,7 +8,17 @@
 import { useNotificationStore } from '@/lib/notifications/store';
 import type { Notification, AlertType } from '@/lib/notifications/types';
 
-export function useNotifications() {
+export interface UseNotificationsReturn {
+  notifications: Notification[];
+  unreadCount: number;
+  addNotification: (projectId: string, projectName: string, alertType: AlertType, message: string) => void;
+  markAsRead: (id: string) => void;
+  clearAll: () => void;
+  removeNotification: (id: string) => void;
+  hasUnread: boolean;
+}
+
+export function useNotifications(): UseNotificationsReturn {
   const notifications = useNotificationStore((state) => state.notifications);
   const addNotification = useNotificationStore((state) => state.addNotification);
   const markAsRead = useNotificationStore((state) => state.markAsRead);

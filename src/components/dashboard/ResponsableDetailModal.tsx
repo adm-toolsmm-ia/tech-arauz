@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import type { PerformanceMetrics } from '@/app/dashboard/operacoes/actions';
 import { DetailMetricsChart } from './DetailMetricsChart';
+import { ComparativeChart } from './ComparativeChart';
+import { AIInsightsPanel } from './AIInsightsPanel';
 import { DateRangeFilter, type DateRange } from './DateRangeFilter';
 import { exportToCSV, exportToPDF, exportToJSON, downloadJSON, generateFilename } from './export-utils';
 
@@ -326,91 +328,26 @@ export function ResponsableDetailModal({
 
             {/* Comparison Tab */}
             {activeTab === 'comparison' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Comparação com Time</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950">
-                      <p className="text-xs text-muted-foreground">Movimentações vs Média</p>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {performanceDelta > 0 ? '+' : ''}{performanceDelta}%
-                      </p>
-                    </div>
-                    <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950">
-                      <p className="text-xs text-muted-foreground">Tempo Médio vs Média</p>
-                      <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                        {person.average_duration_days > teamAvgMovements ? '-' : '+'}{Math.abs(person.average_duration_days - (teamAvgMovements ? Math.round(teamAvgMovements) : 0))}d
-                      </p>
-                    </div>
-                  </div>
-                  <div className="border-t pt-4">
-                    <p className="text-sm font-medium mb-3">Status no Time</p>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between p-2 rounded bg-muted/50">
-                        <span className="text-sm">Rank de Performance</span>
-                        <span className="font-semibold">{performanceDelta > 20 ? '🥇 Top' : performanceDelta > 0 ? '🥈 Above Avg' : '🥉 Below Avg'}</span>
-                      </div>
-                      <div className="flex items-center justify-between p-2 rounded bg-muted/50">
-                        <span className="text-sm">Velocidade</span>
-                        <span className="font-semibold">{movementsPerDay} mov/dia</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Comparação com Time</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ComparativeChart
+                      person={person}
+                      allData={allData}
+                      dateRange={dateRange}
+                    />
+                  </CardContent>
+                </Card>
+              </>
             )}
 
             {/* Insights Tab */}
             {activeTab === 'insights' && (
               <>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Insights de Performance</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-muted">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {efficiency > 70 ? '✨ Excelente taxa de conclusão' : efficiency > 50 ? '📈 Taxa de conclusão acima da média' : '⚠️ Taxa de conclusão abaixo do esperado'}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {efficiency > 70
-                              ? `${person.responsible} tem uma das melhores taxas de conclusão do time`
-                              : efficiency > 50
-                              ? `Desempenho sólido com ${efficiency}% de conclusão`
-                              : `Considere aumentar foco em conclusão de projetos`}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-muted">
-                        <div className="w-2 h-2 rounded-full bg-amber-500 mt-1.5" />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {person.average_duration_days < 15 ? '⚡ Ritmo acelerado' : person.average_duration_days < 30 ? '✓ Ritmo normal' : '🐢 Ritmo lento'}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            Tempo médio de {person.average_duration_days} dias por projeto
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-muted">
-                        <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
-                        <div>
-                          <p className="text-sm font-medium">Velocidade de Movimentação</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {movementsPerDay} movimentações por dia — {movementsPerDayValue > 2 ? 'muito ativo' : 'atividade moderada'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <AIInsightsPanel person={person} allData={allData} />
               </>
             )}
           </div>

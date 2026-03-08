@@ -141,7 +141,34 @@ Ou: `defaultValue={value ?? undefined}` ou `defaultValue={value ?? 'fallback'}`.
 
 ---
 
-### 3.7 Variáveis de ambiente ausentes
+### 3.7 TypeScript — indexação em union types
+
+**Sintoma:** `Element implicitly has an 'any' type because expression of type 'X' can't be used to index type 'A | B'. Property 'Y' does not exist on type 'A'`.
+
+**Causa:** Indexar objeto com tipo union (ex.: `OrgDocumentation | Record<string, unknown>`) usando chave que não existe em todos os membros da union. Ex.: `step_by_step` existe em `OrgActivityDocumentation` mas não em `OrgDocumentation`.
+
+**NÃO fazer:**
+
+```tsx
+const keys = ['step_by_step', 'guidelines'] as const;
+keys.filter((k) => doc[k] && typeof doc[k] === 'string');  // Erro: Property 'step_by_step' does not exist
+```
+
+**Fazer:**
+
+```tsx
+const keys = ['step_by_step', 'guidelines'] as const;
+keys.filter((k) => {
+  const v = (doc as Record<string, unknown>)[k];
+  return v != null && typeof v === 'string';
+});
+```
+
+**Regra:** Ao iterar chaves dinâmicas em objeto com union, usar cast para `Record<string, unknown>` antes de indexar.
+
+---
+
+### 3.8 Variáveis de ambiente ausentes
 
 **Sintoma:** Build passa, mas runtime falha com `undefined` em env vars.
 

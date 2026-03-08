@@ -317,6 +317,10 @@ Se falhar localmente, falhará no Vercel. Resolver erros antes de commitar.
 - `searchParams.get('x') ?? undefined` → `string | undefined`
 - Para props que exigem `string`, usar fallback: `(value ?? 'default')` ou `value || 'default'`
 
+### 13.4 Indexação em union types
+
+Ao iterar chaves dinâmicas em objeto com tipo union (ex.: `OrgDocumentation | Record<string, unknown>`), usar cast para `Record<string, unknown>` antes de indexar. Caso contrário, TypeScript reclama que a chave não existe em todos os membros da union. Ver build-deploy-gates.md seção 3.7.
+
 ---
 
 ## 14. Checklist de Entrega (Gate de Workflow)

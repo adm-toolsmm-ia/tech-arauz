@@ -48,7 +48,10 @@ export function BpmDocumentationPanel({
   const hasSteps = Array.isArray(steps) && steps.length > 0;
   const activityDocEntries =
     showActivityDocs && doc
-      ? ACTIVITY_DOC_KEYS.filter((k) => doc[k] && typeof doc[k] === 'string')
+      ? ACTIVITY_DOC_KEYS.filter((k) => {
+          const v = (doc as Record<string, unknown>)[k];
+          return v != null && typeof v === 'string';
+        })
       : [];
   const hasActivityDocs = activityDocEntries.length > 0;
   const hasInputs = inputs.length > 0;
@@ -77,22 +80,24 @@ export function BpmDocumentationPanel({
 
   return (
     <div className="space-y-4">
-      {showSourceBadge && (doc as OrgDocumentation)?.source && (
+      {showSourceBadge && doc && (doc as OrgDocumentation).source && (
         <Badge variant="secondary" className="gap-1">
           <BookOpen className="size-3" />
-          Fonte: {doc.source}
-          {(doc as OrgDocumentation).doc && ` (${(doc as OrgDocumentation).doc})`}
+          Fonte: {(doc as OrgDocumentation).source}
+          {(doc as OrgDocumentation).doc != null
+            ? ` (${(doc as OrgDocumentation).doc})`
+            : null}
         </Badge>
       )}
 
-      {hasDocMeta && (
+      {hasDocMeta && doc ? (
         <section>
           <div className="mb-2 flex items-center gap-2 border-b pb-2">
             <Clock className="size-4 text-primary" />
             <h4 className="text-sm font-semibold">Regras e prazos</h4>
           </div>
           <ul className="space-y-1 text-sm text-muted-foreground">
-            {(doc as OrgDocumentation)?.horario_limite && (
+            {(doc as OrgDocumentation).horario_limite && (
               <li>
                 <span className="font-medium text-foreground">Horário limite:</span>{' '}
                 {(doc as OrgDocumentation).horario_limite}
@@ -118,7 +123,7 @@ export function BpmDocumentationPanel({
             )}
           </ul>
         </section>
-      )}
+      ) : null}
 
       {hasActivityDocs && (
         <section>
@@ -143,7 +148,7 @@ export function BpmDocumentationPanel({
               return (
                 <div key={k}>
                   <p className="text-xs font-medium text-muted-foreground">{label}</p>
-                  <p className="mt-0.5 whitespace-pre-wrap">{String(doc?.[k] ?? '')}</p>
+                  <p className="mt-0.5 whitespace-pre-wrap">{String((doc as Record<string, unknown>)?.[k] ?? '')}</p>
                 </div>
               );
             })}

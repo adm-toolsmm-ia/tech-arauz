@@ -208,6 +208,22 @@
   :focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
+
+  /* Dialog: tema claro forçado para legibilidade (AIOX 10/10)
+   * Garante contraste e leitura mesmo quando o app está em dark mode
+   */
+  .dialog-light-theme {
+    --background: 0 0% 100%;
+    --foreground: 220 13% 18%;
+    --muted-foreground: 220 9% 46%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 18%;
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 167 69% 18%;
+  }
 }
 
 @layer components {

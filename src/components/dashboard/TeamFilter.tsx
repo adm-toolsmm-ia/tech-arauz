@@ -16,6 +16,7 @@ interface TeamFilterProps {
   value: TeamFilterType;
   onChange: (filter: TeamFilterType) => void;
   disabled?: boolean;
+  id?: string;
 }
 
 const TEAM_OPTIONS: Array<{ value: TeamFilterType; label: string }> = [
@@ -33,10 +34,11 @@ export function TeamFilter({
   value,
   onChange,
   disabled = false,
+  id,
 }: TeamFilterProps): ReactNode {
   return (
     <Select value={value} onValueChange={(val) => onChange(val as TeamFilterType)} disabled={disabled}>
-      <SelectTrigger className="w-[200px]">
+      <SelectTrigger id={id} className="w-[200px]">
         <SelectValue placeholder="Selecione equipe" />
       </SelectTrigger>
       <SelectContent>

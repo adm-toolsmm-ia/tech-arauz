@@ -2,11 +2,12 @@
 
 import * as React from 'react';
 import { User } from '@supabase/supabase-js';
-import { Activity, Timer, AlertTriangle, ArrowRight, UserCheck } from 'lucide-react';
+import { Activity, Timer, AlertTriangle, ArrowRight, UserCheck, TrendingUp, Clock, Zap, CheckCircle } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { ErpReadOnlyBanner } from '@/components/shared/erp-readonly-banner';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { UIProject, DBProject } from '@/lib/transformers/project';
 import { SkeletonKPI } from '@/components/ui/skeletons';
@@ -23,6 +24,7 @@ import { PeriodSelector } from '@/components/dashboard/PeriodSelector';
 import { TeamFilter } from '@/components/dashboard/TeamFilter';
 import { ResponsablePerformanceTable } from '@/components/dashboard/ResponsablePerformanceTable';
 import { usePerformanceData } from '@/hooks/usePerformanceData';
+import { MovementRankedChart, TempoChart, VelocityChart, ActivityHeatmap } from '@/components/dashboard/charts-index';
 import { isConsideredActive } from '@/lib/domain/project-health';
 import { computeDashboardKpis } from '@/lib/domain/kpi-calculations';
 import { statusLabels } from '@/lib/constants/phase-labels';
@@ -299,13 +301,19 @@ export function OperacoesContent({
                 <CardTitle>Filtros</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Período</label>
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-medium mb-2 block">Período</legend>
                   <PeriodSelector value={performancePeriod} onChange={setPerformancePeriod} />
-                </div>
+                </fieldset>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Equipe</label>
-                  <TeamFilter value={performanceTeam} onChange={setPerformanceTeam} />
+                  <Label htmlFor="performance-team-filter" className="text-sm font-medium mb-2 block">
+                    Equipe
+                  </Label>
+                  <TeamFilter
+                    id="performance-team-filter"
+                    value={performanceTeam}
+                    onChange={setPerformanceTeam}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -320,32 +328,54 @@ export function OperacoesContent({
                     title="Top Performer"
                     value={performanceSummary.top_performer}
                     subtitle="Mais movimentações"
+                    icon={TrendingUp}
                   />
                   <KPICard
                     title="Tempo Médio"
                     value={`${performanceSummary.avg_tempo_per_person} dias`}
                     subtitle="Por pessoa"
+                    icon={Clock}
                   />
                   <KPICard
                     title="Movimentações"
                     value={performanceSummary.total_movements_period}
                     subtitle="Total do período"
+                    icon={Zap}
                   />
                   <KPICard
                     title="Concluídos"
                     value={performanceSummary.projects_completed_period}
                     subtitle="Projetos encerrados"
+                    icon={CheckCircle}
                   />
                 </>
               ) : (
                 <>
-                  <KPICard title="Top Performer" value="-" subtitle="Sem dados" />
-                  <KPICard title="Tempo Médio" value="-" subtitle="Sem dados" />
-                  <KPICard title="Movimentações" value="-" subtitle="Sem dados" />
-                  <KPICard title="Concluídos" value="-" subtitle="Sem dados" />
+                  <KPICard title="Top Performer" value="-" subtitle="Sem dados" icon={TrendingUp} />
+                  <KPICard title="Tempo Médio" value="-" subtitle="Sem dados" icon={Clock} />
+                  <KPICard title="Movimentações" value="-" subtitle="Sem dados" icon={Zap} />
+                  <KPICard title="Concluídos" value="-" subtitle="Sem dados" icon={CheckCircle} />
                 </>
               )}
             </div>
+
+            {/* Analytics Charts (Story 7.3 Phase 2) */}
+            {performanceMetrics && performanceMetrics.length > 0 && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <MovementRankedChart data={performanceMetrics} loading={performanceLoading} />
+                  <TempoChart data={performanceMetrics} loading={performanceLoading} />
+                </div>
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <VelocityChart
+                    data={performanceMetrics}
+                    period={performancePeriod}
+                    loading={performanceLoading}
+                  />
+                  <ActivityHeatmap data={performanceMetrics} loading={performanceLoading} />
+                </div>
+              </div>
+            )}
 
             {/* Performance Table (Subtask 7.2.3) */}
             <Card>

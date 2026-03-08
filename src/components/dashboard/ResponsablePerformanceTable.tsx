@@ -12,6 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { PerformanceMetrics } from '@/app/dashboard/operacoes/actions';
+import { ResponsableDetailModal } from './ResponsableDetailModal';
 
 type SortField = keyof PerformanceMetrics;
 type SortDirection = 'asc' | 'desc';
@@ -39,6 +40,18 @@ export function ResponsablePerformanceTable({
   const [sortField, setSortField] = React.useState<SortField>('total_movements');
   const [sortDirection, setSortDirection] = React.useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [selectedPerson, setSelectedPerson] = React.useState<PerformanceMetrics | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const handleRowClick = (person: PerformanceMetrics) => {
+    setSelectedPerson(person);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedPerson(null);
+  };
 
   // Sort data
   const sortedData = React.useMemo(() => {
@@ -168,7 +181,18 @@ export function ResponsablePerformanceTable({
           </TableHeader>
           <TableBody>
             {paginatedData.map((item, idx) => (
-              <TableRow key={`${item.responsible_id}-${idx}`} className="hover:bg-muted/50">
+              <TableRow
+                key={`${item.responsible_id}-${idx}`}
+                className="hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => handleRowClick(item)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleRowClick(item);
+                  }
+                }}
+              >
                 <TableCell className="font-medium">{item.responsible}</TableCell>
                 <TableCell className="text-right">{item.total_movements}</TableCell>
                 <TableCell className="text-right">{item.average_duration_days}</TableCell>
@@ -215,6 +239,14 @@ export function ResponsablePerformanceTable({
           Nenhum dado de performance disponível
         </div>
       )}
+
+      {/* Drill-down Modal */}
+      <ResponsableDetailModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        person={selectedPerson}
+        allData={data}
+      />
     </div>
   );
 }

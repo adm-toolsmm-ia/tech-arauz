@@ -1,0 +1,93 @@
+name: A11y Accessibility Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  a11y-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run A11y tests
+        id: a11y-test
+        run: |
+          npm run test:a11y -- --reporter=default 2>&1 | tee test-a11y-output.txt
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
+          echo "exit_code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
+          
+          # Count results
+          PASSED=$(grep -c "✓" test-a11y-output.txt || echo "0")
+          FAILED=$(grep -c "✕" test-a11y-output.txt || echo "0")
+          
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+
+      - name: Run linting
+        run: npm run lint -- src/components/ui/__tests__/*.a11y.test.tsx
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Comment PR with A11y results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const passed = '${{ steps.a11y-test.outputs.passed }}';
+            const failed = '${{ steps.a11y-test.outputs.failed }}';
+            const exitCode = '${{ steps.a11y-test.outputs.exit_code }}';
+
+            let status = '✅';
+            let color = 'green';
+
+            if (parseInt(exitCode) !== 0 || parseInt(failed) > 0) {
+              status = '❌';
+              color = 'red';
+            }
+
+            const comment = `## ${status} A11y Accessibility Tests
+
+**Test Results:**
+- Passed: ${passed}
+- Failed: ${failed}
+
+${parseInt(exitCode) === 0 ? '✅ All accessibility tests passed!' : '⚠️ Some accessibility tests failed. Review violations above.'}`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Check test results
+        if: steps.a11y-test.outputs.exit_code != 0
+        run: |
+          echo "❌ A11y tests failed!"
+          exit 1
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: a11y-test-results
+          path: test-a11y-output.txt
+          retention-days: 30

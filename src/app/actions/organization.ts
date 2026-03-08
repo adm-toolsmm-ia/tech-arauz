@@ -89,6 +89,7 @@ export async function createAreaAction(payload: AreaPayload): Promise<OrgActionR
 
   if (error) return { success: false, message: `Erro ao criar área: ${error.message}` };
   revalidatePath('/organizacao/areas');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: `Área "${created.name}" criada!`, data: created as OrgArea };
 }
 
@@ -141,6 +142,7 @@ export async function createNucleusAction(payload: NucleusPayload): Promise<OrgA
   revalidatePath('/organizacao/areas');
   revalidatePath('/organizacao/nucleos');
   revalidatePath('/organizacao/processos');
+  revalidatePath('/organizacao/empresa');
   return { success: true, message: `Núcleo "${created.name}" criado!`, data: created as OrgNucleus };
 }
 

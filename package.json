@@ -13,6 +13,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
+    "test:a11y": "vitest --run src/components/ui/__tests__/*.a11y.test.tsx",
+    "test:a11y:watch": "vitest src/components/ui/__tests__/*.a11y.test.tsx",
     "test:rls": "supabase test db -- supabase/tests/rls_policies.test.sql",
     "test:rls:watch": "watch 'npm run test:rls' supabase/tests/",
     "typecheck": "tsc --noEmit",

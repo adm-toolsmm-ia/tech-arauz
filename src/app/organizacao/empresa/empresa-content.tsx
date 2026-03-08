@@ -1,12 +1,17 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Building,
   Building2,
   Pencil,
   List,
   LayoutGrid,
+  Plus,
+  GitBranch,
+  ArrowRight,
 } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +26,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { SplitView } from '@/components/views/SplitView';
@@ -39,6 +52,10 @@ import { EmpresaKPIBar } from './components/EmpresaKPIBar';
 import { toast } from 'sonner';
 import type { EmpresaVinculo } from './types';
 import type { OrgNucleus, OrgProcess, OrgRoutine, OrgSystemResource } from '@/types/organization';
+import {
+  createAreaAction,
+  createNucleusAction,
+} from '@/app/actions/organization';
 
 const EMPRESA_VIEW_REGISTRY = {
   moduleId: 'organizacao-empresa',
@@ -66,6 +83,36 @@ interface EmpresaContentProps {
   error?: string;
 }
 
+interface AreaFormData {
+  name: string;
+  description: string;
+  objective: string;
+  responsible_roles: string;
+}
+
+interface NucleusFormData {
+  area_id: string;
+  name: string;
+  description: string;
+  objective: string;
+  responsible_roles: string;
+}
+
+const DEFAULT_AREA_FORM: AreaFormData = {
+  name: '',
+  description: '',
+  objective: '',
+  responsible_roles: '',
+};
+
+const DEFAULT_NUCLEUS_FORM: NucleusFormData = {
+  area_id: '',
+  name: '',
+  description: '',
+  objective: '',
+  responsible_roles: '',
+};
+
 export function EmpresaContent({
   tenant,
   counts,
@@ -73,16 +120,97 @@ export function EmpresaContent({
   linkedData,
   error,
 }: EmpresaContentProps) {
+  const router = useRouter();
   const [isEditOpen, setIsEditOpen] = React.useState(false);
   const [editName, setEditName] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<'list' | 'kanban'>('kanban');
   const [selectedVinculo, setSelectedVinculo] = React.useState<EmpresaVinculo | null>(null);
   const [search, setSearch] = React.useState('');
+  const [isAreaFormOpen, setIsAreaFormOpen] = React.useState(false);
+  const [isNucleusFormOpen, setIsNucleusFormOpen] = React.useState(false);
+  const [areaFormData, setAreaFormData] = React.useState<AreaFormData>(DEFAULT_AREA_FORM);
+  const [nucleusFormData, setNucleusFormData] = React.useState<NucleusFormData>(DEFAULT_NUCLEUS_FORM);
+  const [isAreaLoading, setIsAreaLoading] = React.useState(false);
+  const [isNucleusLoading, setIsNucleusLoading] = React.useState(false);
+
+  const areas = React.useMemo(
+    () =>
+      vinculos
+        .filter((v): v is EmpresaVinculo & { type: 'areas' } => v.type === 'areas')
+        .map((v) => ({ id: v.id, name: v.name })),
+    [vinculos],
+  );
 
   React.useEffect(() => {
     if (tenant) setEditName(tenant.name);
   }, [tenant]);
+
+  const parseRoles = (s: string) =>
+    s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
+
+  const handleCreateArea = React.useCallback(async () => {
+    if (!areaFormData.name.trim()) {
+      toast.error('Nome é obrigatório');
+      return;
+    }
+    setIsAreaLoading(true);
+    try {
+      const result = await createAreaAction({
+        name: areaFormData.name.trim(),
+        description: areaFormData.description.trim() || null,
+        objective: areaFormData.objective.trim() || null,
+        responsible_roles: parseRoles(areaFormData.responsible_roles),
+        documentation: {},
+      });
+      if (result.success) {
+        toast.success(result.message);
+        setAreaFormData(DEFAULT_AREA_FORM);
+        setIsAreaFormOpen(false);
+        router.refresh();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (e) {
+      toast.error(`Erro: ${e instanceof Error ? e.message : 'desconhecido'}`);
+    } finally {
+      setIsAreaLoading(false);
+    }
+  }, [areaFormData, router]);
+
+  const handleCreateNucleus = React.useCallback(async () => {
+    if (!nucleusFormData.name.trim()) {
+      toast.error('Nome é obrigatório');
+      return;
+    }
+    if (!nucleusFormData.area_id) {
+      toast.error('Área é obrigatória');
+      return;
+    }
+    setIsNucleusLoading(true);
+    try {
+      const result = await createNucleusAction({
+        area_id: nucleusFormData.area_id,
+        name: nucleusFormData.name.trim(),
+        description: nucleusFormData.description.trim() || null,
+        objective: nucleusFormData.objective.trim() || null,
+        responsible_roles: parseRoles(nucleusFormData.responsible_roles),
+        documentation: {},
+      });
+      if (result.success) {
+        toast.success(result.message);
+        setNucleusFormData(DEFAULT_NUCLEUS_FORM);
+        setIsNucleusFormOpen(false);
+        router.refresh();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (e) {
+      toast.error(`Erro: ${e instanceof Error ? e.message : 'desconhecido'}`);
+    } finally {
+      setIsNucleusLoading(false);
+    }
+  }, [nucleusFormData, router]);
 
   const handleSave = React.useCallback(async () => {
     if (!tenant) return;
@@ -174,6 +302,52 @@ export function EmpresaContent({
               </div>
             </div>
           </CardHeader>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Cadastros vinculados</CardTitle>
+            <CardDescription>
+              Cadastre áreas e núcleos diretamente pela empresa.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Button
+              className="gap-2"
+              onClick={() => {
+                setAreaFormData(DEFAULT_AREA_FORM);
+                setIsAreaFormOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Nova Área
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => {
+                setNucleusFormData(DEFAULT_NUCLEUS_FORM);
+                setIsNucleusFormOpen(true);
+              }}
+              disabled={areas.length === 0}
+              title={areas.length === 0 ? 'Cadastre ao menos uma área antes' : undefined}
+            >
+              <GitBranch className="h-4 w-4" />
+              Novo Núcleo
+            </Button>
+            <Button variant="ghost" size="sm" asChild className="gap-2">
+              <Link href="/organizacao/areas">
+                Ver Áreas
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild className="gap-2">
+              <Link href="/organizacao/nucleos">
+                Ver Núcleos
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
         </Card>
 
         {totalVinculos > 0 && (
@@ -303,6 +477,149 @@ export function EmpresaContent({
             </Button>
             <Button onClick={handleSave} disabled={isLoading || !editName.trim()}>
               {isLoading ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAreaFormOpen} onOpenChange={setIsAreaFormOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nova Área</DialogTitle>
+            <DialogDescription>
+              Preencha os dados para criar uma nova área na organização.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="area-name">Nome *</Label>
+              <Input
+                id="area-name"
+                value={areaFormData.name}
+                onChange={(e) => setAreaFormData((p) => ({ ...p, name: e.target.value }))}
+                placeholder="ex.: Recuperação de Crédito"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="area-description">Descrição</Label>
+              <Textarea
+                id="area-description"
+                value={areaFormData.description}
+                onChange={(e) => setAreaFormData((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Descrição da área"
+                rows={3}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="area-objective">Objetivo</Label>
+              <Textarea
+                id="area-objective"
+                value={areaFormData.objective}
+                onChange={(e) => setAreaFormData((p) => ({ ...p, objective: e.target.value }))}
+                placeholder="Objetivo da área"
+                rows={2}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="area-roles">Roles responsáveis (separados por vírgula)</Label>
+              <Input
+                id="area-roles"
+                value={areaFormData.responsible_roles}
+                onChange={(e) => setAreaFormData((p) => ({ ...p, responsible_roles: e.target.value }))}
+                placeholder="ex.: coordenador, analista_senior"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAreaFormOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateArea} disabled={isAreaLoading || !areaFormData.name.trim()}>
+              {isAreaLoading ? 'Criando...' : 'Criar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isNucleusFormOpen} onOpenChange={setIsNucleusFormOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Núcleo</DialogTitle>
+            <DialogDescription>
+              Preencha os dados para criar um novo núcleo vinculado a uma área.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="nucleus-area">Área *</Label>
+              <Select
+                value={nucleusFormData.area_id}
+                onValueChange={(v) => setNucleusFormData((p) => ({ ...p, area_id: v }))}
+              >
+                <SelectTrigger id="nucleus-area">
+                  <SelectValue placeholder="Selecione a área" />
+                </SelectTrigger>
+                <SelectContent>
+                  {areas.map((area) => (
+                    <SelectItem key={area.id} value={area.id}>
+                      {area.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="nucleus-name">Nome *</Label>
+              <Input
+                id="nucleus-name"
+                value={nucleusFormData.name}
+                onChange={(e) => setNucleusFormData((p) => ({ ...p, name: e.target.value }))}
+                placeholder="ex.: Núcleo de Ajuizamento"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="nucleus-description">Descrição</Label>
+              <Textarea
+                id="nucleus-description"
+                value={nucleusFormData.description}
+                onChange={(e) => setNucleusFormData((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Descrição do núcleo"
+                rows={3}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="nucleus-objective">Objetivo</Label>
+              <Textarea
+                id="nucleus-objective"
+                value={nucleusFormData.objective}
+                onChange={(e) => setNucleusFormData((p) => ({ ...p, objective: e.target.value }))}
+                placeholder="Objetivo do núcleo"
+                rows={2}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="nucleus-roles">Roles responsáveis (separados por vírgula)</Label>
+              <Input
+                id="nucleus-roles"
+                value={nucleusFormData.responsible_roles}
+                onChange={(e) => setNucleusFormData((p) => ({ ...p, responsible_roles: e.target.value }))}
+                placeholder="ex.: coordenador, analista"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNucleusFormOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateNucleus}
+              disabled={
+                isNucleusLoading ||
+                !nucleusFormData.name.trim() ||
+                !nucleusFormData.area_id
+              }
+            >
+              {isNucleusLoading ? 'Criando...' : 'Criar'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -122,11 +122,16 @@ interface ProjectCockpitProps {
   budgets?: UIBudget[];
   /** When opened from Cronogramas: the activity/schedule clicked. Shows "Atividade" tab. */
   selectedSchedule?: UISchedule | null;
-  onSync?: () => void;
+  onSync?: (() => void) | undefined;
   isSyncing?: boolean;
 }
 
-function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
+interface InfoFieldProps {
+  label: string;
+  value: string | null | undefined;
+}
+
+const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -163,7 +168,7 @@ function formatDateTime(dateStr: string | null | undefined): string {
   }
 }
 
-export function ProjectCockpit({
+export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
   project,
   schedules,
   deliveries,
@@ -173,7 +178,7 @@ export function ProjectCockpit({
   selectedSchedule = null,
   onSync,
   isSyncing = false,
-}: ProjectCockpitProps) {
+}) => {
   const completedDeliveries = deliveries.filter((d) => d.completed).length;
   const showAtividadeTab = !!selectedSchedule;
   const defaultTab = showAtividadeTab ? 'atividade' : 'projeto';

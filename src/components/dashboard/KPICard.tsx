@@ -17,7 +17,7 @@ interface KPICardProps {
   active?: boolean;
 }
 
-export function KPICard({
+export const KPICard: React.FC<KPICardProps> = ({
   title,
   value,
   icon: Icon,
@@ -26,7 +26,7 @@ export function KPICard({
   className,
   onClick,
   active,
-}: KPICardProps) {
+}) => {
   return (
     <Card
       className={cn(
@@ -65,4 +65,4 @@ export function KPICard({
       </CardContent>
     </Card>
   );
-}
+};

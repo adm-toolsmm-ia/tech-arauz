@@ -12,7 +12,7 @@ interface ChatBubbleProps {
   sql?: string;
 }
 
-export function ChatBubble({ role, content, tokens, cost, sql }: ChatBubbleProps) {
+export const ChatBubble: React.FC<ChatBubbleProps> = ({ role, content, tokens, cost, sql }) => {
   const isUser = role === 'user';
 
   return (
@@ -70,4 +70,4 @@ export function ChatBubble({ role, content, tokens, cost, sql }: ChatBubbleProps
       </div>
     </div>
   );
-}
+};

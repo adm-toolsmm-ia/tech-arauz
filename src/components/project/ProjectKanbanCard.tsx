@@ -126,7 +126,7 @@ function ImpactBadge({ value }: { value: string }) {
   );
 }
 
-export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProps) {
+export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, projectIds }) => {
   const colorIdx = getProjectColorIndex(project.id, projectIds);
   const barColor = PROJECT_BAR_COLORS[colorIdx];
 
@@ -346,4 +346,4 @@ export function ProjectKanbanCard({ project, projectIds }: ProjectKanbanCardProp
       </div>
     </div>
   );
-}
+};

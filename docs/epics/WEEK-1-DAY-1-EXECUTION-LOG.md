@@ -174,6 +174,61 @@
 
 ---
 
+## 🎯 DIRECT AGENT INSTRUCTIONS (2026-03-09 09:15 UTC)
+
+### ⚡ FOR DARA (@data-engineer) — IMMEDIATE ACTION
+
+**File to work on:** `docs/stories/story-7-a-3-rls-automated-tests.md`
+
+**RIGHT NOW (next 15 min):**
+1. [ ] Open story file → find "Dev Agent Record" (line ~147)
+2. [ ] Change Status from "⏳ Not Started" to "✅ IN PROGRESS"
+3. [ ] Set Start Date: 2026-03-09 09:15 UTC
+4. [ ] Verify `supabase/tests/rls-tests.sql` exists (it does ✅)
+5. [ ] Read the scaffold file - it has 13 implemented tests + 12 placeholders
+
+**SUBTASK 1 (09:15-09:45, 30 min):**
+- [ ] Review story-5.1 FK indexes (already DONE ✅)
+- [ ] Confirm perf baseline exists ✅
+- [ ] Mark checkbox [x] in story file
+- [ ] Commit: `feat(story-7-a-3): Subtask 1 Complete - Validated Story 5.1`
+
+**SUBTASK 2 (09:45-10:45, 1h):**
+- [ ] Setup pgtap framework in test database
+- [ ] Create scripts/run-rls-tests.sh
+- [ ] Configure GitHub Actions workflow
+- [ ] Test locally: npm run test:rls
+- [ ] Mark checkbox [x] in story file
+- [ ] Commit: `feat(story-7-a-3): Subtask 2 Complete - pgtap Setup`
+
+**TARGET BY 11:00 UTC:** 40-50% progress (Subtasks 1+2 done, Subtask 3 started)
+
+---
+
+### ⚡ FOR UMA (@ux-design-expert) — IMMEDIATE ACTION
+
+**File to work on:** `docs/stories/story-5.2-design-tokens-dtcg-standard.md`
+
+**RIGHT NOW (next 15 min):**
+1. [ ] Open story file → find "Dev Agent Record" (line ~145)
+2. [ ] Change Status from "⏳ TODO" to "✅ IN PROGRESS"
+3. [ ] Set Start Date: 2026-03-09 09:15 UTC
+4. [ ] Read DTCG template in this execution log (scaffold documented)
+5. [ ] Create `design/tokens.json` using template
+
+**SUBTASK 1 (09:15-12:15, 3h - Design Audit):**
+- [ ] Audit all components for colors (target: 30+ tokens)
+- [ ] List typography tokens (target: 15+ tokens)
+- [ ] Map spacing (target: 20+ tokens)
+- [ ] Document borders + shadows (target: 14+ tokens)
+- **Total audit:** 80+ tokens identified
+- [ ] Mark checkbox [x] in story file
+- [ ] Commit: `feat(story-5.2): Subtask 1 Complete - Design Audit (80+ tokens)`
+
+**TARGET BY 11:00 UTC:** 30-40% progress (Subtask 1 50-75% done - audit in progress)
+
+---
+
 ## 🏗️ Scaffolds Created by Orion (2026-03-09 09:15 UTC)
 
 ### Track A: `supabase/tests/rls-tests.sql`

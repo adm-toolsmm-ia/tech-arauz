@@ -95,11 +95,21 @@ export function DetailMetricsChart({
     return data;
   }, [person, dateRange]);
 
-  const avgMovements = chartData.length > 0
-    ? Math.round(chartData.reduce((sum, d) => sum + d.movements, 0) / chartData.length)
-    : 0;
+  // Memoize summary statistics to prevent recalculation on every render
+  const stats = useMemo(() => {
+    if (chartData.length === 0) {
+      return { avgMovements: 0, totalCompleted: 0, completionRate: 0 };
+    }
 
-  const totalCompleted = chartData.reduce((sum, d) => sum + d.completed, 0);
+    const totalMovements = chartData.reduce((sum, d) => sum + d.movements, 0);
+    const totalCompleted = chartData.reduce((sum, d) => sum + d.completed, 0);
+    const avgMovements = Math.round(totalMovements / chartData.length);
+    const completionRate = totalMovements > 0
+      ? Math.round((totalCompleted / totalMovements) * 100)
+      : 0;
+
+    return { avgMovements, totalCompleted, completionRate };
+  }, [chartData]);
 
   return (
     <div className="space-y-6">
@@ -203,20 +213,15 @@ export function DetailMetricsChart({
       <div className="grid grid-cols-3 gap-3">
         <div className="p-3 bg-muted/50 rounded-lg border border-muted/50">
           <p className="text-xs text-muted-foreground">Média de Movimentações</p>
-          <p className="text-lg font-semibold">{avgMovements}/dia</p>
+          <p className="text-lg font-semibold">{stats.avgMovements}/dia</p>
         </div>
         <div className="p-3 bg-muted/50 rounded-lg border border-muted/50">
           <p className="text-xs text-muted-foreground">Total Concluídos</p>
-          <p className="text-lg font-semibold">{totalCompleted}</p>
+          <p className="text-lg font-semibold">{stats.totalCompleted}</p>
         </div>
         <div className="p-3 bg-muted/50 rounded-lg border border-muted/50">
           <p className="text-xs text-muted-foreground">Taxa de Conclusão</p>
-          <p className="text-lg font-semibold">
-            {chartData.length > 0 && chartData[0].movements > 0
-              ? Math.round((totalCompleted / chartData.reduce((sum, d) => sum + d.movements, 0)) * 100)
-              : 0}
-            %
-          </p>
+          <p className="text-lg font-semibold">{stats.completionRate}%</p>
         </div>
       </div>
 

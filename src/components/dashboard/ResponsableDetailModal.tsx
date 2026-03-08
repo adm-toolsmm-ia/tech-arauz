@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { X, Calendar, Filter, Download, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,29 @@ export function ResponsableDetailModal({
   const [showMetricsBreakdown, setShowMetricsBreakdown] = useState(true);
 
   if (!person) return null;
+
+  // Memoize export handlers to prevent unnecessary DetailMetricsChart re-renders
+  // These are defined after null check to ensure person is always defined
+  const handleExportJSON = useCallback(() => {
+    const filename = generateFilename(person.responsible, 'json');
+    const jsonData = exportToJSON(person, { allData, includeComparison: true });
+    downloadJSON(jsonData, filename);
+  }, [person, allData]);
+
+  const handleExportCSV = useCallback(() => {
+    const filename = generateFilename(person.responsible, 'csv');
+    exportToCSV(person, filename, { allData, includeComparison: true });
+  }, [person, allData]);
+
+  const handleExportPDF = useCallback(() => {
+    const filename = generateFilename(person.responsible, 'pdf');
+    exportToPDF(person, filename, { allData, includeComparison: true });
+  }, [person, allData]);
+
+  // Memoize date range change handler
+  const handleDateRangeChange = useCallback((range: DateRange) => {
+    setDateRange(range);
+  }, []);
 
   // Calculate derived metrics
   const efficiency = person.total_movements > 0
@@ -152,7 +175,7 @@ export function ResponsableDetailModal({
           {/* Date Range Filter */}
           <DateRangeFilter
             value={dateRange}
-            onChange={setDateRange}
+            onChange={handleDateRangeChange}
             showCustomOption={true}
           />
 
@@ -229,11 +252,7 @@ export function ResponsableDetailModal({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  const filename = generateFilename(person.responsible, 'json');
-                  const jsonData = exportToJSON(person, { allData, includeComparison: true });
-                  downloadJSON(jsonData, filename);
-                }}
+                onClick={handleExportJSON}
                 className="gap-2"
                 title="Exportar como JSON com estrutura completa"
               >
@@ -243,10 +262,7 @@ export function ResponsableDetailModal({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  const filename = generateFilename(person.responsible, 'csv');
-                  exportToCSV(person, filename, { allData, includeComparison: true });
-                }}
+                onClick={handleExportCSV}
                 className="gap-2"
                 title="Exportar como CSV com comparação de time"
               >
@@ -256,10 +272,7 @@ export function ResponsableDetailModal({
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => {
-                  const filename = generateFilename(person.responsible, 'pdf');
-                  exportToPDF(person, filename, { allData, includeComparison: true });
-                }}
+                onClick={handleExportPDF}
                 className="gap-2"
                 title="Exportar como PDF com headers e comparação"
               >

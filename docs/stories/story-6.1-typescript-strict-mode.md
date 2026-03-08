@@ -160,12 +160,35 @@ Para garantir type safety máxima, evitar erros em tempo de execução, e estabe
   - [x] Store actions com tipos específicos
   - [x] State type validation (migrate function fixed)
 
-### Subtask 6.1.5: API Routes & Handlers (2-4h)
+### Subtask 6.1.5: API Routes & Handlers (2-4h) ✅ COMPLETE (2026-03-08)
 
-- [ ] `src/app/api/` — API route handlers
-  - [ ] Request/response types
-  - [ ] Error responses tipadas
-  - [ ] Status codes como tipos
+**Progress:** 24/24 API route handlers with explicit return types ✅
+
+- [x] `src/app/api/` — API route handlers
+  - [x] Return types explicitly typed (`Promise<NextResponse>`)
+  - [x] Error responses correctly typed (NextResponse.json)
+  - [x] Status codes as part of NextResponse.json() calls
+
+**API Handlers Completed (24 total):**
+- agents routes: GET, POST ✅
+- agents/budget: GET ✅
+- agents/templates: GET ✅
+- agents/types: GET ✅
+- agents/[id]: GET (with params), PATCH, DELETE ✅
+- agents/[id]/chat: POST ✅
+- agents/[id]/metrics: GET ✅
+- agents/[id]/sessions: GET, POST ✅
+- agents/[id]/traces: GET ✅
+- integracoes routes: GET, POST, PUT, DELETE ✅
+- integracoes/logs: GET ✅
+- integracoes/logs/summary: GET ✅
+- integracoes/setup: POST ✅
+- integracoes/sync: POST ✅
+- integracoes/test: POST ✅
+- lm-models/bulk-update: PATCH ✅
+- sessions: GET ✅
+
+Fixed: Response.json() → NextResponse.json() in agents fallback function.
 
 ### Subtask 6.1.6: Tests Type Safety (2-3h)
 

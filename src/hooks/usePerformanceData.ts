@@ -75,6 +75,7 @@ export function usePerformanceData(
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- params usado como objeto; deps explícitas por valor evitam loop
   }, [params.period, params.team_scope, params.custom_start_date, params.custom_end_date]);
 
   return { data, summary, loading, error };

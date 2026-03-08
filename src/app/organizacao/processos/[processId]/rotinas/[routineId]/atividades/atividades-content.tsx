@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SplitView } from '@/components/views/SplitView';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { BpmDocumentationPanel } from '@/components/organization/BpmDocumentationPanel';
 import {
   createActivityAction,
   updateActivityAction,
@@ -84,6 +85,15 @@ function ActivityCockpit({
       {activity.average_execution_time != null && (
         <p className="text-sm">Tempo médio: {activity.average_execution_time} min</p>
       )}
+      <BpmDocumentationPanel
+        inputs={activity.inputs}
+        outputs={activity.outputs}
+        risks={activity.risks}
+        impacts={activity.impacts}
+        documentation={activity.documentation}
+        showSourceBadge={!!(activity.documentation as { source?: string })?.source}
+        showActivityDocs
+      />
       <div className="flex gap-2">
         {onEdit && (
           <Button variant="outline" size="sm" onClick={onEdit}>

@@ -168,16 +168,21 @@ function parseJsonArray(val: unknown): string[] {
 }
 
 function parseJsonArrayOfObjects(val: unknown): OrgInputOutput[] {
-  if (Array.isArray(val)) return val as OrgInputOutput[];
-  if (typeof val === 'string') {
-    try {
-      const parsed = JSON.parse(val);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
+  const arr = (() => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') {
+      try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
     }
-  }
-  return [];
+    return [];
+  })();
+  return arr.map((v) =>
+    typeof v === 'string' ? { name: v } : (v as OrgInputOutput),
+  );
 }
 
 function parseJsonObject(val: unknown): Record<string, unknown> {

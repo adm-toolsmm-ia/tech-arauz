@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SplitView } from '@/components/views/SplitView';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { BpmDocumentationPanel } from '@/components/organization/BpmDocumentationPanel';
 import {
   createRoutineAction,
   updateRoutineAction,
@@ -59,6 +60,10 @@ function RoutineCockpit({
           <p className="text-sm">{routine.objective}</p>
         </div>
       )}
+      <BpmDocumentationPanel
+        documentation={routine.documentation}
+        showSourceBadge={!!(routine.documentation as { source?: string })?.source}
+      />
       <div className="flex gap-2">
         <Button variant="secondary" size="sm" asChild>
           <Link href={`/organizacao/processos/${processId}/rotinas/${routine.id}/atividades`}>

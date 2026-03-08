@@ -98,7 +98,36 @@ Ou: `defaultValue={value ?? undefined}` ou `defaultValue={value ?? 'fallback'}`.
 
 ---
 
-### 3.4 Build Next.js — Falha de memória ou timeout
+### 3.4 label-has-associated-control
+
+**Sintoma:** `A form label must be associated with a control`.
+
+**Causa:** Uso de `<label>` sem `htmlFor`+`id` ou sem envolvimento do controle.
+
+**Soluções:**
+
+- Input/Select nativo: `<Label htmlFor="id">` + `id` no controle
+- Select customizado (Radix/shadcn): componente deve aceitar prop `id` e repassar ao trigger
+- Grupo de botões: usar `<fieldset>` + `<legend>` em vez de `label`
+
+**Referência:** `docs/accessibility/component-a11y-guide.md` — seção "Filtros e componentes customizados".
+
+---
+
+### 3.5 react-hooks/exhaustive-deps
+
+**Sintoma:** `React Hook useEffect has a missing dependency: 'params'`.
+
+**Causa:** Objeto usado no efeito mas apenas propriedades no array de deps.
+
+**Soluções:**
+
+- Preferir: incluir `params` e memoizar no chamador com `useMemo` quando necessário
+- Alternativa: `eslint-disable-next-line` com justificativa quando as deps por valor forem intencionais
+
+---
+
+### 3.6 Build Next.js — Falha de memória ou timeout
 
 **Sintoma:** Build trava ou falha com erro de memória na Vercel.
 
@@ -112,7 +141,7 @@ Ou: `defaultValue={value ?? undefined}` ou `defaultValue={value ?? 'fallback'}`.
 
 ---
 
-### 3.5 Variáveis de ambiente ausentes
+### 3.7 Variáveis de ambiente ausentes
 
 **Sintoma:** Build passa, mas runtime falha com `undefined` em env vars.
 

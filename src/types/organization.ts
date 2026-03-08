@@ -164,6 +164,20 @@ export interface OrgDocumentation {
   best_practices?: string;
   internal_guidelines?: string;
   common_errors?: string;
+  /** BPM/Espaider: fonte (ex.: espaider) */
+  source?: string;
+  /** BPM/Espaider: documento de referência */
+  doc?: string;
+  /** BPM/Espaider: horário limite */
+  horario_limite?: string;
+  /** BPM/Espaider: regra de negócio */
+  regra?: string;
+  /** BPM/Espaider: disponível a partir de */
+  disponivel_a_partir?: string;
+  /** BPM: passos da rotina */
+  steps?: string[];
+  /** BPM: prazo (ex.: 24h) */
+  prazo?: string;
 }
 
 export interface OrgActivityDocumentation extends OrgDocumentation {

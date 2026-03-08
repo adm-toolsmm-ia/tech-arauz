@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import type { PerformanceMetrics } from '@/app/dashboard/operacoes/actions';
 import { DetailMetricsChart } from './DetailMetricsChart';
-import { exportToCSV, exportToPDF, generateFilename } from './export-utils';
+import { exportToCSV, exportToPDF, exportToJSON, downloadJSON, generateFilename } from './export-utils';
 
 interface ResponsableDetailModalProps {
   isOpen: boolean;
@@ -243,10 +243,25 @@ export function ResponsableDetailModal({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const filename = generateFilename(person.responsible, 'csv');
-                  exportToCSV(person, filename);
+                  const filename = generateFilename(person.responsible, 'json');
+                  const jsonData = exportToJSON(person, { allData, includeComparison: true });
+                  downloadJSON(jsonData, filename);
                 }}
                 className="gap-2"
+                title="Exportar como JSON com estrutura completa"
+              >
+                <Download className="w-4 h-4" />
+                JSON
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const filename = generateFilename(person.responsible, 'csv');
+                  exportToCSV(person, filename, { allData, includeComparison: true });
+                }}
+                className="gap-2"
+                title="Exportar como CSV com comparação de time"
               >
                 <Download className="w-4 h-4" />
                 CSV
@@ -256,9 +271,10 @@ export function ResponsableDetailModal({
                 size="sm"
                 onClick={() => {
                   const filename = generateFilename(person.responsible, 'pdf');
-                  exportToPDF(person, filename);
+                  exportToPDF(person, filename, { allData, includeComparison: true });
                 }}
                 className="gap-2"
+                title="Exportar como PDF com headers e comparação"
               >
                 <FileText className="w-4 h-4" />
                 PDF

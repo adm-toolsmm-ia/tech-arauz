@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { BpmDocumentationPanel } from '@/components/organization/BpmDocumentationPanel';
 import type { OrgProcess, OrgRoutine, OrgSystem } from '@/types/organization';
 
 interface ProcessCockpit360Props {
@@ -146,6 +147,15 @@ export function ProcessCockpit360({
             </div>
             <p className="text-sm">{rolesDisplay}</p>
           </section>
+
+          <BpmDocumentationPanel
+            inputs={process.inputs}
+            outputs={process.outputs}
+            risks={process.risks}
+            impacts={process.impacts}
+            documentation={process.documentation}
+            showSourceBadge={!!(process.documentation as { source?: string })?.source}
+          />
 
           {process.id && (
             <Link href={`/organizacao/processos/${process.id}/rotinas`}>

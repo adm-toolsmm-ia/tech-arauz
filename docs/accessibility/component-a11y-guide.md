@@ -199,6 +199,16 @@ This guide documents accessibility best practices for all components in the Tech
 
 ---
 
+### Filtros e componentes customizados (Select, grupos de botão)
+
+**Select (Radix/shadcn):** componente deve aceitar `id` e repassar ao trigger; consumidor usa `<Label htmlFor={id}>` + `<TeamFilter id={id} />`.
+
+**Grupo de botões (ex.: PeriodSelector):** usar `<fieldset>` + `<legend>` — não usar `<label>` isolado.
+
+**Evitar:** `<label>Texto</label><CustomControl />` sem associação.
+
+---
+
 ### Tabs
 
 **Good Practice:**

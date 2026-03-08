@@ -333,6 +333,7 @@ Antes de concluir story de novo módulo/tabela:
 - [ ] Dialog para criar/editar; Dialog para confirmar exclusão
 - [ ] Estados loading, vazio, sem resultado, erro
 - [ ] A11y: sr-only, teclado em cards/linhas
+- [ ] A11y: labels associados a controles (htmlFor+id ou fieldset/legend)
 
 ---
 
@@ -351,4 +352,5 @@ Este documento é **normativo** para:
 3. Respeite o contrato do hook (seção 8) e o filter registry (seção 9)
 4. Evite todos os anti-padrões da seção 12
 5. Rode os quality gates antes de push (seção 13); consulte [build-deploy-gates.md](./build-deploy-gates.md)
-6. Exceções devem ser documentadas na story com justificativa técnica
+6. Ao criar filtros ou selects customizados, garantir associação label-controle; consultar build-deploy-gates.md seção 3.4 em caso de erro label-has-associated-control
+7. Exceções devem ser documentadas na story com justificativa técnica

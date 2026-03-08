@@ -6,6 +6,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import type { AlertType, Notification } from '@/lib/notifications/types';
 import { useNotifications } from './useNotifications';
 import {
   generateNotificationsFromProject,
@@ -21,11 +22,15 @@ interface ProjectData {
   prazo_aprovador?: string | null;
 }
 
+interface UseSyncNotificationsReturn {
+  synced: boolean;
+}
+
 /**
  * Hook to sync notifications with project data
  * Runs once on mount to generate notifications from current projects
  */
-export function useSyncNotifications(projects: ProjectData[] = []) {
+export function useSyncNotifications(projects: ProjectData[] = []): UseSyncNotificationsReturn {
   const { addNotification } = useNotifications();
   const syncedRef = useRef(false);
 
@@ -34,7 +39,7 @@ export function useSyncNotifications(projects: ProjectData[] = []) {
     if (syncedRef.current || projects.length === 0) return;
 
     try {
-      const allNotifications: any[] = [];
+      const allNotifications: Notification[] = [];
 
       // Generate notifications from each project
       projects.forEach((project) => {

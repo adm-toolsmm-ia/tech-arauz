@@ -42,7 +42,7 @@ interface UseFilterStateReturn {
   sortConfig: SortConfig | null;
   definitions: FilterDefinition[];
   setFilters: (filters: FilterState) => void;
-  updateFilter: (filterId: string, value: any) => void;
+  updateFilter: (filterId: string, value: unknown) => void;
   setSearch: (search: string) => void;
   setViewMode: (mode: string) => void;
   setSortConfig: (config: SortConfig | null) => void;
@@ -53,10 +53,17 @@ interface UseFilterStateReturn {
   isFiltersEmpty: boolean;
 }
 
+interface UseModuleFiltersReturn<T extends Record<string, any>>
+  extends UseFilterStateReturn {
+  filteredData: T[];
+}
+
 /**
  * Hook for managing filter state with optional persistence
  */
-export function useFilterState(options: UseFilterStateOptions): UseFilterStateReturn {
+export function useFilterState(
+  options: UseFilterStateOptions,
+): UseFilterStateReturn {
   const {
     moduleId,
     definitions,
@@ -119,7 +126,7 @@ export function useFilterState(options: UseFilterStateOptions): UseFilterStateRe
   );
 
   const updateFilter = useCallback(
-    (filterId: string, value: any) => {
+    (filterId: string, value: unknown) => {
       const newFilters = mergeFilters(filters, { [filterId]: value });
       setFilters(newFilters);
     },
@@ -240,7 +247,7 @@ export function useModuleFilters<T extends Record<string, any>>(
     initialSort?: SortConfig | null;
     onDataChange?: (filtered: T[]) => void;
   },
-) {
+): UseModuleFiltersReturn<T> {
   const filterState = useFilterState({
     moduleId,
     definitions,

@@ -24,7 +24,7 @@ export function useFilterUrlSync(
   definitions: FilterDefinition[],
   onFiltersChange: (filters: FilterState) => void,
   options?: { enabled?: boolean; debounceMs?: number },
-) {
+): void {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

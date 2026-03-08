@@ -48,7 +48,7 @@ export const useNotificationStore = create<NotificationState>()(
     {
       name: 'tech-arauz-notifications',
       version: 1,
-      migrate: (persistedState: unknown, version: number): NotificationState => {
+      migrate: (persistedState: unknown, version: number): { notifications: Notification[] } => {
         // Handle any schema migrations here
         if (version === 1) {
           // Validate that persistedState has the expected structure
@@ -58,13 +58,13 @@ export const useNotificationStore = create<NotificationState>()(
             'notifications' in persistedState &&
             Array.isArray((persistedState as Record<string, unknown>).notifications)
           ) {
-            return persistedState as NotificationState;
+            return persistedState as { notifications: Notification[] };
           }
           // Fallback to default state if validation fails
           return { notifications: [] };
         }
         return persistedState && typeof persistedState === 'object' && 'notifications' in persistedState
-          ? (persistedState as NotificationState)
+          ? (persistedState as { notifications: Notification[] })
           : { notifications: [] };
       },
     },

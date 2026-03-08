@@ -39,7 +39,7 @@ function extractToc(markdown: string): TocItem[] {
   return items;
 }
 
-export function MarkdownViewer({ content, onTocGenerated, className = '' }: MarkdownViewerProps) {
+export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ content, onTocGenerated, className = '' }) => {
   React.useEffect(() => {
     if (onTocGenerated) {
       const toc = extractToc(content);
@@ -63,4 +63,4 @@ export function MarkdownViewer({ content, onTocGenerated, className = '' }: Mark
       </ReactMarkdown>
     </article>
   );
-}
+};

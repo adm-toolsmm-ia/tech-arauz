@@ -10,7 +10,7 @@ interface ErrorFallbackProps {
   label?: string;
 }
 
-export function ErrorFallback({ error, onRetry, label }: ErrorFallbackProps) {
+export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, onRetry, label }) => {
   return (
     <div className="flex min-h-[300px] items-center justify-center p-6">
       <Card className="w-full max-w-md border-destructive/20">
@@ -56,4 +56,4 @@ export function ErrorFallback({ error, onRetry, label }: ErrorFallbackProps) {
       </Card>
     </div>
   );
-}
+};

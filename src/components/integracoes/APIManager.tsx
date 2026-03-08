@@ -297,7 +297,7 @@ function APIConfigDialog({
 // Component: APIManager
 // =============================================================================
 
-export function APIManager({ onViewLogs, onSyncComplete }: APIManagerProps) {
+export const APIManager: React.FC<APIManagerProps> = ({ onViewLogs, onSyncComplete }) => {
   const [apis, setAPIs] = React.useState<EspaiderAPI[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -546,4 +546,4 @@ export function APIManager({ onViewLogs, onSyncComplete }: APIManagerProps) {
       )}
     </>
   );
-}
+};

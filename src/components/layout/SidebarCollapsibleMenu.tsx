@@ -20,7 +20,7 @@ interface SidebarCollapsibleMenuProps {
   item: NavItem;
 }
 
-export function SidebarCollapsibleMenu({ item }: SidebarCollapsibleMenuProps) {
+export const SidebarCollapsibleMenu: React.FC<SidebarCollapsibleMenuProps> = ({ item }) => {
   const pathname = usePathname();
   const isActive = item.subItems?.some(
     (sub) => pathname === sub.url || pathname.startsWith(`${sub.url}/`),
@@ -66,4 +66,4 @@ export function SidebarCollapsibleMenu({ item }: SidebarCollapsibleMenuProps) {
       </SidebarMenuItem>
     </Collapsible>
   );
-}
+};

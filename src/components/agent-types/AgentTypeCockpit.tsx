@@ -20,7 +20,7 @@ function InfoField({ label, value }: { label: string; value: string | null | und
   );
 }
 
-export function AgentTypeCockpit({ agentType, onEdit }: AgentTypeCockpitProps) {
+export const AgentTypeCockpit: React.FC<AgentTypeCockpitProps> = ({ agentType, onEdit }) => {
   const modelDisplay =
     agentType.default_model_provider && agentType.default_model_id
       ? `${agentType.default_model_provider} / ${agentType.default_model_id}`
@@ -78,4 +78,4 @@ export function AgentTypeCockpit({ agentType, onEdit }: AgentTypeCockpitProps) {
       </div>
     </div>
   );
-}
+};

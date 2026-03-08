@@ -152,7 +152,7 @@ function getErrorMessage(status: number): string {
 // Component
 // =============================================================================
 
-export function LogViewer({ datasetFilter }: LogViewerProps) {
+export const LogViewer: React.FC<LogViewerProps> = ({ datasetFilter }) => {
   const [logs, setLogs] = React.useState<LogEntry[]>([]);
   const [summaries, setSummaries] = React.useState<SyncSummary[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);

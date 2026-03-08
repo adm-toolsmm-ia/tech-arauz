@@ -8,7 +8,7 @@ interface GlobalChatbotButtonProps {
   onClick: () => void;
 }
 
-export function GlobalChatbotButton({ onClick }: GlobalChatbotButtonProps) {
+export const GlobalChatbotButton: React.FC<GlobalChatbotButtonProps> = ({ onClick }) => {
   return (
     <Button
       onClick={onClick}
@@ -19,4 +19,4 @@ export function GlobalChatbotButton({ onClick }: GlobalChatbotButtonProps) {
       <MessageSquare className="h-6 w-6" />
     </Button>
   );
-}
+};

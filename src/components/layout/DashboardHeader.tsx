@@ -14,7 +14,7 @@ interface DashboardHeaderProps {
   subtitle?: string;
 }
 
-export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
+export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ title, subtitle }) => {
   const { isDark, toggle } = useDarkMode();
 
   const toggleTheme = () => {
@@ -52,4 +52,4 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
       </div>
     </header>
   );
-}
+};

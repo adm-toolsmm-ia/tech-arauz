@@ -10,7 +10,7 @@ interface PdfExportButtonProps {
   className?: string;
 }
 
-export function PdfExportButton({ contentRef, title, className }: PdfExportButtonProps) {
+export const PdfExportButton: React.FC<PdfExportButtonProps> = ({ contentRef, title, className }) => {
   const [exporting, setExporting] = React.useState(false);
 
   const handleExport = async () => {
@@ -52,4 +52,4 @@ export function PdfExportButton({ contentRef, title, className }: PdfExportButto
       {exporting ? 'Exportando...' : 'Exportar PDF'}
     </Button>
   );
-}
+};

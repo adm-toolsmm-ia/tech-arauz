@@ -9,7 +9,7 @@ interface LmProviderKanbanCardProps {
   provider: LmProvider;
 }
 
-export function LmProviderKanbanCard({ provider }: LmProviderKanbanCardProps) {
+export const LmProviderKanbanCard: React.FC<LmProviderKanbanCardProps> = ({ provider }) => {
   return (
     <div className="space-y-1.5">
       <span className="line-clamp-2 text-sm font-semibold leading-tight text-foreground/90">
@@ -42,4 +42,4 @@ export function LmProviderKanbanCard({ provider }: LmProviderKanbanCardProps) {
       </div>
     </div>
   );
-}
+};

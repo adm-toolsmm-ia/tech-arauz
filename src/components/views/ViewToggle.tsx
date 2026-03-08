@@ -13,7 +13,7 @@ interface ViewToggleProps {
   className?: string;
 }
 
-export function ViewToggle({ view, onViewChange, className }: ViewToggleProps) {
+export const ViewToggle: React.FC<ViewToggleProps> = ({ view, onViewChange, className }) => {
   return (
     <TooltipProvider>
       <div className={cn('inline-flex rounded-lg border bg-muted p-1', className)}>
@@ -55,4 +55,4 @@ export function ViewToggle({ view, onViewChange, className }: ViewToggleProps) {
       </div>
     </TooltipProvider>
   );
-}
+};

@@ -114,7 +114,7 @@ function NotificationItem({
   );
 }
 
-export function NotificationPanel({ onClose }: NotificationPanelProps) {
+export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose }) => {
   const router = useRouter();
   const { notifications, markAsRead, clearAll, removeNotification } = useNotifications();
 
@@ -177,4 +177,4 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
       )}
     </div>
   );
-}
+};

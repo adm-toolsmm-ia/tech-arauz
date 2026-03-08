@@ -10,7 +10,7 @@ interface ErpReadOnlyBannerProps {
   erpLink?: string;
 }
 
-export function ErpReadOnlyBanner({ variant, timestamp, erpLink }: ErpReadOnlyBannerProps) {
+export const ErpReadOnlyBanner: React.FC<ErpReadOnlyBannerProps> = ({ variant, timestamp, erpLink }) => {
   const formattedTime = timestamp
     ? formatDistanceToNow(new Date(timestamp), { addSuffix: true, locale: ptBR })
     : null;
@@ -69,4 +69,4 @@ export function ErpReadOnlyBanner({ variant, timestamp, erpLink }: ErpReadOnlyBa
       )}
     </div>
   );
-}
+};

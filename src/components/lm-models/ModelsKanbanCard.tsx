@@ -16,7 +16,7 @@ const TIER_CONFIG: Record<string, { emoji: string; label: string }> = {
   flagship: { emoji: '👑', label: 'Flagship' },
 };
 
-export function ModelsKanbanCard({ model, provider }: ModelsKanbanCardProps) {
+export const ModelsKanbanCard: React.FC<ModelsKanbanCardProps> = ({ model, provider }) => {
   const tierConfig = model.tier ? TIER_CONFIG[model.tier] : null;
 
   return (
@@ -44,4 +44,4 @@ export function ModelsKanbanCard({ model, provider }: ModelsKanbanCardProps) {
       </div>
     </div>
   );
-}
+};

@@ -23,9 +23,9 @@ interface NotificationSyncProps {
   projects?: Project[];
 }
 
-export function NotificationSync({ children, projects = [] }: NotificationSyncProps) {
+export const NotificationSync: React.FC<NotificationSyncProps> = ({ children, projects = [] }) => {
   // This hook will generate notifications from projects on mount
   useSyncNotifications(projects);
 
   return <>{children}</>;
-}
+};

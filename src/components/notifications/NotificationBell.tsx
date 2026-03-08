@@ -15,7 +15,7 @@ interface NotificationBellProps {
   className?: string;
 }
 
-export function NotificationBell({ className }: NotificationBellProps) {
+export const NotificationBell: React.FC<NotificationBellProps> = ({ className }) => {
   const [isPanelOpen, setIsPanelOpen] = React.useState(false);
   const { unreadCount, hasUnread } = useNotifications();
   const panelRef = React.useRef<HTMLDivElement>(null);
@@ -83,4 +83,4 @@ export function NotificationBell({ className }: NotificationBellProps) {
       )}
     </div>
   );
-}
+};

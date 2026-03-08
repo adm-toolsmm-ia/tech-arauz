@@ -1,7 +1,8 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { dbActivityToUI } from '@/lib/transformers/organization';
-import type { DBOrgActivity } from '@/lib/transformers/organization';
+import { dbActivityToUI, dbOrgDocumentToUI } from '@/lib/transformers/organization';
+import type { DBOrgActivity, DBOrgDocument } from '@/lib/transformers/organization';
+import type { OrgDocument } from '@/types/organization';
 import { AtividadesContent } from './atividades-content';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
@@ -38,17 +39,43 @@ export default async function AtividadesPage({ params }: AtividadesPageProps) {
     .eq('id', processId)
     .single();
 
-  const { data: activitiesRaw, error } = await supabase
-    .from('org_activities')
-    .select('*')
-    .eq('routine_id', routineId)
-    .order('name', { ascending: true });
+  const [
+    { data: activitiesRaw, error },
+    { data: activityDocumentsRaw },
+    { data: documentsRaw },
+  ] = await Promise.all([
+    supabase
+      .from('org_activities')
+      .select('*')
+      .eq('routine_id', routineId)
+      .order('name', { ascending: true }),
+    supabase.from('org_activity_documents').select('activity_id, org_document_id'),
+    supabase.from('org_documents').select('*').order('name', { ascending: true }),
+  ]);
 
   if (error) {
     console.error('Error fetching activities:', error);
   }
 
   const activities = ((activitiesRaw as DBOrgActivity[]) || []).map((row) => dbActivityToUI(row));
+  const documents = ((documentsRaw as DBOrgDocument[]) ?? []).map((r) => dbOrgDocumentToUI(r));
+  const activityDocuments = (activityDocumentsRaw ?? []) as {
+    activity_id: string;
+    org_document_id: string;
+  }[];
+
+  const documentsByActivityId = activityDocuments.reduce<Record<string, OrgDocument[]>>(
+    (acc, ad) => {
+      const list = acc[ad.activity_id] ?? [];
+      const doc = documents.find((d) => d.id === ad.org_document_id);
+      if (doc && !list.some((d) => d.id === doc.id)) {
+        list.push(doc);
+      }
+      acc[ad.activity_id] = list;
+      return acc;
+    },
+    {},
+  );
 
   return (
     <ErrorBoundary label="Atividades">
@@ -58,6 +85,8 @@ export default async function AtividadesPage({ params }: AtividadesPageProps) {
         routineId={routineId}
         routineName={routine.name}
         activities={activities}
+        documents={documents}
+        documentsByActivityId={documentsByActivityId}
       />
     </ErrorBoundary>
   );

@@ -10,6 +10,7 @@ interface DocumentCockpit360Props {
   document: OrgDocument;
   processName?: string;
   onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 interface InfoFieldProps {
@@ -26,7 +27,12 @@ const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   );
 };
 
-export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({ document, processName, onEdit }) => {
+export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({
+  document,
+  processName,
+  onEdit,
+  onDelete,
+}) => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="principal" className="w-full">
@@ -60,11 +66,23 @@ export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({ document
                 {document.type && <p className="text-sm text-muted-foreground">{document.type}</p>}
               </div>
             </div>
-            {onEdit && (
-              <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
-                Editar
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {onEdit && (
+                <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+                  Editar
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onDelete}
+                  className="text-destructive hover:text-destructive"
+                >
+                  Excluir
+                </Button>
+              )}
+            </div>
           </div>
 
           <section>

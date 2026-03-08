@@ -2,10 +2,83 @@ import type { Config } from 'tailwindcss';
 import tokens from './design/tokens.json';
 
 /**
- * Design tokens extracted from global token set (DTCG format)
+ * Design tokens extracted from DTCG (Design Token Community Group) format
  * Integrated directly into Tailwind configuration for centralized token management
+ * Tokens include: colors (44), typography (17), spacing (8), borders (9), shadows (5)
  */
-const designTokens = tokens.global;
+
+// Helper: Extract color values from DTCG tokens
+const extractColors = () => {
+	const colors: Record<string, any> = {};
+
+	// Primary colors
+	if (tokens.colors.primary) {
+		colors.primary = {};
+		Object.entries(tokens.colors.primary).forEach(([key, val]: any) => {
+			colors.primary[key] = val.$value;
+		});
+	}
+
+	// Secondary colors
+	if (tokens.colors.secondary) {
+		colors.secondary = {};
+		Object.entries(tokens.colors.secondary).forEach(([key, val]: any) => {
+			colors.secondary[key] = val.$value;
+		});
+	}
+
+	// Semantic colors
+	if (tokens.colors.semantic) {
+		Object.entries(tokens.colors.semantic).forEach(([key, val]: any) => {
+			colors[key] = val.$value;
+		});
+	}
+
+	// Grayscale
+	if (tokens.colors.grayscale) {
+		colors.gray = {};
+		Object.entries(tokens.colors.grayscale).forEach(([key, val]: any) => {
+			colors.gray[key] = val.$value;
+		});
+	}
+
+	return colors;
+};
+
+// Helper: Extract spacing values from DTCG tokens
+const extractSpacing = () => {
+	const spacing: Record<string, string> = {};
+
+	if (tokens.spacing) {
+		Object.entries(tokens.spacing).forEach(([key, val]: any) => {
+			spacing[key] = val.$value;
+		});
+	}
+
+	return spacing;
+};
+
+// Helper: Extract typography from DTCG tokens
+const extractTypography = () => {
+	const typography: Record<string, any> = {};
+
+	// Font families
+	if (tokens.typography.fontFamily) {
+		Object.entries(tokens.typography.fontFamily).forEach(([key, val]: any) => {
+			typography[`fontFamily${key.charAt(0).toUpperCase() + key.slice(1)}`] = val.$value;
+		});
+	}
+
+	// Font sizes
+	if (tokens.typography.fontSize) {
+		typography.fontSize = {};
+		Object.entries(tokens.typography.fontSize).forEach(([key, val]: any) => {
+			typography.fontSize[key] = val.$value;
+		});
+	}
+
+	return typography;
+};
 
 const config: Config = {
 	darkMode: ['class'],
@@ -18,35 +91,29 @@ const config: Config = {
 	theme: {
 		extend: {
 			colors: {
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+				...extractColors(),
+				// Fallback to CSS variables if tokens unavailable
+				background: 'var(--background, hsl(0 0% 100%))',
+				foreground: 'var(--foreground, hsl(0 0% 0%))',
 				card: {
-					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
+					DEFAULT: 'var(--card, hsl(0 0% 100%))',
+					foreground: 'var(--card-foreground, hsl(0 0% 0%))'
 				},
 				popover: {
-					DEFAULT: 'hsl(var(--popover))',
-					foreground: 'hsl(var(--popover-foreground))'
-				},
-				primary: {
-					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
-				},
-				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					DEFAULT: 'var(--popover, hsl(0 0% 100%))',
+					foreground: 'var(--popover-foreground, hsl(0 0% 0%))'
 				},
 				muted: {
-					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
+					DEFAULT: 'var(--muted, hsl(0 0% 95%))',
+					foreground: 'var(--muted-foreground, hsl(0 0% 40%))'
 				},
 				accent: {
-					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					DEFAULT: 'var(--accent, hsl(210 100% 50%))',
+					foreground: 'var(--accent-foreground, hsl(0 0% 100%))'
 				},
 				destructive: {
-					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
+					DEFAULT: 'var(--destructive, hsl(0 84% 60%))',
+					foreground: 'var(--destructive-foreground, hsl(0 0% 100%))'
 				},
 				success: {
 					DEFAULT: 'hsl(var(--success))',
@@ -96,25 +163,55 @@ const config: Config = {
 					melhoria: 'hsl(var(--type-melhoria))'
 				}
 			},
+			// Spacing from DTCG tokens (xs=4px through 3xl=48px)
+			spacing: extractSpacing(),
+
+			// Border radius from DTCG tokens
 			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				...(tokens.borders?.radius && Object.entries(tokens.borders.radius).reduce((acc: any, [k, v]: any) => {
+					acc[k] = v.$value;
+					return acc;
+				}, {})),
+				// Fallback values
+				lg: 'var(--radius, 0.5rem)',
+				md: 'calc(var(--radius, 0.5rem) - 2px)',
+				sm: 'calc(var(--radius, 0.5rem) - 4px)'
 			},
+
+			// Font family from DTCG tokens
 			fontFamily: {
-				sans: [
-					'var(--font-inter)',
-					'system-ui',
-					'sans-serif'
-				],
-				display: [
-					'var(--font-dm-sans)',
-					'var(--font-inter)',
-					'system-ui',
-					'sans-serif'
-				]
+				...(tokens.typography?.fontFamily && Object.entries(tokens.typography.fontFamily).reduce((acc: any, [k, v]: any) => {
+					acc[k === 'body' ? 'sans' : k] = v.$value.split(',').map((f: string) => f.trim());
+					return acc;
+				}, {})),
+				// Fallback
+				sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+				display: ['var(--font-dm-sans)', 'var(--font-inter)', 'system-ui', 'sans-serif']
 			},
+
+			// Font sizes from DTCG tokens
+			fontSize: {
+				...(tokens.typography?.fontSize && Object.entries(tokens.typography.fontSize).reduce((acc: any, [k, v]: any) => {
+					acc[k] = v.$value;
+					return acc;
+				}, {}))
+			},
+
+			// Line heights from DTCG tokens
+			lineHeight: {
+				...(tokens.typography?.lineHeight && Object.entries(tokens.typography.lineHeight).reduce((acc: any, [k, v]: any) => {
+					acc[k] = v.$value;
+					return acc;
+				}, {}))
+			},
+
+			// Box shadows from DTCG tokens
 			boxShadow: {
+				...(tokens.shadows && Object.entries(tokens.shadows).reduce((acc: any, [k, v]: any) => {
+					acc[k] = v.$value;
+					return acc;
+				}, {})),
+				// Fallback design system shadows
 				soft: '0 2px 8px rgba(0, 0, 0, 0.06)',
 				medium: '0 4px 16px rgba(0, 0, 0, 0.08)',
 				card: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)',

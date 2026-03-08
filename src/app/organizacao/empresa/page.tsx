@@ -50,6 +50,7 @@ export default async function EmpresaPage() {
     { data: suppliersRaw },
     { data: servicesRaw },
     { data: documentsRaw },
+    { data: processSystemsRaw },
   ] = await Promise.all([
     supabase.from('org_areas').select('*').order('name', { ascending: true }),
     supabase.from('org_processes').select('*').order('name', { ascending: true }),
@@ -60,6 +61,7 @@ export default async function EmpresaPage() {
     supabase.from('org_suppliers').select('*').order('name', { ascending: true }),
     supabase.from('org_services').select('*').order('name', { ascending: true }),
     supabase.from('org_documents').select('*').order('name', { ascending: true }),
+    supabase.from('org_process_systems').select('process_id, system_id'),
   ]);
 
   const nucleiCountByArea = (nucleiRaw ?? []).reduce<Record<string, number>>((acc, n) => {
@@ -123,6 +125,17 @@ export default async function EmpresaPage() {
     {},
   );
 
+  const processSystems = (processSystemsRaw ?? []) as { process_id: string; system_id: string }[];
+  const systemsByProcessId = processSystems.reduce<Record<string, typeof systems>>((acc, ps) => {
+    const list = acc[ps.process_id] ?? [];
+    const system = systems.find((s) => s.id === ps.system_id);
+    if (system && !list.some((s) => s.id === system.id)) {
+      list.push(system);
+    }
+    acc[ps.process_id] = list;
+    return acc;
+  }, {});
+
   const vinculos: EmpresaVinculo[] = [
     ...areas.map((a) => ({
       id: a.id,
@@ -175,7 +188,9 @@ export default async function EmpresaPage() {
           processesByAreaId,
           routinesByProcessId,
           resourcesBySystemId,
+          systemsByProcessId,
           processMap: Object.fromEntries(processMap),
+          systems,
         }}
         error={result.error}
       />

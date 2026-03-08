@@ -1,15 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { Monitor, FileText, Settings } from 'lucide-react';
+import { Monitor, FileText, Settings, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/ui/EmptyState';
 import type { OrgSystem, OrgSystemResource } from '@/types/organization';
 
 interface SystemCockpit360Props {
   system: OrgSystem;
   resources: OrgSystemResource[];
   onEdit?: () => void;
+  onDelete?: () => void;
+  onAddResource?: () => void;
+  onEditResource?: (resource: OrgSystemResource) => void;
+  onDeleteResource?: (resource: OrgSystemResource) => void;
 }
 
 interface InfoFieldProps {
@@ -26,7 +31,15 @@ const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   );
 };
 
-export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({ system, resources, onEdit }) => {
+export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({
+  system,
+  resources,
+  onEdit,
+  onDelete,
+  onAddResource,
+  onEditResource,
+  onDeleteResource,
+}) => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="principal" className="w-full">
@@ -60,11 +73,23 @@ export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({ system, reso
                 <h3 className="font-semibold">{system.name}</h3>
               </div>
             </div>
-            {onEdit && (
-              <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
-                Editar
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {onEdit && (
+                <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+                  Editar
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onDelete}
+                  className="text-destructive hover:text-destructive"
+                >
+                  Excluir
+                </Button>
+              )}
+            </div>
           </div>
 
           <section>
@@ -86,14 +111,36 @@ export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({ system, reso
         </TabsContent>
 
         <TabsContent value="recursos" className="mt-6">
-          {resources.length === 0 ? (
+          {resources.length === 0 && !onAddResource ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               Nenhum recurso cadastrado neste sistema
             </div>
+          ) : resources.length === 0 && onAddResource ? (
+            <EmptyState
+              icon={Settings}
+              title="Nenhum recurso cadastrado"
+              description="Adicione recursos de sistema (módulos, integrações, etc.)."
+              actionLabel="Adicionar recurso"
+              onAction={onAddResource}
+            />
           ) : (
             <div className="space-y-3">
+              {onAddResource && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-2"
+                  onClick={onAddResource}
+                >
+                  <Plus className="h-4 w-4" />
+                  Adicionar recurso
+                </Button>
+              )}
               {resources.map((r) => (
-                <div key={r.id} className="flex items-center justify-between rounded-lg border p-4">
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                >
                   <div>
                     <p className="text-sm font-medium">{r.name}</p>
                     {r.description && (
@@ -102,6 +149,34 @@ export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({ system, reso
                       </p>
                     )}
                   </div>
+                  {(onEditResource || onDeleteResource) && (
+                    <div className="flex gap-2">
+                      {onEditResource && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => onEditResource(r)}
+                          title="Editar recurso"
+                          aria-label={`Editar ${r.name}`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {onDeleteResource && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => onDeleteResource(r)}
+                          title="Excluir recurso"
+                          aria-label={`Excluir ${r.name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

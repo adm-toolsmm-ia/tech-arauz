@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Plus, ArrowLeft, CheckSquare } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, ArrowLeft, CheckSquare, FileText, Unlink } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { OrgBreadcrumb } from '@/components/organization/OrgBreadcrumb';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,6 +15,8 @@ import {
   createActivityAction,
   updateActivityAction,
   deleteActivityAction,
+  addActivityDocumentAction,
+  removeActivityDocumentAction,
 } from '@/app/actions/organization';
 import {
   Dialog,
@@ -34,7 +37,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import type { OrgActivity } from '@/types/organization';
+import type { OrgActivity, OrgDocument } from '@/types/organization';
 
 interface AtividadesContentProps {
   processId: string;
@@ -42,19 +45,32 @@ interface AtividadesContentProps {
   routineId: string;
   routineName: string;
   activities: OrgActivity[];
+  documents: OrgDocument[];
+  documentsByActivityId: Record<string, OrgDocument[]>;
 }
 
 function ActivityCockpit({
   activity,
+  documents,
+  allDocuments,
   onEdit,
   onDelete,
+  onLinkDocument,
+  onUnlinkDocument,
 }: {
   activity: OrgActivity;
+  documents: OrgDocument[];
+  allDocuments: OrgDocument[];
   onEdit?: () => void;
   onDelete?: () => void;
+  onLinkDocument?: (documentId: string) => void;
+  onUnlinkDocument?: (documentId: string, documentName: string) => void;
 }) {
+  const linkedIds = new Set(documents.map((d) => d.id));
+  const availableDocuments = allDocuments.filter((d) => !linkedIds.has(d.id));
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
         <h3 className="font-semibold">{activity.name}</h3>
         <div className="mt-1 flex gap-2">
@@ -80,6 +96,99 @@ function ActivityCockpit({
           </Button>
         )}
       </div>
+
+      <section>
+        <div className="mb-3 flex items-center gap-2 border-b pb-2">
+          <FileText className="size-5 text-primary" />
+          <h4 className="text-sm font-semibold">Documentos vinculados</h4>
+        </div>
+        {documents.length === 0 && !onLinkDocument ? (
+          <p className="text-sm text-muted-foreground">Nenhum documento vinculado</p>
+        ) : documents.length === 0 && onLinkDocument && availableDocuments.length > 0 ? (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Nenhum documento vinculado. Selecione para vincular:
+            </p>
+            <Select
+              onValueChange={(v) => {
+                if (v) onLinkDocument(v);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um documento..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableDocuments.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.name}
+                    {d.type ? ` (${d.type})` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : documents.length === 0 && onLinkDocument && availableDocuments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Nenhum documento disponível. Cadastre em Recursos.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {onLinkDocument && availableDocuments.length > 0 && (
+              <div className="flex gap-2">
+                <Select
+                  key={documents.length}
+                  onValueChange={(v) => {
+                    if (v) onLinkDocument(v);
+                  }}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Vincular documento..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDocuments.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.name}
+                        {d.type ? ` (${d.type})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-2">
+              {documents.map((d) => (
+                <div
+                  key={d.id}
+                  className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                >
+                  <Link
+                    href="/organizacao/recursos?tab=documentos"
+                    className="min-w-0 flex-1 hover:underline"
+                  >
+                    <p className="text-sm font-medium">{d.name}</p>
+                    {d.type && (
+                      <p className="text-xs text-muted-foreground">{d.type}</p>
+                    )}
+                  </Link>
+                  {onUnlinkDocument && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 text-destructive hover:text-destructive shrink-0"
+                      onClick={() => onUnlinkDocument(d.id, d.name)}
+                      title="Desvincular documento"
+                      aria-label={`Desvincular ${d.name}`}
+                    >
+                      <Unlink className="h-4 w-4" />
+                      Desvincular
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -90,9 +199,20 @@ export function AtividadesContent({
   routineId,
   routineName,
   activities: initialActivities,
+  documents,
+  documentsByActivityId: initialDocumentsByActivityId,
 }: AtividadesContentProps) {
+  const router = useRouter();
   const [activities, setActivities] = React.useState<OrgActivity[]>(initialActivities);
+  const [documentsByActivityId, setDocumentsByActivityId] = React.useState(
+    initialDocumentsByActivityId,
+  );
   const [selectedActivity, setSelectedActivity] = React.useState<OrgActivity | null>(null);
+  const [documentToUnlink, setDocumentToUnlink] = React.useState<{
+    activityId: string;
+    documentId: string;
+    documentName: string;
+  } | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [editingActivity, setEditingActivity] = React.useState<OrgActivity | null>(null);
   const [activityToDelete, setActivityToDelete] = React.useState<OrgActivity | null>(null);
@@ -110,6 +230,10 @@ export function AtividadesContent({
   React.useEffect(() => {
     setActivities(initialActivities);
   }, [initialActivities]);
+
+  React.useEffect(() => {
+    setDocumentsByActivityId(initialDocumentsByActivityId);
+  }, [initialDocumentsByActivityId]);
 
   const handleCreate = React.useCallback(async () => {
     if (!formData.name.trim()) {
@@ -197,6 +321,37 @@ export function AtividadesContent({
       setIsLoading(false);
     }
   }, [editingActivity, formData]);
+
+  const handleLinkActivityDocument = React.useCallback(
+    async (activityId: string, documentId: string) => {
+      try {
+        const result = await addActivityDocumentAction(activityId, documentId);
+        if (result.success) {
+          toast.success(result.message);
+          router.refresh();
+        } else toast.error(result.message);
+      } catch (error) {
+        toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+      }
+    },
+    [router],
+  );
+
+  const handleUnlinkActivityDocument = React.useCallback(
+    async (activityId: string, documentId: string) => {
+      try {
+        const result = await removeActivityDocumentAction(activityId, documentId);
+        if (result.success) {
+          toast.success(result.message);
+          setDocumentToUnlink(null);
+          router.refresh();
+        } else toast.error(result.message);
+      } catch (error) {
+        toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+      }
+    },
+    [router],
+  );
 
   const handleConfirmDelete = React.useCallback(async () => {
     if (!activityToDelete) return;
@@ -324,6 +479,8 @@ export function AtividadesContent({
           {selectedActivity && (
             <ActivityCockpit
               activity={selectedActivity}
+              documents={documentsByActivityId[selectedActivity.id] ?? []}
+              allDocuments={documents}
               onEdit={() => {
                 setEditingActivity(selectedActivity);
                 setFormData({
@@ -338,6 +495,16 @@ export function AtividadesContent({
                 setIsFormOpen(true);
               }}
               onDelete={() => setActivityToDelete(selectedActivity)}
+              onLinkDocument={(documentId) =>
+                handleLinkActivityDocument(selectedActivity.id, documentId)
+              }
+              onUnlinkDocument={(documentId, documentName) =>
+                setDocumentToUnlink({
+                  activityId: selectedActivity.id,
+                  documentId,
+                  documentName,
+                })
+              }
             />
           )}
         </SplitView>
@@ -468,6 +635,39 @@ export function AtividadesContent({
             </Button>
             <Button variant="destructive" onClick={handleConfirmDelete}>
               Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!documentToUnlink}
+        onOpenChange={(open) => !open && setDocumentToUnlink(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Desvincular documento</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja desvincular &quot;{documentToUnlink?.documentName}&quot; da
+              atividade?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDocumentToUnlink(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (documentToUnlink) {
+                  handleUnlinkActivityDocument(
+                    documentToUnlink.activityId,
+                    documentToUnlink.documentId,
+                  );
+                }
+              }}
+            >
+              Desvincular
             </Button>
           </DialogFooter>
         </DialogContent>

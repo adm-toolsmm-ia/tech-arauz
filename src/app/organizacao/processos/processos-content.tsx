@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { OrgBreadcrumb } from '@/components/organization/OrgBreadcrumb';
@@ -25,15 +26,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SplitView } from '@/components/views/SplitView';
-import { ProcessCockpit } from '@/components/organization/ProcessCockpit';
+import { ProcessCockpit360 } from '@/components/organization/ProcessCockpit360';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   createProcessAction,
   updateProcessAction,
   deleteProcessAction,
+  addProcessSystemAction,
+  removeProcessSystemAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
-import type { OrgProcess } from '@/types/organization';
+import type { OrgProcess, OrgRoutine, OrgSystem } from '@/types/organization';
 import { GitBranch } from 'lucide-react';
 
 interface ProcessosContentProps {
@@ -42,6 +45,9 @@ interface ProcessosContentProps {
   nuclei: { id: string; name: string; area_id: string }[];
   areaMap: Record<string, string>;
   nucleusMap: Record<string, string>;
+  routinesByProcessId: Record<string, OrgRoutine[]>;
+  systems: OrgSystem[];
+  systemsByProcessId: Record<string, OrgSystem[]>;
 }
 
 interface ProcessFormData {
@@ -66,12 +72,21 @@ export function ProcessosContent({
   nuclei,
   areaMap,
   nucleusMap,
+  routinesByProcessId = {},
+  systems = [],
+  systemsByProcessId = {},
 }: ProcessosContentProps) {
+  const router = useRouter();
   const [processes, setProcesses] = React.useState<OrgProcess[]>(initialProcesses);
   const [selectedProcess, setSelectedProcess] = React.useState<OrgProcess | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [editingProcess, setEditingProcess] = React.useState<OrgProcess | null>(null);
   const [processToDelete, setProcessToDelete] = React.useState<OrgProcess | null>(null);
+  const [processSystemToUnlink, setProcessSystemToUnlink] = React.useState<{
+    processId: string;
+    systemId: string;
+    systemName: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [formData, setFormData] = React.useState<ProcessFormData>(DEFAULT_FORM);
 
@@ -191,6 +206,37 @@ export function ProcessosContent({
     }
   }, [processToDelete]);
 
+  const handleLinkProcessSystem = React.useCallback(
+    async (processId: string, systemId: string) => {
+      try {
+        const result = await addProcessSystemAction(processId, systemId);
+        if (result.success) {
+          toast.success(result.message);
+          router.refresh();
+        } else toast.error(result.message);
+      } catch (error) {
+        toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+      }
+    },
+    [router],
+  );
+
+  const handleUnlinkProcessSystem = React.useCallback(
+    async (processId: string, systemId: string) => {
+      try {
+        const result = await removeProcessSystemAction(processId, systemId);
+        if (result.success) {
+          toast.success(result.message);
+          setProcessSystemToUnlink(null);
+          router.refresh();
+        } else toast.error(result.message);
+      } catch (error) {
+        toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+      }
+    },
+    [router],
+  );
+
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
@@ -282,14 +328,27 @@ export function ProcessosContent({
           width="lg"
         >
           {selectedProcess && (
-            <ProcessCockpit
+            <ProcessCockpit360
               process={selectedProcess}
               areaName={selectedProcess.area_id ? areaMap[selectedProcess.area_id] : undefined}
               nucleusName={
                 selectedProcess.nucleus_id ? nucleusMap[selectedProcess.nucleus_id] : undefined
               }
+              routines={routinesByProcessId[selectedProcess.id] ?? []}
+              systems={systemsByProcessId[selectedProcess.id] ?? []}
+              allSystems={systems}
               onEdit={() => handleOpenEdit(selectedProcess)}
               onDelete={() => setProcessToDelete(selectedProcess)}
+              onLinkSystem={(systemId) =>
+                handleLinkProcessSystem(selectedProcess.id, systemId)
+              }
+              onUnlinkSystem={(systemId, systemName) =>
+                setProcessSystemToUnlink({
+                  processId: selectedProcess.id,
+                  systemId,
+                  systemName,
+                })
+              }
             />
           )}
         </SplitView>
@@ -399,6 +458,39 @@ export function ProcessosContent({
             </Button>
             <Button variant="destructive" onClick={handleConfirmDelete}>
               Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!processSystemToUnlink}
+        onOpenChange={(open) => !open && setProcessSystemToUnlink(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Desvincular sistema</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja desvincular &quot;{processSystemToUnlink?.systemName}&quot; do
+              processo?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setProcessSystemToUnlink(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (processSystemToUnlink) {
+                  handleUnlinkProcessSystem(
+                    processSystemToUnlink.processId,
+                    processSystemToUnlink.systemId,
+                  );
+                }
+              }}
+            >
+              Desvincular
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -9,6 +9,7 @@ import type { OrgService } from '@/types/organization';
 interface ServiceCockpit360Props {
   service: OrgService;
   onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 interface InfoFieldProps {
@@ -25,7 +26,11 @@ const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   );
 };
 
-export const ServiceCockpit360: React.FC<ServiceCockpit360Props> = ({ service, onEdit }) => {
+export const ServiceCockpit360: React.FC<ServiceCockpit360Props> = ({
+  service,
+  onEdit,
+  onDelete,
+}) => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="principal" className="w-full">
@@ -49,11 +54,23 @@ export const ServiceCockpit360: React.FC<ServiceCockpit360Props> = ({ service, o
                 <h3 className="font-semibold">{service.name}</h3>
               </div>
             </div>
-            {onEdit && (
-              <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
-                Editar
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {onEdit && (
+                <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+                  Editar
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onDelete}
+                  className="text-destructive hover:text-destructive"
+                >
+                  Excluir
+                </Button>
+              )}
+            </div>
           </div>
 
           <section>

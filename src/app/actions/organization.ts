@@ -705,6 +705,82 @@ export async function deleteOrgDocumentAction(id: string): Promise<OrgActionResu
   return { success: true, message: `Documento "${existing?.name ?? 'N/A'}" excluído!` };
 }
 
+// --- Process ↔ System (org_process_systems) ---
+
+export async function addProcessSystemAction(
+  processId: string,
+  systemId: string,
+): Promise<OrgActionResult> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { error } = await ctx.supabase.from('org_process_systems').insert({
+    process_id: processId,
+    system_id: systemId,
+  });
+
+  if (error) return { success: false, message: `Erro ao vincular sistema: ${error.message}` };
+  revalidatePath('/organizacao/empresa');
+  revalidatePath('/organizacao/processos');
+  return { success: true, message: 'Sistema vinculado ao processo!' };
+}
+
+export async function removeProcessSystemAction(
+  processId: string,
+  systemId: string,
+): Promise<OrgActionResult> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { error } = await ctx.supabase
+    .from('org_process_systems')
+    .delete()
+    .eq('process_id', processId)
+    .eq('system_id', systemId);
+
+  if (error) return { success: false, message: `Erro ao desvincular sistema: ${error.message}` };
+  revalidatePath('/organizacao/empresa');
+  revalidatePath('/organizacao/processos');
+  return { success: true, message: 'Sistema desvinculado do processo!' };
+}
+
+// --- Activity ↔ Document (org_activity_documents) ---
+
+export async function addActivityDocumentAction(
+  activityId: string,
+  orgDocumentId: string,
+): Promise<OrgActionResult> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { error } = await ctx.supabase.from('org_activity_documents').insert({
+    activity_id: activityId,
+    org_document_id: orgDocumentId,
+  });
+
+  if (error) return { success: false, message: `Erro ao vincular documento: ${error.message}` };
+  revalidatePath('/organizacao/processos');
+  return { success: true, message: 'Documento vinculado à atividade!' };
+}
+
+export async function removeActivityDocumentAction(
+  activityId: string,
+  orgDocumentId: string,
+): Promise<OrgActionResult> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { error } = await ctx.supabase
+    .from('org_activity_documents')
+    .delete()
+    .eq('activity_id', activityId)
+    .eq('org_document_id', orgDocumentId);
+
+  if (error) return { success: false, message: `Erro ao desvincular documento: ${error.message}` };
+  revalidatePath('/organizacao/processos');
+  return { success: true, message: 'Documento desvinculado da atividade!' };
+}
+
 // --- AI Bootstrap Engine ---
 
 const ESCRITORIO_JURIDICO_AREAS = [

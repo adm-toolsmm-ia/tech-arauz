@@ -1,0 +1,79 @@
+name: RLS Automated Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/rls-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+
+jobs:
+  rls-tests:
+    name: Run RLS Test Suite
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install pgTAP
+        env:
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          psql -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
+
+      - name: Run RLS Tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: |
+          chmod +x scripts/run-rls-tests.sh
+          ./scripts/run-rls-tests.sh
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: rls-test-results
+          path: .rls-test-results.tap
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const results = fs.readFileSync('.rls-test-results.tap', 'utf8');
+            const passed = (results.match(/^ok/gm) || []).length;
+            const failed = (results.match(/^not ok/gm) || []).length;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🧪 RLS Test Results\n\n✅ Passed: ${passed}\n❌ Failed: ${failed}\n\n[View Details](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})`
+            });

@@ -74,7 +74,8 @@ export async function fetchProjectsWithFiltersAction(filters?: {
       deliveries:project_deliveries(*),
       histories:project_histories(*),
       approvers:project_approvers(*),
-      budgets:project_budgets(*)
+      budgets:project_budgets(*),
+      tempos_permanencia:project_tempo_permanencia(*)
     `,
     )
     .eq('tenant_id', profile.tenant_id)

@@ -30,7 +30,8 @@ export async function getProjectData() {
       deliveries:project_deliveries(*),
       histories:project_histories(*),
       approvers:project_approvers(*),
-      budgets:project_budgets(*)
+      budgets:project_budgets(*),
+      tempos_permanencia:project_tempo_permanencia(*)
     `,
     )
     .order('created_at', { ascending: false });

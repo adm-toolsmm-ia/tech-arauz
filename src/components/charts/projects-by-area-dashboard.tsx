@@ -50,7 +50,7 @@ function CustomTooltip({
   );
 }
 
-export function ProjectsByAreaDashboard({
+export const ProjectsByAreaDashboard: React.FC<ProjectsByAreaDashboardProps> = ({
   data,
   className,
   onAreaClick,

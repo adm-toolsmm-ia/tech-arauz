@@ -56,7 +56,7 @@ function CustomTooltip({
   );
 }
 
-export function ProjectPipelineChart({
+export const ProjectPipelineChart: React.FC<ProjectPipelineChartProps> = ({
   data,
   onBarClick,
   activeStatus,

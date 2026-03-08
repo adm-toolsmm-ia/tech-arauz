@@ -45,7 +45,7 @@ function CustomTooltip({
   );
 }
 
-export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
+export const ProjectTrendChart: React.FC<ProjectTrendChartProps> = ({ data }) => {
   return (
     <Card>
       <CardHeader className="pb-2">

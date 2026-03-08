@@ -66,7 +66,7 @@ const customTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-export function ProjectImpactMatrix({ data }: ProjectImpactMatrixProps) {
+export const ProjectImpactMatrix: React.FC<ProjectImpactMatrixProps> = ({ data }) => {
   // To avoid overlapping dots exactly on integer coordinates, we could add small jitter,
   // but Recharts Scatter handles it decently if items are small enough.
   const plotData = data

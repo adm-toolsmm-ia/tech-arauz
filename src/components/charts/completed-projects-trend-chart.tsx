@@ -46,7 +46,7 @@ function CustomTooltip({
   );
 }
 
-export function CompletedProjectsTrendChart({
+export const CompletedProjectsTrendChart: React.FC<CompletedProjectsTrendChartProps> = ({
   data,
   className,
   onPointClick,

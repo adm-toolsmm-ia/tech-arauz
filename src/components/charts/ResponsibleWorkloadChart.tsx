@@ -44,7 +44,7 @@ function CustomTooltip({
   );
 }
 
-export function ResponsibleWorkloadChart({
+export const ResponsibleWorkloadChart: React.FC<ResponsibleWorkloadChartProps> = ({
   data,
   className,
   onBarClick,

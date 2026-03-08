@@ -45,7 +45,7 @@ function CustomTooltip({
   );
 }
 
-export function HistoryVolumeChart({ projects, groupBy = 'week' }: HistoryVolumeChartProps) {
+export const HistoryVolumeChart: React.FC<HistoryVolumeChartProps> = ({ projects, groupBy = 'week' }) => {
   const data = React.useMemo(() => buildVolumeData(projects, groupBy), [projects, groupBy]);
 
   return (

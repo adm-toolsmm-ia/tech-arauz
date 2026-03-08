@@ -48,7 +48,7 @@ function CustomTooltip({
   );
 }
 
-export function ProjectsByPhaseChart({
+export const ProjectsByPhaseChart: React.FC<ProjectsByPhaseChartProps> = ({
   data,
   className,
   onBarClick,

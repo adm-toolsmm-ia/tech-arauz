@@ -44,7 +44,7 @@ function CustomTooltip({
   );
 }
 
-export function HistoryTransitionsChart({
+export const HistoryTransitionsChart: React.FC<HistoryTransitionsChartProps> = ({
   projects,
   groupBy = 'step_to',
 }: HistoryTransitionsChartProps) {

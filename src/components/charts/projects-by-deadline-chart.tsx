@@ -60,7 +60,7 @@ function CustomTooltip({
   );
 }
 
-export function ProjectsByDeadlineChart({
+export const ProjectsByDeadlineChart: React.FC<ProjectsByDeadlineChartProps> = ({
   data,
   className,
   onBarClick,

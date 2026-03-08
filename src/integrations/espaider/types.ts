@@ -294,13 +294,13 @@ export interface AprovadorMapeado {
  */
 export interface TempoPermanenciaMapeado {
   id_espaider: number;
-  projeto_id_espaider: number;  // IDREGISTROPAI
-  fase: string;                 // FASE
-  responsavel: string;          // RESPONSAVEL
-  situacao: string;             // SITUACAO
+  projeto_id_espaider: number; // IDREGISTROPAI
+  fase: string; // FASE
+  responsavel: string; // RESPONSAVEL
+  situacao: string; // SITUACAO
   tempo_permanencia_dias: number | null; // TEMPOPERMANENCIA (numérico)
-  data_inicio: Date | null;     // DATAINICIO
-  data_fim: Date | null;        // DATAFIM
+  data_inicio: Date | null; // DATAINICIO
+  data_fim: Date | null; // DATAFIM
   espaider_raw?: RegistroEspaider;
 }
 
@@ -310,14 +310,14 @@ export interface TempoPermanenciaMapeado {
  */
 export interface HoraLancadaMapeada {
   id_espaider: number;
-  projeto_id_espaider: number;   // ID numérico da solicitação (bate com projects.espaider_id)
-  solicitacao_id: number;        // SOLICITACAO_IDENTIFICADOR (numérico)
+  projeto_id_espaider: number; // ID numérico da solicitação (bate com projects.espaider_id)
+  solicitacao_id: number; // SOLICITACAO_IDENTIFICADOR (numérico)
   pasta_consultivo_id: number | null; // PASTACONSULTIVO_ID — id numérico
   pasta_consultivo_texto: string | null; // PASTACONSULTIVO — string original ex: "CS.34433"
-  profissional: string;          // COLABORADOR
-  horas: number | null;          // HORASORIGINAISHOR (convertido para decimal)
-  data_lancamento: Date | null;  // DATA
-  tipo_lancamento: string;       // ATIVIDADE
+  profissional: string; // COLABORADOR
+  horas: number | null; // HORASORIGINAISHOR (convertido para decimal)
+  data_lancamento: Date | null; // DATA
+  tipo_lancamento: string; // ATIVIDADE
   espaider_raw?: RegistroEspaider;
 }
 

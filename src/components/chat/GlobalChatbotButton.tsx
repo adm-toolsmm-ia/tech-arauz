@@ -13,7 +13,7 @@ export function GlobalChatbotButton({ onClick }: GlobalChatbotButtonProps) {
     <Button
       onClick={onClick}
       size="lg"
-      className="fixed bottom-6 right-6 rounded-full shadow-lg hover:shadow-xl transition-shadow z-50"
+      className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg transition-shadow hover:shadow-xl"
       title="Abrir Assistente AI"
     >
       <MessageSquare className="h-6 w-6" />

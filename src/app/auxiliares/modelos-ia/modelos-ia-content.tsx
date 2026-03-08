@@ -468,30 +468,30 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
           activeViewMode={viewMode}
           onViewModeChange={setViewMode}
         />
-      <FilterBar
-        moduleId="modelos-ia"
-        filters={registry}
-        onFiltersChange={(newFilters) => {
-          Object.entries(newFilters).forEach(([key, value]) => {
-            if (filters[key] !== value) {
-              updateFilter(key, value);
-            }
-          });
-        }}
-        onSearchChange={setSearch}
-        onViewModeChange={setViewMode}
-        initialFilters={filters}
-        initialSearch={search}
-        initialViewMode={viewMode}
-        currentFilters={filters}
-        currentSearch={search}
-        currentViewMode={viewMode}
-        onUpdateFilter={updateFilter}
-        onResetFilters={() => {
-          resetAllFilters();
-          setSearch('');
-        }}
-      />
+        <FilterBar
+          moduleId="modelos-ia"
+          filters={registry}
+          onFiltersChange={(newFilters) => {
+            Object.entries(newFilters).forEach(([key, value]) => {
+              if (filters[key] !== value) {
+                updateFilter(key, value);
+              }
+            });
+          }}
+          onSearchChange={setSearch}
+          onViewModeChange={setViewMode}
+          initialFilters={filters}
+          initialSearch={search}
+          initialViewMode={viewMode}
+          currentFilters={filters}
+          currentSearch={search}
+          currentViewMode={viewMode}
+          onUpdateFilter={updateFilter}
+          onResetFilters={() => {
+            resetAllFilters();
+            setSearch('');
+          }}
+        />
       </div>
 
       {filteredModels.length === 0 ? (
@@ -505,7 +505,7 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
           actionLabel={models.length === 0 ? 'Adicionar Modelo' : undefined}
           onAction={models.length === 0 ? () => setIsCreateDialogOpen(true) : undefined}
         />
-      ) : (viewMode === 'kanban' || viewMode === 'grid') ? (
+      ) : viewMode === 'kanban' || viewMode === 'grid' ? (
         <div className="space-y-4">
           <KanbanBoard
             columns={kanbanColumns}
@@ -603,269 +603,295 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                   </Button>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <Label>Nome *</Label>
-                  <Input
-                    value={editForm.name ?? ''}
-                    onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <Label>Model ID *</Label>
-                  <Input
-                    value={editForm.model_id ?? ''}
-                    onChange={(e) =>
-                      setEditForm((p) => ({
-                        ...p,
-                        model_id: e.target.value.toLowerCase().replace(/\s+/g, '-'),
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <Label>Descrição</Label>
-                  <Input
-                    value={editForm.description ?? ''}
-                    onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <Label>Max. Tokens</Label>
-                  <Input
-                    type="number"
-                    value={editForm.max_tokens ?? ''}
-                    onChange={(e) =>
-                      setEditForm((p) => ({
-                        ...p,
-                        max_tokens: e.target.value ? parseInt(e.target.value, 10) : undefined,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <Label>Context Window</Label>
-                  <Input
-                    type="number"
-                    value={editForm.context_window ?? ''}
-                    onChange={(e) =>
-                      setEditForm((p) => ({
-                        ...p,
-                        context_window: e.target.value ? parseInt(e.target.value, 10) : undefined,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <Label>Tier</Label>
-                  <Select
-                    value={editForm.tier ?? 'balanced'}
-                    onValueChange={(v) => setEditForm((p) => ({ ...p, tier: v as FormData['tier'] }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="entry">Entry</SelectItem>
-                      <SelectItem value="balanced">Balanced</SelectItem>
-                      <SelectItem value="pro">Pro</SelectItem>
-                      <SelectItem value="flagship">Flagship</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Display Order</Label>
-                  <Input
-                    type="number"
-                    value={editForm.display_order ?? ''}
-                    onChange={(e) =>
-                      setEditForm((p) => ({
-                        ...p,
-                        display_order: e.target.value ? parseInt(e.target.value, 10) : undefined,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <Label>URL Documentação</Label>
-                  <Input
-                    value={editForm.docs_url ?? ''}
-                    onChange={(e) => setEditForm((p) => ({ ...p, docs_url: e.target.value }))}
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <Label>Temperatura padrão</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={editForm.default_temperature ?? ''}
-                    onChange={(e) =>
-                      setEditForm((p) => ({
-                        ...p,
-                        default_temperature: e.target.value ? parseFloat(e.target.value) : undefined,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <Label>Custo entrada /1K</Label>
-                  <Input
-                    type="number"
-                    step="0.000001"
-                    value={editForm.input_cost_per_1k_tokens ?? ''}
-                    onChange={(e) =>
-                      setEditForm((p) => ({
-                        ...p,
-                        input_cost_per_1k_tokens: e.target.value ? parseFloat(e.target.value) : undefined,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <Label>Custo saída /1K</Label>
-                  <Input
-                    type="number"
-                    step="0.000001"
-                    value={editForm.output_cost_per_1k_tokens ?? ''}
-                    onChange={(e) =>
-                      setEditForm((p) => ({
-                        ...p,
-                        output_cost_per_1k_tokens: e.target.value ? parseFloat(e.target.value) : undefined,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
+                  <div>
+                    <Label>Nome *</Label>
+                    <Input
+                      value={editForm.name ?? ''}
+                      onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <Label>Model ID *</Label>
+                    <Input
+                      value={editForm.model_id ?? ''}
+                      onChange={(e) =>
+                        setEditForm((p) => ({
+                          ...p,
+                          model_id: e.target.value.toLowerCase().replace(/\s+/g, '-'),
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label>Descrição</Label>
+                    <Input
+                      value={editForm.description ?? ''}
+                      onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <Label>Max. Tokens</Label>
+                    <Input
+                      type="number"
+                      value={editForm.max_tokens ?? ''}
+                      onChange={(e) =>
+                        setEditForm((p) => ({
+                          ...p,
+                          max_tokens: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <Label>Context Window</Label>
+                    <Input
+                      type="number"
+                      value={editForm.context_window ?? ''}
+                      onChange={(e) =>
+                        setEditForm((p) => ({
+                          ...p,
+                          context_window: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <Label>Tier</Label>
+                    <Select
+                      value={editForm.tier ?? 'balanced'}
+                      onValueChange={(v) =>
+                        setEditForm((p) => ({ ...p, tier: v as FormData['tier'] }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="entry">Entry</SelectItem>
+                        <SelectItem value="balanced">Balanced</SelectItem>
+                        <SelectItem value="pro">Pro</SelectItem>
+                        <SelectItem value="flagship">Flagship</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Display Order</Label>
+                    <Input
+                      type="number"
+                      value={editForm.display_order ?? ''}
+                      onChange={(e) =>
+                        setEditForm((p) => ({
+                          ...p,
+                          display_order: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <Label>URL Documentação</Label>
+                    <Input
+                      value={editForm.docs_url ?? ''}
+                      onChange={(e) => setEditForm((p) => ({ ...p, docs_url: e.target.value }))}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <Label>Temperatura padrão</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={editForm.default_temperature ?? ''}
+                      onChange={(e) =>
+                        setEditForm((p) => ({
+                          ...p,
+                          default_temperature: e.target.value
+                            ? parseFloat(e.target.value)
+                            : undefined,
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <Label>Custo entrada /1K</Label>
+                    <Input
+                      type="number"
+                      step="0.000001"
+                      value={editForm.input_cost_per_1k_tokens ?? ''}
+                      onChange={(e) =>
+                        setEditForm((p) => ({
+                          ...p,
+                          input_cost_per_1k_tokens: e.target.value
+                            ? parseFloat(e.target.value)
+                            : undefined,
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <Label>Custo saída /1K</Label>
+                    <Input
+                      type="number"
+                      step="0.000001"
+                      value={editForm.output_cost_per_1k_tokens ?? ''}
+                      onChange={(e) =>
+                        setEditForm((p) => ({
+                          ...p,
+                          output_cost_per_1k_tokens: e.target.value
+                            ? parseFloat(e.target.value)
+                            : undefined,
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
 
-                {/* Governança Section */}
-                <div className="sm:col-span-2">
-                  <h4 className="text-sm font-semibold mb-4">Governança</h4>
-                </div>
-                <div>
-                  <Label>Stability Level</Label>
-                  <Select
-                    value={editForm.stability_level ?? ''}
-                    onValueChange={(v) => setEditForm((p) => ({ ...p, stability_level: v as any }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ga">GA</SelectItem>
-                      <SelectItem value="preview">Preview</SelectItem>
-                      <SelectItem value="experimental">Experimental</SelectItem>
-                      <SelectItem value="deprecated">Deprecated</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Release Channel</Label>
-                  <Select
-                    value={editForm.release_channel ?? ''}
-                    onValueChange={(v) => setEditForm((p) => ({ ...p, release_channel: v as any }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="stable">Stable</SelectItem>
-                      <SelectItem value="beta">Beta</SelectItem>
-                      <SelectItem value="alpha">Alpha</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Deprecated At (ISO)</Label>
-                  <Input
-                    type="datetime-local"
-                    value={editForm.deprecated_at?.slice(0, 16) ?? ''}
-                    onChange={(e) =>
-                      setEditForm((p) => ({
-                        ...p,
-                        deprecated_at: e.target.value ? new Date(e.target.value).toISOString() : undefined,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <Label>Sunset At (ISO)</Label>
-                  <Input
-                    type="datetime-local"
-                    value={editForm.sunset_at?.slice(0, 16) ?? ''}
-                    onChange={(e) =>
-                      setEditForm((p) => ({
-                        ...p,
-                        sunset_at: e.target.value ? new Date(e.target.value).toISOString() : undefined,
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
+                  {/* Governança Section */}
+                  <div className="sm:col-span-2">
+                    <h4 className="mb-4 text-sm font-semibold">Governança</h4>
+                  </div>
+                  <div>
+                    <Label>Stability Level</Label>
+                    <Select
+                      value={editForm.stability_level ?? ''}
+                      onValueChange={(v) =>
+                        setEditForm((p) => ({ ...p, stability_level: v as any }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ga">GA</SelectItem>
+                        <SelectItem value="preview">Preview</SelectItem>
+                        <SelectItem value="experimental">Experimental</SelectItem>
+                        <SelectItem value="deprecated">Deprecated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Release Channel</Label>
+                    <Select
+                      value={editForm.release_channel ?? ''}
+                      onValueChange={(v) =>
+                        setEditForm((p) => ({ ...p, release_channel: v as any }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="stable">Stable</SelectItem>
+                        <SelectItem value="beta">Beta</SelectItem>
+                        <SelectItem value="alpha">Alpha</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Deprecated At (ISO)</Label>
+                    <Input
+                      type="datetime-local"
+                      value={editForm.deprecated_at?.slice(0, 16) ?? ''}
+                      onChange={(e) =>
+                        setEditForm((p) => ({
+                          ...p,
+                          deprecated_at: e.target.value
+                            ? new Date(e.target.value).toISOString()
+                            : undefined,
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <Label>Sunset At (ISO)</Label>
+                    <Input
+                      type="datetime-local"
+                      value={editForm.sunset_at?.slice(0, 16) ?? ''}
+                      onChange={(e) =>
+                        setEditForm((p) => ({
+                          ...p,
+                          sunset_at: e.target.value
+                            ? new Date(e.target.value).toISOString()
+                            : undefined,
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
 
-                {/* Capabilities */}
-                <div className="sm:col-span-2">
-                  <h4 className="text-sm font-semibold mb-4">Capacidades</h4>
+                  {/* Capabilities */}
+                  <div className="sm:col-span-2">
+                    <h4 className="mb-4 text-sm font-semibold">Capacidades</h4>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={editForm.supports_tool_calling ?? false}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, supports_tool_calling: e.target.checked }))
+                      }
+                      disabled={isLoading}
+                      id="tool_calling"
+                    />
+                    <Label htmlFor="tool_calling">🔧 Tool Calling</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={editForm.supports_json_mode ?? false}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, supports_json_mode: e.target.checked }))
+                      }
+                      disabled={isLoading}
+                      id="json_mode"
+                    />
+                    <Label htmlFor="json_mode">📄 JSON Mode</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={editForm.supports_streaming ?? false}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, supports_streaming: e.target.checked }))
+                      }
+                      disabled={isLoading}
+                      id="streaming"
+                    />
+                    <Label htmlFor="streaming">🌊 Streaming</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={editForm.supports_vision ?? false}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, supports_vision: e.target.checked }))
+                      }
+                      disabled={isLoading}
+                      id="vision"
+                    />
+                    <Label htmlFor="vision">👁️ Vision</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={editForm.supports_audio ?? false}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, supports_audio: e.target.checked }))
+                      }
+                      disabled={isLoading}
+                      id="audio"
+                    />
+                    <Label htmlFor="audio">🎵 Audio</Label>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editForm.supports_tool_calling ?? false}
-                    onChange={(e) => setEditForm((p) => ({ ...p, supports_tool_calling: e.target.checked }))}
-                    disabled={isLoading}
-                    id="tool_calling"
-                  />
-                  <Label htmlFor="tool_calling">🔧 Tool Calling</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editForm.supports_json_mode ?? false}
-                    onChange={(e) => setEditForm((p) => ({ ...p, supports_json_mode: e.target.checked }))}
-                    disabled={isLoading}
-                    id="json_mode"
-                  />
-                  <Label htmlFor="json_mode">📄 JSON Mode</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editForm.supports_streaming ?? false}
-                    onChange={(e) => setEditForm((p) => ({ ...p, supports_streaming: e.target.checked }))}
-                    disabled={isLoading}
-                    id="streaming"
-                  />
-                  <Label htmlFor="streaming">🌊 Streaming</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editForm.supports_vision ?? false}
-                    onChange={(e) => setEditForm((p) => ({ ...p, supports_vision: e.target.checked }))}
-                    disabled={isLoading}
-                    id="vision"
-                  />
-                  <Label htmlFor="vision">👁️ Vision</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editForm.supports_audio ?? false}
-                    onChange={(e) => setEditForm((p) => ({ ...p, supports_audio: e.target.checked }))}
-                    disabled={isLoading}
-                    id="audio"
-                  />
-                  <Label htmlFor="audio">🎵 Audio</Label>
-                </div>
-              </div>
               </>
             ) : (
               <>
@@ -1082,7 +1108,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    input_cost_per_1k_tokens: e.target.value ? parseFloat(e.target.value) : undefined,
+                    input_cost_per_1k_tokens: e.target.value
+                      ? parseFloat(e.target.value)
+                      : undefined,
                   }))
                 }
               />
@@ -1097,7 +1125,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    output_cost_per_1k_tokens: e.target.value ? parseFloat(e.target.value) : undefined,
+                    output_cost_per_1k_tokens: e.target.value
+                      ? parseFloat(e.target.value)
+                      : undefined,
                   }))
                 }
               />
@@ -1105,13 +1135,15 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
 
             {/* Governança */}
             <div className="border-t pt-4">
-              <h3 className="font-semibold mb-4 text-sm">Governança (opcional)</h3>
+              <h3 className="mb-4 text-sm font-semibold">Governança (opcional)</h3>
             </div>
             <div>
               <Label>Stability Level</Label>
               <Select
                 value={formData.stability_level ?? ''}
-                onValueChange={(v) => setFormData((prev) => ({ ...prev, stability_level: v as any }))}
+                onValueChange={(v) =>
+                  setFormData((prev) => ({ ...prev, stability_level: v as any }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -1128,7 +1160,9 @@ export function ModelsIaContent({ initialModels, initialProviders }: ModelsIaCon
               <Label>Release Channel</Label>
               <Select
                 value={formData.release_channel ?? ''}
-                onValueChange={(v) => setFormData((prev) => ({ ...prev, release_channel: v as any }))}
+                onValueChange={(v) =>
+                  setFormData((prev) => ({ ...prev, release_channel: v as any }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />

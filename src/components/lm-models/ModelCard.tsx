@@ -92,13 +92,27 @@ export function ModelCard({
         </div>
 
         {/* Capacidades chips */}
-        {(model.supports_tool_calling || model.supports_json_mode || model.supports_streaming || model.supports_vision || model.supports_audio) && (
+        {(model.supports_tool_calling ||
+          model.supports_json_mode ||
+          model.supports_streaming ||
+          model.supports_vision ||
+          model.supports_audio) && (
           <div className="mt-1.5 flex flex-wrap gap-1">
-            {model.supports_tool_calling && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">🔧</Badge>}
-            {model.supports_json_mode && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">📄</Badge>}
-            {model.supports_streaming && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">🌊</Badge>}
-            {model.supports_vision && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">👁️</Badge>}
-            {model.supports_audio && <Badge className="bg-blue-100 text-blue-800 px-1.5 py-0 text-[9px]">🎵</Badge>}
+            {model.supports_tool_calling && (
+              <Badge className="bg-blue-100 px-1.5 py-0 text-[9px] text-blue-800">🔧</Badge>
+            )}
+            {model.supports_json_mode && (
+              <Badge className="bg-blue-100 px-1.5 py-0 text-[9px] text-blue-800">📄</Badge>
+            )}
+            {model.supports_streaming && (
+              <Badge className="bg-blue-100 px-1.5 py-0 text-[9px] text-blue-800">🌊</Badge>
+            )}
+            {model.supports_vision && (
+              <Badge className="bg-blue-100 px-1.5 py-0 text-[9px] text-blue-800">👁️</Badge>
+            )}
+            {model.supports_audio && (
+              <Badge className="bg-blue-100 px-1.5 py-0 text-[9px] text-blue-800">🎵</Badge>
+            )}
           </div>
         )}
       </div>

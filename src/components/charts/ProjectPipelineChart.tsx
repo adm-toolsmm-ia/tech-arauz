@@ -90,17 +90,17 @@ export function ProjectPipelineChart({
                 axisLine={false}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
-                <Bar
-                  dataKey="count"
-                  radius={[0, 4, 4, 0]}
-                  animationBegin={0}
-                  animationDuration={800}
-                  animationEasing="ease-out"
-                  onClick={(data) => onBarClick?.(data.status)}
-                  style={onBarClick ? { cursor: 'pointer' } : undefined}
-                  label={{ position: 'right', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
-                >
-                  {data.map((entry) => (
+              <Bar
+                dataKey="count"
+                radius={[0, 4, 4, 0]}
+                animationBegin={0}
+                animationDuration={800}
+                animationEasing="ease-out"
+                onClick={(data) => onBarClick?.(data.status)}
+                style={onBarClick ? { cursor: 'pointer' } : undefined}
+                label={{ position: 'right', fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
+              >
+                {data.map((entry) => (
                   <Cell
                     key={entry.status}
                     fill={statusColors[entry.status] || '#6b7280'}

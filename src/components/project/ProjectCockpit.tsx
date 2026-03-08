@@ -280,7 +280,9 @@ export function ProjectCockpit({
                 <ClipboardList className="size-5 text-primary" />
                 <h3 className="text-base font-semibold">Dados da Atividade</h3>
                 {selectedSchedule.atrasado && (
-                  <Badge variant="destructive" className="ml-2">Atrasada</Badge>
+                  <Badge variant="destructive" className="ml-2">
+                    Atrasada
+                  </Badge>
                 )}
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

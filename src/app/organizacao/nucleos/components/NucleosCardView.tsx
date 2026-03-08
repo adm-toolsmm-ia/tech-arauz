@@ -33,7 +33,7 @@ export function NucleosCardView({ nuclei, onNucleusClick }: NucleosCardViewProps
                 <GitBranch className="size-6 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-medium truncate">{nucleus.name}</p>
+                <p className="truncate font-medium">{nucleus.name}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {nucleus.area_name ?? 'Sem área'}
                 </p>

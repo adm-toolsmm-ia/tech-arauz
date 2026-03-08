@@ -62,7 +62,7 @@ export function HistoryMovementsChart({ projects }: HistoryMovementsChartProps) 
             <CardDescription>Ações de avanço registradas</CardDescription>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
-             <div className="flex gap-1">
+            <div className="flex gap-1">
               <Badge
                 variant={type === 'responsible' ? 'default' : 'outline'}
                 className="cursor-pointer"
@@ -159,7 +159,11 @@ export function HistoryMovementsChart({ projects }: HistoryMovementsChartProps) 
   );
 }
 
-function buildData(projects: Array<any>, period: FilterPeriod, type: FilterType): HistoryMovementData[] {
+function buildData(
+  projects: Array<any>,
+  period: FilterPeriod,
+  type: FilterType,
+): HistoryMovementData[] {
   const counts: Record<string, number> = {};
   const now = new Date();
 
@@ -171,7 +175,7 @@ function buildData(projects: Array<any>, period: FilterPeriod, type: FilterType)
         const hDate = new Date(h.date);
         const diffMs = now.getTime() - hDate.getTime();
         const diffDays = diffMs / (1000 * 60 * 60 * 24);
-        
+
         if (period === '7days' && diffDays > 7) return;
         if (period === '30days' && diffDays > 30) return;
       }

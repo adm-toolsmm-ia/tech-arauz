@@ -10,11 +10,17 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
  * Fallback: call OpenAI directly when the Python FastAPI service is unavailable.
  * Fetches agent config from Supabase and builds a chat completion request.
  */
-async function chatFallback(agentId: string, message: string, supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never) {
+async function chatFallback(
+  agentId: string,
+  message: string,
+  supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never,
+) {
   // 1. Fetch agent config from Supabase
   const { data: agent, error: agentError } = await supabase
     .from('agents')
-    .select('name, persona, prompt_objective, model_provider, model_id, model_temperature, model_max_tokens')
+    .select(
+      'name, persona, prompt_objective, model_provider, model_id, model_temperature, model_max_tokens',
+    )
     .eq('id', agentId)
     .single();
 
@@ -58,10 +64,7 @@ async function chatFallback(agentId: string, message: string, supabase: ReturnTy
   if (!openaiRes.ok) {
     const errBody = await openaiRes.text();
     console.error('[chat/fallback] OpenAI error:', openaiRes.status, errBody);
-    return NextResponse.json(
-      { error: 'Failed to generate response from LLM' },
-      { status: 502 }
-    );
+    return NextResponse.json({ error: 'Failed to generate response from LLM' }, { status: 502 });
   }
 
   const openaiData = await openaiRes.json();

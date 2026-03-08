@@ -156,15 +156,7 @@ export async function deleteLmModelAction(modelId: string): Promise<LmModelActio
 export async function updateLmModelAction(
   id: string,
   updates: Partial<
-    Omit<
-      LmModel,
-      | 'id'
-      | 'tenant_id'
-      | 'provider_id'
-      | 'created_at'
-      | 'created_by'
-      | 'is_system'
-    >
+    Omit<LmModel, 'id' | 'tenant_id' | 'provider_id' | 'created_at' | 'created_by' | 'is_system'>
   >,
 ): Promise<LmModelActionResult> {
   const supabase = await createClient();

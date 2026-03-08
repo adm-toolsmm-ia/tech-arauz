@@ -6,10 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  getAgendaPeriodLabel,
-  type ProjectAgendaPeriod,
-} from '@/lib/domain/project-agenda';
+import { getAgendaPeriodLabel, type ProjectAgendaPeriod } from '@/lib/domain/project-agenda';
 
 interface ProjectForAgenda {
   id: string;
@@ -111,42 +108,39 @@ export function ProjectsAgendaView<T extends ProjectForAgenda>({
         </Card>
       ) : (
         sortedDates.map((dateKey) => {
-        const items = grouped.get(dateKey) ?? [];
-        const label =
-          dateKey === 'sem_data'
-            ? 'Sem data definida'
-            : formatDateBR(dateKey);
+          const items = grouped.get(dateKey) ?? [];
+          const label = dateKey === 'sem_data' ? 'Sem data definida' : formatDateBR(dateKey);
 
-        return (
-          <div key={dateKey} className="space-y-2">
-            <h3 className="text-sm font-medium text-muted-foreground">{label}</h3>
-            <div className="space-y-2">
-              {items.map((p) => (
-                <Card
-                  key={p.id}
-                  className={cn(
-                    'transition-colors hover:bg-muted/50',
-                    onProjectClick && 'cursor-pointer',
-                  )}
-                  onClick={() => onProjectClick?.(p)}
-                >
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{p.project_name || 'Sem nome'}</p>
-                      {p.espaider_code && (
-                        <p className="text-xs text-muted-foreground">{p.espaider_code}</p>
-                      )}
-                    </div>
-                    <Badge variant="secondary" className="shrink-0 text-xs">
-                      {p.status || '—'}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              ))}
+          return (
+            <div key={dateKey} className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground">{label}</h3>
+              <div className="space-y-2">
+                {items.map((p) => (
+                  <Card
+                    key={p.id}
+                    className={cn(
+                      'transition-colors hover:bg-muted/50',
+                      onProjectClick && 'cursor-pointer',
+                    )}
+                    onClick={() => onProjectClick?.(p)}
+                  >
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{p.project_name || 'Sem nome'}</p>
+                        {p.espaider_code && (
+                          <p className="text-xs text-muted-foreground">{p.espaider_code}</p>
+                        )}
+                      </div>
+                      <Badge variant="secondary" className="shrink-0 text-xs">
+                        {p.status || '—'}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
-        );
-      })
+          );
+        })
       )}
     </div>
   );

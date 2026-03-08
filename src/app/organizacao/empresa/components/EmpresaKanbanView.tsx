@@ -33,11 +33,7 @@ function getSubtitle(v: EmpresaVinculo): string | undefined {
   }
 }
 
-export function EmpresaKanbanView({
-  vinculos,
-  selectedId,
-  onItemClick,
-}: EmpresaKanbanViewProps) {
+export function EmpresaKanbanView({ vinculos, selectedId, onItemClick }: EmpresaKanbanViewProps) {
   const kanbanItems: KanbanItem[] = vinculos.map((v) => ({
     id: v.id,
     title: v.name,

@@ -19,11 +19,7 @@ export async function getProjectData() {
     return { projects: [], profile: null };
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
 
   const { data: allProjects } = await supabase
     .from('projects')

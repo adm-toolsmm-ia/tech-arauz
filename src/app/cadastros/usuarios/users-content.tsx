@@ -216,35 +216,33 @@ export function UsersContent({ users: initialUsers, currentUserId }: UsersConten
           activeViewMode={viewMode}
           onViewModeChange={setViewMode}
         />
-      <FilterBar
-        moduleId="usuarios"
-        filters={registry}
-        onFiltersChange={(newFilters) => {
-          Object.entries(newFilters).forEach(([key, value]) => {
-            if (filters[key] !== value) updateFilter(key, value);
-          });
-        }}
-        onSearchChange={setSearch}
-        onViewModeChange={setViewMode}
-        initialFilters={filters}
-        initialSearch={search}
-        initialViewMode={viewMode}
-        currentFilters={filters}
-        currentSearch={search}
-        currentViewMode={viewMode}
-        onUpdateFilter={updateFilter}
-        onResetFilters={() => {
-          resetAllFilters();
-          setSearch('');
-        }}
-      />
+        <FilterBar
+          moduleId="usuarios"
+          filters={registry}
+          onFiltersChange={(newFilters) => {
+            Object.entries(newFilters).forEach(([key, value]) => {
+              if (filters[key] !== value) updateFilter(key, value);
+            });
+          }}
+          onSearchChange={setSearch}
+          onViewModeChange={setViewMode}
+          initialFilters={filters}
+          initialSearch={search}
+          initialViewMode={viewMode}
+          currentFilters={filters}
+          currentSearch={search}
+          currentViewMode={viewMode}
+          onUpdateFilter={updateFilter}
+          onResetFilters={() => {
+            resetAllFilters();
+            setSearch('');
+          }}
+        />
       </div>
 
       {filteredData.length === 0 ? (
         <EmptyState
-          title={
-            users.length === 0 ? 'Nenhum usuário encontrado' : 'Nenhum resultado encontrado'
-          }
+          title={users.length === 0 ? 'Nenhum usuário encontrado' : 'Nenhum resultado encontrado'}
           description={
             users.length === 0
               ? 'Adicione o primeiro usuário ao tenant.'

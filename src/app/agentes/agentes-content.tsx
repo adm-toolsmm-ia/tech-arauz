@@ -153,7 +153,6 @@ export function AgentsContent({
         </div>
       )}
 
-
       {/* ViewModeBar + FilterBar + Refresh */}
       <div className="space-y-3">
         <ViewModeBar
@@ -162,49 +161,49 @@ export function AgentsContent({
           activeViewMode={viewMode}
           onViewModeChange={setViewMode}
         />
-      <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <FilterBar
-            moduleId="agentes"
-            filters={registry}
-            onFiltersChange={(newFilters) => {
-              Object.entries(newFilters).forEach(([key, value]) => {
-                if (filters[key] !== value) updateFilter(key, value);
-              });
-            }}
-            onSearchChange={setSearch}
-            onViewModeChange={setViewMode}
-            initialFilters={filters}
-            initialSearch={search}
-            initialViewMode={viewMode}
-            currentFilters={filters}
-            currentSearch={search}
-            currentViewMode={viewMode}
-            onUpdateFilter={updateFilter}
-            onResetFilters={() => {
-              resetAllFilters();
-              setSearch('');
-            }}
-          />
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <FilterBar
+              moduleId="agentes"
+              filters={registry}
+              onFiltersChange={(newFilters) => {
+                Object.entries(newFilters).forEach(([key, value]) => {
+                  if (filters[key] !== value) updateFilter(key, value);
+                });
+              }}
+              onSearchChange={setSearch}
+              onViewModeChange={setViewMode}
+              initialFilters={filters}
+              initialSearch={search}
+              initialViewMode={viewMode}
+              currentFilters={filters}
+              currentSearch={search}
+              currentViewMode={viewMode}
+              onUpdateFilter={updateFilter}
+              onResetFilters={() => {
+                resetAllFilters();
+                setSearch('');
+              }}
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="mt-4 shrink-0 text-muted-foreground hover:text-foreground"
+            title="Atualizar"
+          >
+            {isRefreshing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            <span className="sr-only sm:not-sr-only">
+              {isRefreshing ? 'Atualizando...' : 'Atualizar'}
+            </span>
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="mt-4 shrink-0 text-muted-foreground hover:text-foreground"
-          title="Atualizar"
-        >
-          {isRefreshing ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
-          )}
-          <span className="sr-only sm:not-sr-only">
-            {isRefreshing ? 'Atualizando...' : 'Atualizar'}
-          </span>
-        </Button>
-      </div>
       </div>
 
       {/* Content */}
@@ -232,7 +231,7 @@ export function AgentsContent({
                     <h3 className="font-semibold">{agent.name}</h3>
                     <p className="text-sm text-muted-foreground">{agent.description}</p>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                  <div className="flex flex-wrap items-center justify-end gap-2">
                     <Badge
                       variant={agent.usageType === 'chatbot' ? 'default' : 'secondary'}
                       className="text-xs"

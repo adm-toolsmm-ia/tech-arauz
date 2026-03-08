@@ -195,10 +195,7 @@ export function ProcessosContent({
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
         <div>
-          <DashboardHeader
-            title="Processos"
-            subtitle="Fluxos operacionais da organização"
-          />
+          <DashboardHeader title="Processos" subtitle="Fluxos operacionais da organização" />
           <OrgBreadcrumb items={[{ label: 'Processos' }]} />
         </div>
         <Button
@@ -251,7 +248,10 @@ export function ProcessosContent({
                         <div>
                           <p className="font-medium">{proc.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {[proc.area_id && areaMap[proc.area_id], proc.nucleus_id && nucleusMap[proc.nucleus_id]]
+                            {[
+                              proc.area_id && areaMap[proc.area_id],
+                              proc.nucleus_id && nucleusMap[proc.nucleus_id],
+                            ]
                               .filter(Boolean)
                               .join(' / ') || 'Sem área/núcleo'}
                           </p>
@@ -271,7 +271,10 @@ export function ProcessosContent({
           title={selectedProcess?.name ?? ''}
           subtitle={
             selectedProcess
-              ? [selectedProcess.area_id && areaMap[selectedProcess.area_id], selectedProcess.nucleus_id && nucleusMap[selectedProcess.nucleus_id]]
+              ? [
+                  selectedProcess.area_id && areaMap[selectedProcess.area_id],
+                  selectedProcess.nucleus_id && nucleusMap[selectedProcess.nucleus_id],
+                ]
                   .filter(Boolean)
                   .join(' / ')
               : undefined
@@ -282,7 +285,9 @@ export function ProcessosContent({
             <ProcessCockpit
               process={selectedProcess}
               areaName={selectedProcess.area_id ? areaMap[selectedProcess.area_id] : undefined}
-              nucleusName={selectedProcess.nucleus_id ? nucleusMap[selectedProcess.nucleus_id] : undefined}
+              nucleusName={
+                selectedProcess.nucleus_id ? nucleusMap[selectedProcess.nucleus_id] : undefined
+              }
               onEdit={() => handleOpenEdit(selectedProcess)}
               onDelete={() => setProcessToDelete(selectedProcess)}
             />

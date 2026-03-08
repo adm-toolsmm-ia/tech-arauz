@@ -76,7 +76,9 @@ export function RevisionsTab({ reviews, setReviews, availableModels }: RevisionT
               return (
                 <TableRow key={review.id}>
                   <TableCell className="font-medium">{model?.name || review.model_id}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{review.reviewer_id.slice(0, 8)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {review.reviewer_id.slice(0, 8)}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={getStatusColor(review.status)}>
                       {review.status === 'approved' && '✅'}
@@ -86,7 +88,9 @@ export function RevisionsTab({ reviews, setReviews, availableModels }: RevisionT
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm">{formatDate(review.reviewed_at)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{review.notes || '-'}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {review.notes || '-'}
+                  </TableCell>
                 </TableRow>
               );
             })}

@@ -221,12 +221,14 @@ function APIConfigDialog({
               role="switch"
               aria-checked={isActive}
               onClick={() => setIsActive(!isActive)}
-              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${isActive ? 'bg-primary' : 'bg-input'
-                }`}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                isActive ? 'bg-primary' : 'bg-input'
+              }`}
             >
               <span
-                className={`pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform ${isActive ? 'translate-x-4' : 'translate-x-0'
-                  }`}
+                className={`pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform ${
+                  isActive ? 'translate-x-4' : 'translate-x-0'
+                }`}
               />
             </button>
           </div>
@@ -253,10 +255,11 @@ function APIConfigDialog({
         {/* Save feedback */}
         {saveMessage && (
           <div
-            className={`rounded-md px-3 py-2 text-sm ${saveMessage.type === 'success'
+            className={`rounded-md px-3 py-2 text-sm ${
+              saveMessage.type === 'success'
                 ? 'bg-green-500/10 text-green-700 dark:text-green-400'
                 : 'bg-destructive/10 text-destructive'
-              }`}
+            }`}
           >
             {saveMessage.type === 'success' ? (
               <CheckCircle2 className="mr-1.5 inline h-4 w-4" />
@@ -433,10 +436,11 @@ export function APIManager({ onViewLogs, onSyncComplete }: APIManagerProps) {
           {/* Sync feedback inline */}
           {syncMessage && (
             <div
-              className={`mt-2 rounded-md px-3 py-2 text-sm ${syncMessage.type === 'success'
+              className={`mt-2 rounded-md px-3 py-2 text-sm ${
+                syncMessage.type === 'success'
                   ? 'bg-green-500/10 text-green-700 dark:text-green-400'
                   : 'bg-destructive/10 text-destructive'
-                }`}
+              }`}
             >
               {syncMessage.type === 'success' ? (
                 <CheckCircle2 className="mr-1.5 inline h-4 w-4" />
@@ -473,10 +477,7 @@ export function APIManager({ onViewLogs, onSyncComplete }: APIManagerProps) {
                           {api.identificador}
                         </p>
                       </div>
-                      <Badge
-                        variant={api.is_active ? 'default' : 'secondary'}
-                        className="shrink-0"
-                      >
+                      <Badge variant={api.is_active ? 'default' : 'secondary'} className="shrink-0">
                         {api.is_active ? 'Ativo' : 'Inativo'}
                       </Badge>
                     </div>

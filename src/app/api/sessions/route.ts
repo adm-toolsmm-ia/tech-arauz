@@ -26,10 +26,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get query parameters
@@ -58,7 +55,7 @@ export async function GET(request: NextRequest) {
         created_at,
         updated_at
       `,
-        { count: 'exact' }
+        { count: 'exact' },
       )
       .eq('user_id', user.id)
       .order('started_at', { ascending: false });
@@ -77,10 +74,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Error fetching sessions:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch sessions' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch sessions' }, { status: 500 });
     }
 
     // Transform data to include agent_name
@@ -113,9 +107,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('Unexpected error in GET /api/sessions:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

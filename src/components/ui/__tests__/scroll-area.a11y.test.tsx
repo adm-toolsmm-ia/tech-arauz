@@ -1,7 +1,7 @@
-import { axe } from 'jest-axe'
-import { render } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import { ScrollArea } from '../scroll-area'
+import { axe } from 'jest-axe';
+import { render } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { ScrollArea } from '../scroll-area';
 
 describe('ScrollArea A11y', () => {
   it('should have no violations', async () => {
@@ -15,9 +15,9 @@ describe('ScrollArea A11y', () => {
             </div>
           ))}
         </div>
-      </ScrollArea>
-    )
-    const results = await axe(container)
-    expect(results).toHaveNoViolations()
-  })
-})
+      </ScrollArea>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});

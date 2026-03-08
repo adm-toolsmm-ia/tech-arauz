@@ -70,8 +70,18 @@ export function filterProjectsByAgendaPeriod<T extends ProjectForAgenda>(
 }
 
 const MONTH_NAMES_FULL = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
 ];
 
 function formatMMyyyy(d: Date): string {

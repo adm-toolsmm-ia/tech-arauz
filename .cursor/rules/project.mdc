@@ -30,7 +30,7 @@ Ao implementar: consulte `configs/project.yaml` para componentes canônicos, sta
 
 ## 4. O que aplicar na sessão (resumo obrigatório)
 
-- **Quality gates**: `npm run lint` ; `npm run typecheck` ; `npm test` ; `npm run sync:ide:check` (PowerShell: usar `;`, não `&&`). Ordem e regras completas em `configs/project.yaml` → `coding_standards.quality_gates`.
+- **Quality gates**: `npm run lint` ; `npm run typecheck` ; `npm test` ; `npm run format:check` ; `npm run sync:ide:check` (PowerShell: usar `;`, não `&&`). Ordem e regras completas em `configs/project.yaml` → `coding_standards.quality_gates`. Erros comuns e prevenção: `docs/architecture/build-deploy-gates.md`.
 - **Shell**: Padrões AIOS (encadeamento com `;` no PowerShell). Detalhe em `.aios-core` quando disponível.
 - **Shell Windows**: O terminal é PowerShell. **Nunca usar `&&`** — no Windows dá erro (não existe no PowerShell 5.x); usar sempre `;` para encadear (ex.: `npm run lint ; npm run typecheck`). Não usar comandos Unix (`head`, `tail`, `grep` como comando, `cat`, `ls`, etc.); usar equivalentes em `.agent/skills/powershell-windows/SKILL.md`.
 - **Commits**: Conventional (`type(scope): description`), inglês para código. Detalhe em `configs/project.yaml` → `coding_standards.commits`.

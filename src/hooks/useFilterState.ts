@@ -7,7 +7,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FilterState, FilterDefinition, FilterPersistenceConfig, SortConfig } from '@/lib/filters/filter-types';
+import {
+  FilterState,
+  FilterDefinition,
+  FilterPersistenceConfig,
+  SortConfig,
+} from '@/lib/filters/filter-types';
 import {
   resetFilters,
   clearFilters as clearFiltersUtil,
@@ -224,7 +229,12 @@ export function useModuleFilters<T extends Record<string, any>>(
   moduleId: string,
   definitions: FilterDefinition[],
   data: T[],
-  filterFn: (data: T[], filters: FilterState, search: string, sortConfig?: SortConfig | null) => T[],
+  filterFn: (
+    data: T[],
+    filters: FilterState,
+    search: string,
+    sortConfig?: SortConfig | null,
+  ) => T[],
   options?: {
     persistence?: FilterPersistenceConfig;
     initialSort?: SortConfig | null;

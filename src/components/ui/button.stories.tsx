@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { Button } from './button'
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './button';
 
 const meta = {
   title: 'UI/Button',
@@ -21,10 +21,10 @@ const meta = {
       control: 'boolean',
     },
   },
-} satisfies Meta<typeof Button>
+} satisfies Meta<typeof Button>;
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 // Default button
 export const Default: Story = {
@@ -33,7 +33,7 @@ export const Default: Story = {
     variant: 'default',
     size: 'default',
   },
-}
+};
 
 // Primary action (semantic)
 export const Primary: Story = {
@@ -47,7 +47,7 @@ export const Primary: Story = {
       {args.children}
     </Button>
   ),
-}
+};
 
 // Secondary variant
 export const Secondary: Story = {
@@ -55,7 +55,7 @@ export const Secondary: Story = {
     children: 'Secondary Action',
     variant: 'secondary',
   },
-}
+};
 
 // Destructive variant
 export const Destructive: Story = {
@@ -63,7 +63,7 @@ export const Destructive: Story = {
     children: 'Delete',
     variant: 'destructive',
   },
-}
+};
 
 // Outline variant
 export const Outline: Story = {
@@ -71,7 +71,7 @@ export const Outline: Story = {
     children: 'Outlined',
     variant: 'outline',
   },
-}
+};
 
 // Ghost variant
 export const Ghost: Story = {
@@ -79,7 +79,7 @@ export const Ghost: Story = {
     children: 'Ghost',
     variant: 'ghost',
   },
-}
+};
 
 // Link variant
 export const Link: Story = {
@@ -87,7 +87,7 @@ export const Link: Story = {
     children: 'Link Button',
     variant: 'link',
   },
-}
+};
 
 // Size variations
 export const Small: Story = {
@@ -95,21 +95,21 @@ export const Small: Story = {
     children: 'Small',
     size: 'sm',
   },
-}
+};
 
 export const Large: Story = {
   args: {
     children: 'Large',
     size: 'lg',
   },
-}
+};
 
 export const Icon: Story = {
   args: {
     children: '→',
     size: 'icon',
   },
-}
+};
 
 // Disabled state
 export const Disabled: Story = {
@@ -117,7 +117,7 @@ export const Disabled: Story = {
     children: 'Disabled',
     disabled: true,
   },
-}
+};
 
 // Button group
 export const ButtonGroup: Story = {
@@ -128,7 +128,7 @@ export const ButtonGroup: Story = {
       <Button variant="destructive">Delete</Button>
     </div>
   ),
-}
+};
 
 // Loading state (with disabled)
 export const Loading: Story = {
@@ -136,7 +136,7 @@ export const Loading: Story = {
     children: 'Loading...',
     disabled: true,
   },
-}
+};
 
 // All variants showcase
 export const AllVariants: Story = {
@@ -160,4 +160,4 @@ export const AllVariants: Story = {
       </div>
     </div>
   ),
-}
+};

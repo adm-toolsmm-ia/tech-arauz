@@ -88,10 +88,7 @@ export function SystemCockpit360({ system, resources, onEdit }: SystemCockpit360
           ) : (
             <div className="space-y-3">
               {resources.map((r) => (
-                <div
-                  key={r.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
-                >
+                <div key={r.id} className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <p className="text-sm font-medium">{r.name}</p>
                     {r.description && (

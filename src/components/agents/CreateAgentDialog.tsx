@@ -203,19 +203,19 @@ export function CreateAgentDialog({
           {/* Tabs for Organization */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full flex-wrap">
-              <TabsTrigger value="basic" className="flex-1 min-w-0">
+              <TabsTrigger value="basic" className="min-w-0 flex-1">
                 Básico
               </TabsTrigger>
-              <TabsTrigger value="classification" className="flex-1 min-w-0">
+              <TabsTrigger value="classification" className="min-w-0 flex-1">
                 Classificação
               </TabsTrigger>
-              <TabsTrigger value="llm" className="flex-1 min-w-0">
+              <TabsTrigger value="llm" className="min-w-0 flex-1">
                 Modelo
               </TabsTrigger>
-              <TabsTrigger value="persona" className="flex-1 min-w-0">
+              <TabsTrigger value="persona" className="min-w-0 flex-1">
                 Persona
               </TabsTrigger>
-              <TabsTrigger value="advanced" className="flex-1 min-w-0">
+              <TabsTrigger value="advanced" className="min-w-0 flex-1">
                 Avançado
               </TabsTrigger>
             </TabsList>
@@ -336,7 +336,7 @@ export function CreateAgentDialog({
                 </Select>
               </div>
               {formData.usage_type === 'chatbot' && (
-                <div className="space-y-3 rounded-lg border p-4 bg-muted/30">
+                <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="show-in-shortcut">Exibir no seletor de chatbot</Label>
                     <Switch
@@ -575,9 +575,7 @@ export function CreateAgentDialog({
                   id="output-schema"
                   placeholder='{"type": "object", "properties": {...}}'
                   value={
-                    formData.output_schema
-                      ? JSON.stringify(formData.output_schema, null, 2)
-                      : ''
+                    formData.output_schema ? JSON.stringify(formData.output_schema, null, 2) : ''
                   }
                   onChange={(e) => {
                     const val = e.target.value.trim();

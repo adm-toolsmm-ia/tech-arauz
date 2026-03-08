@@ -46,49 +46,49 @@ export function CronogramaFilters({
         onAgendaPeriodChange={onCalendarPeriodChange}
       />
       <div className="flex items-start gap-3">
-      <div className="min-w-0 flex-1">
-        <FilterBar
-          moduleId="cronogramas"
-          filters={registry}
-          onFiltersChange={(newFilters) => {
-            Object.entries(newFilters).forEach(([key, value]) => {
-              if (filters[key] !== value) {
-                onUpdateFilter(key, value as string);
-              }
-            });
-          }}
-          onUpdateFilter={onUpdateFilter}
-          onResetFilters={onResetFilters}
-          onSearchChange={onSearchChange}
-          onViewModeChange={onViewModeChange}
-          onAgendaPeriodChange={onCalendarPeriodChange}
-          initialFilters={filters}
-          initialSearch={search}
-          initialViewMode={viewMode}
-          initialAgendaPeriod={calendarPeriod}
-          currentFilters={filters}
-          currentSearch={search}
-          currentViewMode={viewMode}
-          currentAgendaPeriod={calendarPeriod}
-        />
+        <div className="min-w-0 flex-1">
+          <FilterBar
+            moduleId="cronogramas"
+            filters={registry}
+            onFiltersChange={(newFilters) => {
+              Object.entries(newFilters).forEach(([key, value]) => {
+                if (filters[key] !== value) {
+                  onUpdateFilter(key, value as string);
+                }
+              });
+            }}
+            onUpdateFilter={onUpdateFilter}
+            onResetFilters={onResetFilters}
+            onSearchChange={onSearchChange}
+            onViewModeChange={onViewModeChange}
+            onAgendaPeriodChange={onCalendarPeriodChange}
+            initialFilters={filters}
+            initialSearch={search}
+            initialViewMode={viewMode}
+            initialAgendaPeriod={calendarPeriod}
+            currentFilters={filters}
+            currentSearch={search}
+            currentViewMode={viewMode}
+            currentAgendaPeriod={calendarPeriod}
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onSync}
+          disabled={isSyncing}
+          className="mt-4 shrink-0 text-muted-foreground hover:text-foreground"
+        >
+          {isSyncing ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 h-4 w-4" />
+          )}
+          <span className="sr-only sm:not-sr-only">
+            {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
+          </span>
+        </Button>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onSync}
-        disabled={isSyncing}
-        className="mt-4 shrink-0 text-muted-foreground hover:text-foreground"
-      >
-        {isSyncing ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <RefreshCw className="mr-2 h-4 w-4" />
-        )}
-        <span className="sr-only sm:not-sr-only">
-          {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
-        </span>
-      </Button>
-    </div>
     </div>
   );
 }

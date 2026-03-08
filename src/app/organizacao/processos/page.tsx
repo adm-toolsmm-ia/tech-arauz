@@ -16,11 +16,7 @@ export default async function ProcessosPage() {
     redirect('/login');
   }
 
-  const [
-    { data: processesRaw, error },
-    { data: areas },
-    { data: nuclei },
-  ] = await Promise.all([
+  const [{ data: processesRaw, error }, { data: areas }, { data: nuclei }] = await Promise.all([
     supabase.from('org_processes').select('*').order('name', { ascending: true }),
     supabase.from('org_areas').select('id, name').order('name'),
     supabase.from('org_nuclei').select('id, name, area_id').order('name'),

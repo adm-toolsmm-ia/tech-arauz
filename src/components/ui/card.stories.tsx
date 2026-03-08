@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './card'
-import { Button } from './button'
+import type { Meta, StoryObj } from '@storybook/react';
+import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './card';
+import { Button } from './button';
 
 const meta = {
   title: 'UI/Card',
@@ -9,10 +9,10 @@ const meta = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-} satisfies Meta<typeof Card>
+} satisfies Meta<typeof Card>;
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 // Basic card
 export const Default: Story = {
@@ -30,7 +30,7 @@ export const Default: Story = {
       </CardFooter>
     </Card>
   ),
-}
+};
 
 // Simple card
 export const Simple: Story = {
@@ -41,7 +41,7 @@ export const Simple: Story = {
       </CardContent>
     </Card>
   ),
-}
+};
 
 // Card with complex content
 export const Complex: Story = {
@@ -76,7 +76,7 @@ export const Complex: Story = {
       </CardFooter>
     </Card>
   ),
-}
+};
 
 // Card variations
 export const Variations: Story = {
@@ -114,7 +114,7 @@ export const Variations: Story = {
       </Card>
     </div>
   ),
-}
+};
 
 // Responsive cards grid
 export const Grid: Story = {
@@ -132,7 +132,7 @@ export const Grid: Story = {
       ))}
     </div>
   ),
-}
+};
 
 // Loading state
 export const Loading: Story = {
@@ -147,7 +147,7 @@ export const Loading: Story = {
       </CardContent>
     </Card>
   ),
-}
+};
 
 // Card with status indicator
 export const WithStatus: Story = {
@@ -171,4 +171,4 @@ export const WithStatus: Story = {
       </Card>
     </div>
   ),
-}
+};

@@ -113,14 +113,15 @@ export default async function EmpresaPage() {
     return acc;
   }, {});
 
-  const resourcesBySystemId = systemResources.reduce<
-    Record<string, typeof systemResources>
-  >((acc, r) => {
-    const list = acc[r.system_id] ?? [];
-    list.push(r);
-    acc[r.system_id] = list;
-    return acc;
-  }, {});
+  const resourcesBySystemId = systemResources.reduce<Record<string, typeof systemResources>>(
+    (acc, r) => {
+      const list = acc[r.system_id] ?? [];
+      list.push(r);
+      acc[r.system_id] = list;
+      return acc;
+    },
+    {},
+  );
 
   const vinculos: EmpresaVinculo[] = [
     ...areas.map((a) => ({

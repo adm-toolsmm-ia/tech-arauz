@@ -60,10 +60,7 @@ const DEFAULT_FORM: NucleusFormData = {
   responsible_roles: '',
 };
 
-export function NucleosContent({
-  nuclei: initialNuclei,
-  areas,
-}: NucleosContentProps) {
+export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentProps) {
   const [nuclei, setNuclei] = React.useState<NucleusWithMeta[]>(initialNuclei);
   const [selectedNucleus, setSelectedNucleus] = React.useState<NucleusWithMeta | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
@@ -113,7 +110,12 @@ export function NucleosContent({
     setIsLoading(true);
     try {
       const parseRoles = (s: string) =>
-        s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
+        s
+          ? s
+              .split(',')
+              .map((r) => r.trim())
+              .filter(Boolean)
+          : [];
       const result = await createNucleusAction({
         area_id: formData.area_id,
         name: formData.name.trim(),
@@ -151,7 +153,12 @@ export function NucleosContent({
     setIsLoading(true);
     try {
       const parseRoles = (s: string) =>
-        s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
+        s
+          ? s
+              .split(',')
+              .map((r) => r.trim())
+              .filter(Boolean)
+          : [];
       const result = await updateNucleusAction(editingNucleus.id, {
         name: formData.name.trim(),
         description: formData.description.trim() || null,

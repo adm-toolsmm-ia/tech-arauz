@@ -175,7 +175,12 @@ export function LmProviderCockpit({
                       <X className="size-4" />
                       Cancelar
                     </Button>
-                    <Button size="sm" onClick={handleSaveEdit} disabled={isLoading} className="gap-1">
+                    <Button
+                      size="sm"
+                      onClick={handleSaveEdit}
+                      disabled={isLoading}
+                      className="gap-1"
+                    >
                       <Check className="size-4" />
                       Salvar
                     </Button>

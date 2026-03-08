@@ -21,7 +21,11 @@ export default async function ConversasPage() {
 
   // Fetch initial sessions data directly from DB
   const limit = 10;
-  const { data: rawSessions, error: sessionsError, count } = await supabase
+  const {
+    data: rawSessions,
+    error: sessionsError,
+    count,
+  } = await supabase
     .from('agent_sessions')
     .select(
       `
@@ -36,7 +40,7 @@ export default async function ConversasPage() {
       created_at,
       updated_at
     `,
-      { count: 'exact' }
+      { count: 'exact' },
     )
     .eq('user_id', user.id)
     .order('started_at', { ascending: false })

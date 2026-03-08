@@ -28,8 +28,7 @@ export interface Tenant360Result {
 }
 
 async function getAuthContext(): Promise<
-  | { error: string }
-  | { supabase: Awaited<ReturnType<typeof createClient>>; tenantId: string }
+  { error: string } | { supabase: Awaited<ReturnType<typeof createClient>>; tenantId: string }
 > {
   const supabase = await createClient();
   const {
@@ -56,7 +55,12 @@ async function getAuthContext(): Promise<
 
 export async function getTenant360Action(): Promise<Tenant360Result> {
   const ctx = await getAuthContext();
-  if ('error' in ctx) return { tenant: null, counts: { areas: 0, processes: 0, systems: 0, suppliers: 0, services: 0, documents: 0 }, error: ctx.error };
+  if ('error' in ctx)
+    return {
+      tenant: null,
+      counts: { areas: 0, processes: 0, systems: 0, suppliers: 0, services: 0, documents: 0 },
+      error: ctx.error,
+    };
 
   const { supabase, tenantId } = ctx;
 
@@ -76,12 +80,30 @@ export async function getTenant360Action(): Promise<Tenant360Result> {
 
   const [areasRes, processesRes, systemsRes, suppliersRes, servicesRes, documentsRes] =
     await Promise.all([
-      supabase.from('org_areas').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
-      supabase.from('org_processes').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
-      supabase.from('org_systems').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
-      supabase.from('org_suppliers').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
-      supabase.from('org_services').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
-      supabase.from('org_documents').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
+      supabase
+        .from('org_areas')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
+      supabase
+        .from('org_processes')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
+      supabase
+        .from('org_systems')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
+      supabase
+        .from('org_suppliers')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
+      supabase
+        .from('org_services')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
+      supabase
+        .from('org_documents')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
     ]);
 
   const counts: Tenant360Counts = {

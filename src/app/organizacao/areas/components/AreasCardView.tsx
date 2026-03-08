@@ -33,7 +33,7 @@ export function AreasCardView({ areas, onAreaClick }: AreasCardViewProps) {
                 <Building2 className="size-6 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-medium truncate">{area.name}</p>
+                <p className="truncate font-medium">{area.name}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {area.nuclei_count ?? 0} núcleo(s)
                 </p>

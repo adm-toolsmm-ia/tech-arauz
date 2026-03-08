@@ -52,7 +52,7 @@ export function GlobalChatbot() {
     setIsLoadingAgents(true);
     try {
       const response = await fetch(
-        '/api/agents?usage_type=chatbot&status=published&show_in_shortcut=true&limit=100'
+        '/api/agents?usage_type=chatbot&status=published&show_in_shortcut=true&limit=100',
       );
       if (!response.ok) throw new Error('Failed to fetch agents');
       const data = await response.json();
@@ -128,20 +128,20 @@ export function GlobalChatbot() {
       <GlobalChatbotButton onClick={() => setIsOpen(true)} />
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent side="right" className="w-full sm:w-[420px] flex flex-col">
+        <SheetContent side="right" className="flex w-full flex-col sm:w-[420px]">
           {!selectedAgent ? (
             <>
               <SheetHeader>
                 <SheetTitle>Assistentes AI</SheetTitle>
               </SheetHeader>
 
-              <ScrollArea className="flex-1 mt-4">
+              <ScrollArea className="mt-4 flex-1">
                 {isLoadingAgents ? (
-                  <div className="flex items-center justify-center h-32">
+                  <div className="flex h-32 items-center justify-center">
                     <Loader2 className="h-6 w-6 animate-spin" />
                   </div>
                 ) : agents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
+                  <p className="py-8 text-center text-sm text-muted-foreground">
                     Nenhum assistente disponível
                   </p>
                 ) : (
@@ -149,12 +149,12 @@ export function GlobalChatbot() {
                     {agents.map((agent) => (
                       <Card
                         key={agent.id}
-                        className="cursor-pointer hover:bg-accent transition-colors"
+                        className="cursor-pointer transition-colors hover:bg-accent"
                         onClick={() => handleSelectAgent(agent)}
                       >
                         <CardContent className="pt-4">
                           <h3 className="font-medium">{agent.name}</h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
+                          <p className="line-clamp-2 text-sm text-muted-foreground">
                             {agent.description || 'Sem descrição'}
                           </p>
                         </CardContent>
@@ -185,27 +185,31 @@ export function GlobalChatbot() {
                 </div>
               </SheetHeader>
 
-              <ScrollArea className="flex-1 mt-4 pr-4">
+              <ScrollArea className="mt-4 flex-1 pr-4">
                 <div className="space-y-4">
                   {messages.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-8">
+                    <p className="py-8 text-center text-sm text-muted-foreground">
                       Comece a conversa...
                     </p>
                   )}
                   {messages.map((msg) => (
-                    <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      key={msg.id}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
                       <div
-                        className={`max-w-xs px-3 py-2 rounded-lg ${msg.role === 'user'
+                        className={`max-w-xs rounded-lg px-3 py-2 ${
+                          msg.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-foreground'
-                          }`}
+                        }`}
                       >
                         <p className="text-sm">{msg.content}</p>
                         {msg.role === 'assistant' && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0 mt-1"
+                            className="mt-1 h-6 w-6 p-0"
                             onClick={() => handleCopyMessage(msg.content)}
                           >
                             <Copy className="h-3 w-3" />
@@ -216,11 +220,11 @@ export function GlobalChatbot() {
                   ))}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-muted px-3 py-2 rounded-lg">
+                      <div className="rounded-lg bg-muted px-3 py-2">
                         <div className="flex gap-1">
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce delay-100" />
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce delay-200" />
+                          <div className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" />
+                          <div className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground delay-100" />
+                          <div className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground delay-200" />
                         </div>
                       </div>
                     </div>

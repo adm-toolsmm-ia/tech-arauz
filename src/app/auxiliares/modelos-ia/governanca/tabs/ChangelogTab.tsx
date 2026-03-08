@@ -63,12 +63,12 @@ export function ChangelogTab({ changelog, availableModels }: ChangelogTabProps) 
                 <TableRow key={entry.id}>
                   <TableCell className="font-medium">{model?.name || entry.model_id}</TableCell>
                   <TableCell className="text-sm">{entry.change_type}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
+                  <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
                     {typeof entry.old_value === 'object'
                       ? JSON.stringify(entry.old_value).slice(0, 30) + '...'
                       : String(entry.old_value)}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
+                  <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
                     {typeof entry.new_value === 'object'
                       ? JSON.stringify(entry.new_value).slice(0, 30) + '...'
                       : String(entry.new_value)}

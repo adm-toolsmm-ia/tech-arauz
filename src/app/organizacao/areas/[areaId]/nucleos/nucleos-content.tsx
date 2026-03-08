@@ -48,19 +48,13 @@ const DEFAULT_FORM: NucleusFormData = {
   responsible_roles: '',
 };
 
-function NucleusCockpit({
-  nucleus,
-  onEdit,
-}: {
-  nucleus: OrgNucleus;
-  onEdit?: () => void;
-}) {
+function NucleusCockpit({ nucleus, onEdit }: { nucleus: OrgNucleus; onEdit?: () => void }) {
   return (
     <div className="space-y-4">
       <div>
         <h3 className="font-semibold">{nucleus.name}</h3>
         {nucleus.description && (
-          <p className="text-sm text-muted-foreground mt-1">{nucleus.description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{nucleus.description}</p>
         )}
       </div>
       {nucleus.objective && (
@@ -110,7 +104,12 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
     setIsLoading(true);
     try {
       const parseRoles = (s: string) =>
-        s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
+        s
+          ? s
+              .split(',')
+              .map((r) => r.trim())
+              .filter(Boolean)
+          : [];
       const result = await createNucleusAction({
         area_id: areaId,
         name: formData.name.trim(),
@@ -143,7 +142,12 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
     setIsLoading(true);
     try {
       const parseRoles = (s: string) =>
-        s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
+        s
+          ? s
+              .split(',')
+              .map((r) => r.trim())
+              .filter(Boolean)
+          : [];
       const result = await updateNucleusAction(editingNucleus.id, {
         name: formData.name.trim(),
         description: formData.description.trim() || null,
@@ -270,7 +274,7 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
                         <div>
                           <p className="font-medium">{nucleus.name}</p>
                           {nucleus.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-1">
+                            <p className="line-clamp-1 text-sm text-muted-foreground">
                               {nucleus.description}
                             </p>
                           )}

@@ -44,7 +44,11 @@ function CustomTooltip({
   );
 }
 
-export function ResponsibleWorkloadChart({ data, className, onBarClick }: ResponsibleWorkloadChartProps) {
+export function ResponsibleWorkloadChart({
+  data,
+  className,
+  onBarClick,
+}: ResponsibleWorkloadChartProps) {
   return (
     <Card className={className}>
       <CardHeader className="pb-2">

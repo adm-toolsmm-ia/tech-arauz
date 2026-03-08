@@ -187,12 +187,16 @@ export const SCHEDULE_KANBAN_COLUMNS: { key: ScheduleKanbanColumn; label: string
 ];
 
 /** Map schedule status + atrasado to Kanban column (legacy) */
-export function getKanbanColumn(status: string | null | undefined, atrasado: boolean): ScheduleKanbanColumn {
+export function getKanbanColumn(
+  status: string | null | undefined,
+  atrasado: boolean,
+): ScheduleKanbanColumn {
   const s = (status || '').trim().toLowerCase();
   if (s === 'concluído' || s === 'concluido') return 'concluida';
   if (s === 'cancelado') return 'concluida';
   if (atrasado) return 'atrasada';
-  if (s === 'em_execucao' || s === 'em execução' || s === 'em andamento' || s === 'iniciada') return 'em_execucao';
+  if (s === 'em_execucao' || s === 'em execução' || s === 'em andamento' || s === 'iniciada')
+    return 'em_execucao';
   return 'pendente';
 }
 
@@ -209,14 +213,22 @@ export function getKanbanColumnByStatus(schedule: Schedule): string {
   const lower = s.toLowerCase();
   const atrasado = !!schedule.atrasado;
 
-  if (atrasado && lower !== 'concluído' && lower !== 'concluido' && lower !== 'aguardando confirmação') {
+  if (
+    atrasado &&
+    lower !== 'concluído' &&
+    lower !== 'concluido' &&
+    lower !== 'aguardando confirmação'
+  ) {
     return KANBAN_ATRASADA_KEY;
   }
   return s || 'Outros';
 }
 
 /** Build Kanban columns from schedules: Atrasada first, then unique statuses from DB */
-export function buildScheduleKanbanColumns(schedules: Schedule[], hideCompleted?: boolean): { key: string; label: string }[] {
+export function buildScheduleKanbanColumns(
+  schedules: Schedule[],
+  hideCompleted?: boolean,
+): { key: string; label: string }[] {
   const statusSet = new Set<string>();
   for (const s of schedules) {
     const col = getKanbanColumnByStatus(s);
@@ -231,7 +243,10 @@ export function buildScheduleKanbanColumns(schedules: Schedule[], hideCompleted?
 
   if (hideCompleted) {
     return cols.filter((c) => {
-      const lower = c.key.toLowerCase().normalize('NFD').replace(/\u0300/g, '');
+      const lower = c.key
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\u0300/g, '');
       return lower !== 'concluido' && lower !== 'cancelado';
     });
   }

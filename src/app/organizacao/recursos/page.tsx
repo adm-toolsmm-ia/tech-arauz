@@ -14,17 +14,13 @@ export default async function RecursosPage() {
     redirect('/login');
   }
 
-  const [
-    { data: systems },
-    { data: suppliers },
-    { data: services },
-    { data: documents },
-  ] = await Promise.all([
-    supabase.from('org_systems').select('*').order('name'),
-    supabase.from('org_suppliers').select('*').order('name'),
-    supabase.from('org_services').select('*').order('name'),
-    supabase.from('org_documents').select('*').order('name'),
-  ]);
+  const [{ data: systems }, { data: suppliers }, { data: services }, { data: documents }] =
+    await Promise.all([
+      supabase.from('org_systems').select('*').order('name'),
+      supabase.from('org_suppliers').select('*').order('name'),
+      supabase.from('org_services').select('*').order('name'),
+      supabase.from('org_documents').select('*').order('name'),
+    ]);
 
   return (
     <ErrorBoundary label="Recursos">

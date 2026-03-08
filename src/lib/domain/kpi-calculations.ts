@@ -99,7 +99,9 @@ export function computeTotalBudget(projects: DashboardProjectLike[]): number {
 }
 
 export function computeHighImpactProjects(projects: DashboardProjectLike[]): number {
-  return projects.filter(p => p.impacto_estrategico?.toLowerCase() === 'alto' && isConsideredActive(p.status)).length;
+  return projects.filter(
+    (p) => p.impacto_estrategico?.toLowerCase() === 'alto' && isConsideredActive(p.status),
+  ).length;
 }
 
 /**

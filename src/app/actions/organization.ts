@@ -56,14 +56,29 @@ async function getAuthContext(): Promise<AuthContext> {
 
 type AreaPayload = Omit<OrgArea, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'nuclei_count'>;
 type NucleusPayload = Omit<OrgNucleus, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'area'>;
-type ProcessPayload = Omit<OrgProcess, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'area' | 'nucleus'>;
-type RoutinePayload = Omit<OrgRoutine, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'process'>;
-type ActivityPayload = Omit<OrgActivity, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'routine'>;
+type ProcessPayload = Omit<
+  OrgProcess,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'area' | 'nucleus'
+>;
+type RoutinePayload = Omit<
+  OrgRoutine,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'process'
+>;
+type ActivityPayload = Omit<
+  OrgActivity,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'routine'
+>;
 type SystemPayload = Omit<OrgSystem, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>;
-type SystemResourcePayload = Omit<OrgSystemResource, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'system'>;
+type SystemResourcePayload = Omit<
+  OrgSystemResource,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'system'
+>;
 type SupplierPayload = Omit<OrgSupplier, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>;
 type ServicePayload = Omit<OrgService, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>;
-type OrgDocumentPayload = Omit<OrgDocument, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'process'>;
+type OrgDocumentPayload = Omit<
+  OrgDocument,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'process'
+>;
 
 /** Serialize payload for Supabase - arrays/objects passed as-is (Supabase handles JSONB) */
 function toDbPayload<T extends Record<string, unknown>>(payload: T): Record<string, unknown> {
@@ -93,7 +108,10 @@ export async function createAreaAction(payload: AreaPayload): Promise<OrgActionR
   return { success: true, message: `Área "${created.name}" criada!`, data: created as OrgArea };
 }
 
-export async function updateAreaAction(id: string, updates: Partial<AreaPayload>): Promise<OrgActionResult<OrgArea>> {
+export async function updateAreaAction(
+  id: string,
+  updates: Partial<AreaPayload>,
+): Promise<OrgActionResult<OrgArea>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
@@ -113,7 +131,11 @@ export async function deleteAreaAction(id: string): Promise<OrgActionResult> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
-  const { data: existing } = await ctx.supabase.from('org_areas').select('name').eq('id', id).single();
+  const { data: existing } = await ctx.supabase
+    .from('org_areas')
+    .select('name')
+    .eq('id', id)
+    .single();
   const { error } = await ctx.supabase.from('org_areas').delete().eq('id', id);
 
   if (error) return { success: false, message: `Erro ao excluir área: ${error.message}` };
@@ -123,7 +145,9 @@ export async function deleteAreaAction(id: string): Promise<OrgActionResult> {
 
 // --- Nuclei ---
 
-export async function createNucleusAction(payload: NucleusPayload): Promise<OrgActionResult<OrgNucleus>> {
+export async function createNucleusAction(
+  payload: NucleusPayload,
+): Promise<OrgActionResult<OrgNucleus>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
@@ -143,7 +167,11 @@ export async function createNucleusAction(payload: NucleusPayload): Promise<OrgA
   revalidatePath('/organizacao/nucleos');
   revalidatePath('/organizacao/processos');
   revalidatePath('/organizacao/empresa');
-  return { success: true, message: `Núcleo "${created.name}" criado!`, data: created as OrgNucleus };
+  return {
+    success: true,
+    message: `Núcleo "${created.name}" criado!`,
+    data: created as OrgNucleus,
+  };
 }
 
 export async function updateNucleusAction(
@@ -171,7 +199,11 @@ export async function deleteNucleusAction(id: string): Promise<OrgActionResult> 
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
-  const { data: existing } = await ctx.supabase.from('org_nuclei').select('name').eq('id', id).single();
+  const { data: existing } = await ctx.supabase
+    .from('org_nuclei')
+    .select('name')
+    .eq('id', id)
+    .single();
   const { error } = await ctx.supabase.from('org_nuclei').delete().eq('id', id);
 
   if (error) return { success: false, message: `Erro ao excluir núcleo: ${error.message}` };
@@ -183,7 +215,9 @@ export async function deleteNucleusAction(id: string): Promise<OrgActionResult> 
 
 // --- Processes ---
 
-export async function createProcessAction(payload: ProcessPayload): Promise<OrgActionResult<OrgProcess>> {
+export async function createProcessAction(
+  payload: ProcessPayload,
+): Promise<OrgActionResult<OrgProcess>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
@@ -200,7 +234,11 @@ export async function createProcessAction(payload: ProcessPayload): Promise<OrgA
 
   if (error) return { success: false, message: `Erro ao criar processo: ${error.message}` };
   revalidatePath('/organizacao/processos');
-  return { success: true, message: `Processo "${created.name}" criado!`, data: created as OrgProcess };
+  return {
+    success: true,
+    message: `Processo "${created.name}" criado!`,
+    data: created as OrgProcess,
+  };
 }
 
 export async function updateProcessAction(
@@ -226,7 +264,11 @@ export async function deleteProcessAction(id: string): Promise<OrgActionResult> 
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
-  const { data: existing } = await ctx.supabase.from('org_processes').select('name').eq('id', id).single();
+  const { data: existing } = await ctx.supabase
+    .from('org_processes')
+    .select('name')
+    .eq('id', id)
+    .single();
   const { error } = await ctx.supabase.from('org_processes').delete().eq('id', id);
 
   if (error) return { success: false, message: `Erro ao excluir processo: ${error.message}` };
@@ -236,7 +278,9 @@ export async function deleteProcessAction(id: string): Promise<OrgActionResult> 
 
 // --- Routines ---
 
-export async function createRoutineAction(payload: RoutinePayload): Promise<OrgActionResult<OrgRoutine>> {
+export async function createRoutineAction(
+  payload: RoutinePayload,
+): Promise<OrgActionResult<OrgRoutine>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
@@ -254,7 +298,11 @@ export async function createRoutineAction(payload: RoutinePayload): Promise<OrgA
   if (error) return { success: false, message: `Erro ao criar rotina: ${error.message}` };
   revalidatePath('/organizacao/processos');
   revalidatePath('/organizacao/rotinas');
-  return { success: true, message: `Rotina "${created.name}" criada!`, data: created as OrgRoutine };
+  return {
+    success: true,
+    message: `Rotina "${created.name}" criada!`,
+    data: created as OrgRoutine,
+  };
 }
 
 export async function updateRoutineAction(
@@ -281,7 +329,11 @@ export async function deleteRoutineAction(id: string): Promise<OrgActionResult> 
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
-  const { data: existing } = await ctx.supabase.from('org_routines').select('name').eq('id', id).single();
+  const { data: existing } = await ctx.supabase
+    .from('org_routines')
+    .select('name')
+    .eq('id', id)
+    .single();
   const { error } = await ctx.supabase.from('org_routines').delete().eq('id', id);
 
   if (error) return { success: false, message: `Erro ao excluir rotina: ${error.message}` };
@@ -292,7 +344,9 @@ export async function deleteRoutineAction(id: string): Promise<OrgActionResult> 
 
 // --- Activities ---
 
-export async function createActivityAction(payload: ActivityPayload): Promise<OrgActionResult<OrgActivity>> {
+export async function createActivityAction(
+  payload: ActivityPayload,
+): Promise<OrgActionResult<OrgActivity>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
@@ -309,7 +363,11 @@ export async function createActivityAction(payload: ActivityPayload): Promise<Or
 
   if (error) return { success: false, message: `Erro ao criar atividade: ${error.message}` };
   revalidatePath('/organizacao/processos');
-  return { success: true, message: `Atividade "${created.name}" criada!`, data: created as OrgActivity };
+  return {
+    success: true,
+    message: `Atividade "${created.name}" criada!`,
+    data: created as OrgActivity,
+  };
 }
 
 export async function updateActivityAction(
@@ -335,7 +393,11 @@ export async function deleteActivityAction(id: string): Promise<OrgActionResult>
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
-  const { data: existing } = await ctx.supabase.from('org_activities').select('name').eq('id', id).single();
+  const { data: existing } = await ctx.supabase
+    .from('org_activities')
+    .select('name')
+    .eq('id', id)
+    .single();
   const { error } = await ctx.supabase.from('org_activities').delete().eq('id', id);
 
   if (error) return { success: false, message: `Erro ao excluir atividade: ${error.message}` };
@@ -345,7 +407,9 @@ export async function deleteActivityAction(id: string): Promise<OrgActionResult>
 
 // --- Systems ---
 
-export async function createSystemAction(payload: SystemPayload): Promise<OrgActionResult<OrgSystem>> {
+export async function createSystemAction(
+  payload: SystemPayload,
+): Promise<OrgActionResult<OrgSystem>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
@@ -359,7 +423,11 @@ export async function createSystemAction(payload: SystemPayload): Promise<OrgAct
 
   if (error) return { success: false, message: `Erro ao criar sistema: ${error.message}` };
   revalidatePath('/organizacao/recursos');
-  return { success: true, message: `Sistema "${created.name}" criado!`, data: created as OrgSystem };
+  return {
+    success: true,
+    message: `Sistema "${created.name}" criado!`,
+    data: created as OrgSystem,
+  };
 }
 
 export async function updateSystemAction(
@@ -385,7 +453,11 @@ export async function deleteSystemAction(id: string): Promise<OrgActionResult> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
-  const { data: existing } = await ctx.supabase.from('org_systems').select('name').eq('id', id).single();
+  const { data: existing } = await ctx.supabase
+    .from('org_systems')
+    .select('name')
+    .eq('id', id)
+    .single();
   const { error } = await ctx.supabase.from('org_systems').delete().eq('id', id);
 
   if (error) return { success: false, message: `Erro ao excluir sistema: ${error.message}` };
@@ -411,7 +483,11 @@ export async function createSystemResourceAction(
 
   if (error) return { success: false, message: `Erro ao criar recurso: ${error.message}` };
   revalidatePath('/organizacao/recursos');
-  return { success: true, message: `Recurso "${created.name}" criado!`, data: created as OrgSystemResource };
+  return {
+    success: true,
+    message: `Recurso "${created.name}" criado!`,
+    data: created as OrgSystemResource,
+  };
 }
 
 export async function updateSystemResourceAction(
@@ -451,7 +527,9 @@ export async function deleteSystemResourceAction(id: string): Promise<OrgActionR
 
 // --- Suppliers ---
 
-export async function createSupplierAction(payload: SupplierPayload): Promise<OrgActionResult<OrgSupplier>> {
+export async function createSupplierAction(
+  payload: SupplierPayload,
+): Promise<OrgActionResult<OrgSupplier>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
@@ -465,7 +543,11 @@ export async function createSupplierAction(payload: SupplierPayload): Promise<Or
 
   if (error) return { success: false, message: `Erro ao criar fornecedor: ${error.message}` };
   revalidatePath('/organizacao/recursos');
-  return { success: true, message: `Fornecedor "${created.name}" criado!`, data: created as OrgSupplier };
+  return {
+    success: true,
+    message: `Fornecedor "${created.name}" criado!`,
+    data: created as OrgSupplier,
+  };
 }
 
 export async function updateSupplierAction(
@@ -491,7 +573,11 @@ export async function deleteSupplierAction(id: string): Promise<OrgActionResult>
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
-  const { data: existing } = await ctx.supabase.from('org_suppliers').select('name').eq('id', id).single();
+  const { data: existing } = await ctx.supabase
+    .from('org_suppliers')
+    .select('name')
+    .eq('id', id)
+    .single();
   const { error } = await ctx.supabase.from('org_suppliers').delete().eq('id', id);
 
   if (error) return { success: false, message: `Erro ao excluir fornecedor: ${error.message}` };
@@ -501,7 +587,9 @@ export async function deleteSupplierAction(id: string): Promise<OrgActionResult>
 
 // --- Services ---
 
-export async function createServiceAction(payload: ServicePayload): Promise<OrgActionResult<OrgService>> {
+export async function createServiceAction(
+  payload: ServicePayload,
+): Promise<OrgActionResult<OrgService>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
@@ -515,7 +603,11 @@ export async function createServiceAction(payload: ServicePayload): Promise<OrgA
 
   if (error) return { success: false, message: `Erro ao criar serviço: ${error.message}` };
   revalidatePath('/organizacao/recursos');
-  return { success: true, message: `Serviço "${created.name}" criado!`, data: created as OrgService };
+  return {
+    success: true,
+    message: `Serviço "${created.name}" criado!`,
+    data: created as OrgService,
+  };
 }
 
 export async function updateServiceAction(
@@ -541,7 +633,11 @@ export async function deleteServiceAction(id: string): Promise<OrgActionResult> 
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
-  const { data: existing } = await ctx.supabase.from('org_services').select('name').eq('id', id).single();
+  const { data: existing } = await ctx.supabase
+    .from('org_services')
+    .select('name')
+    .eq('id', id)
+    .single();
   const { error } = await ctx.supabase.from('org_services').delete().eq('id', id);
 
   if (error) return { success: false, message: `Erro ao excluir serviço: ${error.message}` };
@@ -567,7 +663,11 @@ export async function createOrgDocumentAction(
 
   if (error) return { success: false, message: `Erro ao criar documento: ${error.message}` };
   revalidatePath('/organizacao/recursos');
-  return { success: true, message: `Documento "${created.name}" criado!`, data: created as OrgDocument };
+  return {
+    success: true,
+    message: `Documento "${created.name}" criado!`,
+    data: created as OrgDocument,
+  };
 }
 
 export async function updateOrgDocumentAction(
@@ -593,7 +693,11 @@ export async function deleteOrgDocumentAction(id: string): Promise<OrgActionResu
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
-  const { data: existing } = await ctx.supabase.from('org_documents').select('name').eq('id', id).single();
+  const { data: existing } = await ctx.supabase
+    .from('org_documents')
+    .select('name')
+    .eq('id', id)
+    .single();
   const { error } = await ctx.supabase.from('org_documents').delete().eq('id', id);
 
   if (error) return { success: false, message: `Erro ao excluir documento: ${error.message}` };
@@ -604,24 +708,45 @@ export async function deleteOrgDocumentAction(id: string): Promise<OrgActionResu
 // --- AI Bootstrap Engine ---
 
 const ESCRITORIO_JURIDICO_AREAS = [
-  { name: 'Recuperação de Crédito', description: 'Área de recuperação de crédito', objective: 'Gestão de cobranças e recuperação' },
+  {
+    name: 'Recuperação de Crédito',
+    description: 'Área de recuperação de crédito',
+    objective: 'Gestão de cobranças e recuperação',
+  },
   { name: 'Trabalhista', description: 'Área trabalhista', objective: 'Processos trabalhistas' },
-  { name: 'Contencioso Cível', description: 'Área contenciosa cível', objective: 'Litígios cíveis' },
+  {
+    name: 'Contencioso Cível',
+    description: 'Área contenciosa cível',
+    objective: 'Litígios cíveis',
+  },
   { name: 'Consultivo', description: 'Área consultiva', objective: 'Assessoria jurídica' },
   { name: 'Legal Operations', description: 'Operações jurídicas', objective: 'Gestão operacional' },
-  { name: 'Experiência do Cliente', description: 'Experiência do cliente', objective: 'Atendimento e satisfação' },
+  {
+    name: 'Experiência do Cliente',
+    description: 'Experiência do cliente',
+    objective: 'Atendimento e satisfação',
+  },
   { name: 'Comercial', description: 'Área comercial', objective: 'Vendas e negócios' },
   { name: 'Financeiro', description: 'Área financeira', objective: 'Gestão financeira' },
   { name: 'Administrativo', description: 'Área administrativa', objective: 'Administração geral' },
-  { name: 'Inovação e Tecnologia', description: 'Inovação e TI', objective: 'Tecnologia e inovação' },
+  {
+    name: 'Inovação e Tecnologia',
+    description: 'Inovação e TI',
+    objective: 'Tecnologia e inovação',
+  },
 ];
 
-export async function runBootstrapAction(companyTypeSlug: string): Promise<OrgActionResult<{ areasCreated: number }>> {
+export async function runBootstrapAction(
+  companyTypeSlug: string,
+): Promise<OrgActionResult<{ areasCreated: number }>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
   if (companyTypeSlug !== 'escritorio_juridico') {
-    return { success: false, message: `Tipo de empresa "${companyTypeSlug}" ainda não suportado. Use "escritorio_juridico".` };
+    return {
+      success: false,
+      message: `Tipo de empresa "${companyTypeSlug}" ainda não suportado. Use "escritorio_juridico".`,
+    };
   }
 
   const { data: existing } = await ctx.supabase
@@ -631,7 +756,11 @@ export async function runBootstrapAction(companyTypeSlug: string): Promise<OrgAc
     .limit(1);
 
   if (existing && existing.length > 0) {
-    return { success: false, message: 'Já existem áreas cadastradas. O bootstrap só pode ser executado em organização vazia.' };
+    return {
+      success: false,
+      message:
+        'Já existem áreas cadastradas. O bootstrap só pode ser executado em organização vazia.',
+    };
   }
 
   const areasToInsert = ESCRITORIO_JURIDICO_AREAS.map((a) => ({

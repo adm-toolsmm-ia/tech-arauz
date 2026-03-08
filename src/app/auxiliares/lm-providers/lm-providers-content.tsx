@@ -285,8 +285,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
         <CardContent className="text-sm text-muted-foreground">
           <p>
             Provedores IA são serviços externos que fornecem modelos de linguagem (como OpenAI,
-            Anthropic, etc.). Cada provedor pode ter múltiplos modelos com configurações
-            diferentes.
+            Anthropic, etc.). Cada provedor pode ter múltiplos modelos com configurações diferentes.
           </p>
         </CardContent>
       </Card>
@@ -299,28 +298,28 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
           activeViewMode={viewMode}
           onViewModeChange={setViewMode}
         />
-      <FilterBar
-        moduleId="lm-providers"
-        filters={registry}
-        onFiltersChange={(newFilters) => {
-          Object.entries(newFilters).forEach(([key, value]) => {
-            if (filters[key] !== value) updateFilter(key, value);
-          });
-        }}
-        onSearchChange={setSearch}
-        onViewModeChange={setViewMode}
-        initialFilters={filters}
-        initialSearch={search}
-        initialViewMode={viewMode}
-        currentFilters={filters}
-        currentSearch={search}
-        currentViewMode={viewMode}
-        onUpdateFilter={updateFilter}
-        onResetFilters={() => {
-          resetAllFilters();
-          setSearch('');
-        }}
-      />
+        <FilterBar
+          moduleId="lm-providers"
+          filters={registry}
+          onFiltersChange={(newFilters) => {
+            Object.entries(newFilters).forEach(([key, value]) => {
+              if (filters[key] !== value) updateFilter(key, value);
+            });
+          }}
+          onSearchChange={setSearch}
+          onViewModeChange={setViewMode}
+          initialFilters={filters}
+          initialSearch={search}
+          initialViewMode={viewMode}
+          currentFilters={filters}
+          currentSearch={search}
+          currentViewMode={viewMode}
+          onUpdateFilter={updateFilter}
+          onResetFilters={() => {
+            resetAllFilters();
+            setSearch('');
+          }}
+        />
       </div>
 
       {/* Providers List or Kanban */}
@@ -405,9 +404,7 @@ export function LmProvidersContent({ initialProviders }: LmProvidersContentProps
               }))
             }
             onProviderUpdated={(updated) => {
-              setProviders((prev) =>
-                prev.map((p) => (p.id === updated.id ? updated : p)),
-              );
+              setProviders((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
             }}
           />
         )}

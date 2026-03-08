@@ -36,7 +36,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // Fetch daily usage data (schema 042/043: sessions_count, messages_count, cost_total_usd, success_rate_pct)
     const { data: dailyData, error: dailyError } = await supabase
       .from('agent_usage_daily')
-      .select('date, sessions_count, messages_count, cost_total_usd, avg_latency_ms, success_rate_pct')
+      .select(
+        'date, sessions_count, messages_count, cost_total_usd, avg_latency_ms, success_rate_pct',
+      )
       .eq('agent_id', id)
       .gte('date', startDate)
       .order('date', { ascending: true });
@@ -59,7 +61,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     // Calculate aggregations (map schema columns to front-end contract)
     const sessions_total = dailyData?.reduce((sum, d) => sum + (d.sessions_count || 0), 0) || 0;
-    const total_cost_usd = dailyData?.reduce((sum, d) => sum + Number(d.cost_total_usd || 0), 0) || 0;
+    const total_cost_usd =
+      dailyData?.reduce((sum, d) => sum + Number(d.cost_total_usd || 0), 0) || 0;
     const avg_latency_ms =
       dailyData && dailyData.length > 0
         ? Math.round(
@@ -68,7 +71,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         : 0;
     const success_rate_pct_avg =
       dailyData && dailyData.length > 0
-        ? dailyData.reduce((sum, d) => sum + Number(d.success_rate_pct || 100), 0) / dailyData.length
+        ? dailyData.reduce((sum, d) => sum + Number(d.success_rate_pct || 100), 0) /
+          dailyData.length
         : 100;
 
     // Transform daily data for front-end (runs_total -> sessions_count, derive successful/failed from success_rate_pct)

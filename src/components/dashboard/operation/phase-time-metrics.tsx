@@ -45,7 +45,10 @@ export function PhaseTimeMetrics({ projects }: PhaseTimeMetricsProps) {
                 className="relative flex flex-col justify-between overflow-hidden rounded-lg border bg-card p-4 shadow-sm transition-all hover:bg-muted/50"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-foreground line-clamp-2" title={item.phase}>
+                  <h4
+                    className="line-clamp-2 text-sm font-medium text-foreground"
+                    title={item.phase}
+                  >
                     {item.phase}
                   </h4>
                 </div>
@@ -57,8 +60,8 @@ export function PhaseTimeMetrics({ projects }: PhaseTimeMetricsProps) {
                     <span className="mb-1 text-sm font-medium text-muted-foreground">dias</span>
                   </div>
                   <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                     <span title="Maior tempo registrado">Máx {item.maxDays}d</span>
-                     <span className="flex items-center gap-1" title="Volume de medições">
+                    <span title="Maior tempo registrado">Máx {item.maxDays}d</span>
+                    <span className="flex items-center gap-1" title="Volume de medições">
                       <ArrowRightCircle className="h-3 w-3" />
                       {item.sampleCount}
                     </span>
@@ -79,12 +82,12 @@ function buildPhaseMetrics(projects: Array<any>): PhaseMetric[] {
 
   projects.forEach((p) => {
     const histories = p.histories || [];
-    
+
     if (histories.length < 2) return; // Need at least two movements or one + current time
 
     // Sort histories chronologically
-    const sorted = [...histories].sort((a: any, b: any) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    const sorted = [...histories].sort(
+      (a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
     for (let i = 0; i < sorted.length; i++) {
@@ -98,7 +101,7 @@ function buildPhaseMetrics(projects: Array<any>): PhaseMetric[] {
       // If there is no next movement and the project is active, calculate until today
       // If project is concluded/canceled we ideally stop at the last action
       let endDate = next ? new Date(next.date) : null;
-      
+
       const s = (p.status || '').trim().toLowerCase();
       if (!endDate && s !== 'concluído' && s !== 'cancelado') {
         endDate = now;
@@ -121,13 +124,15 @@ function buildPhaseMetrics(projects: Array<any>): PhaseMetric[] {
     }
   });
 
-  return Object.entries(phaseStats)
-    .map(([phase, stats]) => ({
-      phase,
-      avgDays: Math.round(stats.totalDays / stats.count),
-      maxDays: stats.maxDays,
-      sampleCount: stats.count,
-    }))
-    // Sort by largest avg to smallest
-    .sort((a, b) => b.avgDays - a.avgDays);
+  return (
+    Object.entries(phaseStats)
+      .map(([phase, stats]) => ({
+        phase,
+        avgDays: Math.round(stats.totalDays / stats.count),
+        maxDays: stats.maxDays,
+        sampleCount: stats.count,
+      }))
+      // Sort by largest avg to smallest
+      .sort((a, b) => b.avgDays - a.avgDays)
+  );
 }

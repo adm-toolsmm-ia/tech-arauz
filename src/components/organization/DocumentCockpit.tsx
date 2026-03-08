@@ -30,9 +30,7 @@ export function DocumentCockpit({ document, onEdit }: DocumentCockpitProps) {
           </div>
           <div>
             <h3 className="font-semibold">{document.name}</h3>
-            {document.type && (
-              <p className="text-sm text-muted-foreground">{document.type}</p>
-            )}
+            {document.type && <p className="text-sm text-muted-foreground">{document.type}</p>}
           </div>
         </div>
         {onEdit && (

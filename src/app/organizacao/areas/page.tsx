@@ -16,15 +16,12 @@ export default async function AreasPage() {
     redirect('/login');
   }
 
-  const [
-    { data: areasRaw, error },
-    { data: nucleiRaw },
-    { data: processesRaw },
-  ] = await Promise.all([
-    supabase.from('org_areas').select('*').order('name', { ascending: true }),
-    supabase.from('org_nuclei').select('*').order('name', { ascending: true }),
-    supabase.from('org_processes').select('*').order('name', { ascending: true }),
-  ]);
+  const [{ data: areasRaw, error }, { data: nucleiRaw }, { data: processesRaw }] =
+    await Promise.all([
+      supabase.from('org_areas').select('*').order('name', { ascending: true }),
+      supabase.from('org_nuclei').select('*').order('name', { ascending: true }),
+      supabase.from('org_processes').select('*').order('name', { ascending: true }),
+    ]);
 
   if (error) {
     console.error('Error fetching areas:', error);
@@ -58,10 +55,7 @@ export default async function AreasPage() {
 
   return (
     <ErrorBoundary label="Áreas">
-      <AreasContent
-        areas={areas}
-        linkedData={{ nucleiByAreaId, processesByAreaId }}
-      />
+      <AreasContent areas={areas} linkedData={{ nucleiByAreaId, processesByAreaId }} />
     </ErrorBoundary>
   );
 }

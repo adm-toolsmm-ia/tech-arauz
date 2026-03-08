@@ -103,7 +103,7 @@ export function HistoryVolumeChart({ projects, groupBy = 'week' }: HistoryVolume
 
 function buildVolumeData(
   projects: Array<{ histories?: Array<{ date?: string }> }>,
-  groupBy: 'day' | 'week'
+  groupBy: 'day' | 'week',
 ): VolumeData[] {
   const counts: Record<string, number> = {};
   const now = new Date();

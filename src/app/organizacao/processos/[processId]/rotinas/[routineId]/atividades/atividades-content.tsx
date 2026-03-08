@@ -57,7 +57,7 @@ function ActivityCockpit({
     <div className="space-y-4">
       <div>
         <h3 className="font-semibold">{activity.name}</h3>
-        <div className="flex gap-2 mt-1">
+        <div className="mt-1 flex gap-2">
           <Badge variant="outline">{activity.complexity}</Badge>
           <Badge variant="outline">{activity.priority}</Badge>
         </div>
@@ -69,8 +69,16 @@ function ActivityCockpit({
         <p className="text-sm">Tempo médio: {activity.average_execution_time} min</p>
       )}
       <div className="flex gap-2">
-        {onEdit && <Button variant="outline" size="sm" onClick={onEdit}>Editar</Button>}
-        {onDelete && <Button variant="ghost" size="sm" onClick={onDelete} className="text-destructive">Excluir</Button>}
+        {onEdit && (
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            Editar
+          </Button>
+        )}
+        {onDelete && (
+          <Button variant="ghost" size="sm" onClick={onDelete} className="text-destructive">
+            Excluir
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -118,7 +126,9 @@ export function AtividadesContent({
         complexity: formData.complexity,
         priority: formData.priority,
         required_role: formData.required_role.trim() || null,
-        average_execution_time: formData.average_execution_time ? parseInt(formData.average_execution_time, 10) : null,
+        average_execution_time: formData.average_execution_time
+          ? parseInt(formData.average_execution_time, 10)
+          : null,
         inputs: [],
         outputs: [],
         risks: [],
@@ -128,7 +138,15 @@ export function AtividadesContent({
       if (result.success && result.data) {
         setActivities((prev) => [...prev, result.data as OrgActivity]);
         toast.success(result.message);
-        setFormData({ name: '', description: '', objective: '', complexity: 'medium', priority: 'normal', required_role: '', average_execution_time: '' });
+        setFormData({
+          name: '',
+          description: '',
+          objective: '',
+          complexity: 'medium',
+          priority: 'normal',
+          required_role: '',
+          average_execution_time: '',
+        });
         setIsFormOpen(false);
       } else {
         toast.error(result.message);
@@ -155,7 +173,9 @@ export function AtividadesContent({
         complexity: formData.complexity,
         priority: formData.priority,
         required_role: formData.required_role.trim() || null,
-        average_execution_time: formData.average_execution_time ? parseInt(formData.average_execution_time, 10) : null,
+        average_execution_time: formData.average_execution_time
+          ? parseInt(formData.average_execution_time, 10)
+          : null,
         inputs: editingActivity.inputs,
         outputs: editingActivity.outputs,
         risks: editingActivity.risks,
@@ -207,7 +227,10 @@ export function AtividadesContent({
             items={[
               { label: 'Processos', href: '/organizacao/processos' },
               { label: processName, href: `/organizacao/processos/${processId}/rotinas` },
-              { label: routineName, href: `/organizacao/processos/${processId}/rotinas/${routineId}/atividades` },
+              {
+                label: routineName,
+                href: `/organizacao/processos/${processId}/rotinas/${routineId}/atividades`,
+              },
               { label: 'Atividades' },
             ]}
           />
@@ -222,7 +245,15 @@ export function AtividadesContent({
           <Button
             className="gap-2"
             onClick={() => {
-              setFormData({ name: '', description: '', objective: '', complexity: 'medium', priority: 'normal', required_role: '', average_execution_time: '' });
+              setFormData({
+                name: '',
+                description: '',
+                objective: '',
+                complexity: 'medium',
+                priority: 'normal',
+                required_role: '',
+                average_execution_time: '',
+              });
               setIsFormOpen(true);
             }}
           >
@@ -266,9 +297,13 @@ export function AtividadesContent({
                         </div>
                         <div>
                           <p className="font-medium">{a.name}</p>
-                          <div className="flex gap-1 mt-1">
-                            <Badge variant="outline" className="text-xs">{a.complexity}</Badge>
-                            <Badge variant="outline" className="text-xs">{a.priority}</Badge>
+                          <div className="mt-1 flex gap-1">
+                            <Badge variant="outline" className="text-xs">
+                              {a.complexity}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {a.priority}
+                            </Badge>
                           </div>
                         </div>
                       </div>
@@ -313,7 +348,9 @@ export function AtividadesContent({
           <DialogHeader>
             <DialogTitle>{editingActivity ? 'Editar Atividade' : 'Nova Atividade'}</DialogTitle>
             <DialogDescription>
-              {editingActivity ? 'Atualize os dados da atividade.' : 'Preencha os dados para criar uma nova atividade.'}
+              {editingActivity
+                ? 'Atualize os dados da atividade.'
+                : 'Preencha os dados para criar uma nova atividade.'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -331,7 +368,9 @@ export function AtividadesContent({
                 <Label>Complexidade</Label>
                 <Select
                   value={formData.complexity}
-                  onValueChange={(v) => setFormData((p) => ({ ...p, complexity: v as OrgActivity['complexity'] }))}
+                  onValueChange={(v) =>
+                    setFormData((p) => ({ ...p, complexity: v as OrgActivity['complexity'] }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -347,7 +386,9 @@ export function AtividadesContent({
                 <Label>Prioridade</Label>
                 <Select
                   value={formData.priority}
-                  onValueChange={(v) => setFormData((p) => ({ ...p, priority: v as OrgActivity['priority'] }))}
+                  onValueChange={(v) =>
+                    setFormData((p) => ({ ...p, priority: v as OrgActivity['priority'] }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -375,7 +416,9 @@ export function AtividadesContent({
                 id="activity-time"
                 type="number"
                 value={formData.average_execution_time}
-                onChange={(e) => setFormData((p) => ({ ...p, average_execution_time: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, average_execution_time: e.target.value }))
+                }
                 placeholder="30"
               />
             </div>
@@ -401,7 +444,9 @@ export function AtividadesContent({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setIsFormOpen(false)}>
+              Cancelar
+            </Button>
             <Button onClick={editingActivity ? handleUpdate : handleCreate} disabled={isLoading}>
               {editingActivity ? 'Salvar' : 'Criar'}
             </Button>
@@ -418,8 +463,12 @@ export function AtividadesContent({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setActivityToDelete(null)}>Cancelar</Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>Excluir</Button>
+            <Button variant="outline" onClick={() => setActivityToDelete(null)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Excluir
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

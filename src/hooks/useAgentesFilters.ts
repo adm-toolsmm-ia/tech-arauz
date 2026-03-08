@@ -23,7 +23,7 @@ export function useAgentesFilters(agents: UIAgent[]) {
   const definitions = useMemo(() => {
     const uniqueTypes = getUniqueAgentTypes(agents);
     const usageTypesSet = new Set<'chatbot' | 'workflow'>(
-      agents.map((a) => a.usageType || 'chatbot') as ('chatbot' | 'workflow')[]
+      agents.map((a) => a.usageType || 'chatbot') as ('chatbot' | 'workflow')[],
     );
     const uniqueUsageTypes = Array.from(usageTypesSet);
 

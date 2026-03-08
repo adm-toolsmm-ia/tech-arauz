@@ -95,7 +95,10 @@ function parsePromptInstructions(value: string | null | undefined): string[] {
     const parsed = JSON.parse(trimmed);
     return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
   } catch {
-    return trimmed.split('\n').map((s) => s.trim()).filter(Boolean);
+    return trimmed
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
 }
 

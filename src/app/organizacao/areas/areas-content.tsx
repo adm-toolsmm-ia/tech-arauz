@@ -100,7 +100,12 @@ export function AreasContent({
   }, []);
 
   const parseRoles = (s: string) =>
-    s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
+    s
+      ? s
+          .split(',')
+          .map((r) => r.trim())
+          .filter(Boolean)
+      : [];
 
   const handleCreate = React.useCallback(async () => {
     if (!formData.name.trim()) {

@@ -55,9 +55,7 @@ function RoutineCockpit360({
   onDelete?: () => void;
 }) {
   const rolesDisplay =
-    routine.responsible_roles?.length > 0
-      ? routine.responsible_roles.join(', ')
-      : 'Não definido';
+    routine.responsible_roles?.length > 0 ? routine.responsible_roles.join(', ') : 'Não definido';
 
   return (
     <div className="space-y-6">
@@ -114,10 +112,7 @@ function RoutineCockpit360({
   );
 }
 
-export function RotinasContent({
-  routines: initialRoutines,
-  processes,
-}: RotinasContentProps) {
+export function RotinasContent({ routines: initialRoutines, processes }: RotinasContentProps) {
   const [routines, setRoutines] = React.useState<RoutineWithProcess[]>(initialRoutines);
   const [selectedRoutine, setSelectedRoutine] = React.useState<RoutineWithProcess | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
@@ -170,7 +165,10 @@ export function RotinasContent({
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
         responsible_roles: formData.responsible_roles
-          ? formData.responsible_roles.split(',').map((s) => s.trim()).filter(Boolean)
+          ? formData.responsible_roles
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
           : [],
         documentation: {},
       });
@@ -206,17 +204,21 @@ export function RotinasContent({
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
         responsible_roles: formData.responsible_roles
-          ? formData.responsible_roles.split(',').map((s) => s.trim()).filter(Boolean)
+          ? formData.responsible_roles
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
           : [],
         documentation: editingRoutine.documentation,
       });
       if (result.success && result.data) {
-        setRoutines((prev) =>
-          prev.map((r) =>
-            r.id === editingRoutine.id
-              ? { ...result.data!, process_name: editingRoutine.process_name }
-              : r,
-          ) as RoutineWithProcess[],
+        setRoutines(
+          (prev) =>
+            prev.map((r) =>
+              r.id === editingRoutine.id
+                ? { ...result.data!, process_name: editingRoutine.process_name }
+                : r,
+            ) as RoutineWithProcess[],
         );
         setSelectedRoutine({
           ...result.data!,
@@ -282,10 +284,7 @@ export function RotinasContent({
         {processes.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-muted-foreground">Filtrar por processo:</span>
-            <Select
-              value={filterProcessId}
-              onValueChange={setFilterProcessId}
-            >
+            <Select value={filterProcessId} onValueChange={setFilterProcessId}>
               <SelectTrigger className="w-[280px]">
                 <SelectValue placeholder="Todos os processos" />
               </SelectTrigger>
@@ -352,9 +351,7 @@ export function RotinasContent({
                           </div>
                           <div>
                             <p className="font-medium">{routine.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {routine.process_name}
-                            </p>
+                            <p className="text-sm text-muted-foreground">{routine.process_name}</p>
                           </div>
                         </div>
                       </div>

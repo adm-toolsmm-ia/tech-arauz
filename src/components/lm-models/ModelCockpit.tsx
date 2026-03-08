@@ -15,13 +15,7 @@ interface ModelCockpitProps {
   onEdit?: () => void;
 }
 
-function InfoField({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number | null | undefined;
-}) {
+function InfoField({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -145,7 +139,10 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
                 label="Temperatura padrão"
                 value={model.default_temperature ?? undefined}
               />
-              <InfoField label="Tier" value={model.tier ? TIER_BADGE[model.tier]?.label : undefined} />
+              <InfoField
+                label="Tier"
+                value={model.tier ? TIER_BADGE[model.tier]?.label : undefined}
+              />
             </div>
 
             {(model.input_cost_per_1k_tokens != null ||
@@ -183,7 +180,7 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
         <TabsContent value="governance" className="mt-4 space-y-4">
           <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-semibold mb-2">Stability Level</h4>
+              <h4 className="mb-2 text-sm font-semibold">Stability Level</h4>
               {model.stability_level && (
                 <Badge
                   variant="outline"
@@ -204,20 +201,34 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
 
             {model.release_channel && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Release Channel</h4>
+                <h4 className="mb-2 text-sm font-semibold">Release Channel</h4>
                 <Badge variant="outline">{model.release_channel}</Badge>
               </div>
             )}
 
-            {(model.supports_tool_calling || model.supports_json_mode || model.supports_streaming || model.supports_vision || model.supports_audio) && (
+            {(model.supports_tool_calling ||
+              model.supports_json_mode ||
+              model.supports_streaming ||
+              model.supports_vision ||
+              model.supports_audio) && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Capacidades</h4>
+                <h4 className="mb-2 text-sm font-semibold">Capacidades</h4>
                 <div className="flex flex-wrap gap-2">
-                  {model.supports_tool_calling && <Badge className="bg-blue-100 text-blue-800">🔧 Tool Calling</Badge>}
-                  {model.supports_json_mode && <Badge className="bg-blue-100 text-blue-800">📄 JSON Mode</Badge>}
-                  {model.supports_streaming && <Badge className="bg-blue-100 text-blue-800">🌊 Streaming</Badge>}
-                  {model.supports_vision && <Badge className="bg-blue-100 text-blue-800">👁️ Vision</Badge>}
-                  {model.supports_audio && <Badge className="bg-blue-100 text-blue-800">🎵 Audio</Badge>}
+                  {model.supports_tool_calling && (
+                    <Badge className="bg-blue-100 text-blue-800">🔧 Tool Calling</Badge>
+                  )}
+                  {model.supports_json_mode && (
+                    <Badge className="bg-blue-100 text-blue-800">📄 JSON Mode</Badge>
+                  )}
+                  {model.supports_streaming && (
+                    <Badge className="bg-blue-100 text-blue-800">🌊 Streaming</Badge>
+                  )}
+                  {model.supports_vision && (
+                    <Badge className="bg-blue-100 text-blue-800">👁️ Vision</Badge>
+                  )}
+                  {model.supports_audio && (
+                    <Badge className="bg-blue-100 text-blue-800">🎵 Audio</Badge>
+                  )}
                 </div>
               </div>
             )}
@@ -225,7 +236,8 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
             {model.deprecated_at && (
               <div className="rounded-lg border border-red-200 bg-red-50 p-3">
                 <p className="text-sm text-red-800">
-                  <strong>⚠️ Deprecado em:</strong> {new Date(model.deprecated_at).toLocaleDateString('pt-BR')}
+                  <strong>⚠️ Deprecado em:</strong>{' '}
+                  {new Date(model.deprecated_at).toLocaleDateString('pt-BR')}
                 </p>
               </div>
             )}
@@ -233,14 +245,25 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
             {model.sunset_at && (
               <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                 <p className="text-sm text-yellow-800">
-                  <strong>⏰ Sunset em:</strong> {new Date(model.sunset_at).toLocaleDateString('pt-BR')}
+                  <strong>⏰ Sunset em:</strong>{' '}
+                  {new Date(model.sunset_at).toLocaleDateString('pt-BR')}
                 </p>
               </div>
             )}
 
-            {!model.stability_level && !model.release_channel && !model.deprecated_at && !model.sunset_at && (model.supports_tool_calling || model.supports_json_mode || model.supports_streaming || model.supports_vision || model.supports_audio) === false && (
-              <p className="text-sm text-muted-foreground">Nenhuma informação de governança cadastrada.</p>
-            )}
+            {!model.stability_level &&
+              !model.release_channel &&
+              !model.deprecated_at &&
+              !model.sunset_at &&
+              (model.supports_tool_calling ||
+                model.supports_json_mode ||
+                model.supports_streaming ||
+                model.supports_vision ||
+                model.supports_audio) === false && (
+                <p className="text-sm text-muted-foreground">
+                  Nenhuma informação de governança cadastrada.
+                </p>
+              )}
           </div>
         </TabsContent>
 
@@ -265,7 +288,9 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
                 Ver documentação
               </a>
             ) : (
-              <p className="text-sm text-muted-foreground">Nenhuma URL de documentação cadastrada.</p>
+              <p className="text-sm text-muted-foreground">
+                Nenhuma URL de documentação cadastrada.
+              </p>
             )}
           </div>
         </TabsContent>

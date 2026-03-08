@@ -86,10 +86,11 @@ export function AgentMetrics360({ agentId }: AgentMetrics360Props) {
       .padStart(2, '0')}`;
   };
 
-  const chartData = data?.daily_data.map((d) => ({
-    ...d,
-    date: formatDate(d.date),
-  })) || [];
+  const chartData =
+    data?.daily_data.map((d) => ({
+      ...d,
+      date: formatDate(d.date),
+    })) || [];
 
   if (error) {
     return (
@@ -119,7 +120,7 @@ export function AgentMetrics360({ agentId }: AgentMetrics360Props) {
       </div>
 
       {/* 4 KPI Cards */}
-      <div className="grid gap-4 grid-cols-4">
+      <div className="grid grid-cols-4 gap-4">
         {loading ? (
           <>
             <Skeleton className="h-24" data-testid="skeleton-kpi" />
@@ -158,7 +159,7 @@ export function AgentMetrics360({ agentId }: AgentMetrics360Props) {
       </div>
 
       {/* Charts Row */}
-      <div className="grid gap-4 grid-cols-2">
+      <div className="grid grid-cols-2 gap-4">
         {/* Sessions Chart */}
         <Card>
           <CardHeader>

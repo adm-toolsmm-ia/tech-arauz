@@ -18,12 +18,7 @@ interface RecursosContentProps {
 
 const VALID_TABS = ['sistemas', 'fornecedores', 'servicos', 'documentos'] as const;
 
-export function RecursosContent({
-  systems,
-  suppliers,
-  services,
-  documents,
-}: RecursosContentProps) {
+export function RecursosContent({ systems, suppliers, services, documents }: RecursosContentProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
   const defaultTab: string =
@@ -31,7 +26,8 @@ export function RecursosContent({
       ? tabParam
       : 'sistemas';
 
-  const hasAny = systems.length > 0 || suppliers.length > 0 || services.length > 0 || documents.length > 0;
+  const hasAny =
+    systems.length > 0 || suppliers.length > 0 || services.length > 0 || documents.length > 0;
 
   return (
     <div className="flex flex-col">
@@ -52,18 +48,10 @@ export function RecursosContent({
         ) : (
           <Tabs defaultValue={defaultTab}>
             <TabsList>
-              <TabsTrigger value="sistemas">
-                Sistemas ({systems.length})
-              </TabsTrigger>
-              <TabsTrigger value="fornecedores">
-                Fornecedores ({suppliers.length})
-              </TabsTrigger>
-              <TabsTrigger value="servicos">
-                Serviços ({services.length})
-              </TabsTrigger>
-              <TabsTrigger value="documentos">
-                Documentos ({documents.length})
-              </TabsTrigger>
+              <TabsTrigger value="sistemas">Sistemas ({systems.length})</TabsTrigger>
+              <TabsTrigger value="fornecedores">Fornecedores ({suppliers.length})</TabsTrigger>
+              <TabsTrigger value="servicos">Serviços ({services.length})</TabsTrigger>
+              <TabsTrigger value="documentos">Documentos ({documents.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="sistemas">
               <Card>

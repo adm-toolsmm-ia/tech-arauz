@@ -45,11 +45,7 @@ export default async function RotinasPage({ params }: RotinasPageProps) {
 
   return (
     <ErrorBoundary label="Rotinas">
-      <RotinasContent
-        processId={processId}
-        processName={process.name}
-        routines={routines}
-      />
+      <RotinasContent processId={processId} processName={process.name} routines={routines} />
     </ErrorBoundary>
   );
 }

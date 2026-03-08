@@ -133,7 +133,7 @@ describe('getKanbanColumn', () => {
 describe('SCHEDULE_KANBAN_COLUMNS', () => {
   it('has 4 columns in correct order', () => {
     expect(SCHEDULE_KANBAN_COLUMNS).toHaveLength(4);
-    expect(SCHEDULE_KANBAN_COLUMNS.map(c => c.key)).toEqual([
+    expect(SCHEDULE_KANBAN_COLUMNS.map((c) => c.key)).toEqual([
       'pendente',
       'em_execucao',
       'atrasada',

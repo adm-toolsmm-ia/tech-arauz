@@ -45,11 +45,7 @@ export default async function NucleosPage({ params }: NucleosPageProps) {
 
   return (
     <ErrorBoundary label="Núcleos">
-      <NucleosContent
-        areaId={areaId}
-        areaName={area.name}
-        nuclei={nuclei}
-      />
+      <NucleosContent areaId={areaId} areaName={area.name} nuclei={nuclei} />
     </ErrorBoundary>
   );
 }

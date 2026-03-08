@@ -68,10 +68,7 @@ export function CompletedProjectsTrendChart({
             />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={data}
-                margin={{ top: 20, right: 20, left: -20, bottom: 0 }}
-              >
+              <LineChart data={data} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
                 <XAxis
                   dataKey="label"
@@ -91,8 +88,18 @@ export function CompletedProjectsTrendChart({
                   dataKey="count"
                   stroke="hsl(var(--primary))"
                   strokeWidth={3}
-                  activeDot={{ r: 6, cursor: onPointClick ? 'pointer' : 'default', onClick: (_: any, payload: any) => onPointClick?.(payload.payload.month) }}
-                  dot={{ r: 4, fill: "hsl(var(--background))", strokeWidth: 2, cursor: onPointClick ? 'pointer' : 'default', onClick: (_: any, payload: any) => onPointClick?.(payload.payload.month) }}
+                  activeDot={{
+                    r: 6,
+                    cursor: onPointClick ? 'pointer' : 'default',
+                    onClick: (_: any, payload: any) => onPointClick?.(payload.payload.month),
+                  }}
+                  dot={{
+                    r: 4,
+                    fill: 'hsl(var(--background))',
+                    strokeWidth: 2,
+                    cursor: onPointClick ? 'pointer' : 'default',
+                    onClick: (_: any, payload: any) => onPointClick?.(payload.payload.month),
+                  }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -119,7 +126,18 @@ export function buildCompletedTrendData(projects: DashboardProjectLike[]): Month
   });
 
   const monthNames = [
-    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
   ];
 
   return Object.entries(counts)

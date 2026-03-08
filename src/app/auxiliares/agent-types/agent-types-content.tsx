@@ -306,28 +306,28 @@ export function AgentTypesContent({ initialAgentTypes, providers = [] }: AgentTy
           activeViewMode={viewMode}
           onViewModeChange={setViewMode}
         />
-      <FilterBar
-        moduleId="agent-types"
-        filters={registry}
-        onFiltersChange={(newFilters) => {
-          Object.entries(newFilters).forEach(([key, value]) => {
-            if (filters[key] !== value) updateFilter(key, value);
-          });
-        }}
-        onSearchChange={setSearch}
-        onViewModeChange={setViewMode}
-        initialFilters={filters}
-        initialSearch={search}
-        initialViewMode={viewMode}
-        currentFilters={filters}
-        currentSearch={search}
-        currentViewMode={viewMode}
-        onUpdateFilter={updateFilter}
-        onResetFilters={() => {
-          resetAllFilters();
-          setSearch('');
-        }}
-      />
+        <FilterBar
+          moduleId="agent-types"
+          filters={registry}
+          onFiltersChange={(newFilters) => {
+            Object.entries(newFilters).forEach(([key, value]) => {
+              if (filters[key] !== value) updateFilter(key, value);
+            });
+          }}
+          onSearchChange={setSearch}
+          onViewModeChange={setViewMode}
+          initialFilters={filters}
+          initialSearch={search}
+          initialViewMode={viewMode}
+          currentFilters={filters}
+          currentSearch={search}
+          currentViewMode={viewMode}
+          onUpdateFilter={updateFilter}
+          onResetFilters={() => {
+            resetAllFilters();
+            setSearch('');
+          }}
+        />
       </div>
 
       {/* Results */}

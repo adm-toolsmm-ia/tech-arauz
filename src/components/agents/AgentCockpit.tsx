@@ -6,11 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Cpu, MessageCircle, ExternalLink, ChevronDown, ChevronRight } from 'lucide-react';
 import type { LmProvider, AgentType } from '@/types/agents';
 import type { UIAgent } from '@/lib/transformers/agent';
@@ -76,7 +72,9 @@ export function AgentCockpit({
       {/* Header with Actions */}
       <div className="flex items-center justify-between">
         <div className="flex flex-wrap gap-2">
-          <Badge className={`text-xs ${statusBadgeColor[agent.status as keyof typeof statusBadgeColor]}`}>
+          <Badge
+            className={`text-xs ${statusBadgeColor[agent.status as keyof typeof statusBadgeColor]}`}
+          >
             {agent.status === 'draft' && '📝 Rascunho'}
             {agent.status === 'published' && '✅ Publicado'}
             {agent.status === 'deprecated' && '⛔ Deprecado'}
@@ -135,11 +133,15 @@ export function AgentCockpit({
                 <>
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Exibir no Atalho Global</p>
-                    <p className="text-sm font-medium">{agent.showInShortcut ? '✅ Sim' : '❌ Não'}</p>
+                    <p className="text-sm font-medium">
+                      {agent.showInShortcut ? '✅ Sim' : '❌ Não'}
+                    </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Chatbot Global</p>
-                    <p className="text-sm font-medium">{agent.isGlobalChatbot ? '✅ Sim' : '❌ Não'}</p>
+                    <p className="text-sm font-medium">
+                      {agent.isGlobalChatbot ? '✅ Sim' : '❌ Não'}
+                    </p>
                   </div>
                 </>
               )}
@@ -172,9 +174,7 @@ export function AgentCockpit({
               <InfoField
                 label="Última execução"
                 value={
-                  agent.lastExecutionAt
-                    ? formatDate(agent.lastExecutionAt)
-                    : 'Nunca executado'
+                  agent.lastExecutionAt ? formatDate(agent.lastExecutionAt) : 'Nunca executado'
                 }
               />
             </div>
@@ -194,7 +194,11 @@ export function AgentCockpit({
 
             <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
               <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-                {advancedOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                {advancedOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
                 Avançado (requirements, output_schema, validation_rules)
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-3 space-y-3 pl-6">
@@ -208,25 +212,32 @@ export function AgentCockpit({
                     </ul>
                   </div>
                 )}
-                {agent.fullConfig.outputSchema && Object.keys(agent.fullConfig.outputSchema).length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Output Schema</p>
-                    <pre className="rounded-md bg-muted p-2 text-xs overflow-x-auto">
-                      {JSON.stringify(agent.fullConfig.outputSchema, null, 2)}
-                    </pre>
-                  </div>
-                )}
-                {agent.fullConfig.validationRules && Object.keys(agent.fullConfig.validationRules).length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Regras de Validação</p>
-                    <pre className="rounded-md bg-muted p-2 text-xs overflow-x-auto">
-                      {JSON.stringify(agent.fullConfig.validationRules, null, 2)}
-                    </pre>
-                  </div>
-                )}
-                {(!agent.fullConfig.requirements?.length && !agent.fullConfig.outputSchema && (!agent.fullConfig.validationRules || Object.keys(agent.fullConfig.validationRules).length === 0)) && (
-                  <p className="text-xs text-muted-foreground">Nenhum dado avançado configurado.</p>
-                )}
+                {agent.fullConfig.outputSchema &&
+                  Object.keys(agent.fullConfig.outputSchema).length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">Output Schema</p>
+                      <pre className="overflow-x-auto rounded-md bg-muted p-2 text-xs">
+                        {JSON.stringify(agent.fullConfig.outputSchema, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                {agent.fullConfig.validationRules &&
+                  Object.keys(agent.fullConfig.validationRules).length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">Regras de Validação</p>
+                      <pre className="overflow-x-auto rounded-md bg-muted p-2 text-xs">
+                        {JSON.stringify(agent.fullConfig.validationRules, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                {!agent.fullConfig.requirements?.length &&
+                  !agent.fullConfig.outputSchema &&
+                  (!agent.fullConfig.validationRules ||
+                    Object.keys(agent.fullConfig.validationRules).length === 0) && (
+                    <p className="text-xs text-muted-foreground">
+                      Nenhum dado avançado configurado.
+                    </p>
+                  )}
               </CollapsibleContent>
             </Collapsible>
           </div>
@@ -244,7 +255,11 @@ export function AgentCockpit({
 
             <InfoField
               label="Provider"
-              value={selectedProvider ? `${selectedProvider.icon_emoji} ${selectedProvider.name}` : agent.fullConfig.modelProvider}
+              value={
+                selectedProvider
+                  ? `${selectedProvider.icon_emoji} ${selectedProvider.name}`
+                  : agent.fullConfig.modelProvider
+              }
             />
             <InfoField label="Modelo" value={agent.modelId} />
 
@@ -268,10 +283,7 @@ export function AgentCockpit({
                 </div>
               </div>
 
-              <InfoField
-                label="Max Tokens"
-                value={agent.fullConfig.modelMaxTokens}
-              />
+              <InfoField label="Max Tokens" value={agent.fullConfig.modelMaxTokens} />
             </div>
           </div>
         </TabsContent>
@@ -281,8 +293,8 @@ export function AgentCockpit({
           <div className="space-y-4">
             {agent.fullConfig.persona && (
               <div className="space-y-2">
-                <p className="text-xs text-muted-foreground font-semibold">Persona</p>
-                <p className="text-sm whitespace-pre-wrap text-foreground">
+                <p className="text-xs font-semibold text-muted-foreground">Persona</p>
+                <p className="whitespace-pre-wrap text-sm text-foreground">
                   {agent.fullConfig.persona}
                 </p>
               </div>
@@ -292,8 +304,8 @@ export function AgentCockpit({
               <>
                 <Separator />
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground font-semibold">Objetivo</p>
-                  <p className="text-sm whitespace-pre-wrap text-foreground">
+                  <p className="text-xs font-semibold text-muted-foreground">Objetivo</p>
+                  <p className="whitespace-pre-wrap text-sm text-foreground">
                     {agent.fullConfig.promptObjective}
                   </p>
                 </div>
@@ -305,8 +317,8 @@ export function AgentCockpit({
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground font-semibold">Instruções</p>
-                    <p className="text-sm whitespace-pre-wrap text-foreground">
+                    <p className="text-xs font-semibold text-muted-foreground">Instruções</p>
+                    <p className="whitespace-pre-wrap text-sm text-foreground">
                       {Array.isArray(agent.fullConfig.promptInstructions)
                         ? agent.fullConfig.promptInstructions.join('\n')
                         : String(agent.fullConfig.promptInstructions)}
@@ -319,11 +331,9 @@ export function AgentCockpit({
               <>
                 <Separator />
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground font-semibold">
-                    Template de Prompt
-                  </p>
+                  <p className="text-xs font-semibold text-muted-foreground">Template de Prompt</p>
                   <div className="rounded-md bg-muted p-3">
-                    <code className="text-xs whitespace-pre-wrap text-foreground">
+                    <code className="whitespace-pre-wrap text-xs text-foreground">
                       {agent.fullConfig.promptTemplate}
                     </code>
                   </div>

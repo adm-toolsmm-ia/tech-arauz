@@ -1,6 +1,6 @@
-import { axe } from 'jest-axe'
-import { render } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { axe } from 'jest-axe';
+import { render } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import {
   Command,
   CommandInput,
@@ -8,7 +8,7 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
-} from '../command'
+} from '../command';
 
 describe('Command A11y', () => {
   it('should have no violations', async () => {
@@ -22,9 +22,9 @@ describe('Command A11y', () => {
             <CommandItem>Search Emoji</CommandItem>
           </CommandGroup>
         </CommandList>
-      </Command>
-    )
-    const results = await axe(container)
-    expect(results).toHaveNoViolations()
-  })
-})
+      </Command>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});

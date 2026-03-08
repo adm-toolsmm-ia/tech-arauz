@@ -34,10 +34,7 @@ interface AgentEditContentProps {
   providers?: LmProvider[];
 }
 
-export function AgentEditContent({
-  initialAgent,
-  providers = [],
-}: AgentEditContentProps) {
+export function AgentEditContent({ initialAgent, providers = [] }: AgentEditContentProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -88,9 +85,7 @@ export function AgentEditContent({
       if (modelsByProvider[providerId]) return;
       try {
         const models = await LmModelsService.listModels(providerId);
-        const sorted = models.sort(
-          (a, b) => (a.display_order ?? 100) - (b.display_order ?? 100),
-        );
+        const sorted = models.sort((a, b) => (a.display_order ?? 100) - (b.display_order ?? 100));
         setModelsByProvider((prev) => ({ ...prev, [providerId]: sorted }));
       } catch {
         toast.error('Erro ao carregar modelos');
@@ -376,7 +371,8 @@ export function AgentEditContent({
                     />
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Apenas um agente por tenant pode ser o chatbot global (flutuante). Ativar aqui o desativa em outros agentes.
+                    Apenas um agente por tenant pode ser o chatbot global (flutuante). Ativar aqui o
+                    desativa em outros agentes.
                   </p>
                 </div>
               )}
@@ -476,9 +472,7 @@ export function AgentEditContent({
                     </SelectTrigger>
                     <SelectContent>
                       {(() => {
-                        const provider = providers.find(
-                          (p) => p.slug === agent.modelProvider,
-                        );
+                        const provider = providers.find((p) => p.slug === agent.modelProvider);
                         const models = provider ? (modelsByProvider[provider.id] ?? []) : [];
                         return models.map((m) => (
                           <SelectItem key={m.id} value={m.model_id}>
@@ -565,9 +559,7 @@ export function AgentEditContent({
           <Card>
             <CardHeader>
               <CardTitle>Ferramentas Vinculadas</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {initialAgent.id}
-              </p>
+              <p className="text-sm text-muted-foreground">{initialAgent.id}</p>
             </CardHeader>
             <CardContent>
               <div className="text-sm text-muted-foreground">
@@ -600,7 +592,7 @@ export function AgentEditContent({
         {/* TAB 7: CHAT */}
         {agent.status === 'published' && (
           <TabsContent value="chat" className="mt-4 space-y-4">
-            <Card className="h-[600px] flex flex-col">
+            <Card className="flex h-[600px] flex-col">
               <CardHeader>
                 <CardTitle>Testar Chat</CardTitle>
                 <CardDescription>Converse com o agente para testá-lo em tempo real</CardDescription>
@@ -615,7 +607,7 @@ export function AgentEditContent({
 
       {/* Dashboard 360° */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Dashboard 360° de Métricas</h3>
+        <h3 className="mb-4 text-lg font-semibold">Dashboard 360° de Métricas</h3>
         <AgentMetrics360 agentId={initialAgent.id} />
       </div>
 

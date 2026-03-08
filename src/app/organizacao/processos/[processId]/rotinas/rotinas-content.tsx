@@ -50,7 +50,7 @@ function RoutineCockpit({
       <div>
         <h3 className="font-semibold">{routine.name}</h3>
         {routine.description && (
-          <p className="text-sm text-muted-foreground mt-1">{routine.description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{routine.description}</p>
         )}
       </div>
       {routine.objective && (
@@ -65,8 +65,16 @@ function RoutineCockpit({
             Ver Atividades
           </Link>
         </Button>
-        {onEdit && <Button variant="outline" size="sm" onClick={onEdit}>Editar</Button>}
-        {onDelete && <Button variant="ghost" size="sm" onClick={onDelete} className="text-destructive">Excluir</Button>}
+        {onEdit && (
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            Editar
+          </Button>
+        )}
+        {onDelete && (
+          <Button variant="ghost" size="sm" onClick={onDelete} className="text-destructive">
+            Excluir
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -190,7 +198,13 @@ export function RotinasContent({
               Voltar
             </Link>
           </Button>
-          <Button className="gap-2" onClick={() => { setFormData({ name: '', description: '', objective: '' }); setIsFormOpen(true); }}>
+          <Button
+            className="gap-2"
+            onClick={() => {
+              setFormData({ name: '', description: '', objective: '' });
+              setIsFormOpen(true);
+            }}
+          >
             <Plus className="h-4 w-4" />
             Nova Rotina
           </Button>
@@ -231,7 +245,11 @@ export function RotinasContent({
                         </div>
                         <div>
                           <p className="font-medium">{r.name}</p>
-                          {r.description && <p className="text-sm text-muted-foreground line-clamp-1">{r.description}</p>}
+                          {r.description && (
+                            <p className="line-clamp-1 text-sm text-muted-foreground">
+                              {r.description}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -272,7 +290,9 @@ export function RotinasContent({
           <DialogHeader>
             <DialogTitle>{editingRoutine ? 'Editar Rotina' : 'Nova Rotina'}</DialogTitle>
             <DialogDescription>
-              {editingRoutine ? 'Atualize os dados da rotina.' : 'Preencha os dados para criar uma nova rotina.'}
+              {editingRoutine
+                ? 'Atualize os dados da rotina.'
+                : 'Preencha os dados para criar uma nova rotina.'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -307,7 +327,9 @@ export function RotinasContent({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setIsFormOpen(false)}>
+              Cancelar
+            </Button>
             <Button onClick={editingRoutine ? handleUpdate : handleCreate} disabled={isLoading}>
               {editingRoutine ? 'Salvar' : 'Criar'}
             </Button>
@@ -324,8 +346,12 @@ export function RotinasContent({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRoutineToDelete(null)}>Cancelar</Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>Excluir</Button>
+            <Button variant="outline" onClick={() => setRoutineToDelete(null)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Excluir
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -52,10 +52,7 @@ import { EmpresaKPIBar } from './components/EmpresaKPIBar';
 import { toast } from 'sonner';
 import type { EmpresaVinculo } from './types';
 import type { OrgNucleus, OrgProcess, OrgRoutine, OrgSystemResource } from '@/types/organization';
-import {
-  createAreaAction,
-  createNucleusAction,
-} from '@/app/actions/organization';
+import { createAreaAction, createNucleusAction } from '@/app/actions/organization';
 
 const EMPRESA_VIEW_REGISTRY = {
   moduleId: 'organizacao-empresa',
@@ -130,7 +127,8 @@ export function EmpresaContent({
   const [isAreaFormOpen, setIsAreaFormOpen] = React.useState(false);
   const [isNucleusFormOpen, setIsNucleusFormOpen] = React.useState(false);
   const [areaFormData, setAreaFormData] = React.useState<AreaFormData>(DEFAULT_AREA_FORM);
-  const [nucleusFormData, setNucleusFormData] = React.useState<NucleusFormData>(DEFAULT_NUCLEUS_FORM);
+  const [nucleusFormData, setNucleusFormData] =
+    React.useState<NucleusFormData>(DEFAULT_NUCLEUS_FORM);
   const [isAreaLoading, setIsAreaLoading] = React.useState(false);
   const [isNucleusLoading, setIsNucleusLoading] = React.useState(false);
 
@@ -147,7 +145,12 @@ export function EmpresaContent({
   }, [tenant]);
 
   const parseRoles = (s: string) =>
-    s ? s.split(',').map((r) => r.trim()).filter(Boolean) : [];
+    s
+      ? s
+          .split(',')
+          .map((r) => r.trim())
+          .filter(Boolean)
+      : [];
 
   const handleCreateArea = React.useCallback(async () => {
     if (!areaFormData.name.trim()) {
@@ -237,21 +240,17 @@ export function EmpresaContent({
     return vinculos.filter(
       (v) =>
         v.name.toLowerCase().includes(q) ||
-        (v.type === 'processos' && (v.areaName?.toLowerCase().includes(q) || v.nucleusName?.toLowerCase().includes(q))),
+        (v.type === 'processos' &&
+          (v.areaName?.toLowerCase().includes(q) || v.nucleusName?.toLowerCase().includes(q))),
     );
   }, [vinculos, search]);
 
   if (error) {
     return (
       <div className="flex flex-col p-6">
-        <DashboardHeader
-          title="Empresa"
-          subtitle="Cadastro e visão 360º da organização"
-        />
+        <DashboardHeader title="Empresa" subtitle="Cadastro e visão 360º da organização" />
         <Card className="mt-6">
-          <CardContent className="py-8 text-center text-destructive">
-            {error}
-          </CardContent>
+          <CardContent className="py-8 text-center text-destructive">{error}</CardContent>
         </Card>
       </div>
     );
@@ -260,10 +259,7 @@ export function EmpresaContent({
   if (!tenant) {
     return (
       <div className="flex flex-col p-6">
-        <DashboardHeader
-          title="Empresa"
-          subtitle="Cadastro e visão 360º da organização"
-        />
+        <DashboardHeader title="Empresa" subtitle="Cadastro e visão 360º da organização" />
         <Card className="mt-6">
           <CardContent className="py-8 text-center text-muted-foreground">
             Nenhuma empresa encontrada.
@@ -307,9 +303,7 @@ export function EmpresaContent({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Cadastros vinculados</CardTitle>
-            <CardDescription>
-              Cadastre áreas e núcleos diretamente pela empresa.
-            </CardDescription>
+            <CardDescription>Cadastre áreas e núcleos diretamente pela empresa.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             <Button
@@ -525,7 +519,9 @@ export function EmpresaContent({
               <Input
                 id="area-roles"
                 value={areaFormData.responsible_roles}
-                onChange={(e) => setAreaFormData((p) => ({ ...p, responsible_roles: e.target.value }))}
+                onChange={(e) =>
+                  setAreaFormData((p) => ({ ...p, responsible_roles: e.target.value }))
+                }
                 placeholder="ex.: coordenador, analista_senior"
               />
             </div>
@@ -534,7 +530,10 @@ export function EmpresaContent({
             <Button variant="outline" onClick={() => setIsAreaFormOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleCreateArea} disabled={isAreaLoading || !areaFormData.name.trim()}>
+            <Button
+              onClick={handleCreateArea}
+              disabled={isAreaLoading || !areaFormData.name.trim()}
+            >
               {isAreaLoading ? 'Criando...' : 'Criar'}
             </Button>
           </DialogFooter>
@@ -602,7 +601,9 @@ export function EmpresaContent({
               <Input
                 id="nucleus-roles"
                 value={nucleusFormData.responsible_roles}
-                onChange={(e) => setNucleusFormData((p) => ({ ...p, responsible_roles: e.target.value }))}
+                onChange={(e) =>
+                  setNucleusFormData((p) => ({ ...p, responsible_roles: e.target.value }))
+                }
                 placeholder="ex.: coordenador, analista"
               />
             </div>
@@ -614,9 +615,7 @@ export function EmpresaContent({
             <Button
               onClick={handleCreateNucleus}
               disabled={
-                isNucleusLoading ||
-                !nucleusFormData.name.trim() ||
-                !nucleusFormData.area_id
+                isNucleusLoading || !nucleusFormData.name.trim() || !nucleusFormData.area_id
               }
             >
               {isNucleusLoading ? 'Criando...' : 'Criar'}

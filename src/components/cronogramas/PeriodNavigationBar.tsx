@@ -20,11 +20,14 @@ function getPeriodLabel(currentDate: Date, period: 'day' | 'week' | 'month'): st
   if (period === 'week') {
     const weekStart = getWeekStart(currentDate);
     const weekEnd = addDays(weekStart, 6);
-    return `${weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })}`;
+    return `${weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} - ${weekEnd.toLocaleDateString(
+      'pt-BR',
+      {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      },
+    )}`;
   }
   // day
   return currentDate.toLocaleDateString('pt-BR', {
@@ -38,11 +41,7 @@ function getWeekdayLabel(currentDate: Date): string {
   return currentDate.toLocaleDateString('pt-BR', { weekday: 'long' });
 }
 
-export function PeriodNavigationBar({
-  currentDate,
-  period,
-  onNavigate,
-}: PeriodNavigationBarProps) {
+export function PeriodNavigationBar({ currentDate, period, onNavigate }: PeriodNavigationBarProps) {
   const isDay = period === 'day';
 
   return (

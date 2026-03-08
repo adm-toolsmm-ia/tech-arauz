@@ -1,14 +1,8 @@
-import { axe } from 'jest-axe'
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../dialog'
-import { Button } from '../button'
+import { axe } from 'jest-axe';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '../dialog';
+import { Button } from '../button';
 
 describe('Dialog A11y', () => {
   it('should have no violations', async () => {
@@ -23,9 +17,9 @@ describe('Dialog A11y', () => {
           </DialogHeader>
           <p>Are you sure?</p>
         </DialogContent>
-      </Dialog>
-    )
-    const results = await axe(container)
-    expect(results).toHaveNoViolations()
-  })
-})
+      </Dialog>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});

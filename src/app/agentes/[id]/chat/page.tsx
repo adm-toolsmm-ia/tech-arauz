@@ -21,15 +21,13 @@ interface ChatMessage {
 }
 
 function mapApiMessagesToChat(apiMessages: ApiMessage[]): ChatMessage[] {
-  return [...apiMessages]
-    .reverse()
-    .map((m) => ({
-      role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
-      content: m.content || '',
-      tokens: m.tokens_used,
-      cost: m.metadata?.cost,
-      sql: m.metadata?.sql,
-    }));
+  return [...apiMessages].reverse().map((m) => ({
+    role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+    content: m.content || '',
+    tokens: m.tokens_used,
+    cost: m.metadata?.cost,
+    sql: m.metadata?.sql,
+  }));
 }
 
 interface ChatPageProps {
@@ -123,15 +121,12 @@ export default async function ChatPage({ params, searchParams }: ChatPageProps) 
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="flex h-screen flex-col">
       <div className="border-b p-4">
-        <DashboardHeader
-          title={`Chat com ${agent.name}`}
-          subtitle="Converse com seu agente AI"
-        />
+        <DashboardHeader title={`Chat com ${agent.name}`} subtitle="Converse com seu agente AI" />
       </div>
 
-      <div className="flex-1 p-4 overflow-hidden">
+      <div className="flex-1 overflow-hidden p-4">
         <ChatContent
           agentId={params.id}
           initialSessionId={initialSessionId}

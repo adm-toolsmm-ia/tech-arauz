@@ -113,7 +113,7 @@ export function HistoryTransitionsChart({
 
 function buildTransitionsData(
   projects: Array<{ histories?: Array<{ step_to?: string; step_from?: string }> }>,
-  groupBy: 'step_to' | 'step_from'
+  groupBy: 'step_to' | 'step_from',
 ): TransitionData[] {
   const counts: Record<string, number> = {};
 

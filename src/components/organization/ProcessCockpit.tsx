@@ -23,7 +23,13 @@ function InfoField({ label, value }: { label: string; value: string | null | und
   );
 }
 
-export function ProcessCockpit({ process, areaName, nucleusName, onEdit, onDelete }: ProcessCockpitProps) {
+export function ProcessCockpit({
+  process,
+  areaName,
+  nucleusName,
+  onEdit,
+  onDelete,
+}: ProcessCockpitProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -48,7 +54,12 @@ export function ProcessCockpit({ process, areaName, nucleusName, onEdit, onDelet
             </Button>
           )}
           {onDelete && (
-            <Button variant="ghost" size="sm" onClick={onDelete} className="text-destructive hover:text-destructive">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              className="text-destructive hover:text-destructive"
+            >
               Excluir
             </Button>
           )}

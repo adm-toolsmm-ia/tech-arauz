@@ -37,20 +37,20 @@ export function ConversasContent({ initialSessions, initialTotal }: ConversasCon
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-muted/30">
+    <div className="flex min-h-screen flex-col bg-muted/30">
       <DashboardHeader
         title="Histórico de Conversas"
         subtitle="Gerencie e visualize as sessões registradas pelo assistente."
       />
 
-      <div className="flex-1 p-6 space-y-6">
+      <div className="flex-1 space-y-6 p-6">
         <Card>
           <CardContent className="p-0">
             {initialSessions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <MessageSquare className="mb-4 h-12 w-12 text-muted-foreground/50" />
                 <h3 className="text-lg font-medium text-foreground">Nenhuma conversa encontrada</h3>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="mt-1 text-sm text-muted-foreground">
                   O histórico de chat para sua conta está vazio no momento.
                 </p>
               </div>
@@ -68,18 +68,36 @@ export function ConversasContent({ initialSessions, initialTotal }: ConversasCon
                 </TableHeader>
                 <TableBody>
                   {initialSessions.map((session) => {
-                    const statusCfg = STATUS_CONFIG[session.status as keyof typeof STATUS_CONFIG] || { label: session.status, badge: 'outline' };
-                    
+                    const statusCfg = STATUS_CONFIG[
+                      session.status as keyof typeof STATUS_CONFIG
+                    ] || { label: session.status, badge: 'outline' };
+
                     return (
-                      <TableRow key={session.id} className="hover:bg-muted/30 transition-colors">
+                      <TableRow key={session.id} className="transition-colors hover:bg-muted/30">
                         <TableCell className="font-medium text-foreground">
                           {session.agent_name || 'Desconhecido'}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {session.started_at ? new Date(session.started_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
+                          {session.started_at
+                            ? new Date(session.started_at).toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })
+                            : '-'}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {session.updated_at ? new Date(session.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
+                          {session.updated_at
+                            ? new Date(session.updated_at).toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })
+                            : '-'}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {session.message_count || 0}
@@ -90,10 +108,10 @@ export function ConversasContent({ initialSessions, initialTotal }: ConversasCon
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
-                            className="text-primary hover:text-primary hover:bg-primary/10"
+                            className="text-primary hover:bg-primary/10 hover:text-primary"
                             onClick={() => handleOpenChat(session.id, session.agent_id)}
                           >
                             Visualizar <ArrowRight className="ml-2 h-4 w-4" />

@@ -66,7 +66,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   // Apply period filter for Kanban and Lista (Dia/Semana/Mês)
   const periodFilteredSchedules = React.useMemo(
     () =>
-      (viewMode === 'kanban' || viewMode === 'lista')
+      viewMode === 'kanban' || viewMode === 'lista'
         ? filterSchedulesByPeriod(
             finalFilteredSchedules,
             currentDate,
@@ -143,10 +143,7 @@ export function CronogramasContent({ schedules }: CronogramasContentProps) {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex w-full min-w-0 max-w-full flex-col overflow-hidden">
-        <DashboardHeader
-          title="Cronogramas"
-          subtitle="Atividades importadas do ERP Espaider"
-        />
+        <DashboardHeader title="Cronogramas" subtitle="Atividades importadas do ERP Espaider" />
 
         <div className="px-6 pt-4">
           <ErpReadOnlyBanner variant="page" />

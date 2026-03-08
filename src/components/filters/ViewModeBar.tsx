@@ -72,9 +72,7 @@ export function ViewModeBar({
               onClick={() => onAgendaPeriodChange?.(period.id)}
               title={period.label}
             >
-              {period.icon ? (
-                <period.icon className="mr-1 h-3.5 w-3.5" />
-              ) : null}
+              {period.icon ? <period.icon className="mr-1 h-3.5 w-3.5" /> : null}
               <span className="text-xs">{period.label}</span>
             </Button>
           ))}

@@ -1,9 +1,9 @@
-import { axe } from 'jest-axe'
-import { render } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import { Label } from '../label'
-import { Input } from '../input'
-import { Button } from '../button'
+import { axe } from 'jest-axe';
+import { render } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { Label } from '../label';
+import { Input } from '../input';
+import { Button } from '../button';
 
 describe('Form Group A11y', () => {
   it('should have no violations for complete form', async () => {
@@ -21,11 +21,11 @@ describe('Form Group A11y', () => {
           </div>
           <Button type="submit">Sign In</Button>
         </fieldset>
-      </form>
-    )
-    const results = await axe(container)
-    expect(results).toHaveNoViolations()
-  })
+      </form>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
 
   it('should announce form validation errors', async () => {
     const { container } = render(
@@ -43,9 +43,9 @@ describe('Form Group A11y', () => {
             Please enter a valid email
           </span>
         </div>
-      </form>
-    )
-    const results = await axe(container)
-    expect(results).toHaveNoViolations()
-  })
-})
+      </form>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});

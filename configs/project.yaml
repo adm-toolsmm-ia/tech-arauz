@@ -191,9 +191,10 @@ coding_standards:
     roles: ["admin", "user", "viewer"]
     migrations_path: "supabase/migrations/"
   quality_gates:
-    order: ["lint", "typecheck", "test", "sync:ide:check"]
+    order: ["lint", "typecheck", "test", "format:check", "sync:ide:check", "build"]
     shell_chain: ";"
     shell_forbidden: "&&"
+    docs: "docs/architecture/build-deploy-gates.md"
   commits:
     format: "type(scope): description"
     types: ["feat", "fix", "docs", "refactor", "test", "chore", "ci"]

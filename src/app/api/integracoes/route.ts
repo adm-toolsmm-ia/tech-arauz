@@ -25,7 +25,7 @@ function buildTokenForStorage(token: string | undefined): string | null {
     // resolveApiToken() in espaider-sync.ts handles plaintext tokens natively.
     console.warn(
       '[integracoes] INTEGRATION_TOKEN_SECRET not set — storing token in plaintext. ' +
-      'Configure the secret for encrypted storage.',
+        'Configure the secret for encrypted storage.',
     );
     return normalized;
   }

@@ -160,14 +160,21 @@ export function DashboardContent({
   const overdueProjectsInfo = { count: overdueCount, maxDays: overdueMaxDays };
 
   // Calculate some % derived metrics
-  const delayedSpecialRatio = specialCount > 0 ? Math.round(((overdueProjectsInfo.count * 0.2) / specialCount) * 100) : 0; // Simulated risk proxy based on special
+  const delayedSpecialRatio =
+    specialCount > 0 ? Math.round(((overdueProjectsInfo.count * 0.2) / specialCount) * 100) : 0; // Simulated risk proxy based on special
 
   // ─── Chart Data ───
   const pipelineData = React.useMemo(() => buildPipelineData(chartProjects), [chartProjects]);
   const trendData = React.useMemo(() => buildWorkloadData(projects as any), [projects]);
-  const deadlineData = React.useMemo(() => buildMonthlyDeadlineData(chartProjects), [chartProjects]);
+  const deadlineData = React.useMemo(
+    () => buildMonthlyDeadlineData(chartProjects),
+    [chartProjects],
+  );
   const phaseData = React.useMemo(() => buildPhaseData(chartProjects), [chartProjects]);
-  const completedTrendData = React.useMemo(() => buildCompletedTrendData(chartProjects), [chartProjects]);
+  const completedTrendData = React.useMemo(
+    () => buildCompletedTrendData(chartProjects),
+    [chartProjects],
+  );
   const areaData = React.useMemo(() => buildAreaDashboardData(chartProjects), [chartProjects]);
 
   // ─── Filtered Project List ───
@@ -277,9 +284,9 @@ export function DashboardContent({
                 trend={
                   completedThisMonth > 0
                     ? {
-                      value: `${completedThisMonth} este mês`,
-                      positive: completedThisMonth >= completedLastMonth,
-                    }
+                        value: `${completedThisMonth} este mês`,
+                        positive: completedThisMonth >= completedLastMonth,
+                      }
                     : undefined
                 }
                 subtitle={completedThisMonth === 0 ? 'Nenhum este mês' : undefined}
@@ -314,7 +321,13 @@ export function DashboardContent({
                 value={startedCount}
                 icon={FolderOpen}
                 subtitle="Começaram a execução"
-                onClick={() => handleKPIClick({ type: 'by_status', label: 'Projetos Iniciados', value: 'iniciado' })}
+                onClick={() =>
+                  handleKPIClick({
+                    type: 'by_status',
+                    label: 'Projetos Iniciados',
+                    value: 'iniciado',
+                  })
+                }
                 active={activeFilter?.type === 'by_status' && activeFilter.value === 'iniciado'}
               />
               <KPICard
@@ -322,8 +335,16 @@ export function DashboardContent({
                 value={futureCount}
                 icon={Clock}
                 subtitle="Pipeline planejado"
-                onClick={() => handleKPIClick({ type: 'by_status', label: 'Projetos Futuros', value: 'projeto futuro' })}
-                active={activeFilter?.type === 'by_status' && activeFilter.value === 'projeto futuro'}
+                onClick={() =>
+                  handleKPIClick({
+                    type: 'by_status',
+                    label: 'Projetos Futuros',
+                    value: 'projeto futuro',
+                  })
+                }
+                active={
+                  activeFilter?.type === 'by_status' && activeFilter.value === 'projeto futuro'
+                }
               />
               <KPICard
                 title="Importância Especial"
@@ -462,7 +483,10 @@ export function DashboardContent({
                           <div className="ml-4 flex flex-shrink-0 items-center gap-3">
                             {project.priority && <PriorityBadge priority={project.priority} />}
                             <StatusBadge status={project.status} />
-                            <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                            <ArrowRight
+                              className="size-4 shrink-0 text-muted-foreground"
+                              aria-hidden="true"
+                            />
                           </div>
                         </div>
                       );
@@ -489,78 +513,83 @@ export function DashboardContent({
                 onAction={handleSync}
                 className="py-12"
               />
-            ) : (() => {
-              const recentProjects = projects
-                .filter((p) => {
-                  const s = (p.status || '').trim().toLowerCase();
-                  if (s !== 'iniciado' && s !== 'em execução' && s !== 'concluído') return false;
-                  const lastMove = p.last_update;
-                  if (!lastMove) return false;
-                  const diffTime = now.getTime() - new Date(lastMove).getTime();
-                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                  return diffDays >= 0 && diffDays <= 7;
-                })
-                .sort((a, b) => {
-                  const d1 = new Date(b.last_update || 0).getTime();
-                  const d2 = new Date(a.last_update || 0).getTime();
-                  return d1 - d2;
-                })
-                .slice(0, 8);
-              return recentProjects.length === 0 ? (
-                <EmptyState
-                  title="Nenhum projeto recente"
-                  description="Nenhum projeto com movimentação nos últimos 7 dias."
-                  icon={Clock}
-                  className="py-12"
-                />
-              ) : (
-              <div className="space-y-2">
-                {recentProjects.map((project) => (
-                    <div
-                      key={project.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleProjectClick(project)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleProjectClick(project);
-                        }
-                      }}
-                      className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-medium">{project.project_name}</p>
-                          {project.importancia_especial && (
-                            <Star className="size-3 flex-shrink-0 text-amber-500" />
-                          )}
+            ) : (
+              (() => {
+                const recentProjects = projects
+                  .filter((p) => {
+                    const s = (p.status || '').trim().toLowerCase();
+                    if (s !== 'iniciado' && s !== 'em execução' && s !== 'concluído') return false;
+                    const lastMove = p.last_update;
+                    if (!lastMove) return false;
+                    const diffTime = now.getTime() - new Date(lastMove).getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    return diffDays >= 0 && diffDays <= 7;
+                  })
+                  .sort((a, b) => {
+                    const d1 = new Date(b.last_update || 0).getTime();
+                    const d2 = new Date(a.last_update || 0).getTime();
+                    return d1 - d2;
+                  })
+                  .slice(0, 8);
+                return recentProjects.length === 0 ? (
+                  <EmptyState
+                    title="Nenhum projeto recente"
+                    description="Nenhum projeto com movimentação nos últimos 7 dias."
+                    icon={Clock}
+                    className="py-12"
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    {recentProjects.map((project) => (
+                      <div
+                        key={project.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleProjectClick(project)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleProjectClick(project);
+                          }
+                        }}
+                        className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-medium">{project.project_name}</p>
+                            {project.importancia_especial && (
+                              <Star className="size-3 flex-shrink-0 text-amber-500" />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{project.espaider_code}</span>
+                            {project.area && (
+                              <>
+                                <span>·</span>
+                                <span>{project.area}</span>
+                              </>
+                            )}
+                            {project.responsible && (
+                              <>
+                                <span>·</span>
+                                <span>{project.responsible}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{project.espaider_code}</span>
-                          {project.area && (
-                            <>
-                              <span>·</span>
-                              <span>{project.area}</span>
-                            </>
-                          )}
-                          {project.responsible && (
-                            <>
-                              <span>·</span>
-                              <span>{project.responsible}</span>
-                            </>
-                          )}
+                        <div className="ml-4 flex flex-shrink-0 items-center gap-3">
+                          <StatusBadge status={project.status} />
+                          <ArrowRight
+                            className="size-4 shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                          />
                         </div>
                       </div>
-                      <div className="ml-4 flex flex-shrink-0 items-center gap-3">
-                        <StatusBadge status={project.status} />
-                        <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                      </div>
-                    </div>
-                  ))}
-              </div>
-              );
-            })()}
+                    ))}
+                  </div>
+                );
+              })()
+            )}
           </CardContent>
         </Card>
       </div>
@@ -595,8 +624,9 @@ export function DashboardContent({
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[status] || statusStyles.projeto_futuro
-        }`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+        statusStyles[status] || statusStyles.projeto_futuro
+      }`}
     >
       {statusLabels[status] || status}
     </span>
@@ -606,8 +636,9 @@ function StatusBadge({ status }: { status: string }) {
 function PriorityBadge({ priority }: { priority: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${priorityStyles[priority] || 'bg-gray-100 text-gray-700'
-        }`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+        priorityStyles[priority] || 'bg-gray-100 text-gray-700'
+      }`}
     >
       {priorityLabels[priority] || priority}
     </span>

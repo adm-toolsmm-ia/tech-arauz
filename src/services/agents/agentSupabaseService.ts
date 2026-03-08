@@ -13,9 +13,7 @@ const supabase = createClient();
  * Serialize prompt_instructions for DB storage (JSON string).
  * Handles array, string, or undefined.
  */
-function serializePromptInstructions(
-  value: string[] | string | undefined
-): string {
+function serializePromptInstructions(value: string[] | string | undefined): string {
   if (value === undefined || value === null) return '[]';
   if (Array.isArray(value)) return JSON.stringify(value);
   if (typeof value === 'string') return value;

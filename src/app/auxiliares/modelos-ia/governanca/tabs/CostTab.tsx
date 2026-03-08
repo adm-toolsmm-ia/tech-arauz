@@ -72,8 +72,12 @@ export function CostTab({ costs, availableModels }: CostTabProps) {
                   <TableCell className="text-sm">
                     {periodStart} a {periodEnd}
                   </TableCell>
-                  <TableCell className="text-right">{cost.total_requests.toLocaleString('pt-BR')}</TableCell>
-                  <TableCell className="text-right">{cost.total_tokens.toLocaleString('pt-BR')}</TableCell>
+                  <TableCell className="text-right">
+                    {cost.total_requests.toLocaleString('pt-BR')}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {cost.total_tokens.toLocaleString('pt-BR')}
+                  </TableCell>
                   <TableCell className="text-right font-medium">
                     {formatCurrency(cost.total_cost_usd)}
                   </TableCell>

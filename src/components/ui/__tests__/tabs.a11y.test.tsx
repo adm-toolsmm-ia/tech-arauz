@@ -1,7 +1,7 @@
-import { axe } from 'jest-axe'
-import { render } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../tabs'
+import { axe } from 'jest-axe';
+import { render } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../tabs';
 
 describe('Tabs A11y', () => {
   it('should have no violations', async () => {
@@ -13,9 +13,9 @@ describe('Tabs A11y', () => {
         </TabsList>
         <TabsContent value="tab1">Content 1</TabsContent>
         <TabsContent value="tab2">Content 2</TabsContent>
-      </Tabs>
-    )
-    const results = await axe(container)
-    expect(results).toHaveNoViolations()
-  })
-})
+      </Tabs>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});

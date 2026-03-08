@@ -301,13 +301,15 @@ Ou usar fallback explícito: `defaultValue={value ?? undefined}` ou `defaultValu
 
 ### 13.2 Gate local antes do push
 
-Rodar localmente antes de push/deploy:
+Rodar localmente antes de push/deploy (ordem em `configs/project.yaml` → `quality_gates`):
 
 ```bash
-npm run lint ; npm run typecheck
+npm run lint ; npm run typecheck ; npm run test ; npm run format:check ; npm run build
 ```
 
-Se falhar localmente, falhará no Vercel. Resolver erros de tipo antes de commitar.
+Se falhar localmente, falhará no Vercel. Resolver erros antes de commitar.
+
+**Documentação completa:** [build-deploy-gates.md](./build-deploy-gates.md) — erros comuns, soluções e checklist.
 
 ### 13.3 Valores de query/params
 
@@ -348,5 +350,5 @@ Este documento é **normativo** para:
 2. Siga a estrutura de arquivos da seção 3
 3. Respeite o contrato do hook (seção 8) e o filter registry (seção 9)
 4. Evite todos os anti-padrões da seção 12
-5. Rode `npm run typecheck` antes de push (seção 13)
+5. Rode os quality gates antes de push (seção 13); consulte [build-deploy-gates.md](./build-deploy-gates.md)
 6. Exceções devem ser documentadas na story com justificativa técnica

@@ -488,7 +488,9 @@ function DayView({
                     }}
                   >
                     <CardContent className="p-3">
-                      <p className="truncate text-sm font-medium">{schedule.atividade || 'Sem nome'}</p>
+                      <p className="truncate text-sm font-medium">
+                        {schedule.atividade || 'Sem nome'}
+                      </p>
                       {schedule.responsavel && (
                         <p className="truncate text-[11px] text-muted-foreground">
                           {schedule.responsavel}

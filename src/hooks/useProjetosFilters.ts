@@ -264,7 +264,13 @@ export function useProjetosFilters(projects: ProjetosData[]) {
         let valA: any = a[filterState.sortConfig!.key as keyof ProjetosData];
         let valB: any = b[filterState.sortConfig!.key as keyof ProjetosData];
 
-        if (filterState.sortConfig!.key === 'prazo_fase' || filterState.sortConfig!.key === 'end_date' || filterState.sortConfig!.key === 'data_movimentacao' || filterState.sortConfig!.key === 'last_update' || filterState.sortConfig!.key === 'start_date') {
+        if (
+          filterState.sortConfig!.key === 'prazo_fase' ||
+          filterState.sortConfig!.key === 'end_date' ||
+          filterState.sortConfig!.key === 'data_movimentacao' ||
+          filterState.sortConfig!.key === 'last_update' ||
+          filterState.sortConfig!.key === 'start_date'
+        ) {
           valA = valA ? new Date(valA).getTime() : 0;
           valB = valB ? new Date(valB).getTime() : 0;
         } else if (typeof valA === 'string' && typeof valB === 'string') {

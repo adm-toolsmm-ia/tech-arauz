@@ -1,12 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -98,7 +93,9 @@ export function AgentEditSheet({
         owners: agent.owners ?? [],
         persona: agent.fullConfig.persona || '',
         promptObjective: agent.fullConfig.promptObjective || '',
-        promptInstructions: Array.isArray(instructions) ? instructions.join('\n') : String(instructions || ''),
+        promptInstructions: Array.isArray(instructions)
+          ? instructions.join('\n')
+          : String(instructions || ''),
         promptTemplate: agent.fullConfig.promptTemplate || '',
         modelProvider: agent.fullConfig.modelProvider,
         modelId: agent.modelId,
@@ -128,9 +125,7 @@ export function AgentEditSheet({
       if (modelsByProvider[providerId]) return;
       try {
         const models = await LmModelsService.listModels(providerId);
-        const sorted = models.sort(
-          (a, b) => (a.display_order ?? 100) - (b.display_order ?? 100),
-        );
+        const sorted = models.sort((a, b) => (a.display_order ?? 100) - (b.display_order ?? 100));
         setModelsByProvider((prev) => ({ ...prev, [providerId]: sorted }));
       } catch {
         toast.error('Erro ao carregar modelos');
@@ -157,7 +152,10 @@ export function AgentEditSheet({
 
     setIsSaving(true);
     try {
-      const instructionsArr = formData.promptInstructions.split('\n').map((s) => s.trim()).filter(Boolean);
+      const instructionsArr = formData.promptInstructions
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
       const updates = {
         name: formData.name,
         slug: formData.slug,
@@ -178,11 +176,17 @@ export function AgentEditSheet({
         model_id: formData.modelId,
         model_temperature: formData.modelTemperature,
         model_max_tokens: formData.modelMaxTokens,
-        requirements: formData.requirements.split('\n').map((s) => s.trim()).filter(Boolean),
+        requirements: formData.requirements
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean),
         output_schema: JSON.parse(formData.outputSchema || '{}'),
       };
 
-      const updated = await AgentSupabaseService.updateAgent(agent.id, updates as unknown as Parameters<typeof AgentSupabaseService.updateAgent>[1]);
+      const updated = await AgentSupabaseService.updateAgent(
+        agent.id,
+        updates as unknown as Parameters<typeof AgentSupabaseService.updateAgent>[1],
+      );
       const uiAgent = dbAgentToUI(updated as unknown as DBAgent);
       toast.success('✅ Agente atualizado com sucesso!');
       setIsDirty(false);
@@ -239,7 +243,7 @@ export function AgentEditSheet({
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4 border-b rounded-none px-6">
+              <TabsList className="grid w-full grid-cols-4 rounded-none border-b px-6">
                 <TabsTrigger value="basic">Básico</TabsTrigger>
                 <TabsTrigger value="persona">Persona</TabsTrigger>
                 <TabsTrigger value="model">Modelo</TabsTrigger>
@@ -278,9 +282,7 @@ export function AgentEditSheet({
                     <Label>Status</Label>
                     <Select
                       value={formData.status}
-                      onValueChange={(value) =>
-                        handleChange('status', value as any)
-                      }
+                      onValueChange={(value) => handleChange('status', value as any)}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -358,7 +360,10 @@ export function AgentEditSheet({
                     onChange={(e) =>
                       handleChange(
                         'tags',
-                        e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
+                        e.target.value
+                          .split(',')
+                          .map((t) => t.trim())
+                          .filter(Boolean),
                       )
                     }
                     placeholder="ex: projetos, relatorios"
@@ -372,7 +377,10 @@ export function AgentEditSheet({
                     onChange={(e) =>
                       handleChange(
                         'owners',
-                        e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
+                        e.target.value
+                          .split(',')
+                          .map((t) => t.trim())
+                          .filter(Boolean),
                       )
                     }
                     placeholder="ex: user@example.com"
@@ -469,18 +477,14 @@ export function AgentEditSheet({
                 </div>
 
                 <div>
-                  <Label>
-                    Temperatura ({formData.modelTemperature.toFixed(1)})
-                  </Label>
+                  <Label>Temperatura ({formData.modelTemperature.toFixed(1)})</Label>
                   <input
                     type="range"
                     min="0"
                     max="2"
                     step="0.1"
                     value={formData.modelTemperature}
-                    onChange={(e) =>
-                      handleChange('modelTemperature', parseFloat(e.target.value))
-                    }
+                    onChange={(e) => handleChange('modelTemperature', parseFloat(e.target.value))}
                     className="w-full"
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -496,9 +500,7 @@ export function AgentEditSheet({
                     max="4000"
                     step="100"
                     value={formData.modelMaxTokens}
-                    onChange={(e) =>
-                      handleChange('modelMaxTokens', parseInt(e.target.value))
-                    }
+                    onChange={(e) => handleChange('modelMaxTokens', parseInt(e.target.value))}
                     className="w-full"
                   />
                 </div>
@@ -531,7 +533,7 @@ export function AgentEditSheet({
           </div>
 
           {/* Footer Actions */}
-          <div className="border-t bg-muted/50 px-6 py-4 flex justify-end gap-3">
+          <div className="flex justify-end gap-3 border-t bg-muted/50 px-6 py-4">
             <Button variant="outline" onClick={onClose} disabled={isSaving}>
               Cancelar
             </Button>

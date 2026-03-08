@@ -16,10 +16,7 @@ export default async function RotinasPage() {
     redirect('/login');
   }
 
-  const [
-    { data: routinesRaw },
-    { data: processesRaw },
-  ] = await Promise.all([
+  const [{ data: routinesRaw }, { data: processesRaw }] = await Promise.all([
     supabase.from('org_routines').select('*').order('name', { ascending: true }),
     supabase.from('org_processes').select('id, name').order('name'),
   ]);

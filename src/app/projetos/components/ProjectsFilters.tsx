@@ -57,7 +57,9 @@ export function ProjectsFilters({
   onSortChange,
   onSync,
 }: ProjectsFiltersProps) {
-  const currentSortValue = sortConfig ? `${sortConfig.key}-${sortConfig.direction}` : 'project_name-asc';
+  const currentSortValue = sortConfig
+    ? `${sortConfig.key}-${sortConfig.direction}`
+    : 'project_name-asc';
 
   return (
     <div className="space-y-3">
@@ -76,7 +78,7 @@ export function ProjectsFilters({
                 }
               }}
             >
-              <SelectTrigger className="w-[280px] h-8 text-xs">
+              <SelectTrigger className="h-8 w-[280px] text-xs">
                 <SelectValue placeholder="Ordenar por..." />
               </SelectTrigger>
               <SelectContent>

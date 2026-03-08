@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-import type { Meta, StoryObj } from '@storybook/react'
-import { Badge } from './badge'
+import React, { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { Badge } from './badge';
 
 const meta = {
   title: 'UI/Badge',
@@ -15,17 +15,17 @@ const meta = {
       options: ['default', 'secondary', 'destructive', 'outline'],
     },
   },
-} satisfies Meta<typeof Badge>
+} satisfies Meta<typeof Badge>;
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 // Default badge
 export const Default: Story = {
   args: {
     children: 'Badge',
   },
-}
+};
 
 // Variants
 export const Variants: Story = {
@@ -37,7 +37,7 @@ export const Variants: Story = {
       <Badge variant="outline">Outline</Badge>
     </div>
   ),
-}
+};
 
 // Status badges
 export const Status: Story = {
@@ -50,7 +50,7 @@ export const Status: Story = {
       <Badge className="bg-status-cancelado">Cancelado</Badge>
     </div>
   ),
-}
+};
 
 // Priority badges
 export const Priority: Story = {
@@ -61,7 +61,7 @@ export const Priority: Story = {
       <Badge className="bg-priority-baixa">Baixa</Badge>
     </div>
   ),
-}
+};
 
 // With icon/content
 export const WithContent: Story = {
@@ -79,7 +79,7 @@ export const WithContent: Story = {
       </div>
     </div>
   ),
-}
+};
 
 // Pill badges
 export const Pill: Story = {
@@ -94,12 +94,12 @@ export const Pill: Story = {
       </Badge>
     </div>
   ),
-}
+};
 
 // Badges in list
 export const InList: Story = {
   render: () => (
-    <div className="space-y-3 w-80">
+    <div className="w-80 space-y-3">
       {[
         { name: 'React Component Library', tags: ['React', 'UI', 'Components'] },
         { name: 'Design System', tags: ['Design', 'System', 'Tokens'] },
@@ -107,7 +107,7 @@ export const InList: Story = {
       ].map((item, i) => (
         <div key={i} className="space-y-1">
           <p className="font-medium">{item.name}</p>
-          <div className="flex gap-1 flex-wrap">
+          <div className="flex flex-wrap gap-1">
             {item.tags.map((tag) => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
@@ -118,24 +118,24 @@ export const InList: Story = {
       ))}
     </div>
   ),
-}
+};
 
 // Size variations
 export const Sizes: Story = {
   render: () => (
-    <div className="flex gap-2 items-center">
+    <div className="flex items-center gap-2">
       <Badge className="text-xs">Small</Badge>
       <Badge className="text-sm">Default</Badge>
       <Badge className="text-base">Large</Badge>
     </div>
   ),
-}
+};
 
 // Closeable badges (with custom onClick)
 const CloseableBadgesComponent = () => {
-  const [badges, setBadges] = useState(['React', 'Next.js', 'TypeScript'])
+  const [badges, setBadges] = useState(['React', 'Next.js', 'TypeScript']);
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex flex-wrap gap-2">
       {badges.map((badge) => (
         <Badge
           key={badge}
@@ -147,9 +147,9 @@ const CloseableBadgesComponent = () => {
         </Badge>
       ))}
     </div>
-  )
-}
+  );
+};
 
 export const Closeable: Story = {
   render: () => <CloseableBadgesComponent />,
-}
+};

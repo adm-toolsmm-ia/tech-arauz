@@ -98,7 +98,9 @@ export function UserCockpit({
           size="sm"
           className={cn(
             'justify-start',
-            user.isActive ? 'text-destructive hover:text-destructive' : 'text-green-600 hover:text-green-600',
+            user.isActive
+              ? 'text-destructive hover:text-destructive'
+              : 'text-green-600 hover:text-green-600',
           )}
           onClick={handleToggleStatus}
         >
@@ -120,7 +122,9 @@ export function UserCockpit({
           className="justify-start text-destructive hover:text-destructive"
           onClick={onDelete}
           disabled={isCurrentUser}
-          aria-label={isCurrentUser ? 'Não é possível excluir a si mesmo' : `Excluir ${user.full_name}`}
+          aria-label={
+            isCurrentUser ? 'Não é possível excluir a si mesmo' : `Excluir ${user.full_name}`
+          }
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Excluir Usuário

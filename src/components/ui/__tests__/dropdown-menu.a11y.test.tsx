@@ -1,13 +1,13 @@
-import { axe } from 'jest-axe'
-import { render } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { axe } from 'jest-axe';
+import { render } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from '../dropdown-menu'
-import { Button } from '../button'
+} from '../dropdown-menu';
+import { Button } from '../button';
 
 describe('DropdownMenu A11y', () => {
   it('should have no violations', async () => {
@@ -20,9 +20,9 @@ describe('DropdownMenu A11y', () => {
           <DropdownMenuItem>Edit</DropdownMenuItem>
           <DropdownMenuItem>Delete</DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
-    )
-    const results = await axe(container)
-    expect(results).toHaveNoViolations()
-  })
-})
+      </DropdownMenu>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});

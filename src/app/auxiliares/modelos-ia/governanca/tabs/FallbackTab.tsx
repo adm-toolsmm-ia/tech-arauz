@@ -53,14 +53,27 @@ export function FallbackTab({ policies, setPolicies, availableModels }: Fallback
               const fallbackModel = availableModels.find((m) => m.id === policy.fallback_model_id);
               return (
                 <TableRow key={policy.id}>
-                  <TableCell className="font-medium">{primaryModel?.name || policy.primary_model_id}</TableCell>
-                  <TableCell className="font-medium">{fallbackModel?.name || policy.fallback_model_id}</TableCell>
+                  <TableCell className="font-medium">
+                    {primaryModel?.name || policy.primary_model_id}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {fallbackModel?.name || policy.fallback_model_id}
+                  </TableCell>
                   <TableCell className="text-sm">{policy.priority}</TableCell>
                   <TableCell className="text-sm">
-                    {Array.isArray(policy.trigger_on) ? policy.trigger_on.join(', ') : String(policy.trigger_on)}
+                    {Array.isArray(policy.trigger_on)
+                      ? policy.trigger_on.join(', ')
+                      : String(policy.trigger_on)}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={policy.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                    <Badge
+                      variant="outline"
+                      className={
+                        policy.is_active
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }
+                    >
                       {policy.is_active ? '✅ Ativo' : '❌ Inativo'}
                     </Badge>
                   </TableCell>

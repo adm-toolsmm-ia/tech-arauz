@@ -91,24 +91,30 @@ async function fetchAgentsFromSupabase(
     const showInShortcut = searchParams.get('show_in_shortcut');
     const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 100);
 
-    let query = supabase.from('agents').select('id, name, description, status, usage_type, show_in_shortcut');
+    let query = supabase
+      .from('agents')
+      .select('id, name, description, status, usage_type, show_in_shortcut');
 
     if (usageType) query = query.eq('usage_type', usageType);
     if (status) query = query.eq('status', status);
     if (showInShortcut === 'true') query = query.eq('show_in_shortcut', true);
 
-    const { data: rows, error } = await query.order('created_at', { ascending: false }).limit(limit);
+    const { data: rows, error } = await query
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) {
       console.error('[agents/GET] Supabase fallback error:', error);
       return null;
     }
 
-    const agents = (rows || []).map((r: { id: string; name: string; description: string | null }) => ({
-      id: r.id,
-      name: r.name,
-      description: r.description || '',
-    }));
+    const agents = (rows || []).map(
+      (r: { id: string; name: string; description: string | null }) => ({
+        id: r.id,
+        name: r.name,
+        description: r.description || '',
+      }),
+    );
 
     return Response.json({
       agents,

@@ -16,11 +16,7 @@ export default async function NucleosPage() {
     redirect('/login');
   }
 
-  const [
-    { data: nucleiRaw, error },
-    { data: areas },
-    { data: processCounts },
-  ] = await Promise.all([
+  const [{ data: nucleiRaw, error }, { data: areas }, { data: processCounts }] = await Promise.all([
     supabase.from('org_nuclei').select('*').order('name', { ascending: true }),
     supabase.from('org_areas').select('id, name').order('name'),
     supabase.from('org_processes').select('nucleus_id'),

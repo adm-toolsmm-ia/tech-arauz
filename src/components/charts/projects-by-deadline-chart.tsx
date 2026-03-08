@@ -53,7 +53,8 @@ function CustomTooltip({
     <div className="rounded-lg border bg-popover px-3 py-2 text-sm shadow-md">
       <p className="font-medium">{data.label}</p>
       <p className="text-muted-foreground">
-        Total: {data.total} · Iniciado: {data.iniciado} · Em execução: {data.em_execucao} · Concluídos: {data.concluido}
+        Total: {data.total} · Iniciado: {data.iniciado} · Em execução: {data.em_execucao} ·
+        Concluídos: {data.concluido}
       </p>
     </div>
   );
@@ -68,7 +69,9 @@ export function ProjectsByDeadlineChart({
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">Cronograma de Projetos por Prazo Final</CardTitle>
+        <CardTitle className="text-base font-medium">
+          Cronograma de Projetos por Prazo Final
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[280px]">
@@ -81,10 +84,7 @@ export function ProjectsByDeadlineChart({
             />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={data}
-                margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
-              >
+              <BarChart data={data} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
                 <XAxis
                   dataKey="label"
@@ -167,10 +167,7 @@ export function ProjectsByDeadlineChart({
 }
 
 export function buildMonthlyDeadlineData(projects: DashboardProjectLike[]): MonthlyDeadlineData[] {
-  const byMonth: Record<
-    string,
-    { iniciado: number; em_execucao: number; concluido: number }
-  > = {};
+  const byMonth: Record<string, { iniciado: number; em_execucao: number; concluido: number }> = {};
 
   projects.forEach((p) => {
     if (!p.prazo_final) return;
@@ -193,7 +190,18 @@ export function buildMonthlyDeadlineData(projects: DashboardProjectLike[]): Mont
   });
 
   const monthNames = [
-    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
   ];
 
   return Object.entries(byMonth)

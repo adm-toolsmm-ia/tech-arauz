@@ -21,11 +21,7 @@ function InfoField({ label, value }: { label: string; value: string | null | und
   );
 }
 
-export function DocumentCockpit360({
-  document,
-  processName,
-  onEdit,
-}: DocumentCockpit360Props) {
+export function DocumentCockpit360({ document, processName, onEdit }: DocumentCockpit360Props) {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="principal" className="w-full">
@@ -56,9 +52,7 @@ export function DocumentCockpit360({
               </div>
               <div>
                 <h3 className="font-semibold">{document.name}</h3>
-                {document.type && (
-                  <p className="text-sm text-muted-foreground">{document.type}</p>
-                )}
+                {document.type && <p className="text-sm text-muted-foreground">{document.type}</p>}
               </div>
             </div>
             {onEdit && (

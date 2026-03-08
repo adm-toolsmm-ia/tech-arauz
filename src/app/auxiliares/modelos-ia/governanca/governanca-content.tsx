@@ -133,7 +133,11 @@ export function GovernancaContent({
 
         {/* TAB: REVISÕES */}
         <TabsContent value="reviews" className="mt-6">
-          <RevisionsTab reviews={reviews} setReviews={setReviews} availableModels={availableModels} />
+          <RevisionsTab
+            reviews={reviews}
+            setReviews={setReviews}
+            availableModels={availableModels}
+          />
         </TabsContent>
 
         {/* TAB: CUSTO */}

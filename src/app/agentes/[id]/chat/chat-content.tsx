@@ -87,9 +87,7 @@ export function ChatContent({ agentId, initialSessionId, initialMessages = [] }:
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      toast.error(
-        `Error: ${error instanceof Error ? error.message : 'Failed to send message'}`,
-      );
+      toast.error(`Error: ${error instanceof Error ? error.message : 'Failed to send message'}`);
       // Remove optimistic user message on error
       setMessages((prev) => prev.slice(0, -1));
     } finally {
@@ -116,9 +114,7 @@ export function ChatContent({ agentId, initialSessionId, initialMessages = [] }:
       setMessages([]);
       toast.success('New chat session created');
     } catch (error) {
-      toast.error(
-        `Error: ${error instanceof Error ? error.message : 'Failed to create session'}`,
-      );
+      toast.error(`Error: ${error instanceof Error ? error.message : 'Failed to create session'}`);
     }
   };
 
@@ -130,7 +126,7 @@ export function ChatContent({ agentId, initialSessionId, initialMessages = [] }:
   };
 
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div className="flex h-full flex-col gap-4">
       {/* Chat messages area */}
       <Card className="flex-1 overflow-hidden">
         <CardContent className="h-full overflow-y-auto p-4">
@@ -153,9 +149,9 @@ export function ChatContent({ agentId, initialSessionId, initialMessages = [] }:
                 />
               ))}
               {isLoading && (
-                <div className="flex justify-start mb-4">
+                <div className="mb-4 flex justify-start">
                   <Card className="max-w-md">
-                    <CardContent className="pt-3 space-y-2">
+                    <CardContent className="space-y-2 pt-3">
                       <Skeleton className="h-4 w-32" data-testid="skeleton-loader" />
                       <Skeleton className="h-4 w-24" />
                     </CardContent>

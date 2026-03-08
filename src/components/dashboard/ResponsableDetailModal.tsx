@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { X, Calendar, Filter, Download, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,7 @@ export function ResponsableDetailModal({
     endDate: undefined,
   });
   const [showMetricsBreakdown, setShowMetricsBreakdown] = useState(true);
+  const [activeTab, setActiveTab] = useState<'performance' | 'comparison' | 'insights'>('performance');
 
   if (!person) return null;
 
@@ -65,6 +66,44 @@ export function ResponsableDetailModal({
   const handleDateRangeChange = useCallback((range: DateRange) => {
     setDateRange(range);
   }, []);
+
+  // Keyboard shortcuts - defined after all handlers
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+S or Ctrl+S: Save/Export
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleExportPDF();
+      }
+
+      // ESC: Close modal
+      if (e.key === 'Escape') {
+        onClose();
+      }
+
+      // Tab cycling: Cmd+[ / Cmd+] or Alt+Left/Right
+      if ((e.metaKey || e.altKey) && (e.key === '[' || e.key === 'ArrowLeft')) {
+        e.preventDefault();
+        const tabs: Array<'performance' | 'comparison' | 'insights'> = ['performance', 'comparison', 'insights'];
+        const currentIdx = tabs.indexOf(activeTab);
+        const nextIdx = (currentIdx - 1 + tabs.length) % tabs.length;
+        setActiveTab(tabs[nextIdx]);
+      }
+
+      if ((e.metaKey || e.altKey) && (e.key === ']' || e.key === 'ArrowRight')) {
+        e.preventDefault();
+        const tabs: Array<'performance' | 'comparison' | 'insights'> = ['performance', 'comparison', 'insights'];
+        const currentIdx = tabs.indexOf(activeTab);
+        const nextIdx = (currentIdx + 1) % tabs.length;
+        setActiveTab(tabs[nextIdx]);
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, activeTab, onClose, handleExportPDF]);
 
   // Calculate derived metrics
   const efficiency = person.total_movements > 0
@@ -112,9 +151,50 @@ export function ResponsableDetailModal({
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Key Metrics Summary */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+        <div className="space-y-4">
+          {/* Tab Navigation */}
+          <div className="flex gap-2 border-b">
+            <button
+              onClick={() => setActiveTab('performance')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'performance'
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label="Performance metrics (Cmd+Shift+1)"
+            >
+              Performance
+            </button>
+            <button
+              onClick={() => setActiveTab('comparison')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'comparison'
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label="Team comparison (Cmd+Shift+2)"
+            >
+              Comparação
+            </button>
+            <button
+              onClick={() => setActiveTab('insights')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'insights'
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label="Performance insights (Cmd+Shift+3)"
+            >
+              Insights
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {/* Performance Tab */}
+            {activeTab === 'performance' && (
+              <>
+                {/* Key Metrics Summary */}
+                <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
             <CardHeader>
               <CardTitle className="text-base">Resumo de Performance</CardTitle>
             </CardHeader>
@@ -239,6 +319,99 @@ export function ResponsableDetailModal({
               </div>
             </CardContent>
           </Card>
+              </>
+            )}
+
+            {/* Comparison Tab */}
+            {activeTab === 'comparison' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Comparação com Time</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950">
+                      <p className="text-xs text-muted-foreground">Movimentações vs Média</p>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {performanceDelta > 0 ? '+' : ''}{performanceDelta}%
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950">
+                      <p className="text-xs text-muted-foreground">Tempo Médio vs Média</p>
+                      <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                        {person.average_duration_days > teamAvgMovements ? '-' : '+'}{Math.abs(person.average_duration_days - (teamAvgMovements ? Math.round(teamAvgMovements) : 0))}d
+                      </p>
+                    </div>
+                  </div>
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-medium mb-3">Status no Time</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-2 rounded bg-muted/50">
+                        <span className="text-sm">Rank de Performance</span>
+                        <span className="font-semibold">{performanceDelta > 20 ? '🥇 Top' : performanceDelta > 0 ? '🥈 Above Avg' : '🥉 Below Avg'}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded bg-muted/50">
+                        <span className="text-sm">Velocidade</span>
+                        <span className="font-semibold">{movementsPerDay} mov/dia</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Insights Tab */}
+            {activeTab === 'insights' && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Insights de Performance</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-muted">
+                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {efficiency > 70 ? '✨ Excelente taxa de conclusão' : efficiency > 50 ? '📈 Taxa de conclusão acima da média' : '⚠️ Taxa de conclusão abaixo do esperado'}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {efficiency > 70
+                              ? `${person.responsible} tem uma das melhores taxas de conclusão do time`
+                              : efficiency > 50
+                              ? `Desempenho sólido com ${efficiency}% de conclusão`
+                              : `Considere aumentar foco em conclusão de projetos`}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-muted">
+                        <div className="w-2 h-2 rounded-full bg-amber-500 mt-1.5" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {person.average_duration_days < 15 ? '⚡ Ritmo acelerado' : person.average_duration_days < 30 ? '✓ Ritmo normal' : '🐢 Ritmo lento'}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Tempo médio de {person.average_duration_days} dias por projeto
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-muted">
+                        <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
+                        <div>
+                          <p className="text-sm font-medium">Velocidade de Movimentação</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {movementsPerDay} movimentações por dia — {movementsPerDayValue > 2 ? 'muito ativo' : 'atividade moderada'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
 
           {/* Footer Actions */}
           <div className="flex justify-between gap-2 pt-4 border-t">

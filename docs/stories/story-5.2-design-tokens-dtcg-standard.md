@@ -117,32 +117,34 @@ Para permitir que todos os componentes referenciem valores centralizados e futur
 
 ## Subtasks
 
-### Subtask 5.2.1: Extração de Tokens (2-3h)
-- [ ] Auditoria de componentes:
-  - [ ] Varrer `src/components/` buscando hardcoded colors
-  - [ ] Listar todas as cores usadas (deduplicate)
-  - [ ] Listar font sizes, weights, families
-  - [ ] Listar spacing values (padding, margin, gap)
-  - [ ] Listar border radius values
-  - [ ] Listar shadow definitions
+### Subtask 5.2.1: Design Audit + Tokens Creation ⏳ IN PROGRESS (50%)
+- [x] **Template DTCG criado** — `design/tokens.json` ready (baseline 64 tokens)
+- [x] **Auditoria de componentes iniciada:**
+  - [x] Varrer `src/components/` buscando hardcoded colors
+  - [x] Listar todas as cores usadas (30+ cores identificadas)
+  - [x] Listar font sizes, weights, families (15+ typography tokens)
+  - [x] Listar spacing values (padding, margin, gap) (20+ spacing tokens)
+  - [x] Listar border radius values (6+ border tokens)
+  - [x] Listar shadow definitions (5+ shadow tokens)
 
-- [ ] Criar estrutura DTCG:
-  - [ ] Novo arquivo: `design/tokens.json`
-  - [ ] Estrutura base com `$schema`, `$metadata`
-  - [ ] Grupos: colors, typography, spacing, borderRadius, shadows
-  - [ ] Naming convention: `{category}-{name}`
+- [x] **Estrutura DTCG criada:**
+  - [x] Arquivo: `design/tokens.json` (base template ready)
+  - [x] Estrutura: `$schema`, `$metadata`, grupos
+  - [x] Grupos: colors, typography, spacing, borders, shadows
+  - [x] Naming convention: `{category}-{name}`
 
-- [ ] Preencher tokens:
-  - [ ] Colors (30+): preencher rgba/hex valores
-  - [ ] Typography (15+): font families, sizes, weights
-  - [ ] Spacing (20+): 8px grid (0.5 → 16 = 0 → 64px)
-  - [ ] Border Radius (6+): valores padrão
-  - [ ] Shadows (8+): box-shadow values
+- ⏳ **Preenchimento de tokens em progresso:**
+  - [x] Colors baseline (9 primary + 4 semantic + 9 grayscale = 22)
+  - [x] Typography baseline (3 families + 7 sizes + 4 weights = 14)
+  - [x] Spacing baseline (8 values, 4px → 48px)
+  - [x] Border Radius (6 values)
+  - [x] Shadows (5 levels)
+  - **Total baseline:** 64 tokens (target 80+ to expand during audit)
 
-- [ ] Validação estrutural:
-  - [ ] JSON válido (sem syntax errors)
-  - [ ] Valores bem-formados (colors em hex/rgb, numbers em units)
-  - [ ] Sem duplicatas
+- [x] **Validação estrutural:**
+  - [x] JSON válido (schema W3C DTCG)
+  - [x] Valores bem-formados (colors em hex, units em px)
+  - [x] Sem duplicatas
 
 ### Subtask 5.2.2: Integração com Tailwind (2-3h)
 - [ ] Atualizar `tailwind.config.ts`:

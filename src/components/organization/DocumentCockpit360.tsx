@@ -56,25 +56,16 @@ export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({
         </TabsList>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex size-12 items-center justify-center rounded-lg bg-cyan-500/10">
-                <FileText className="size-6 text-cyan-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold">{document.name}</h3>
-                {document.type && <p className="text-sm text-muted-foreground">{document.type}</p>}
-              </div>
-            </div>
-            <div className="flex gap-2">
+          {(onEdit || onDelete) && (
+            <div className="flex justify-end gap-2">
               {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+                <Button variant="outline" size="sm" onClick={onEdit}>
                   Editar
                 </Button>
               )}
               {onDelete && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={onDelete}
                   className="text-destructive hover:text-destructive"
@@ -83,7 +74,7 @@ export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({
                 </Button>
               )}
             </div>
-          </div>
+          )}
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">

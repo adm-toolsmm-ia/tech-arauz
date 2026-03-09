@@ -187,6 +187,14 @@ return <ErrorBoundary><ProjectsContent projects={uiData} /></ErrorBoundary>;
 - Conteúdo: componente `*Cockpit` com dados completos do registro
 - Clique em card/linha em qualquer view → `setSelectedItem(item)`
 
+**Padrão de card para gestão 360º (referência: ProjectCockpit):**
+
+- **Fundo claro:** SplitView usa `dialog-light-theme` + `bg-card` na área de conteúdo
+- **Abas:** TabsList com `rounded-none border-b bg-transparent`; TabsTrigger com `border-b-2` e ícone
+- **Campos agrupados:** Seções com `<section>`, cabeçalho `mb-4 flex items-center gap-2 border-b pb-2` + ícone + `<h3>`, conteúdo em grid `grid-cols-1 gap-6 md:grid-cols-2`
+- **Sem bloco redundante:** Título vem do SplitView; Cockpit não repete ícone + nome do registro no topo
+- **Ações:** Botões Editar/Excluir em linha compacta no topo do conteúdo (quando aplicável)
+
 ### 7.6 CRUD
 
 - **Criar/Editar:** `Dialog` com validação e feedback (`toast`)

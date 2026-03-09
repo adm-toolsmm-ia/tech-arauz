@@ -96,29 +96,16 @@ export function ProcessCockpit360({
         </TabsList>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-                <GitBranch className="size-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">{process.name}</h3>
-                {(areaName || nucleusName) && (
-                  <p className="text-sm text-muted-foreground">
-                    {[areaName, nucleusName].filter(Boolean).join(' / ')}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2">
+          {(onEdit || onDelete) && (
+            <div className="flex justify-end gap-2">
               {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+                <Button variant="outline" size="sm" onClick={onEdit}>
                   Editar
                 </Button>
               )}
               {onDelete && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={onDelete}
                   className="text-destructive hover:text-destructive"
@@ -127,7 +114,7 @@ export function ProcessCockpit360({
                 </Button>
               )}
             </div>
-          </div>
+          )}
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">

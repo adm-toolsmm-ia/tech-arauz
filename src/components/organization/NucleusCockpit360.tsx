@@ -56,19 +56,8 @@ export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({ nucleus, a
         </TabsList>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-                <GitBranch className="size-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">{nucleus.name}</h3>
-                {nucleus.area_name && (
-                  <p className="text-sm text-muted-foreground">{nucleus.area_name}</p>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2">
+          {(onEdit || onDelete) && (
+            <div className="flex justify-end gap-2">
               {onEdit && (
                 <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
                   <ExternalLink className="size-4" />
@@ -87,7 +76,7 @@ export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({ nucleus, a
                 </Button>
               )}
             </div>
-          </div>
+          )}
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">

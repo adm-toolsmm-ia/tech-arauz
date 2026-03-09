@@ -65,24 +65,13 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({ area, nuclei, pr
         </TabsList>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-                <Building2 className="size-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">{area.name}</h3>
-                {area.nuclei_count != null && (
-                  <p className="text-sm text-muted-foreground">{area.nuclei_count} núcleo(s)</p>
-                )}
-              </div>
-            </div>
-            {onEdit && (
-              <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+          {onEdit && (
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={onEdit}>
                 Editar
               </Button>
-            )}
-          </div>
+            </div>
+          )}
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">

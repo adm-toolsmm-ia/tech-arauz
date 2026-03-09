@@ -115,8 +115,8 @@ export function SplitView({
           </Button>
         </div>
 
-        {/* Content */}
-        <ScrollArea className="flex-1 overflow-hidden">
+        {/* Content - bg-card garante fundo claro e padrão de card (gestão 360º) */}
+        <ScrollArea className="flex-1 overflow-hidden bg-card">
           <div className="p-6">{children}</div>
         </ScrollArea>
       </div>

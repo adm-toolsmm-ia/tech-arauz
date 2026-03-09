@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Truck, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { OrgSupplier } from '@/types/organization';
@@ -45,24 +45,16 @@ export const SupplierCockpit360: React.FC<SupplierCockpit360Props> = ({
         </TabsList>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex size-12 items-center justify-center rounded-lg bg-emerald-500/10">
-                <Truck className="size-6 text-emerald-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold">{supplier.name}</h3>
-              </div>
-            </div>
-            <div className="flex gap-2">
+          {(onEdit || onDelete) && (
+            <div className="flex justify-end gap-2">
               {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+                <Button variant="outline" size="sm" onClick={onEdit}>
                   Editar
                 </Button>
               )}
               {onDelete && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={onDelete}
                   className="text-destructive hover:text-destructive"
@@ -71,7 +63,7 @@ export const SupplierCockpit360: React.FC<SupplierCockpit360Props> = ({
                 </Button>
               )}
             </div>
-          </div>
+          )}
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Monitor, FileText, Settings, Plus, Pencil, Trash2 } from 'lucide-react';
+import { FileText, Settings, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -64,24 +64,16 @@ export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({
         </TabsList>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex size-12 items-center justify-center rounded-lg bg-amber-500/10">
-                <Monitor className="size-6 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold">{system.name}</h3>
-              </div>
-            </div>
-            <div className="flex gap-2">
+          {(onEdit || onDelete) && (
+            <div className="flex justify-end gap-2">
               {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+                <Button variant="outline" size="sm" onClick={onEdit}>
                   Editar
                 </Button>
               )}
               {onDelete && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={onDelete}
                   className="text-destructive hover:text-destructive"
@@ -90,7 +82,7 @@ export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({
                 </Button>
               )}
             </div>
-          </div>
+          )}
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">

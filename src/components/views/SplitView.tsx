@@ -82,7 +82,7 @@ export function SplitView({
         aria-labelledby="split-view-title"
         aria-describedby={subtitle ? 'split-view-subtitle' : undefined}
         className={cn(
-          'dialog-light-theme animate-slide-in-right fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-border bg-background shadow-lg',
+          'dialog-light-theme animate-slide-in-right fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-border bg-white shadow-lg',
           widthClasses[width],
           className,
         )}
@@ -115,9 +115,9 @@ export function SplitView({
           </Button>
         </div>
 
-        {/* Content - bg-card garante fundo claro e padrão de card (gestão 360º) */}
-        <ScrollArea className="flex-1 overflow-hidden bg-card">
-          <div className="p-6">{children}</div>
+        {/* Content - bg-white garante fundo branco sólido (padrão cards 360º) */}
+        <ScrollArea className="flex-1 overflow-hidden bg-white">
+          <div className="p-6 bg-white">{children}</div>
         </ScrollArea>
       </div>
     </>

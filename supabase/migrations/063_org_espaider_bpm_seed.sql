@@ -62,13 +62,13 @@ BEGIN
   END IF;
 
   -- Lookup núcleos
-  SELECT id INTO v_nucleus_prot FROM public.org_nuclei n
+  SELECT n.id INTO v_nucleus_prot FROM public.org_nuclei n
     JOIN public.org_areas a ON n.area_id = a.id
     WHERE a.tenant_id = v_tenant_id AND a.name = 'Legal Operations' AND n.name = 'Núcleo de Protocolos' LIMIT 1;
-  SELECT id INTO v_nucleus_prazos FROM public.org_nuclei n
+  SELECT n.id INTO v_nucleus_prazos FROM public.org_nuclei n
     JOIN public.org_areas a ON n.area_id = a.id
     WHERE a.tenant_id = v_tenant_id AND a.name = 'Legal Operations' AND n.name = 'Núcleo de Controle de Prazos' LIMIT 1;
-  SELECT id INTO v_nucleus_publ FROM public.org_nuclei n
+  SELECT n.id INTO v_nucleus_publ FROM public.org_nuclei n
     JOIN public.org_areas a ON n.area_id = a.id
     WHERE a.tenant_id = v_tenant_id AND a.name = 'Legal Operations' AND n.name = 'Núcleo de Publicações' LIMIT 1;
 

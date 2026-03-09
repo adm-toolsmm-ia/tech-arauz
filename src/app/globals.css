@@ -209,9 +209,8 @@
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 
-  /* Dialog/Sheet/SplitView: tema claro forçado para legibilidade (AIOX 10/10)
-   * Garante contraste e leitura mesmo quando o app está em dark mode.
-   * Alinhado ao design system Araúz (globals.css :root).
+  /* Dialog/Sheet/SplitView: fundo branco forçado (padrão AIOX 10/10)
+   * Garante fundo branco sólido em todos os cards, mesmo em dark mode.
    */
   .dialog-light-theme {
     --background: 0 0% 100%;
@@ -229,6 +228,13 @@
     --border: 220 13% 90%;
     --input: 220 13% 90%;
     --ring: 167 69% 18%;
+    /* Fundo branco sólido — evita transparência/escuro */
+    background-color: #ffffff !important;
+  }
+
+  .dialog-light-theme .scroll-area-viewport,
+  .dialog-light-theme [data-radix-scroll-area-viewport] {
+    background-color: #ffffff !important;
   }
 }
 

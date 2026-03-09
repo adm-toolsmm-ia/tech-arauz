@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, GitBranch } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
@@ -36,6 +37,7 @@ import {
   createNucleusAction,
   updateNucleusAction,
   deleteNucleusAction,
+  createProcessAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
 
@@ -60,7 +62,24 @@ const DEFAULT_FORM: NucleusFormData = {
   responsible_roles: '',
 };
 
+interface ProcessFormData {
+  area_id: string;
+  nucleus_id: string;
+  name: string;
+  description: string;
+  objective: string;
+}
+
+const DEFAULT_PROCESS_FORM: ProcessFormData = {
+  area_id: '',
+  nucleus_id: '',
+  name: '',
+  description: '',
+  objective: '',
+};
+
 export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentProps) {
+  const router = useRouter();
   const [nuclei, setNuclei] = React.useState<NucleusWithMeta[]>(initialNuclei);
   const [selectedNucleus, setSelectedNucleus] = React.useState<NucleusWithMeta | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
@@ -68,6 +87,10 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
   const [nucleusToDelete, setNucleusToDelete] = React.useState<NucleusWithMeta | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [formData, setFormData] = React.useState<NucleusFormData>(DEFAULT_FORM);
+
+  const [isProcessFormOpen, setIsProcessFormOpen] = React.useState(false);
+  const [processFormData, setProcessFormData] = React.useState<ProcessFormData>(DEFAULT_PROCESS_FORM);
+  const [isProcessLoading, setIsProcessLoading] = React.useState(false);
 
   const {
     filters,
@@ -216,6 +239,57 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
       toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
   }, [nucleusToDelete]);
+
+  const handleOpenCreateProcess = React.useCallback((nucleus: NucleusWithMeta) => {
+    setProcessFormData({
+      area_id: nucleus.area_id,
+      nucleus_id: nucleus.id,
+      name: '',
+      description: '',
+      objective: '',
+    });
+    setIsProcessFormOpen(true);
+  }, []);
+
+  const handleCreateProcess = React.useCallback(async () => {
+    if (!processFormData.name.trim()) {
+      toast.error('Nome é obrigatório');
+      return;
+    }
+    setIsProcessLoading(true);
+    try {
+      const result = await createProcessAction({
+        name: processFormData.name.trim(),
+        description: processFormData.description.trim() || null,
+        objective: processFormData.objective.trim() || null,
+        area_id: processFormData.area_id || null,
+        nucleus_id: processFormData.nucleus_id || null,
+        inputs: [],
+        outputs: [],
+        responsible_roles: [],
+        risks: [],
+        impacts: [],
+        documentation: {},
+      });
+      if (result.success && result.data) {
+        toast.success(result.message);
+        setProcessFormData(DEFAULT_PROCESS_FORM);
+        setIsProcessFormOpen(false);
+        router.refresh();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
+    } finally {
+      setIsProcessLoading(false);
+    }
+  }, [processFormData, router]);
+
+  const nucleiForProcessArea = React.useMemo(
+    () => nuclei.filter((n) => n.area_id === processFormData.area_id),
+    [nuclei, processFormData.area_id],
+  );
 
   const listAnnouncement = `Lista com ${filteredData.length} núcleo(s).`;
 
@@ -377,6 +451,7 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
                 areaId={selectedNucleus.area_id}
                 onEdit={() => handleOpenEdit(selectedNucleus)}
                 onDelete={() => setNucleusToDelete(selectedNucleus)}
+                onCreateProcess={() => handleOpenCreateProcess(selectedNucleus)}
               />
             )}
           </SplitView>
@@ -463,6 +538,98 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
             </Button>
             <Button onClick={editingNucleus ? handleUpdate : handleCreate} disabled={isLoading}>
               {editingNucleus ? 'Salvar' : 'Criar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Process Dialog (from Nucleus card) */}
+      <Dialog open={isProcessFormOpen} onOpenChange={setIsProcessFormOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Processo</DialogTitle>
+            <DialogDescription>
+              Crie um processo vinculado ao núcleo selecionado. Área e núcleo já estão
+              pré-preenchidos.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="process-area">Área</Label>
+              <Select
+                value={processFormData.area_id}
+                onValueChange={(v) =>
+                  setProcessFormData((p) => ({ ...p, area_id: v, nucleus_id: '' }))
+                }
+              >
+                <SelectTrigger id="process-area">
+                  <SelectValue placeholder="Selecione a área" />
+                </SelectTrigger>
+                <SelectContent>
+                  {areas.map((area) => (
+                    <SelectItem key={area.id} value={area.id}>
+                      {area.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="process-nucleus">Núcleo</Label>
+              <Select
+                value={processFormData.nucleus_id}
+                onValueChange={(v) => setProcessFormData((p) => ({ ...p, nucleus_id: v }))}
+              >
+                <SelectTrigger id="process-nucleus">
+                  <SelectValue placeholder="Selecione o núcleo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {nucleiForProcessArea.map((n) => (
+                    <SelectItem key={n.id} value={n.id}>
+                      {n.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="process-name">Nome *</Label>
+              <Input
+                id="process-name"
+                value={processFormData.name}
+                onChange={(e) => setProcessFormData((p) => ({ ...p, name: e.target.value }))}
+                placeholder="ex.: Ajuizamento de Ações"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="process-description">Descrição</Label>
+              <Textarea
+                id="process-description"
+                value={processFormData.description}
+                onChange={(e) =>
+                  setProcessFormData((p) => ({ ...p, description: e.target.value }))
+                }
+                placeholder="Descrição do processo"
+                rows={3}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="process-objective">Objetivo</Label>
+              <Textarea
+                id="process-objective"
+                value={processFormData.objective}
+                onChange={(e) => setProcessFormData((p) => ({ ...p, objective: e.target.value }))}
+                placeholder="Objetivo do processo"
+                rows={2}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsProcessFormOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateProcess} disabled={isProcessLoading}>
+              {isProcessLoading ? 'Criando...' : 'Criar'}
             </Button>
           </DialogFooter>
         </DialogContent>

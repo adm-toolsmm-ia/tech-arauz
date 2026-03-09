@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Building2, GitBranch, FileText, Users } from 'lucide-react';
+import { Building2, GitBranch, FileText, Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { OrgArea, OrgNucleus, OrgProcess } from '@/types/organization';
@@ -11,6 +11,7 @@ interface AreaCockpit360Props {
   nuclei: OrgNucleus[];
   processes: OrgProcess[];
   onEdit?: () => void;
+  onCreateNucleus?: () => void;
 }
 
 interface InfoFieldProps {
@@ -27,7 +28,13 @@ const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   );
 };
 
-export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({ area, nuclei, processes, onEdit }) => {
+export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
+  area,
+  nuclei,
+  processes,
+  onEdit,
+  onCreateNucleus,
+}) => {
   const rolesDisplay =
     area.responsible_roles?.length > 0 ? area.responsible_roles.join(', ') : 'Não definido';
 
@@ -92,16 +99,43 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({ area, nuclei, pr
             <p className="text-sm">{rolesDisplay}</p>
           </section>
 
-          {area.id && (
-            <Link href={`/organizacao/areas/${area.id}/nucleos`}>
-              <Button variant="secondary" className="w-full">
-                Ver Núcleos
+          <div className="flex flex-col gap-2">
+            {area.id && (
+              <Link href={`/organizacao/areas/${area.id}/nucleos`}>
+                <Button variant="secondary" className="w-full">
+                  Ver Núcleos
+                </Button>
+              </Link>
+            )}
+            {onCreateNucleus && (
+              <Button
+                variant="default"
+                className="w-full gap-2"
+                onClick={onCreateNucleus}
+                aria-label="Criar núcleo vinculado a esta área"
+              >
+                <Plus className="size-4" />
+                Novo Núcleo
               </Button>
-            </Link>
-          )}
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="nucleos" className="mt-6">
+          {onCreateNucleus && (
+            <div className="mb-4">
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-2"
+                onClick={onCreateNucleus}
+                aria-label="Criar núcleo vinculado a esta área"
+              >
+                <Plus className="size-4" />
+                Novo Núcleo
+              </Button>
+            </div>
+          )}
           {nuclei.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               Nenhum núcleo nesta área

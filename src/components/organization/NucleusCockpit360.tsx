@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { GitBranch, Building2, ExternalLink, Trash2, FileText, Users } from 'lucide-react';
+import { GitBranch, Building2, ExternalLink, Trash2, FileText, Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { OrgNucleus } from '@/types/organization';
@@ -11,6 +11,7 @@ interface NucleusCockpit360Props {
   areaId?: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  onCreateProcess?: () => void;
 }
 
 interface InfoFieldProps {
@@ -27,7 +28,13 @@ const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
   );
 };
 
-export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({ nucleus, areaId, onEdit, onDelete }) => {
+export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({
+  nucleus,
+  areaId,
+  onEdit,
+  onDelete,
+  onCreateProcess,
+}) => {
   const rolesDisplay =
     nucleus.responsible_roles?.length > 0 ? nucleus.responsible_roles.join(', ') : 'Não definido';
   const processesCount = nucleus.processes_count ?? 0;
@@ -96,9 +103,35 @@ export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({ nucleus, a
             </div>
             <p className="text-sm">{rolesDisplay}</p>
           </section>
+
+          {onCreateProcess && (
+            <Button
+              variant="default"
+              className="w-full gap-2"
+              onClick={onCreateProcess}
+              aria-label="Criar processo vinculado a este núcleo"
+            >
+              <Plus className="size-4" />
+              Novo Processo
+            </Button>
+          )}
         </TabsContent>
 
         <TabsContent value="vinculos" className="mt-6 space-y-3">
+          {onCreateProcess && (
+            <div className="mb-4">
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-2"
+                onClick={onCreateProcess}
+                aria-label="Criar processo vinculado a este núcleo"
+              >
+                <Plus className="size-4" />
+                Novo Processo
+              </Button>
+            </div>
+          )}
           <div className="flex flex-col gap-2">
             {areaId && (
               <Link href={`/organizacao/areas/${areaId}/nucleos`}>

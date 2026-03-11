@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { ConversasContent } from './conversas-content';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Chatbot AI - Tech Arauz',
   description: 'Histórico de todas as conversas com assistentes IA',

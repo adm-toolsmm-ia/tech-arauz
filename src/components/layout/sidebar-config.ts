@@ -26,11 +26,10 @@ import type { NavGroup, NavItem } from './sidebar-types';
 
 export const menuConfig: NavGroup[] = [
   {
-    group: 'Inteligência',
+    group: 'Dashboards',
     items: [
       { title: 'Dashboard Projetos', url: '/dashboard/projetos', icon: LayoutDashboard },
       { title: 'Dashboard Operações', url: '/dashboard/operacoes', icon: Activity },
-      { title: 'Documentação', url: '/documentacao', icon: FileText },
       // { title: 'Relatórios', url: '/relatorios', icon: FileText, badge: 'Em Breve' },
     ],
   },
@@ -47,6 +46,7 @@ export const menuConfig: NavGroup[] = [
         url: '/cronogramas',
         icon: CalendarDays,
       },
+      { title: 'Documentação', url: '/documentacao', icon: FileText },
     ],
   },
   {

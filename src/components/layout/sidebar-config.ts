@@ -50,6 +50,14 @@ export const menuConfig: NavGroup[] = [
     ],
   },
   {
+    group: 'Tecnologia & IA',
+    items: [
+      { title: 'Agentes & Skills', url: '/agentes', icon: Bot, badge: 'MVP' },
+      { title: 'Chatbot AI', url: '/conversas', icon: MessageSquare },
+      { title: 'Integrações', url: '/integracoes', icon: Plug },
+    ],
+  },
+  {
     group: 'Organização',
     items: [
       { title: 'Empresa', url: '/organizacao/empresa', icon: Building },
@@ -61,14 +69,6 @@ export const menuConfig: NavGroup[] = [
       { title: 'Fornecedores', url: '/organizacao/recursos?tab=fornecedores', icon: Truck },
       { title: 'Serviços', url: '/organizacao/recursos?tab=servicos', icon: Wrench },
       { title: 'Documentos', url: '/organizacao/recursos?tab=documentos', icon: FileText },
-    ],
-  },
-  {
-    group: 'Tecnologia & IA',
-    items: [
-      { title: 'Agentes AI', url: '/agentes', icon: Bot, badge: 'MVP' },
-      { title: 'Chatbot AI', url: '/conversas', icon: MessageSquare },
-      { title: 'Integrações', url: '/integracoes', icon: Plug },
     ],
   },
   {

@@ -208,9 +208,9 @@ EPIC 8 (Polish)
 ### Immediate Actions (This Week)
 
 1. **Read Documents**
-   - [ ] `FASE-10-IMPLEMENTATION-ROADMAP.md` (executive overview)
    - [ ] Individual epic files (5, 6, 7, 8)
    - [ ] Supporting findings (data gap, dashboard, chatbot)
+   - [ ] Reference: Framework planning docs archived in `_deprecated/stories/framework-evolution/`
 
 2. **Confirm Resources**
    - [ ] Confirm team availability (13 weeks)
@@ -236,11 +236,16 @@ EPIC 8 (Polish)
 ```
 docs/stories/
 ├── EPIC-INDEX.md ← You are here
-├── FASE-10-IMPLEMENTATION-ROADMAP.md (executive summary)
 ├── epic-5-foundation-phase-database-frontend.md
 ├── epic-6-system-hardening-type-safety-security.md
 ├── epic-7-quick-wins-strategic-initiatives.md
 └── epic-8-polish-optimization.md
+
+_deprecated/stories/
+├── completed/ (finished stories)
+├── logs/ (execution records)
+├── framework-evolution/ (FASE-10-11 metadocs)
+└── deprecated-versions/ (old story versions)
 
 docs/findings/
 ├── DATA-FETCHING-GAP-KANBAN-TEMPO-PERMANENCIA.md (input for 7.1)

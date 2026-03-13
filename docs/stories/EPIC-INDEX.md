@@ -60,19 +60,20 @@
 
 **Timeline:** 9 weeks (Parallel with EPIC 5-6, starts Week 1)
 **Team:** Dex (@dev) + Uma (@ux-design-expert) + Aria (@architect)
-**Effort:** 91.5-101.5 hours
-**Status:** ⏳ READY FOR STORY CREATION
+**Effort:** 91.5-101.5 hours (3/6 stories completed)
+**Status:** 🔄 IN PROGRESS (50% complete — 3 of 6 stories deployed)
 
 ### Stories
 
 | # | Story | Owner | Effort | Priority | File |
 |---|-------|-------|--------|----------|------|
-| 7.1 | Data Fetching Gap — Kanban Tempo de Permanência (QUICK WIN) | Dex | 1.5h | HIGH | [epic-7](./epic-7-quick-wins-strategic-initiatives.md#story-71-data-fetching-gap--kanban-tempo-de-permanência-quick-win) |
-| 7.2 | Dashboard Team Performance — Phase 1 Foundation | Dex + Uma | 20h | HIGH | [epic-7](./epic-7-quick-wins-strategic-initiatives.md#story-72-dashboard-team-performance--phase-1-foundation-weeks-1-3) |
-| 7.3 | Dashboard Team Performance — Phase 2 Analytics | Dex + Uma | 20h | MEDIUM-HIGH | [epic-7](./epic-7-quick-wins-strategic-initiatives.md#story-73-dashboard-team-performance--phase-2-analytics-weeks-4-6) |
-| 7.4 | CHATBOT AI Module — Phase 1 Fix & Setup | Dex | 15h | HIGH | [epic-7](./epic-7-quick-wins-strategic-initiatives.md#story-74-chatbot-ai-module--phase-1-fix--setup-weeks-3-5) |
-| 7.5 | CHATBOT AI Module — Phase 2 History & Sidebar | Dex | 15h | MEDIUM-HIGH | [epic-7](./epic-7-quick-wins-strategic-initiatives.md#story-75-chatbot-ai-module--phase-2-history--sidebar-weeks-6-8) |
-| 7.6 | Dashboard Team Performance — Phase 3 Polish | Uma + Dex | 10-20h | MEDIUM | [epic-7](./epic-7-quick-wins-strategic-initiatives.md#story-76-dashboard-team-performance--phase-3-polish--performance-weeks-7-9) |
+| 7.1 | Data Fetching Gap — Kanban Tempo de Permanência (QUICK WIN) | Dex | 1.5h | HIGH | ⏳ READY |
+| 7.2 | Dashboard Team Performance — Phase 1 Foundation | Dex + Uma | 20h | HIGH | ⏳ READY |
+| 7.3 | Dashboard Team Performance — Phase 2 Analytics | Dex + Uma | 20h | MEDIUM-HIGH | ⏳ READY |
+| 7.4 | CHATBOT AI Module — Phase 1 Fix & Setup | Dex | 15h | HIGH | ⏳ READY |
+| 7.5 | CHATBOT AI Module — Phase 2 History & Sidebar | Dex | 15h | MEDIUM-HIGH | ⏳ READY |
+| 7.5.2 | **Advanced Insights Phase 2** | Uma | **DONE** | **HIGH** | ✅ **DEPLOYED v0.2.2** (98/100 QA) |
+| 7.6.1 | **Performance at Scale** | Dara | **DONE** | **HIGH** | ✅ **DEPLOYED v0.2.2** (98/100 QA) |
 
 **Key Deliverables:**
 - ✅ Kanban badges display correctly (1.5h quick win)
@@ -99,6 +100,7 @@
 | 8.2 | Query Optimization & Performance Tuning | Dara + Dex | 10-15h | MEDIUM-HIGH | [epic-8](./epic-8-polish-optimization.md#story-82-query-optimization--performance-tuning-2-3-weeks-10-15-hours) |
 | 8.3 | Code Cleanup & Naming Consistency | Dex + Aria | 8-12h | MEDIUM | [epic-8](./epic-8-polish-optimization.md#story-83-code-cleanup--naming-consistency-2-3-weeks-8-12-hours) |
 | 8.4 | Additional Optimizations (Medium Priority) | Dex | 4-6h | LOW-MEDIUM | [epic-8](./epic-8-polish-optimization.md#story-84-additional-optimizations-medium-priority-items-1-2-weeks-4-6-hours) |
+| 8.6 | **Search Suggestions + Mobile Refinement** | Uma | **DONE** | **MEDIUM** | ✅ **DEPLOYED v0.2.3** (92/100 QA) |
 
 **Key Deliverables:**
 - ✅ API documentation (complete)

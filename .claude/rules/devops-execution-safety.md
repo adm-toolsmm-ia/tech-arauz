@@ -1,6 +1,6 @@
 ---
 paths:
-  - ".aios-core/**"
+  - ".aiox-core/**"
   - "bin/**"
   - ".github/**"
 ---
@@ -15,7 +15,7 @@ paths:
 
 ## Purpose
 
-Validation rules for command execution in the AIOS DevOps workflow. Catch dangerous operations before execution; enable audit trails; prevent data loss and security breaches.
+Validation rules for command execution in the AIOX DevOps workflow. Catch dangerous operations before execution; enable audit trails; prevent data loss and security breaches.
 
 ---
 

@@ -95,6 +95,10 @@ Interprete os atalhos abaixo carregando o arquivo correspondente em `.aiox-core/
 <!-- These sections are managed by AIOX. Edit content between markers carefully. -->
 <!-- Your custom content above will be preserved during updates. -->
 
+
+
+
+
 <!-- AIOX-MANAGED-START: core -->
 ## Core Rules
 

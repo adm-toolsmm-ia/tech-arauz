@@ -3,6 +3,7 @@
 Este arquivo define as instrucoes do projeto para Gemini CLI neste repositorio.
 
 <!-- AIOS-MANAGED-START: core -->
+
 ## Core Rules
 
 1. Siga a Constitution em `.aios-core/constitution.md`
@@ -12,6 +13,7 @@ Este arquivo define as instrucoes do projeto para Gemini CLI neste repositorio.
 <!-- AIOS-MANAGED-END: core -->
 
 <!-- AIOS-MANAGED-START: quality -->
+
 ## Quality Gates
 
 - Rode `npm run lint`
@@ -27,6 +29,7 @@ Este projeto usa PowerShell no Windows. Ao gerar ou executar comandos no termina
 - **Nunca use comandos Unix** (`head`, `tail`, `grep` como cmd, `cat`, `ls`); use PowerShell: `Select-Object -First N`, `Get-ChildItem`, `Get-Content`. Ver `configs/project.yaml` e `.agent/skills/powershell-windows/SKILL.md`.
 
 <!-- AIOS-MANAGED-START: codebase -->
+
 ## Project Map
 
 - Core framework: `.aios-core/`
@@ -37,6 +40,7 @@ Este projeto usa PowerShell no Windows. Ao gerar ou executar comandos no termina
 <!-- AIOS-MANAGED-END: codebase -->
 
 <!-- AIOS-MANAGED-START: gemini-integration -->
+
 ## Gemini Integration
 
 Fonte de verdade de agentes:
@@ -54,6 +58,7 @@ Sempre que houver drift, execute:
 <!-- AIOS-MANAGED-END: gemini-integration -->
 
 <!-- AIOS-MANAGED-START: parity -->
+
 ## Multi-IDE Parity
 
 Para garantir paridade entre Claude Code, Codex e Gemini:
@@ -62,6 +67,7 @@ Para garantir paridade entre Claude Code, Codex e Gemini:
 <!-- AIOS-MANAGED-END: parity -->
 
 <!-- AIOS-MANAGED-START: activation -->
+
 ## Agent Activation
 
 Preferencia de ativacao:
@@ -80,6 +86,7 @@ Atalhos recomendados no Gemini:
 <!-- AIOS-MANAGED-END: activation -->
 
 <!-- AIOS-MANAGED-START: commands -->
+
 ## Common Commands
 
 - `npm run sync:ide`

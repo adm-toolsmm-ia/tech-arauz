@@ -113,29 +113,83 @@
 
 ---
 
+## 📋 EPIC 9: Context Engineering ✅
+
+**Timeline:** 5 weeks (March 10 — April 14, 2026)
+**Team:** Dex (@dev) + Dara (@data-engineer) + Uma (@ux-design-expert) + Aria (@architect)
+**Effort:** ~90 hours (9 stories)
+**Status:** ✅ **COMPLETE** — Deployed v0.2.3 (Story 9.8 done)
+
+### Stories Summary
+
+| # | Story | Owner | Effort | Status |
+|---|-------|-------|--------|--------|
+| 9.1-9.7 | Bootstrap schema, 360º views, transformers | Dex + Dara + Uma | ~65h | ✅ DONE |
+| 9.8 | **toAIContext() transformer** | Dex | **DONE** | ✅ **DEPLOYED v0.2.3** (98/100 QA) |
+| 9.9.1-9.9.3 | **MOVED TO EPIC 10** (Refinement) | — | — | → See EPIC 10 below |
+
+**Key Deliverables (EPIC 9):**
+- ✅ Organization bootstrap schema (areas, nuclei, processes, routines, activities, systems, suppliers, services, documents)
+- ✅ RLS policies for all tables (ADR-001 compliance)
+- ✅ AI context transformers (toAIContext)
+- ✅ 360º views for all entities (Cockpit360 components)
+- ✅ v0.2.3 deployed to production
+
+---
+
+## 📋 EPIC 10: Organization Knowledge Graph Refinement & Synchronization
+
+**Timeline:** 2-3 weeks (March 14 — March 28, 2026)
+**Team:** Dex (@dev) + Dara (@data-engineer) + Uma (@ux-design-expert) + Aria (@architect)
+**Effort:** 25-33 hours (3 stories)
+**Status:** 🆕 **READY FOR STORY CREATION** (Predecessor: EPIC 9 ✅)
+
+### Stories
+
+| # | Story | Owner | Effort | Priority | File |
+|---|-------|-------|--------|----------|------|
+| 10.1 | Add responsible_roles to Database (suppliers, services, documents) | Dara | 5-7h | **CRITICAL** | [epic-10](./epic-10-org-knowledge-graph-refinement.md#story-101-add-responsible_roles-to-database) |
+| 10.2 | Redesign Responsible Roles UI (tags + autocomplete) | Uma + Dex | 12-16h | **HIGH** | [epic-10](./epic-10-org-knowledge-graph-refinement.md#story-102-redesign-responsible-roles-ui-component) |
+| 10.3 | Synchronize Field Display in ProcessCockpit360 | Dex + Uma | 8-10h | **HIGH** | [epic-10](./epic-10-org-knowledge-graph-refinement.md#story-103-synchronize-field-display-in-processcockpit360) |
+
+**Key Deliverables:**
+- ✅ Schema synchronized: responsible_roles added to suppliers, services, documents
+- ✅ Unified UI component for responsible party management (tags, autocomplete)
+- ✅ ProcessCockpit360 displays all fields (inputs, outputs, risks, impacts)
+- ✅ All 360º views support full CRUD from Company module
+- ✅ AI context engineering: role enums and patterns defined
+- ✅ IDS registry entries for all new components
+- ✅ Full test coverage (>90%)
+
+---
+
 ## 📊 Summary Metrics
 
 ### Total Program
 
 | Metric | Value |
 |--------|-------|
-| **Total Stories** | 18 |
-| **Total Effort** | 245-310 hours |
-| **Total Timeline** | 13 weeks (March 10 — June 30, 2026) |
+| **Total Stories** | 21 (18 main + 3 refinement in EPIC 10) |
+| **Total Epics** | 6 (EPIC 5-10) |
+| **Total Effort** | 280-360 hours |
+| **Total Timeline** | 15 weeks (March 10 — June 30, 2026) |
 | **Team Size** | 5 people |
-| **Avg/Week Capacity** | 19-24 hours |
-| **Quality Improvement** | 8.5/10 → 9.2/10 |
+| **Avg/Week Capacity** | 18-24 hours |
+| **Quality Improvement** | 8.5/10 → 9.5/10 |
 | **Performance Gain** | 20-50% query improvement |
 | **Team Velocity Gain** | 25% faster feature development |
+| **Org Knowledge Graph** | Complete & synchronized |
 
 ### By Epic
 
-| Epic | Stories | Hours | Weeks | Priority |
-|------|---------|-------|-------|----------|
-| **EPIC 5** | 5 | 36-47.5 | 3 | CRITICAL |
-| **EPIC 6** | 3 | 40-58 | 4-6 | CRITICAL |
-| **EPIC 7** | 6 | 91.5-101.5 | 9 | HIGH |
-| **EPIC 8** | 4 | 30-45 | 2-3 | MEDIUM |
+| Epic | Stories | Hours | Weeks | Priority | Status |
+|------|---------|-------|-------|----------|--------|
+| **EPIC 5** | 5 | 36-47.5 | 3 | CRITICAL | ⏳ READY |
+| **EPIC 6** | 3 | 40-58 | 4-6 | CRITICAL | ⏳ READY |
+| **EPIC 7** | 6 | 91.5-101.5 | 9 | HIGH | 🔄 IN PROGRESS |
+| **EPIC 8** | 4 | 30-45 | 2-3 | MEDIUM | ⏳ READY |
+| **EPIC 9** | 9 | ~90h | 5 | HIGH | ✅ **COMPLETE** |
+| **EPIC 10** | 3 | 25-33h | 2-3 | **HIGH** | 🆕 **READY** |
 
 ### By Owner
 

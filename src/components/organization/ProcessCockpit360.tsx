@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 import { GitBranch, FileText, ClipboardList, Users, Monitor, Plus, Unlink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -13,49 +15,60 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { InfoField, OrgEntityCard } from '@/components/organization/shared';
 import { BpmDocumentationPanel } from '@/components/organization/BpmDocumentationPanel';
 import type { OrgProcess, OrgRoutine, OrgSystem } from '@/types/organization';
+import { getRoutinesByProcess } from '@/app/actions/organization';
 
 interface ProcessCockpit360Props {
   process: OrgProcess;
   areaName?: string;
   nucleusName?: string;
-  routines: OrgRoutine[];
+  routines?: OrgRoutine[];
   systems?: OrgSystem[];
   allSystems?: OrgSystem[];
   onEdit?: () => void;
   onDelete?: () => void;
+  onCreateRoutine?: () => void;
+  onSelectRoutine?: (routine: OrgRoutine) => void;
   onLinkSystem?: (systemId: string) => void;
   onUnlinkSystem?: (systemId: string, systemName: string) => void;
 }
-
-interface InfoFieldProps {
-  label: string;
-  value: string | null | undefined;
-}
-
-const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
-  return (
-    <div className="space-y-1">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium">{value || '-'}</p>
-    </div>
-  );
-};
 
 export function ProcessCockpit360({
   process,
   areaName,
   nucleusName,
-  routines,
+  routines: initialRoutines = [],
   systems = [],
   allSystems = [],
   onEdit,
   onDelete,
+  onCreateRoutine,
+  onSelectRoutine,
   onLinkSystem,
   onUnlinkSystem,
 }: ProcessCockpit360Props) {
   const router = useRouter();
+  const [routines, setRoutines] = useState<OrgRoutine[]>(initialRoutines);
+  const [loadingRoutines, setLoadingRoutines] = useState(false);
+
+  useEffect(() => {
+    if (!process?.id) return;
+
+    setLoadingRoutines(true);
+    (async () => {
+      try {
+        const result = await getRoutinesByProcess(process.id);
+        setRoutines(result || []);
+      } catch (error) {
+        console.error('Erro ao carregar rotinas:', error);
+      } finally {
+        setLoadingRoutines(false);
+      }
+    })();
+  }, [process?.id]);
+
   const rolesDisplay =
     process.responsible_roles?.length > 0 ? process.responsible_roles.join(', ') : 'Não definido';
 
@@ -143,36 +156,40 @@ export function ProcessCockpit360({
             documentation={process.documentation}
             showSourceBadge={!!(process.documentation as { source?: string })?.source}
           />
-
-          {process.id && (
-            <Link href={`/organizacao/processos/${process.id}/rotinas`}>
-              <Button variant="secondary" className="w-full">
-                Ver Rotinas
-              </Button>
-            </Link>
-          )}
         </TabsContent>
 
-        <TabsContent value="rotinas" className="mt-6">
-          {routines.length === 0 ? (
+        <TabsContent value="rotinas" className="mt-6 space-y-3">
+          {onCreateRoutine && (
+            <div className="mb-4">
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-2"
+                onClick={onCreateRoutine}
+                aria-label="Criar rotina vinculada a este processo"
+              >
+                <Plus className="size-4" />
+                Nova Rotina
+              </Button>
+            </div>
+          )}
+
+          {loadingRoutines ? (
+            <Skeleton className="h-20" />
+          ) : routines.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               Nenhuma rotina cadastrada
             </div>
           ) : (
             <div className="space-y-3">
               {routines.map((r) => (
-                <Link key={r.id} href={`/organizacao/processos/${process.id}/rotinas`}>
-                  <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
-                    <div>
-                      <p className="text-sm font-medium">{r.name}</p>
-                      {r.description && (
-                        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                          {r.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Link>
+                <OrgEntityCard
+                  key={r.id}
+                  title={r.name}
+                  subtitle={r.description ?? undefined}
+                  badge={`${r.activities_count || 0} atividades`}
+                  onClick={() => onSelectRoutine?.(r)}
+                />
               ))}
             </div>
           )}

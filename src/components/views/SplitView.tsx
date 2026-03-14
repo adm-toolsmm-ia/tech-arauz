@@ -15,6 +15,8 @@ interface SplitViewProps {
   className?: string;
   width?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'wide';
   healthStatus?: 'verde' | 'amarelo' | 'vermelho';
+  onContextPanelOpen?: (depth: number) => void;
+  contextDepth?: number;
 }
 
 const widthClasses = {
@@ -43,7 +45,11 @@ export function SplitView({
   className,
   width = 'lg',
   healthStatus,
+  onContextPanelOpen,
+  contextDepth = 0,
 }: SplitViewProps) {
+  // Dynamic z-index based on context depth
+  const zIndexClass = contextDepth > 0 ? `z-[${50 - contextDepth}]` : 'z-50';
   // Handle escape key
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -82,10 +88,13 @@ export function SplitView({
         aria-labelledby="split-view-title"
         aria-describedby={subtitle ? 'split-view-subtitle' : undefined}
         className={cn(
-          'dialog-light-theme animate-slide-in-right fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-border bg-white shadow-lg',
+          'dialog-light-theme animate-slide-in-right fixed inset-y-0 right-0 flex w-full flex-col border-l border-border bg-white shadow-lg',
           widthClasses[width],
           className,
         )}
+        style={{
+          zIndex: 50 - contextDepth,
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">

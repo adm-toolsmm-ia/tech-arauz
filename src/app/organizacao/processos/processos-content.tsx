@@ -26,7 +26,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SplitView } from '@/components/views/SplitView';
+import { ContextPanel } from '@/components/views/ContextPanel';
 import { ProcessCockpit360 } from '@/components/organization/ProcessCockpit360';
+import { RoutineCockpit360 } from '@/components/organization/RoutineCockpit360';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   createProcessAction,
@@ -79,6 +81,7 @@ export function ProcessosContent({
   const router = useRouter();
   const [processes, setProcesses] = React.useState<OrgProcess[]>(initialProcesses);
   const [selectedProcess, setSelectedProcess] = React.useState<OrgProcess | null>(null);
+  const [selectedRoutine, setSelectedRoutine] = React.useState<OrgRoutine | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [editingProcess, setEditingProcess] = React.useState<OrgProcess | null>(null);
   const [processToDelete, setProcessToDelete] = React.useState<OrgProcess | null>(null);
@@ -313,7 +316,10 @@ export function ProcessosContent({
 
         <SplitView
           isOpen={!!selectedProcess}
-          onClose={() => setSelectedProcess(null)}
+          onClose={() => {
+            setSelectedProcess(null);
+            setSelectedRoutine(null);
+          }}
           title={selectedProcess?.name ?? ''}
           subtitle={
             selectedProcess
@@ -326,6 +332,7 @@ export function ProcessosContent({
               : undefined
           }
           width="lg"
+          contextDepth={selectedRoutine ? 1 : 0}
         >
           {selectedProcess && (
             <ProcessCockpit360
@@ -339,6 +346,7 @@ export function ProcessosContent({
               allSystems={systems}
               onEdit={() => handleOpenEdit(selectedProcess)}
               onDelete={() => setProcessToDelete(selectedProcess)}
+              onSelectRoutine={setSelectedRoutine}
               onLinkSystem={(systemId) =>
                 handleLinkProcessSystem(selectedProcess.id, systemId)
               }
@@ -352,6 +360,37 @@ export function ProcessosContent({
             />
           )}
         </SplitView>
+
+        <ContextPanel
+          isOpen={!!selectedRoutine}
+          onClose={() => setSelectedRoutine(null)}
+          title={selectedRoutine?.name ?? ''}
+          subtitle={selectedRoutine?.objective ?? undefined}
+          breadcrumb={
+            selectedProcess && selectedRoutine
+              ? [
+                  {
+                    label: selectedProcess.name,
+                    onClick: () => setSelectedRoutine(null),
+                  },
+                  {
+                    label: selectedRoutine.name,
+                    isCurrent: true,
+                  },
+                ]
+              : undefined
+          }
+          depth={2}
+        >
+          {selectedRoutine && (
+            <RoutineCockpit360
+              routine={selectedRoutine}
+              onCreateActivity={() => {
+                // TODO: Integrate with FormSheet in Story 9.6
+              }}
+            />
+          )}
+        </ContextPanel>
       </div>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

@@ -31,6 +31,7 @@ export interface OrgNucleus {
   created_at: string;
   updated_at: string;
   area?: OrgArea | null;
+  processes_count?: number;
 }
 
 export interface OrgProcess {
@@ -65,6 +66,7 @@ export interface OrgRoutine {
   created_at: string;
   updated_at: string;
   process?: OrgProcess | null;
+  activities_count?: number;
 }
 
 export interface OrgActivity {

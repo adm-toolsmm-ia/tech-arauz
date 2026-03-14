@@ -827,6 +827,69 @@ const ESCRITORIO_JURIDICO_AREAS = [
   },
 ];
 
+// Query functions for hierarchical navigation
+export async function getRoutinesByProcess(processId: string): Promise<OrgRoutine[]> {
+  'use server';
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.tenant_id) return [];
+
+  const { data, error } = await supabase
+    .from('org_routines')
+    .select('*')
+    .eq('tenant_id', profile.tenant_id)
+    .eq('process_id', processId);
+
+  if (error) {
+    console.error('Erro ao carregar rotinas:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+export async function getActivitiesByRoutine(routineId: string): Promise<OrgActivity[]> {
+  'use server';
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.tenant_id) return [];
+
+  const { data, error } = await supabase
+    .from('org_activities')
+    .select('*')
+    .eq('tenant_id', profile.tenant_id)
+    .eq('routine_id', routineId);
+
+  if (error) {
+    console.error('Erro ao carregar atividades:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
 export async function runBootstrapAction(
   companyTypeSlug: string,
 ): Promise<OrgActionResult<{ areasCreated: number }>> {

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Building2, GitBranch, FileText, Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { InfoField, OrgEntityCard } from '@/components/organization/shared';
 import type { OrgArea, OrgNucleus, OrgProcess } from '@/types/organization';
 
 interface AreaCockpit360Props {
@@ -12,21 +13,8 @@ interface AreaCockpit360Props {
   processes: OrgProcess[];
   onEdit?: () => void;
   onCreateNucleus?: () => void;
+  onSelectNucleus?: (nucleus: OrgNucleus) => void;
 }
-
-interface InfoFieldProps {
-  label: string;
-  value: string | null | undefined;
-}
-
-const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
-  return (
-    <div className="space-y-1">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium">{value || '-'}</p>
-    </div>
-  );
-};
 
 export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
   area,
@@ -34,6 +22,7 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
   processes,
   onEdit,
   onCreateNucleus,
+  onSelectNucleus,
 }) => {
   const rolesDisplay =
     area.responsible_roles?.length > 0 ? area.responsible_roles.join(', ') : 'Não definido';
@@ -99,29 +88,20 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
             <p className="text-sm">{rolesDisplay}</p>
           </section>
 
-          <div className="flex flex-col gap-2">
-            {area.id && (
-              <Link href={`/organizacao/areas/${area.id}/nucleos`}>
-                <Button variant="secondary" className="w-full">
-                  Ver Núcleos
-                </Button>
-              </Link>
-            )}
-            {onCreateNucleus && (
-              <Button
-                variant="default"
-                className="w-full gap-2"
-                onClick={onCreateNucleus}
-                aria-label="Criar núcleo vinculado a esta área"
-              >
-                <Plus className="size-4" />
-                Novo Núcleo
-              </Button>
-            )}
-          </div>
+          {onCreateNucleus && (
+            <Button
+              variant="default"
+              className="w-full gap-2"
+              onClick={onCreateNucleus}
+              aria-label="Criar núcleo vinculado a esta área"
+            >
+              <Plus className="size-4" />
+              Novo Núcleo
+            </Button>
+          )}
         </TabsContent>
 
-        <TabsContent value="nucleos" className="mt-6">
+        <TabsContent value="nucleos" className="mt-6 space-y-3">
           {onCreateNucleus && (
             <div className="mb-4">
               <Button
@@ -143,18 +123,16 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
           ) : (
             <div className="space-y-3">
               {nuclei.map((n) => (
-                <Link key={n.id} href={`/organizacao/areas/${area.id}/nucleos`}>
-                  <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
-                    <div>
-                      <p className="text-sm font-medium">{n.name}</p>
-                      {n.description && (
-                        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                          {n.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Link>
+                <OrgEntityCard
+                  key={n.id}
+                  title={n.name}
+                  subtitle={n.objective ?? undefined}
+                  badge={`${n.processes_count || 0} processos`}
+                  meta={{
+                    roles: n.responsible_roles?.length || 0,
+                  }}
+                  onClick={() => onSelectNucleus?.(n)}
+                />
               ))}
             </div>
           )}

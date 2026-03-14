@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { GitBranch, Building2, ExternalLink, Trash2, FileText, Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { InfoField } from '@/components/organization/shared';
 import type { OrgNucleus } from '@/types/organization';
 
 interface NucleusCockpit360Props {
@@ -12,21 +13,8 @@ interface NucleusCockpit360Props {
   onEdit?: () => void;
   onDelete?: () => void;
   onCreateProcess?: () => void;
+  onSelectProcess?: (process: any) => void;
 }
-
-interface InfoFieldProps {
-  label: string;
-  value: string | null | undefined;
-}
-
-const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
-  return (
-    <div className="space-y-1">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium">{value || '-'}</p>
-    </div>
-  );
-};
 
 export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({
   nucleus,
@@ -34,6 +22,7 @@ export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({
   onEdit,
   onDelete,
   onCreateProcess,
+  onSelectProcess,
 }) => {
   const rolesDisplay =
     nucleus.responsible_roles?.length > 0 ? nucleus.responsible_roles.join(', ') : 'Não definido';
@@ -132,22 +121,14 @@ export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({
               </Button>
             </div>
           )}
-          <div className="flex flex-col gap-2">
-            {areaId && (
-              <Link href={`/organizacao/areas/${areaId}/nucleos`}>
-                <Button variant="secondary" className="w-full justify-start gap-2">
-                  <Building2 className="size-4" />
-                  Ver Área
-                </Button>
-              </Link>
-            )}
+          {processesCount > 0 && (
             <Link href={`/organizacao/processos?nucleus_id=${nucleus.id}`}>
               <Button variant="secondary" className="w-full justify-start gap-2">
                 <GitBranch className="size-4" />
                 Processos ({processesCount})
               </Button>
             </Link>
-          </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

@@ -28,7 +28,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { SplitView } from '@/components/views/SplitView';
+import { ContextPanel } from '@/components/views/ContextPanel';
 import { AreaCockpit360 } from '@/components/organization/AreaCockpit360';
+import { NucleusCockpit360 } from '@/components/organization/NucleusCockpit360';
+import { ProcessCockpit360 } from '@/components/organization/ProcessCockpit360';
+import { RoutineCockpit360 } from '@/components/organization/RoutineCockpit360';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AreasCardView } from './components/AreasCardView';
 import { AreasKanbanView } from './components/AreasKanbanView';
@@ -41,7 +45,7 @@ import {
   createNucleusAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
-import type { OrgArea } from '@/types/organization';
+import type { OrgArea, OrgNucleus, OrgProcess, OrgRoutine } from '@/types/organization';
 import { Building2 } from 'lucide-react';
 
 interface AreasContentProps {
@@ -89,6 +93,9 @@ export function AreasContent({
   const router = useRouter();
   const [areas, setAreas] = React.useState<OrgArea[]>(initialAreas);
   const [selectedArea, setSelectedArea] = React.useState<OrgArea | null>(null);
+  const [selectedNucleus, setSelectedNucleus] = React.useState<OrgNucleus | null>(null);
+  const [selectedProcess, setSelectedProcess] = React.useState<OrgProcess | null>(null);
+  const [selectedRoutine, setSelectedRoutine] = React.useState<OrgRoutine | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [editingArea, setEditingArea] = React.useState<OrgArea | null>(null);
   const [areaToDelete, setAreaToDelete] = React.useState<OrgArea | null>(null);
@@ -306,6 +313,22 @@ export function AreasContent({
 
   const listAnnouncement = `Lista com ${filteredData.length} área(s).`;
 
+  // State management with invariant: closing parent resets children
+  const handleSelectNucleus = (nucleus: OrgNucleus | null) => {
+    setSelectedNucleus(nucleus);
+    if (!nucleus) {
+      setSelectedProcess(null);
+      setSelectedRoutine(null);
+    }
+  };
+
+  const handleSelectProcess = (process: OrgProcess | null) => {
+    setSelectedProcess(process);
+    if (!process) {
+      setSelectedRoutine(null);
+    }
+  };
+
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
@@ -460,10 +483,14 @@ export function AreasContent({
 
           <SplitView
             isOpen={!!selectedArea}
-            onClose={() => setSelectedArea(null)}
+            onClose={() => {
+              setSelectedArea(null);
+              handleSelectNucleus(null);
+            }}
             title={selectedArea?.name ?? ''}
             subtitle={selectedArea ? `${selectedArea.nuclei_count ?? 0} núcleo(s)` : undefined}
             width="wide"
+            contextDepth={selectedNucleus ? 1 : 0}
           >
             {selectedArea && (
               <AreaCockpit360
@@ -472,9 +499,115 @@ export function AreasContent({
                 processes={linkedData.processesByAreaId[selectedArea.id] ?? []}
                 onEdit={() => handleOpenEdit(selectedArea)}
                 onCreateNucleus={() => handleOpenCreateNucleus(selectedArea)}
+                onSelectNucleus={handleSelectNucleus}
               />
             )}
           </SplitView>
+
+          <ContextPanel
+            isOpen={!!selectedNucleus}
+            onClose={() => handleSelectNucleus(null)}
+            title={selectedNucleus?.name ?? ''}
+            subtitle={selectedNucleus?.objective ?? undefined}
+            breadcrumb={
+              selectedArea && selectedNucleus
+                ? [
+                    {
+                      label: selectedArea.name,
+                      onClick: () => handleSelectNucleus(null),
+                    },
+                    {
+                      label: selectedNucleus.name,
+                      isCurrent: true,
+                    },
+                  ]
+                : undefined
+            }
+            depth={1}
+          >
+            {selectedNucleus && (
+              <NucleusCockpit360
+                nucleus={selectedNucleus}
+                areaId={selectedArea?.id}
+                onSelectProcess={handleSelectProcess}
+                onCreateProcess={() => {
+                  // TODO: Integrate with FormSheet in Story 9.6
+                }}
+              />
+            )}
+          </ContextPanel>
+
+          <ContextPanel
+            isOpen={!!selectedProcess}
+            onClose={() => handleSelectProcess(null)}
+            title={selectedProcess?.name ?? ''}
+            subtitle={selectedProcess?.objective ?? undefined}
+            breadcrumb={
+              selectedArea && selectedNucleus && selectedProcess
+                ? [
+                    {
+                      label: selectedArea.name,
+                      onClick: () => handleSelectNucleus(null),
+                    },
+                    {
+                      label: selectedNucleus.name,
+                      onClick: () => handleSelectProcess(null),
+                    },
+                    {
+                      label: selectedProcess.name,
+                      isCurrent: true,
+                    },
+                  ]
+                : undefined
+            }
+            depth={2}
+          >
+            {selectedProcess && (
+              <ProcessCockpit360
+                process={selectedProcess}
+                onSelectRoutine={setSelectedRoutine}
+              />
+            )}
+          </ContextPanel>
+
+          <ContextPanel
+            isOpen={!!selectedRoutine}
+            onClose={() => setSelectedRoutine(null)}
+            title={selectedRoutine?.name ?? ''}
+            subtitle={selectedRoutine?.objective ?? undefined}
+            breadcrumb={
+              selectedArea && selectedNucleus && selectedProcess && selectedRoutine
+                ? [
+                    {
+                      label: selectedArea.name,
+                      onClick: () => handleSelectNucleus(null),
+                    },
+                    {
+                      label: selectedNucleus.name,
+                      onClick: () => handleSelectProcess(null),
+                    },
+                    {
+                      label: selectedProcess.name,
+                      onClick: () => setSelectedRoutine(null),
+                    },
+                    {
+                      label: selectedRoutine.name,
+                      isCurrent: true,
+                    },
+                  ]
+                : undefined
+            }
+            depth={3}
+          >
+            {selectedRoutine && (
+              <RoutineCockpit360
+                routine={selectedRoutine}
+                onCreateActivity={() => {
+                  // TODO: Integrate with FormSheet in Story 9.6
+                }}
+              />
+            )}
+          </ContextPanel>
         </div>
       </div>
 

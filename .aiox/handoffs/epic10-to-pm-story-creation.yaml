@@ -1,0 +1,155 @@
+---
+handoff:
+  from_agent: "aiox-master (Orion)"
+  to_agent: "pm (Morgan)"
+  command: "*create-story"
+  timestamp: "2026-03-14T00:00:00Z"
+  consumed: true
+
+context:
+  epic_id: "EPIC-10"
+  epic_name: "Organization Knowledge Graph Refinement & Synchronization"
+  epic_file: "docs/stories/epic-10-org-knowledge-graph-refinement.md"
+  epic_status: "READY FOR STORY CREATION"
+  predecessor: "EPIC 9 (Context Engineering) ✅ Deployed v0.2.3"
+
+  timeline:
+    start_date: "2026-03-14"
+    end_date: "2026-03-28"
+    duration_weeks: 2-3
+    total_effort_hours: 25-33
+
+  team:
+    lead: "Dex (@dev) + Dara (@data-engineer) + Uma (@ux-design-expert) + Aria (@architect)"
+    qa_owner: "Quinn (@qa)"
+    product_owner: "Pax (@po) - requires validation"
+
+  git_info:
+    branch: "main"
+    last_commit: "3e57c13 (EPIC 10 creation)"
+    changes: "docs/stories/epic-10-org-knowledge-graph-refinement.md, docs/stories/EPIC-INDEX.md"
+
+stories:
+  - story_id: "10.1"
+    title: "Add responsible_roles to Database (Suppliers, Services, Documents)"
+    owner: "Dara (@data-engineer)"
+    effort_hours: "5-7"
+    priority: "CRITICAL"
+    type: "Database Schema"
+    description: |
+      Add responsible_roles JSONB column to org_suppliers, org_services, org_documents.
+      Create GIN indexes. Update RLS policies. Update TypeScript types.
+      Update action creators to support responsible_roles in payloads.
+    file_reference: "epic-10-org-knowledge-graph-refinement.md#story-101"
+
+  - story_id: "10.2"
+    title: "Redesign Responsible Roles UI Component (Tags + Autocomplete)"
+    owner: "Uma (@ux-design-expert) + Dex (@dev)"
+    effort_hours: "12-16"
+    priority: "HIGH"
+    type: "Frontend Component"
+    description: |
+      Create ResponsibleRolesInput component with tags + autocomplete.
+      Create role registry (src/lib/organization/role-definitions.ts).
+      Integrate in OrgEntityFormSheet for all entity types.
+      Implement keyboard navigation, accessibility (WCAG AA), responsiveness.
+    file_reference: "epic-10-org-knowledge-graph-refinement.md#story-102"
+
+  - story_id: "10.3"
+    title: "Synchronize Field Display in ProcessCockpit360"
+    owner: "Dex (@dev) + Uma (@ux-design-expert)"
+    effort_hours: "8-10"
+    priority: "HIGH"
+    type: "Frontend Display"
+    description: |
+      Add 'Detalhes' tab to ProcessCockpit360 displaying:
+      - inputs, outputs, risks, impacts (structured lists)
+      Edit button integrates with OrgEntityFormSheet.
+      RLS validation. Regression testing.
+    file_reference: "epic-10-org-knowledge-graph-refinement.md#story-103"
+
+dependencies:
+  - story_id: "10.1"
+    blocks: ["10.2", "10.3"]
+    reason: "Types and migrations needed for UI and display"
+
+  - story_id: "10.2"
+    blocks: ["10.3"]
+    reason: "ResponsibleRolesInput component used in ProcessCockpit360"
+
+workflow:
+  phase: "Story Creation"
+  next_steps:
+    - "1. @pm: Review EPIC-10 document (epic-10-org-knowledge-graph-refinement.md)"
+    - "2. @pm: *create-story for 10.1, 10.2, 10.3 (using @sm delegation pattern)"
+    - "3. @po: *validate-story-draft for each story (10-point checklist)"
+    - "4. @dev: *develop story-X.X.X (SDC workflow)"
+    - "5. @qa: *qa-gate per story (7 quality checks)"
+    - "6. @devops: *push (git push + PR merge when all ready)"
+
+quality_gates:
+  - "Lint: 0 errors, 0 warnings"
+  - "Typecheck: 0 errors"
+  - "Tests: >90% coverage, all passing"
+  - "CodeRabbit: CRITICAL issues resolved"
+  - "File List: complete, accurate"
+  - "No breaking changes (or migrations handled)"
+  - "RLS validated (DB changes)"
+
+deliverables:
+  - "responsible_roles added to 3 tables (suppliers, services, documents)"
+  - "ResponsibleRolesInput component (tags, autocomplete, A11y)"
+  - "Role registry with extensible pattern"
+  - "ProcessCockpit360 displays all fields (inputs, outputs, risks, impacts)"
+  - "AI context engineering: role enums for agent prompts"
+  - "Full test coverage (>90%)"
+  - "Documentation updates"
+
+blockers:
+  - "None identified"
+
+decisions:
+  - "EPIC 10 is NEW EPIC (not Stories 9.9.x) due to different timeline + SDC cycle"
+  - "Stories executed sequentially (10.1 → 10.2 → 10.3) due to dependencies"
+  - "Parallel work possible: 10.1 + 10.2 can START together (after 10.1 types finalized)"
+  - "Role registry pattern: extensible, can add roles via config (defer DB-driven roles to future epic)"
+
+architecture_notes:
+  - "Follows existing EPIC 9 patterns (schema, types, RLS)"
+  - "Component reuses shadcn/ui + Command (no external autocomplete library)"
+  - "Maintains ADR-001 compliance (RLS: USING true, WITH CHECK true)"
+  - "Backward compatible: existing records load without errors"
+
+ai_context:
+  - "AI agents will use role enums from ORGANIZATION_ROLES constant"
+  - "Role categories: management, specialist, operational, external"
+  - "Future: Load roles from DB for dynamic role management (defer to EPIC 11)"
+  - "Type safety: RoleValue type constrains agents to valid roles"
+
+references:
+  - epic_file: "docs/stories/epic-10-org-knowledge-graph-refinement.md"
+  - epic_index: "docs/stories/EPIC-INDEX.md"
+  - predecessor_epic: "docs/stories/epic-9-context-engineering-sync.md" (remove - use epic-10)
+  - adjustment_reference: "EPIC-9-ADJUSTMENT-001 (Company module edit button sync) ✅"
+
+notes_for_pm:
+  - "EPIC 9 is COMPLETE (Story 9.8 deployed v0.2.3 with 98/100 QA score)"
+  - "EPIC 10 is REFINEMENT phase to complete frontend-backend sync"
+  - "Timeline is TIGHT: 2-3 weeks for 25-33 hours across 3 stories"
+  - "Critical path: 10.1 must complete before 10.2/10.3 can finish"
+  - "All stories use AIOX Story Development Cycle (SDC)"
+  - "Follow @sm delegation for *create-story (Scrum Master creates stories)"
+  - "Quality gates are STRICT (Constitution Article V: Quality First)"
+
+hand_off_to:
+  agent: "Morgan (@pm)"
+  task: "Create 3 stories (10.1, 10.2, 10.3) in AIOX format"
+  command: "*create-story"
+  mode: "Guided (consult with @architect, @ux-design-expert on specs)"
+  escalation_contact: "Orion (@aiox-master) if blockers arise"
+
+co_authored_by:
+  - "Orion (@aiox-master)"
+  - "Claude Haiku 4.5 (AIOX Framework)"
+
+created_date: "2026-03-14"

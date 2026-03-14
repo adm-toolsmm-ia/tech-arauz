@@ -116,6 +116,7 @@ export interface OrgSupplier {
   tenant_id: string;
   name: string;
   description: string | null;
+  responsible_roles: string[];
   created_at: string;
   updated_at: string;
 }
@@ -125,6 +126,7 @@ export interface OrgService {
   tenant_id: string;
   name: string;
   description: string | null;
+  responsible_roles: string[];
   created_at: string;
   updated_at: string;
 }
@@ -136,6 +138,7 @@ export interface OrgDocument {
   type: string | null;
   description: string | null;
   associated_process_id: string | null;
+  responsible_roles: string[];
   created_at: string;
   updated_at: string;
   process?: OrgProcess | null;

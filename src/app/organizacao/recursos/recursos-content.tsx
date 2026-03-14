@@ -285,6 +285,7 @@ export function RecursosContent({
             const result = await createSupplierAction({
               name: formData.name.trim(),
               description: formData.description.trim() || null,
+              responsible_roles: [],
             });
             if (result.success && result.data) {
               setSuppliers((prev) => [...prev, result.data!]);
@@ -298,6 +299,7 @@ export function RecursosContent({
             const result = await createServiceAction({
               name: formData.name.trim(),
               description: formData.description.trim() || null,
+              responsible_roles: [],
             });
             if (result.success && result.data) {
               setServices((prev) => [...prev, result.data!]);
@@ -313,6 +315,7 @@ export function RecursosContent({
               type: formData.type.trim() || null,
               description: formData.description.trim() || null,
               associated_process_id: formData.associated_process_id || null,
+              responsible_roles: [],
             });
             if (result.success && result.data) {
               setDocuments((prev) => [...prev, result.data!]);

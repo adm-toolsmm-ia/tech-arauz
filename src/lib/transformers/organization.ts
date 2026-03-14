@@ -120,6 +120,7 @@ export interface DBOrgSupplier {
   tenant_id: string;
   name: string;
   description: string | null;
+  responsible_roles: string[];
   created_at: string;
   updated_at: string;
 }
@@ -129,6 +130,7 @@ export interface DBOrgService {
   tenant_id: string;
   name: string;
   description: string | null;
+  responsible_roles: string[];
   created_at: string;
   updated_at: string;
 }
@@ -140,6 +142,7 @@ export interface DBOrgDocument {
   type: string | null;
   description: string | null;
   associated_process_id: string | null;
+  responsible_roles: string[];
   created_at: string;
   updated_at: string;
 }
@@ -315,6 +318,7 @@ export function dbSupplierToUI(row: DBOrgSupplier): OrgSupplier {
     tenant_id: row.tenant_id,
     name: row.name,
     description: row.description,
+    responsible_roles: row.responsible_roles || [],
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -326,6 +330,7 @@ export function dbServiceToUI(row: DBOrgService): OrgService {
     tenant_id: row.tenant_id,
     name: row.name,
     description: row.description,
+    responsible_roles: row.responsible_roles || [],
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -339,6 +344,7 @@ export function dbOrgDocumentToUI(row: DBOrgDocument): OrgDocument {
     type: row.type,
     description: row.description,
     associated_process_id: row.associated_process_id,
+    responsible_roles: row.responsible_roles || [],
     created_at: row.created_at,
     updated_at: row.updated_at,
   };

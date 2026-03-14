@@ -368,6 +368,7 @@ export function EmpresaContent({
             const result = await createSupplierAction({
               name: resourceFormData.name.trim(),
               description: resourceFormData.description.trim() || null,
+              responsible_roles: [],
             });
             if (result.success) {
               toast.success(result.message);
@@ -379,6 +380,7 @@ export function EmpresaContent({
             const result = await createServiceAction({
               name: resourceFormData.name.trim(),
               description: resourceFormData.description.trim() || null,
+              responsible_roles: [],
             });
             if (result.success) {
               toast.success(result.message);
@@ -392,6 +394,7 @@ export function EmpresaContent({
               type: resourceFormData.type.trim() || null,
               description: resourceFormData.description.trim() || null,
               associated_process_id: resourceFormData.associated_process_id || null,
+              responsible_roles: [],
             });
             if (result.success) {
               toast.success(result.message);

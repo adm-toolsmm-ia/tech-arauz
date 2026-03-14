@@ -506,7 +506,6 @@ export function AreasContent({
                 nuclei={linkedData.nucleiByAreaId[selectedArea.id] ?? []}
                 processes={linkedData.processesByAreaId[selectedArea.id] ?? []}
                 onEdit={() => handleOpenEdit(selectedArea)}
-                onCreateNucleus={() => handleOpenCreateNucleus(selectedArea)}
                 onSelectNucleus={handleSelectNucleus}
               />
             )}
@@ -538,9 +537,6 @@ export function AreasContent({
                 nucleus={selectedNucleus}
                 areaId={selectedArea?.id}
                 onSelectProcess={handleSelectProcess}
-                onCreateProcess={() => {
-                  // TODO: Integrate with FormSheet in Story 9.6
-                }}
               />
             )}
           </ContextPanel>
@@ -611,9 +607,6 @@ export function AreasContent({
               <RoutineCockpit360
                 routine={selectedRoutine}
                 onSelectActivity={setSelectedActivity}
-                onCreateActivity={() => {
-                  // TODO: Integrate with FormSheet in Story 9.6
-                }}
               />
             )}
           </ContextPanel>

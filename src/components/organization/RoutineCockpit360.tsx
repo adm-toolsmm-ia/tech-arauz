@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InfoField, OrgEntityCard, RolesDisplay, DocumentationAccordion } from '@/components/organization/shared';
+import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
 import type { OrgRoutine, OrgActivity } from '@/types/organization';
 import { getActivitiesByRoutine } from '@/app/actions/organization';
 
@@ -13,17 +14,18 @@ interface RoutineCockpit360Props {
   routine: OrgRoutine;
   onEdit?: () => void;
   onDelete?: () => void;
-  onCreateActivity?: () => void;
   onSelectActivity?: (activity: OrgActivity) => void;
+  onActivitiesUpdated?: (activities: OrgActivity[]) => void;
 }
 
 export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
   routine,
   onEdit,
   onDelete,
-  onCreateActivity,
   onSelectActivity,
+  onActivitiesUpdated,
 }) => {
+  const [showFormSheet, setShowFormSheet] = useState(false);
   const [activities, setActivities] = useState<OrgActivity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
 
@@ -113,34 +115,30 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
             <RolesDisplay roles={routine.responsible_roles || []} />
           </section>
 
-          {onCreateActivity && (
+          <Button
+            variant="default"
+            className="w-full gap-2"
+            onClick={() => setShowFormSheet(true)}
+            aria-label="Criar atividade vinculada a esta rotina"
+          >
+            <Plus className="size-4" />
+            Nova Atividade
+          </Button>
+        </TabsContent>
+
+        <TabsContent value="atividades" className="mt-6 space-y-3">
+          <div className="mb-4">
             <Button
               variant="default"
-              className="w-full gap-2"
-              onClick={onCreateActivity}
+              size="sm"
+              className="gap-2"
+              onClick={() => setShowFormSheet(true)}
               aria-label="Criar atividade vinculada a esta rotina"
             >
               <Plus className="size-4" />
               Nova Atividade
             </Button>
-          )}
-        </TabsContent>
-
-        <TabsContent value="atividades" className="mt-6 space-y-3">
-          {onCreateActivity && (
-            <div className="mb-4">
-              <Button
-                variant="default"
-                size="sm"
-                className="gap-2"
-                onClick={onCreateActivity}
-                aria-label="Criar atividade vinculada a esta rotina"
-              >
-                <Plus className="size-4" />
-                Nova Atividade
-              </Button>
-            </div>
-          )}
+          </div>
 
           {loadingActivities ? (
             <Skeleton className="h-20" />
@@ -176,6 +174,20 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
           )}
         </TabsContent>
       </Tabs>
+
+      <OrgEntityFormSheet
+        entity="activity"
+        mode="create"
+        isOpen={showFormSheet}
+        context={{ routineId: routine.id }}
+        onClose={() => setShowFormSheet(false)}
+        onSaved={(newActivity) => {
+          const updated = [...activities, newActivity as OrgActivity];
+          setActivities(updated);
+          onActivitiesUpdated?.(updated);
+          setShowFormSheet(false);
+        }}
+      />
     </div>
   );
 };

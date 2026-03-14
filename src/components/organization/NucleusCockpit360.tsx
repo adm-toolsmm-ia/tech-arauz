@@ -1,19 +1,21 @@
 'use client';
 
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { GitBranch, Building2, ExternalLink, Trash2, FileText, Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InfoField } from '@/components/organization/shared';
-import type { OrgNucleus } from '@/types/organization';
+import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
+import type { OrgNucleus, OrgProcess } from '@/types/organization';
 
 interface NucleusCockpit360Props {
   nucleus: OrgNucleus & { processes_count?: number; area_name?: string };
   areaId?: string;
   onEdit?: () => void;
   onDelete?: () => void;
-  onCreateProcess?: () => void;
   onSelectProcess?: (process: any) => void;
+  onProcessesUpdated?: (processes: OrgProcess[]) => void;
 }
 
 export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({
@@ -21,9 +23,12 @@ export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({
   areaId,
   onEdit,
   onDelete,
-  onCreateProcess,
   onSelectProcess,
+  onProcessesUpdated,
 }) => {
+  const [showFormSheet, setShowFormSheet] = useState(false);
+  const [localProcesses, setLocalProcesses] = useState<OrgProcess[]>([]);
+
   const rolesDisplay =
     nucleus.responsible_roles?.length > 0 ? nucleus.responsible_roles.join(', ') : 'Não definido';
   const processesCount = nucleus.processes_count ?? 0;
@@ -93,34 +98,30 @@ export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({
             <p className="text-sm">{rolesDisplay}</p>
           </section>
 
-          {onCreateProcess && (
+          <Button
+            variant="default"
+            className="w-full gap-2"
+            onClick={() => setShowFormSheet(true)}
+            aria-label="Criar processo vinculado a este núcleo"
+          >
+            <Plus className="size-4" />
+            Novo Processo
+          </Button>
+        </TabsContent>
+
+        <TabsContent value="vinculos" className="mt-6 space-y-3">
+          <div className="mb-4">
             <Button
               variant="default"
-              className="w-full gap-2"
-              onClick={onCreateProcess}
+              size="sm"
+              className="gap-2"
+              onClick={() => setShowFormSheet(true)}
               aria-label="Criar processo vinculado a este núcleo"
             >
               <Plus className="size-4" />
               Novo Processo
             </Button>
-          )}
-        </TabsContent>
-
-        <TabsContent value="vinculos" className="mt-6 space-y-3">
-          {onCreateProcess && (
-            <div className="mb-4">
-              <Button
-                variant="default"
-                size="sm"
-                className="gap-2"
-                onClick={onCreateProcess}
-                aria-label="Criar processo vinculado a este núcleo"
-              >
-                <Plus className="size-4" />
-                Novo Processo
-              </Button>
-            </div>
-          )}
+          </div>
           {processesCount > 0 && (
             <Link href={`/organizacao/processos?nucleus_id=${nucleus.id}`}>
               <Button variant="secondary" className="w-full justify-start gap-2">
@@ -131,6 +132,20 @@ export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({
           )}
         </TabsContent>
       </Tabs>
+
+      <OrgEntityFormSheet
+        entity="process"
+        mode="create"
+        isOpen={showFormSheet}
+        context={{ nucleusId: nucleus.id, areaId }}
+        onClose={() => setShowFormSheet(false)}
+        onSaved={(newProcess) => {
+          const updated = [...localProcesses, newProcess as OrgProcess];
+          setLocalProcesses(updated);
+          onProcessesUpdated?.(updated);
+          setShowFormSheet(false);
+        }}
+      />
     </div>
   );
 }

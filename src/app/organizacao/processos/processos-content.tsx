@@ -385,9 +385,6 @@ export function ProcessosContent({
           {selectedRoutine && (
             <RoutineCockpit360
               routine={selectedRoutine}
-              onCreateActivity={() => {
-                // TODO: Integrate with FormSheet in Story 9.6
-              }}
             />
           )}
         </ContextPanel>

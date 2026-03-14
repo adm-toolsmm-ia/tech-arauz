@@ -17,6 +17,7 @@ import {
 import { EmptyState } from '@/components/ui/EmptyState';
 import { InfoField, OrgEntityCard } from '@/components/organization/shared';
 import { BpmDocumentationPanel } from '@/components/organization/BpmDocumentationPanel';
+import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
 import type { OrgProcess, OrgRoutine, OrgSystem } from '@/types/organization';
 import { getRoutinesByProcess } from '@/app/actions/organization';
 
@@ -29,8 +30,8 @@ interface ProcessCockpit360Props {
   allSystems?: OrgSystem[];
   onEdit?: () => void;
   onDelete?: () => void;
-  onCreateRoutine?: () => void;
   onSelectRoutine?: (routine: OrgRoutine) => void;
+  onRoutinesUpdated?: (routines: OrgRoutine[]) => void;
   onLinkSystem?: (systemId: string) => void;
   onUnlinkSystem?: (systemId: string, systemName: string) => void;
 }
@@ -44,12 +45,13 @@ export function ProcessCockpit360({
   allSystems = [],
   onEdit,
   onDelete,
-  onCreateRoutine,
   onSelectRoutine,
+  onRoutinesUpdated,
   onLinkSystem,
   onUnlinkSystem,
 }: ProcessCockpit360Props) {
   const router = useRouter();
+  const [showFormSheet, setShowFormSheet] = useState(false);
   const [routines, setRoutines] = useState<OrgRoutine[]>(initialRoutines);
   const [loadingRoutines, setLoadingRoutines] = useState(false);
 
@@ -159,20 +161,18 @@ export function ProcessCockpit360({
         </TabsContent>
 
         <TabsContent value="rotinas" className="mt-6 space-y-3">
-          {onCreateRoutine && (
-            <div className="mb-4">
-              <Button
-                variant="default"
-                size="sm"
-                className="gap-2"
-                onClick={onCreateRoutine}
-                aria-label="Criar rotina vinculada a este processo"
-              >
-                <Plus className="size-4" />
-                Nova Rotina
-              </Button>
-            </div>
-          )}
+          <div className="mb-4">
+            <Button
+              variant="default"
+              size="sm"
+              className="gap-2"
+              onClick={() => setShowFormSheet(true)}
+              aria-label="Criar rotina vinculada a este processo"
+            >
+              <Plus className="size-4" />
+              Nova Rotina
+            </Button>
+          </div>
 
           {loadingRoutines ? (
             <Skeleton className="h-20" />
@@ -303,6 +303,20 @@ export function ProcessCockpit360({
           )}
         </TabsContent>
       </Tabs>
+
+      <OrgEntityFormSheet
+        entity="routine"
+        mode="create"
+        isOpen={showFormSheet}
+        context={{ processId: process.id }}
+        onClose={() => setShowFormSheet(false)}
+        onSaved={(newRoutine) => {
+          const updated = [...routines, newRoutine as OrgRoutine];
+          setRoutines(updated);
+          onRoutinesUpdated?.(updated);
+          setShowFormSheet(false);
+        }}
+      />
     </div>
   );
 }

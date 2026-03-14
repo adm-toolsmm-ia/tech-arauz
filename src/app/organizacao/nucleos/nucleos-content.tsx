@@ -451,7 +451,6 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
                 areaId={selectedNucleus.area_id}
                 onEdit={() => handleOpenEdit(selectedNucleus)}
                 onDelete={() => setNucleusToDelete(selectedNucleus)}
-                onCreateProcess={() => handleOpenCreateProcess(selectedNucleus)}
               />
             )}
           </SplitView>

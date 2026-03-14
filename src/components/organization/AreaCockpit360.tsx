@@ -1,10 +1,12 @@
 'use client';
 
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Building2, GitBranch, FileText, Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InfoField, OrgEntityCard } from '@/components/organization/shared';
+import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
 import type { OrgArea, OrgNucleus, OrgProcess } from '@/types/organization';
 
 interface AreaCockpit360Props {
@@ -12,8 +14,8 @@ interface AreaCockpit360Props {
   nuclei: OrgNucleus[];
   processes: OrgProcess[];
   onEdit?: () => void;
-  onCreateNucleus?: () => void;
   onSelectNucleus?: (nucleus: OrgNucleus) => void;
+  onNucleiUpdated?: (nuclei: OrgNucleus[]) => void;
 }
 
 export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
@@ -21,9 +23,12 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
   nuclei,
   processes,
   onEdit,
-  onCreateNucleus,
   onSelectNucleus,
+  onNucleiUpdated,
 }) => {
+  const [showFormSheet, setShowFormSheet] = useState(false);
+  const [localNuclei, setLocalNuclei] = useState(nuclei);
+
   const rolesDisplay =
     area.responsible_roles?.length > 0 ? area.responsible_roles.join(', ') : 'Não definido';
 
@@ -88,41 +93,37 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
             <p className="text-sm">{rolesDisplay}</p>
           </section>
 
-          {onCreateNucleus && (
+          <Button
+            variant="default"
+            className="w-full gap-2"
+            onClick={() => setShowFormSheet(true)}
+            aria-label="Criar núcleo vinculado a esta área"
+          >
+            <Plus className="size-4" />
+            Novo Núcleo
+          </Button>
+        </TabsContent>
+
+        <TabsContent value="nucleos" className="mt-6 space-y-3">
+          <div className="mb-4">
             <Button
               variant="default"
-              className="w-full gap-2"
-              onClick={onCreateNucleus}
+              size="sm"
+              className="gap-2"
+              onClick={() => setShowFormSheet(true)}
               aria-label="Criar núcleo vinculado a esta área"
             >
               <Plus className="size-4" />
               Novo Núcleo
             </Button>
-          )}
-        </TabsContent>
-
-        <TabsContent value="nucleos" className="mt-6 space-y-3">
-          {onCreateNucleus && (
-            <div className="mb-4">
-              <Button
-                variant="default"
-                size="sm"
-                className="gap-2"
-                onClick={onCreateNucleus}
-                aria-label="Criar núcleo vinculado a esta área"
-              >
-                <Plus className="size-4" />
-                Novo Núcleo
-              </Button>
-            </div>
-          )}
-          {nuclei.length === 0 ? (
+          </div>
+          {localNuclei.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               Nenhum núcleo nesta área
             </div>
           ) : (
             <div className="space-y-3">
-              {nuclei.map((n) => (
+              {localNuclei.map((n) => (
                 <OrgEntityCard
                   key={n.id}
                   title={n.name}
@@ -163,6 +164,20 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
           )}
         </TabsContent>
       </Tabs>
+
+      <OrgEntityFormSheet
+        entity="nucleus"
+        mode="create"
+        isOpen={showFormSheet}
+        context={{ areaId: area.id }}
+        onClose={() => setShowFormSheet(false)}
+        onSaved={(newNucleus) => {
+          const updated = [...localNuclei, newNucleus as OrgNucleus];
+          setLocalNuclei(updated);
+          onNucleiUpdated?.(updated);
+          setShowFormSheet(false);
+        }}
+      />
     </div>
   );
 };

@@ -192,3 +192,30 @@ export interface OrgInputOutput {
   description?: string;
   required?: boolean;
 }
+
+/**
+ * AI Context for organization entities
+ * Flat structure optimized for tokenization and AI prompt injection
+ * @see src/lib/transformers/organization.ts toAIContext()
+ */
+export interface OrgAIContext {
+  entityType: 'process' | 'routine' | 'activity';
+  entityId: string;
+  title: string;
+  objective: string | null;
+  description: string | null;
+  roles: string[];
+  procedures: string | null;
+  instructions: string | null;
+  steps: string[]; // Separate array for easy tokenization
+  rules: string | null; // documentation.regra — marked for AI emphasis
+  deadline: string | null; // documentation.prazo
+  executionLimit: string | null; // documentation.horario_limite
+  inputs: Array<{ name: string; description?: string; required: boolean }>;
+  outputs: Array<{ name: string; description?: string }>;
+  risks: Array<{ name: string; severity?: string }>;
+  impacts: Array<{ name: string; description?: string }>;
+  avgExecutionTime: string | null; // Formatted like "45 min", "2h 30m"
+  complexity?: 'low' | 'medium' | 'high'; // Activity only
+  priority?: 'low' | 'normal' | 'high'; // Activity only
+}

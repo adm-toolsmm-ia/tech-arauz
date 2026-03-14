@@ -16,6 +16,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -33,6 +39,7 @@ import { AreaCockpit360 } from '@/components/organization/AreaCockpit360';
 import { NucleusCockpit360 } from '@/components/organization/NucleusCockpit360';
 import { ProcessCockpit360 } from '@/components/organization/ProcessCockpit360';
 import { RoutineCockpit360 } from '@/components/organization/RoutineCockpit360';
+import { ActivityCockpit360 } from '@/components/organization/ActivityCockpit360';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AreasCardView } from './components/AreasCardView';
 import { AreasKanbanView } from './components/AreasKanbanView';
@@ -45,7 +52,7 @@ import {
   createNucleusAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
-import type { OrgArea, OrgNucleus, OrgProcess, OrgRoutine } from '@/types/organization';
+import type { OrgArea, OrgNucleus, OrgProcess, OrgRoutine, OrgActivity } from '@/types/organization';
 import { Building2 } from 'lucide-react';
 
 interface AreasContentProps {
@@ -96,6 +103,7 @@ export function AreasContent({
   const [selectedNucleus, setSelectedNucleus] = React.useState<OrgNucleus | null>(null);
   const [selectedProcess, setSelectedProcess] = React.useState<OrgProcess | null>(null);
   const [selectedRoutine, setSelectedRoutine] = React.useState<OrgRoutine | null>(null);
+  const [selectedActivity, setSelectedActivity] = React.useState<OrgActivity | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [editingArea, setEditingArea] = React.useState<OrgArea | null>(null);
   const [areaToDelete, setAreaToDelete] = React.useState<OrgArea | null>(null);
@@ -602,12 +610,30 @@ export function AreasContent({
             {selectedRoutine && (
               <RoutineCockpit360
                 routine={selectedRoutine}
+                onSelectActivity={setSelectedActivity}
                 onCreateActivity={() => {
                   // TODO: Integrate with FormSheet in Story 9.6
                 }}
               />
             )}
           </ContextPanel>
+
+          {/* Activity Sheet */}
+          <Sheet open={selectedActivity !== null} onOpenChange={(open) => !open && setSelectedActivity(null)}>
+            <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+              {selectedActivity && (
+                <>
+                  <SheetHeader className="mb-6">
+                    <SheetTitle>{selectedActivity.name}</SheetTitle>
+                  </SheetHeader>
+                  <ActivityCockpit360
+                    activity={selectedActivity}
+                    routine={selectedRoutine ?? undefined}
+                  />
+                </>
+              )}
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 

@@ -182,7 +182,7 @@ export function RecursosContent({
     }
   }, [activeTab, systems, suppliers, services, documents]);
 
-  const filterState = useRecursosFilters(currentItems);
+  const filterState = useRecursosFilters(currentItems as RecursosEntity[]);
 
   const resetForm = React.useCallback(() => {
     setFormData(DEFAULT_FORM);

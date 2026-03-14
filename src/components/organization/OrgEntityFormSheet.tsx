@@ -37,6 +37,7 @@ import {
   createActivityAction,
   updateActivityAction,
 } from '@/app/actions/organization';
+import { ResponsibleRolesInput } from './ResponsibleRolesInput';
 
 type EntityType = 'area' | 'nucleus' | 'process' | 'routine' | 'activity';
 type Entity = OrgArea | OrgNucleus | OrgProcess | OrgRoutine | OrgActivity;
@@ -322,20 +323,15 @@ export function OrgEntityFormSheet({
               </div>
 
               <div>
-                <Label>Roles Responsáveis</Label>
-                <Input
-                  value={(formData.responsible_roles || []).join(', ')}
-                  onChange={(e) =>
-                    handleChange(
-                      'responsible_roles',
-                      e.target.value
-                        .split(',')
-                        .map((r) => r.trim())
-                        .filter(Boolean),
-                    )
-                  }
-                  placeholder="ex.: Admin, Manager, Developer (separe por vírgula)"
+                <Label htmlFor="responsible_roles">Roles Responsáveis</Label>
+                <ResponsibleRolesInput
+                  value={formData.responsible_roles || []}
+                  onChange={(roles) => handleChange('responsible_roles', roles)}
+                  disabled={isSaving}
                 />
+                {errors.responsible_roles && (
+                  <p className="text-xs text-red-500 mt-1">{errors.responsible_roles}</p>
+                )}
               </div>
 
               {/* Activity specific fields */}

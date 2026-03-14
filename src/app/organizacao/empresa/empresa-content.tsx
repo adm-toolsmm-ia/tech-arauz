@@ -1365,6 +1365,7 @@ function EmpresaCockpitRenderer({
           area={vinculo.entity}
           nuclei={linkedData.nucleiByAreaId[vinculo.entity.id] ?? []}
           processes={linkedData.processesByAreaId[vinculo.entity.id] ?? []}
+          onEdit={onEdit ? () => onEdit(vinculo) : undefined}
         />
       );
     case 'processos':
@@ -1376,6 +1377,7 @@ function EmpresaCockpitRenderer({
           routines={linkedData.routinesByProcessId[vinculo.entity.id] ?? []}
           systems={systemsByProcessId?.[vinculo.entity.id] ?? []}
           allSystems={systems ?? []}
+          onEdit={onEdit ? () => onEdit(vinculo) : undefined}
           onLinkSystem={
             onLinkProcessSystem
               ? (systemId) => onLinkProcessSystem(vinculo.entity.id, systemId)

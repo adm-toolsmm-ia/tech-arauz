@@ -18,6 +18,10 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { InfoField, OrgEntityCard } from '@/components/organization/shared';
 import { BpmDocumentationPanel } from '@/components/organization/BpmDocumentationPanel';
 import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
+import { InputsList } from '@/components/organization/InputsList';
+import { OutputsList } from '@/components/organization/OutputsList';
+import { RisksList } from '@/components/organization/RisksList';
+import { ImpactsList } from '@/components/organization/ImpactsList';
 import type { OrgProcess, OrgRoutine, OrgSystem } from '@/types/organization';
 import { getRoutinesByProcess } from '@/app/actions/organization';
 
@@ -52,6 +56,7 @@ export function ProcessCockpit360({
 }: ProcessCockpit360Props) {
   const router = useRouter();
   const [showFormSheet, setShowFormSheet] = useState(false);
+  const [showEditProcess, setShowEditProcess] = useState(false);
   const [routines, setRoutines] = useState<OrgRoutine[]>(initialRoutines);
   const [loadingRoutines, setLoadingRoutines] = useState(false);
 
@@ -87,6 +92,13 @@ export function ProcessCockpit360({
           >
             <FileText className="mr-2 size-4" />
             Principal
+          </TabsTrigger>
+          <TabsTrigger
+            value="detalhes"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <ClipboardList className="mr-2 size-4" />
+            Detalhes
           </TabsTrigger>
           <TabsTrigger
             value="rotinas"
@@ -158,6 +170,23 @@ export function ProcessCockpit360({
             documentation={process.documentation}
             showSourceBadge={!!(process.documentation as { source?: string })?.source}
           />
+        </TabsContent>
+
+        <TabsContent value="detalhes" className="mt-6 space-y-6">
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowEditProcess(true)}
+            >
+              Editar
+            </Button>
+          </div>
+
+          <InputsList inputs={process.inputs} />
+          <OutputsList outputs={process.outputs} />
+          <RisksList risks={process.risks} />
+          <ImpactsList impacts={process.impacts} />
         </TabsContent>
 
         <TabsContent value="rotinas" className="mt-6 space-y-3">
@@ -315,6 +344,18 @@ export function ProcessCockpit360({
           setRoutines(updated);
           onRoutinesUpdated?.(updated);
           setShowFormSheet(false);
+        }}
+      />
+
+      <OrgEntityFormSheet
+        entity="process"
+        mode="edit"
+        initialData={process}
+        isOpen={showEditProcess}
+        onClose={() => setShowEditProcess(false)}
+        onSaved={() => {
+          setShowEditProcess(false);
+          // Parent component should handle refetching data
         }}
       />
     </div>

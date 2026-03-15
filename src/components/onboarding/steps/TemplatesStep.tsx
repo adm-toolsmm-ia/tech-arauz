@@ -2,10 +2,9 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { AlertInfo } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface Template {
   id: string;
@@ -60,57 +59,59 @@ export function TemplatesStep({
       )}
 
       {/* Templates Selection */}
-      <RadioGroup value={selectedTemplateId || ''} onValueChange={onTemplateSelect}>
-        <div className="space-y-3">
-          {templates.map((template) => (
-            <Card
-              key={template.id}
-              className={`cursor-pointer transition-all ${
-                selectedTemplateId === template.id
-                  ? 'border-primary ring-2 ring-ring'
-                  : 'hover:border-primary/50'
-              }`}
-              onClick={() => onTemplateSelect(template.id)}
-              role="radio"
-              aria-checked={selectedTemplateId === template.id}
-              tabIndex={0}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  {/* Radio Button */}
-                  <RadioGroupItem
-                    value={template.id}
-                    id={`template-${template.id}`}
-                    className="mt-1 h-5 w-5"
-                    aria-label={template.name}
-                  />
+      <div className="space-y-3">
+        {templates.map((template) => (
+          <Card
+            key={template.id}
+            className={`cursor-pointer transition-all ${
+              selectedTemplateId === template.id
+                ? 'border-primary ring-2 ring-ring'
+                : 'hover:border-primary/50'
+            }`}
+            onClick={() => onTemplateSelect(template.id)}
+            role="radio"
+            aria-checked={selectedTemplateId === template.id}
+            tabIndex={0}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                {/* Radio Button */}
+                <input
+                  type="radio"
+                  id={`template-${template.id}`}
+                  name="template-selection"
+                  value={template.id}
+                  checked={selectedTemplateId === template.id}
+                  onChange={() => onTemplateSelect(template.id)}
+                  className="mt-1 h-5 w-5 cursor-pointer"
+                  aria-label={template.name}
+                />
 
-                  {/* Template Info */}
-                  <div className="flex-1 min-w-0">
-                    <Label
-                      htmlFor={`template-${template.id}`}
-                      className="font-semibold text-base cursor-pointer"
-                    >
-                      {template.name}
-                    </Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {template.description}
-                    </p>
+                {/* Template Info */}
+                <div className="flex-1 min-w-0">
+                  <Label
+                    htmlFor={`template-${template.id}`}
+                    className="font-semibold text-base cursor-pointer"
+                  >
+                    {template.name}
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {template.description}
+                  </p>
 
-                    {template.processCount !== undefined && (
-                      <div className="flex items-center gap-2 mt-3">
-                        <Badge variant="secondary" className="text-xs">
-                          {template.processCount} processos pré-configurados
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
+                  {template.processCount !== undefined && (
+                    <div className="flex items-center gap-2 mt-3">
+                      <Badge variant="secondary" className="text-xs">
+                        {template.processCount} processos pré-configurados
+                      </Badge>
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </RadioGroup>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       {/* Information Card */}
       <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">

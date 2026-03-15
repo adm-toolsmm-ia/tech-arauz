@@ -46,7 +46,9 @@ export default meta;
 // Mock Data for Stories
 const mockSla: OrgProcessSla = {
   id: 'sla-001',
+  tenant_id: 'tenant-001',
   process_id: 'proc-001',
+  metric_name: 'completion_time',
   target_duration_days: 5,
   warning_threshold_pct: 80,
   critical_threshold_pct: 95,
@@ -56,7 +58,9 @@ const mockSla: OrgProcessSla = {
 
 const mockMetricsOnTrack: OrgProcessMetrics = {
   id: 'metric-001',
+  tenant_id: 'tenant-001',
   process_id: 'proc-001',
+  metric_name: 'completion_time',
   period_start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   period_end: new Date().toISOString(),
   avg_duration_days: 3.5,
@@ -68,7 +72,9 @@ const mockMetricsOnTrack: OrgProcessMetrics = {
 
 const mockMetricsWarning: OrgProcessMetrics = {
   id: 'metric-002',
+  tenant_id: 'tenant-001',
   process_id: 'proc-001',
+  metric_name: 'completion_time',
   period_start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   period_end: new Date().toISOString(),
   avg_duration_days: 4.8,
@@ -80,7 +86,9 @@ const mockMetricsWarning: OrgProcessMetrics = {
 
 const mockMetricsCritical: OrgProcessMetrics = {
   id: 'metric-003',
+  tenant_id: 'tenant-001',
   process_id: 'proc-001',
+  metric_name: 'completion_time',
   period_start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   period_end: new Date().toISOString(),
   avg_duration_days: 6.2,
@@ -94,7 +102,9 @@ const mockMetricsCritical: OrgProcessMetrics = {
 const mockMetricsHistory: OrgProcessMetrics[] = [
   {
     id: 'hist-001',
+    tenant_id: 'tenant-001',
     process_id: 'proc-001',
+    metric_name: 'completion_time',
     period_start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     period_end: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
     avg_duration_days: 3.2,
@@ -105,7 +115,9 @@ const mockMetricsHistory: OrgProcessMetrics[] = [
   },
   {
     id: 'hist-002',
+    tenant_id: 'tenant-001',
     process_id: 'proc-001',
+    metric_name: 'completion_time',
     period_start: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
     period_end: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     avg_duration_days: 3.5,
@@ -116,7 +128,9 @@ const mockMetricsHistory: OrgProcessMetrics[] = [
   },
   {
     id: 'hist-003',
+    tenant_id: 'tenant-001',
     process_id: 'proc-001',
+    metric_name: 'completion_time',
     period_start: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     period_end: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     avg_duration_days: 4.1,
@@ -127,7 +141,9 @@ const mockMetricsHistory: OrgProcessMetrics[] = [
   },
   {
     id: 'hist-004',
+    tenant_id: 'tenant-001',
     process_id: 'proc-001',
+    metric_name: 'completion_time',
     period_start: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     period_end: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     avg_duration_days: 4.8,
@@ -138,7 +154,9 @@ const mockMetricsHistory: OrgProcessMetrics[] = [
   },
   {
     id: 'hist-005',
+    tenant_id: 'tenant-001',
     process_id: 'proc-001',
+    metric_name: 'completion_time',
     period_start: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     period_end: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     avg_duration_days: 4.5,

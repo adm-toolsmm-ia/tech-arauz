@@ -134,23 +134,22 @@ export function IntegrationStep({
                 key={integration.id}
                 className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
               >
-                <Checkbox
-                  id={`integration-${integration.id}`}
-                  checked={integration.enabled}
-                  onCheckedChange={(checked) =>
-                    onIntegrationToggle(integration.id, checked as boolean)
-                  }
-                  className="mt-1"
-                  aria-label={`Ativar integração ${integration.name}`}
-                />
+                <div className="mt-1">
+                  <Checkbox
+                    checked={integration.enabled}
+                    onCheckedChange={(checked) =>
+                      onIntegrationToggle(integration.id, checked === true)
+                    }
+                    aria-label={`Ativar integração ${integration.name}`}
+                  />
+                </div>
 
                 <div className="flex-1 min-w-0">
-                  <Label
-                    htmlFor={`integration-${integration.id}`}
+                  <p
                     className="font-medium text-sm cursor-pointer"
                   >
                     {integration.name}
-                  </Label>
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {integration.description}
                   </p>

@@ -232,7 +232,6 @@ export function StructureStep({
                               onChange={(e) =>
                                 handleUpdateNucleus(areaIdx, nucleusIdx, 'name', e.target.value)
                               }
-                              size="sm"
                               className="text-sm"
                               aria-label={`Nome do núcleo ${nucleusIdx + 1} da área ${areaIdx + 1}`}
                             />

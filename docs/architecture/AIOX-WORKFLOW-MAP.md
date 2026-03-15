@@ -1,7 +1,7 @@
 # AIOX Workflow Map — Execution Flows & Gates (AIOX 10/10)
 
-**Version:** 0.2.3 (Production Live)
-**Last Updated:** 2026-03-14
+**Version:** 0.2.4 (EPIC 11 Complete)
+**Last Updated:** 2026-03-16
 **Status:** Authoritative — task-first execution
 **Framework:** Synkra AIOX v1.0.0
 
@@ -28,6 +28,30 @@ AIOX framework defines **4 primary workflows** for all development. Each workflo
 ## 1. Story Development Cycle (SDC)
 
 **The main workflow for all development work.**
+
+### 1.0 PM Perspective
+
+As Product Manager (Morgan), you orchestrate the SDC by:
+
+1. **Setting Scope** — Work with @po to validate that stories are sized correctly and dependencies are clear
+2. **Monitoring Velocity** — Track Phase 3 (dev) progress against effort estimates
+3. **Escalating Blockers** — Identify when stories are stuck and coordinate resolution
+4. **Planning Next Wave** — As stories complete, prepare backlog for next cycle
+5. **Decision Gates** — Sign off on Phase 2 validation and Phase 4 QA decisions when contentious
+
+**Key PM Deliverables:**
+- Epic prioritization and story ordering (backlog)
+- Effort estimation review (Phase 1: validate realistic hours)
+- Stakeholder communication on completion (Phase 4: announce Done stories)
+- Dependency mapping (block/blockedBy relationships)
+
+**PM Role in Each Phase:**
+- Phase 1 (CREATE): @sm creates, **@pm reviews** effort and AC scope
+- Phase 2 (VALIDATE): @po validates, **@pm escalates** if NO-GO requires epic review
+- Phase 3 (IMPLEMENT): @dev codes, **@pm monitors** progress (checkpoint: 50% done = midway check)
+- Phase 4 (QA): @qa reviews, **@pm signs off** before @devops pushes
+
+---
 
 ### 1.1 Overview
 
@@ -89,6 +113,12 @@ AIOX framework defines **4 primary workflows** for all development. Each workflo
 
 **Task:** `create-next-story.md` (in `.aiox-core/development/tasks/`)
 
+**PM Checkpoint:**
+- **Input:** Epic context (goals, dependencies, priority)
+- **Decision:** "Is this story the right size for one sprint?" (4-16h)
+- **Action:** If >16h, break into smaller stories; if <2h, combine with others
+- **Sign-off:** @pm approves effort estimate and file list scope
+
 **Elicitation Points (Interactive):**
 ```
 1. "What's the story title?" → @sm enters title
@@ -99,6 +129,24 @@ AIOX framework defines **4 primary workflows** for all development. Each workflo
 6. "Any dependencies?" → @sm lists blocking stories
 ```
 
+**EPIC 11 Example — Phase 1:**
+
+**Story 11.1: Add responsible_roles to Activities (DB)**
+- **Title:** Clear ✅ ("Add responsible_roles JSONB column to org_activities table")
+- **AC:** ≥5 ✅ (migration, index, RLS, types, validation)
+- **Files:** Clear ✅ (migration file, TypeScript types, rollback script)
+- **Effort:** 3-4h ✅ (database-only, no frontend)
+- **Dependencies:** None ✅
+- **PM Decision:** "This is Phase 1 of 14. Unblock Phase 2 backend. Approve. Priority CRITICAL."
+
+**Story 11.6: Implement Server Actions for responsible roles (Backend)**
+- **Title:** Clear ✅ ("Server Actions: CRUD for responsible roles in activities")
+- **AC:** ≥5 ✅ (Create, Read, Update, Delete, audit logging)
+- **Files:** Clear ✅ (server action file, types, tests)
+- **Effort:** 6-8h ✅ (5 actions + RLS + tests)
+- **Dependencies:** Blocks 11.11 (frontend) ✅
+- **PM Decision:** "This unblocks Phase 3 UI. Approve. Can parallelize with 11.7-11.9."
+
 **Output:** `docs/stories/story-{epic}.{num}.story.md`
 
 **Template Used:** `story-tmpl.yaml`
@@ -107,8 +155,10 @@ AIOX framework defines **4 primary workflows** for all development. Each workflo
 - [ ] Title present and clear
 - [ ] Acceptance criteria ≥5, specific
 - [ ] File list identified
-- [ ] Effort estimated
+- [ ] Effort estimated (2-16h range)
+- [ ] Dependencies mapped
 - [ ] Story status = Draft
+- [ ] PM reviewed scope ✅
 
 **Story Format:**
 
@@ -149,6 +199,46 @@ AIOX framework defines **4 primary workflows** for all development. Each workflo
 ### 1.3 Phase 2: VALIDATE (@po)
 
 **Task:** `validate-next-story.md`
+
+**PM Checkpoint:**
+- **Input:** Draft story from @sm
+- **Decision Point 1:** "Are AC realistic and measurable?" (If not → escalate)
+- **Decision Point 2:** "Is this story too big or too small?" (Adjust with @sm)
+- **Decision Point 3:** "Will @qa be able to verify this?" (If not → clarify AC)
+- **Action:**
+  - If **GO (≥7/10):** Story ready for @dev, @pm tracks in sprint backlog
+  - If **NO-GO (<7/10):** Return to @sm with specific fixes, @pm re-validates within 24h
+
+**EPIC 11 Example — Phase 2:**
+
+Story 11.1 validation:
+```
+[ ✅ ] Title: Clear, specific (JSONB column to org_activities)
+[ ✅ ] AC: 6 criteria (migration, index, RLS, types, rollback, no data loss)
+[ ✅ ] Estimation: 3-4h is realistic for pure DB work
+[ ✅ ] File List: migration file, TypeScript types, rollback script identified
+[ ✅ ] Dependencies: None, can start immediately
+[ ✅ ] NFRs: RLS compliance, zero downtime mentioned
+[ ✅ ] Edge Cases: Rollback scenario documented
+[ ✅ ] A11y: N/A (database-only story)
+[ ✅ ] Testability: @qa can verify migration applied, data integrity
+[ ✅ ] User Story Format: Technical story (acceptable for EPIC 11)
+
+Score: 10/10 → GO ✅
+@pm action: Approve, prioritize after Stories 11.2-11.5 dependencies mapped
+```
+
+Story 11.11 validation (Phase 3, frontend):
+```
+[ ✅ ] Title: Clear (ResponsibleRolesInput in ActivityFormSheet)
+[ ⚠️ ] AC: "Add autocomplete tagging" — too vague, needs examples
+[ ✅ ] Estimation: 6-8h is realistic
+[ ✅ ] Dependencies: Blocks 11.12, depends on 11.6 server actions
+[ ⚠️ ] A11y: Mentions WCAG AA but no specific requirements (aria-labels, keyboard nav)
+
+Score: 7/10 → GO with concerns
+@pm action: Approve (can fix AC details in 11.6 review), flag A11y for @dev to address
+```
 
 **Checklist (10 points):**
 
@@ -218,6 +308,37 @@ If GO:
 ### 1.4 Phase 3: IMPLEMENT (@dev)
 
 **Task:** `dev-develop-story.md`
+
+**PM Checkpoint:**
+- **Kickoff:** @pm confirms story is still prioritized, answers AC clarifications
+- **Midway (50% done):** @pm checks if on track to finish in estimated hours
+  - If **ahead:** Celebrate, look ahead to next story
+  - If **on-track:** Maintain course
+  - If **behind:** Root cause? Escalate to @architect if blocked, @po if AC unclear
+- **Completion:** @pm updates sprint backlog, prepares stakeholder communication
+- **Sign-off:** @pm notifies stakeholders "Story moving to QA"
+
+**EPIC 11 Example — Phase 3 Progress Tracking:**
+
+**Story 11.1 (3-4h estimated):**
+```
+Hour 0:    @dev kicks off: "Setting up migration 066"
+Hour 1.5:  @pm checkpoint: "On track? ✅ Yes, migration written + index added"
+Hour 3:    @dev: "Migration complete, testing rollback" ✅
+Hour 3.5:  @pm: "Approved for QA, Story 11.2 can start (dependency ready)"
+→ Moved to InReview (Phase 4)
+```
+
+**Story 11.6 (6-8h estimated):**
+```
+Hour 0:    @dev kicks off: "Implementing 5 server actions"
+Hour 3:    @dev: "3 actions done (Create, Read, Update), tests passing"
+Hour 4:    @pm checkpoint: "On track? ✅ Yes, Delete + audit logging next"
+Hour 7:    @dev: "All 5 actions + RLS verified, tests at 92% coverage"
+Hour 8:    @dev: "Code ready for review, unblocks Story 11.11 (frontend)"
+→ Moved to InReview (Phase 4)
+→ @pm notifies: "Server actions ready for frontend integration"
+```
 
 **Modes:**
 
@@ -306,6 +427,55 @@ CodeRabbit runs on commit:
 
 **Task:** `qa-gate.md`
 
+**PM Checkpoint:**
+- **Before QA Review:** @pm confirms Story is ready (File List updated, commit message has [Story X.Y] tag)
+- **QA Verdict Scenarios:**
+  - **PASS:** @pm announces completion, story auto-moves to Done, triggers next-wave story kickoff
+  - **CONCERNS:** @dev fixes (1-2 iterations expected), @pm monitors turnaround
+  - **FAIL:** Story blocked, @pm escalates (architecture issue? scope creep?)
+  - **WAIVED:** Rare, @pm documents justification (e.g., hotfix, emergency)
+- **Sign-off:** @pm approves @devops push (very rare, only for high-visibility merges)
+
+**EPIC 11 Example — Phase 4 Outcomes:**
+
+**Story 11.1 QA Review:**
+```
+@qa checklist:
+  [✅] Lint: Zero errors
+  [✅] TypeScript: Migration types correct
+  [✅] Tests: Migration test passes (apply + rollback)
+  [✅] No hardcoded values: Migration uses env-based credentials
+  [✅] Error handling: Rollback documented, failure cases handled
+  [✅] A11y: N/A (database story)
+  [✅] Documentation: Migration SQL includes comments
+
+Verdict: PASS ✅
+@qa: "Schema clean, ready to merge"
+@pm action: "Story 11.1 DONE. Unblocks Phase 2 (11.2-11.5 can proceed)"
+@devops: Pushes to main → production deployed
+```
+
+**Story 11.11 QA Review (Phase 3 example, more complex):**
+```
+@qa checklist:
+  [✅] Lint: Zero errors (formatting correct)
+  [✅] TypeScript: Component types strict
+  [❌] Tests: 78% coverage (requirement: ≥85%)
+  [✅] No hardcoded values: Config via server actions
+  [⚠️] Error handling: Missing error toast on failed responsible role update
+  [✅] A11y: ARIA labels present, keyboard nav tested
+  [✅] Documentation: Component comments explain props
+
+Verdict: CONCERNS (fixable, low priority)
+@qa: "Component works. Need: +test coverage +error handling."
+@dev action: "Adding 2 tests (edge cases) + error toast. 30 min fix."
+→ Iteration 2: Resubmit
+@qa: "✅ Now 88% coverage + error handling complete"
+
+Verdict: PASS ✅
+@pm action: "Story 11.11 DONE. Unblocks bulk operations (11.14)"
+```
+
 **Checklist (7 points):**
 
 ```
@@ -383,6 +553,48 @@ Verdict: CONCERNS
 @qa: PASS
   → @devops *push
   → Story marked Done
+```
+
+### 1.6 Stakeholder Involvement Matrix (PM Coordination)
+
+**Who participates in each phase of SDC:**
+
+| Phase | @sm | @po | @dev | @qa | @pm | @architect | Stakeholders |
+|-------|-----|-----|-----|-----|-----|-----------|--------------|
+| **1: CREATE** | ✅ Lead | 👁️ Review | — | — | 👁️ Review scope/effort | 👁️ If complex | None (internal) |
+| **2: VALIDATE** | — | ✅ Lead | — | — | 👁️ Escalate if NO-GO | — | None (internal) |
+| **3: IMPLEMENT** | — | 👁️ Clarify AC | ✅ Lead | — | 👁️ Midway check | 👁️ If blocked | None (in progress) |
+| **4: QA GATE** | — | — | ↔️ Fix issues | ✅ Lead | 👁️ Sign-off | — | ✅ Notify on PASS |
+
+**Legend:**
+- ✅ **Lead:** Owns the phase, makes decisions
+- 👁️ **Review:** Monitors, provides input, can escalate
+- ↔️ **Collaborate:** Works with other agents
+- — **Not involved**
+
+**EPIC 11 Stakeholder Communication Timeline:**
+
+```
+PHASE 1-2 (Creation & Validation):
+  → Backlog grooming session: @pm + @po + @sm align on Stories 11.1-11.14
+  → Stakeholders (execs, clients): "EPIC 11 ready for implementation, 4-5 week timeline"
+
+PHASE 3 (Implementation):
+  → Week 1 (11.1-11.5): Database team working (Dara @data-engineer)
+    - @pm: Daily standup, communicate "foundation complete" mid-week
+  → Week 2-3 (11.6-11.9): Backend team working (Dex @dev)
+    - @pm: Mid-sprint review, "server actions 75% complete"
+  → Week 3-4 (11.10-11.14): Frontend team + AI context
+    - @pm: Parallel tracks, communicate "UI integration starting"
+
+PHASE 4 (QA):
+  → Stories 11.1-11.5 PASS: @pm announces "Schema ready for frontend"
+  → Stories 11.6-11.9 PASS: @pm announces "Backend ready for testing"
+  → Stories 11.10-11.14 PASS: @pm announces "EPIC 11 DONE, v0.2.4 ready for release"
+  → Stakeholders: "Feature complete, entering production validation"
+
+RELEASE:
+  → @pm: Coordinates release communication, customer launch plan
 ```
 
 ---
@@ -676,10 +888,24 @@ Workflows are **designed to evolve**:
 - **Agent Authority:** `docs/architecture/AGENT-AUTHORITY-MATRIX.md`
 - **Constitution:** `.aiox-core/constitution.md`
 - **Tasks:** `.aiox-core/development/tasks/`
+- **EPIC 11 Master Spec:** `docs/stories/EPIC-11-Organizational-Enrichment-BPM-Mastery.md` (14 stories, 4 phases, 55-70h)
+- **PM Handbook:** Sections 1.0-1.6 (PM Perspective + Phase Descriptions + Stakeholder Matrix)
+
+---
+
+**Coordination Note:**
+
+This document (AIOX-WORKFLOW-MAP.md) is **co-led by @architect (Aria) and @pm (Morgan)**:
+- **@architect:** Owns workflow structure, gates, technical accuracy, 4-workflow framework
+- **@pm:** Owns PM perspective, checkpoints, stakeholder communication, Phase descriptions with EPIC 11 examples
+
+Both agents validate changes to ensure coherence.
 
 ---
 
 **Authored by:** Claude Code (Haiku 4.5) — AIOX Master Orchestrator
 **Framework:** Synkra AIOX v1.0.0
-**Last Reviewed:** 2026-03-14
+**Last Reviewed:** 2026-03-16 (PM perspective + EPIC 11 examples added)
+**Last Updated By:** Morgan (@pm) — Phase descriptions, PM checkpoints, stakeholder matrix
 **Next Review:** 2026-06-30 (quarterly)
+**Version:** 0.2.4 (with PM perspective)

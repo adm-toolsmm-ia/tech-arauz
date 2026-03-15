@@ -1,8 +1,9 @@
 # Module Engineering Standards — Padrão de Referência
 
-**Data:** 2026-03-07  
-**Status:** Normativo  
+**Data:** 2026-03-16 (v0.2.4 EPIC 11 Update)
+**Status:** Normativo (v0.2.4+)
 **Baseline único:** Módulo `projetos` (`src/app/projetos/`)
+**New Patterns:** Server Actions (§15), Cockpit360 (§16), Responsible Roles (§17)
 
 ---
 
@@ -349,7 +350,357 @@ Antes de concluir story de novo módulo/tabela:
 
 ---
 
-## 15. Política para Agentes AI
+## 15. Server Actions Pattern (v0.2.4+)
+
+**Status:** Normativo (EPIC 11 Phase 2)
+
+All data mutations MUST use Server Actions (Next.js 13.4+) for:
+- Type safety (request + response validated)
+- Automatic auth context (no manual JWT parsing)
+- Optimistic updates (React 19+)
+- Audit trail support
+
+### 15.1 Server Action Template
+
+```typescript
+'use server';
+
+import { createClient } from '@/lib/supabase/server';
+import { z } from 'zod';
+
+interface ActionResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+const updateActivitySchema = z.object({
+  id: z.string().uuid(),
+  responsible_roles: z.array(z.string()),
+});
+
+export async function updateActivityResponsibleRolesAction(
+  input: z.infer<typeof updateActivitySchema>
+): Promise<ActionResult<OrgActivity>> {
+  try {
+    // 1. Auth context (automatic from Supabase server client)
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      throw new UnauthorizedError('Not authenticated');
+    }
+
+    // 2. Validate input
+    const validated = updateActivitySchema.parse(input);
+
+    // 3. Tenant isolation (critical for RLS)
+    const tenantId = user.user_metadata.tenant_id;
+
+    // 4. Mutation
+    const { data, error } = await supabase
+      .from('org_activities')
+      .update({ responsible_roles: validated.responsible_roles })
+      .eq('id', validated.id)
+      .eq('tenant_id', tenantId)  // Tenant isolation
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // 5. Audit logging (optional but recommended)
+    await logAuditEvent({
+      action: 'update_responsible_roles',
+      entity_id: validated.id,
+      changes: { responsible_roles: validated.responsible_roles },
+    });
+
+    // 6. Revalidation (Next.js cache)
+    revalidatePath('/organizacao');
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('updateActivityResponsibleRolesAction:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+```
+
+### 15.2 Client-Side Usage
+
+```typescript
+'use client';
+
+import { updateActivityResponsibleRolesAction } from '@/app/actions/organization';
+import { useAction } from 'next-safe-action/hooks';
+
+export function ActivityForm() {
+  const { execute, isPending } = useAction(updateActivityResponsibleRolesAction);
+
+  const onSubmit = async (values: FormValues) => {
+    const result = await execute({
+      id: activity.id,
+      responsible_roles: values.responsible_roles,
+    });
+
+    if (result.success) {
+      toast.success('Atividade atualizada');
+    } else {
+      toast.error(result.error);
+    }
+  };
+
+  return <form onSubmit={onSubmit}>...</form>;
+}
+```
+
+### 15.3 Key Rules
+
+1. **Location:** `src/app/actions/` (one file per domain)
+2. **Naming:** `{action}{Entity}Action` (e.g., `updateActivityAction`)
+3. **Auth:** Always use `getSupabaseAuth()` for context
+4. **Validation:** Always use Zod schema
+5. **Tenant Isolation:** Always `.eq('tenant_id', tenantId)` in queries
+6. **Error Handling:** Wrap in try/catch, return ActionResult
+7. **Revalidation:** Call `revalidatePath()` for affected routes
+8. **Tests:** Unit test with mocked Supabase client
+
+---
+
+## 16. Cockpit360 Pattern (Organizational Detail Views)
+
+**Status:** Normativo (EPIC 10+)
+
+Cockpit360 is a side panel component for displaying and editing entity details. Standard in all organizational modules (Areas, Nuclei, Processes, Activities, etc.).
+
+### 16.1 Cockpit360 Structure
+
+```typescript
+// src/components/organization/ActivityCockpit360.tsx
+interface ActivityCockpit360Props {
+  activity: OrgActivity;
+  onUpdate: (updated: OrgActivity) => void;
+  isLoading?: boolean;
+}
+
+export function ActivityCockpit360({ activity, onUpdate, isLoading }: ActivityCockpit360Props) {
+  const [editingField, setEditingField] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-6 p-6 border-l bg-card">
+      {/* Header */}
+      <div>
+        <h2 className="text-xl font-semibold">{activity.name}</h2>
+        <p className="text-sm text-muted-foreground">{activity.objective}</p>
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="details" className="w-full">
+        <TabsList>
+          <TabsTrigger value="details">Detalhes</TabsTrigger>
+          <TabsTrigger value="roles">Funções</TabsTrigger>
+          <TabsTrigger value="systems">Sistemas</TabsTrigger>
+          <TabsTrigger value="history">Histórico</TabsTrigger>
+        </TabsList>
+
+        {/* Tab: Details */}
+        <TabsContent value="details" className="space-y-4">
+          <CockpitField label="Complexidade" value={activity.complexity} />
+          <CockpitField label="Prioridade" value={activity.priority} />
+          <CockpitField label="Tempo Médio" value={`${activity.average_execution_time} min`} />
+        </TabsContent>
+
+        {/* Tab: Responsible Roles */}
+        <TabsContent value="roles" className="space-y-4">
+          {editingField === 'responsible_roles' ? (
+            <ResponsibleRolesInput
+              value={activity.responsible_roles || []}
+              onChange={(roles) => {
+                onUpdate({ ...activity, responsible_roles: roles });
+                setEditingField(null);
+              }}
+            />
+          ) : (
+            <CockpitField
+              label="Funções Responsáveis"
+              value={activity.responsible_roles?.join(', ') || 'Nenhuma'}
+              onEdit={() => setEditingField('responsible_roles')}
+            />
+          )}
+        </TabsContent>
+
+        {/* Tab: Systems */}
+        <TabsContent value="systems" className="space-y-4">
+          {activity.systems?.map(system => (
+            <div key={system.id} className="p-3 border rounded-md">
+              <p className="font-medium">{system.name}</p>
+              <p className="text-sm text-muted-foreground">{system.description}</p>
+            </div>
+          ))}
+          {(!activity.systems || activity.systems.length === 0) && (
+            <p className="text-sm text-muted-foreground">Nenhum sistema associado</p>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+```
+
+### 16.2 Tab Structure
+
+Every Cockpit360 MUST include these tabs:
+
+| Tab | Content | Editable | Source |
+|-----|---------|----------|--------|
+| **Detalhes** | Name, description, objective, status | Yes | Entity fields |
+| **Funções** | Responsible roles (EPIC 11.6) | Yes | `responsible_roles` JSONB |
+| **Relacionamentos** | Parent/child, linked entities | Yes | Foreign keys |
+| **Sistemas** | Integrated systems (EPIC 11.2) | Yes | Junction table |
+| **Métricas** | SLAs, process metrics (EPIC 11.3) | No | Read-only |
+| **Histórico** | Audit trail, changes | No | Read-only |
+
+### 16.3 ResponsibleRolesInput Integration
+
+```typescript
+// Pattern: Any cockpit360 with responsible_roles MUST use this component
+
+import { ResponsibleRolesInput } from '@/components/organization/ResponsibleRolesInput';
+
+<FormField
+  control={form.control}
+  name="responsible_roles"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Funções Responsáveis</FormLabel>
+      <FormControl>
+        <ResponsibleRolesInput
+          value={field.value || []}
+          onChange={field.onChange}
+          disabled={isLoading}
+        />
+      </FormControl>
+      <FormDescription>
+        Selecione as funções responsáveis pela execução desta atividade
+      </FormDescription>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+---
+
+## 17. Responsible Roles Pattern (EPIC 11)
+
+**Status:** Normativo (EPIC 11 Phase 1-3)
+
+Responsible roles are string arrays (JSONB in DB) stored on organizational entities to track who is responsible for executing, approving, or overseeing each entity.
+
+### 17.1 Role Definition
+
+```typescript
+// src/lib/organization/role-definitions.ts
+
+export interface RoleDefinition {
+  value: string;              // Internal ID (e.g., 'advogado')
+  label: string;              // Display name (e.g., 'Advogado')
+  description?: string;       // Tooltip text
+  category: 'management' | 'specialist' | 'operational' | 'external';
+}
+
+export const ORGANIZATION_ROLES: RoleDefinition[] = [
+  // Management (Gestão)
+  { value: 'diretor', label: 'Diretor', category: 'management' },
+  { value: 'gerente', label: 'Gerente', category: 'management' },
+  { value: 'coordenador', label: 'Coordenador', category: 'management' },
+
+  // Specialist (Especialistas)
+  { value: 'especialista', label: 'Especialista', category: 'specialist' },
+  { value: 'analista_senior', label: 'Analista Sênior', category: 'specialist' },
+  { value: 'analista_junior', label: 'Analista Júnior', category: 'specialist' },
+
+  // Operational (Operacional)
+  { value: 'operacional', label: 'Operacional', category: 'operational' },
+  { value: 'administrativo', label: 'Administrativo', category: 'operational' },
+  { value: 'supervisor', label: 'Supervisor', category: 'operational' },
+];
+```
+
+### 17.2 Database Schema
+
+```sql
+-- All organizational entities follow this pattern
+ALTER TABLE org_activities ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_routines ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_processes ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_nuclei ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_areas ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+
+-- GIN index for array queries
+CREATE INDEX idx_org_activities_responsible_roles_gin ON org_activities USING GIN(responsible_roles);
+```
+
+### 17.3 Usage Examples
+
+**Single Role:**
+
+```typescript
+const activity = {
+  name: 'Legal Review',
+  responsible_roles: ['advogado'],  // Single role
+};
+```
+
+**Multiple Roles (Shared Responsibility):**
+
+```typescript
+const process = {
+  name: 'Contract Approval',
+  responsible_roles: ['advogado', 'gerente_comercial', 'cfo'],  // Multiple roles
+};
+```
+
+**Hierarchical Assignment:**
+
+```typescript
+// Area: Strategic oversight
+const area = {
+  name: 'Legal Department',
+  responsible_roles: ['diretor_juridico'],  // Strategic role
+};
+
+// Nucleus: Operational management
+const nucleus = {
+  name: 'Contracts Nucleus',
+  responsible_roles: ['gerente_nucleo'],  // Operational role
+};
+
+// Process: Execution
+const process = {
+  name: 'Contract Processing',
+  responsible_roles: ['analista_senior'],  // Execution role
+};
+```
+
+### 17.4 RBAC Integration
+
+Responsible roles can be used for Row-Level Security:
+
+```sql
+-- RLS Policy: User can view activities assigned to their roles
+CREATE POLICY "role_based_activity_view" ON org_activities
+  FOR SELECT USING (
+    responsible_roles @> auth.jwt()->'user_metadata'->>'roles'::jsonb
+  );
+```
+
+---
+
+## 18. Política para Agentes AI
 
 Este documento é **normativo** para:
 
@@ -364,5 +715,8 @@ Este documento é **normativo** para:
 3. Respeite o contrato do hook (seção 8) e o filter registry (seção 9)
 4. Evite todos os anti-padrões da seção 12
 5. Rode os quality gates antes de push (seção 13); consulte [build-deploy-gates.md](./build-deploy-gates.md)
-6. Ao criar filtros ou selects customizados, garantir associação label-controle; consultar build-deploy-gates.md seção 3.4 em caso de erro label-has-associated-control
-7. Exceções devem ser documentadas na story com justificativa técnica
+6. Para server actions (seção 15): sempre valide com Zod, sempre faça tenant isolation, sempre revalidate paths
+7. Para cockpit360 (seção 16): inclua abas Details, Roles, Relationships, Systems, Metrics, History
+8. Para responsible_roles (seção 17): use ResponsibleRolesInput component, sempre salve via server action
+9. Ao criar filtros ou selects customizados, garantir associação label-controle; consultar build-deploy-gates.md seção 3.4 em caso de erro label-has-associated-control
+10. Exceções devem ser documentadas na story com justificativa técnica

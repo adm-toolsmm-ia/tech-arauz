@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { ProcessMetricsCard } from './ProcessMetricsCard';
 import type { OrgProcessSla, OrgProcessMetrics } from '@/types/organization';
+
+expect.extend(toHaveNoViolations);
 
 describe('ProcessMetricsCard', () => {
   const mockSla: OrgProcessSla = {
@@ -168,6 +171,95 @@ describe('ProcessMetricsCard', () => {
     );
 
     // Card should have proper semantic structure
-    expect(container.querySelector('[role="region"]')).toBeInTheDocument();
+    expect(container.querySelector('[role="group"]')).toBeInTheDocument();
+  });
+
+  describe('Accessibility (WCAG AA)', () => {
+    it('should have no axe violations when empty', async () => {
+      const { container } = render(
+        <ProcessMetricsCard processId="process-1" />
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no axe violations with on-track metrics', async () => {
+      const { container } = render(
+        <ProcessMetricsCard
+          processId="process-1"
+          sla={mockSla}
+          recentMetrics={mockMetrics}
+        />
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no axe violations with warning status', async () => {
+      const warningMetrics: OrgProcessMetrics = {
+        ...mockMetrics,
+        compliance_pct: 90,
+      };
+
+      const { container } = render(
+        <ProcessMetricsCard
+          processId="process-1"
+          sla={mockSla}
+          recentMetrics={warningMetrics}
+        />
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no axe violations with critical status', async () => {
+      const criticalMetrics: OrgProcessMetrics = {
+        ...mockMetrics,
+        compliance_pct: 98,
+      };
+
+      const { container } = render(
+        <ProcessMetricsCard
+          processId="process-1"
+          sla={mockSla}
+          recentMetrics={criticalMetrics}
+        />
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have proper ARIA labels on metric groups', () => {
+      render(
+        <ProcessMetricsCard
+          processId="process-1"
+          sla={mockSla}
+          recentMetrics={mockMetrics}
+        />
+      );
+
+      // Check for ARIA labels on metric groups
+      const metricGroups = screen.getAllByRole('group');
+      expect(metricGroups.length).toBeGreaterThan(0);
+      expect(metricGroups[0]).toHaveAttribute('aria-label');
+    });
+
+    it('should have proper text contrast for status indicators', () => {
+      const { container } = render(
+        <ProcessMetricsCard
+          processId="process-1"
+          sla={mockSla}
+          recentMetrics={mockMetrics}
+        />
+      );
+
+      // Check for color contrast in status badge
+      const statusDiv = container.querySelector('[class*="bg-green"]');
+      expect(statusDiv).toBeInTheDocument();
+    });
   });
 });

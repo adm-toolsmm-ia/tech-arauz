@@ -67,11 +67,18 @@ export function ActivitySystemsModal({
   const fetchCurrentSystems = async () => {
     setIsFetching(true);
     try {
-      // TODO: Call getActivitySystemsAction(activityId)
-      // const result = await getActivitySystemsAction(activityId);
-      // if (result.success && result.data) {
-      //   setCurrentSystems(result.data);
-      // }
+      // Import dynamically to avoid server component issues
+      const { getActivitySystemsAction } = await import('@/app/actions/organization');
+      const result = await getActivitySystemsAction(activityId);
+      if (result.success && result.data) {
+        // Transform API response to local format
+        const systems = result.data.map((item: any) => ({
+          system_id: item.system_id,
+          system_name: item.org_systems?.name || 'Unknown',
+          usage_context: item.usage_context,
+        }));
+        setCurrentSystems(systems);
+      }
     } catch (error) {
       console.error('Error fetching current systems:', error);
     } finally {
@@ -87,27 +94,21 @@ export function ActivitySystemsModal({
       const system = availableSystems.find((s) => s.id === selectedSystemId);
       if (!system) return;
 
-      // TODO: Call addActivitySystemAction(activityId, selectedSystemId, usageContext)
-      // Phase 3: Implement server action with:
-      // - Tenant isolation via auth context
-      // - RLS policy validation
-      // - Audit logging for activity_systems junction
-      // - Revalidation of /organizacao path
-      // const result = await addActivitySystemAction(activityId, selectedSystemId, usageContext);
-      // if (result.success) {
-      //   setCurrentSystems([...currentSystems, {
-      //     system_id: selectedSystemId,
-      //     system_name: system.name,
-      //     usage_context: usageContext,
-      //   }]);
-      //   setSelectedSystemId('');
-      //   setUsageContext('');
-      // } else {
-      //   console.error(result.message);
-      // }
+      // Call addActivitySystemAction with server action
+      const { addActivitySystemAction } = await import('@/app/actions/organization');
+      const result = await addActivitySystemAction(activityId, selectedSystemId, usageContext || undefined);
 
-      // Temporary: Log success for development
-      console.log(`System ${selectedSystemId} would be added (Phase 3: implement action)`);
+      if (result.success) {
+        setCurrentSystems([...currentSystems, {
+          system_id: selectedSystemId,
+          system_name: system.name,
+          usage_context: usageContext,
+        }]);
+        setSelectedSystemId('');
+        setUsageContext('');
+      } else {
+        console.error('Error adding system:', result.message);
+      }
     } catch (error) {
       console.error('Error adding system:', error);
     } finally {
@@ -118,11 +119,15 @@ export function ActivitySystemsModal({
   const handleRemoveSystem = async (systemId: string) => {
     setIsLoading(true);
     try {
-      // TODO: Call removeActivitySystemAction(activityId, systemId)
-      // const result = await removeActivitySystemAction(activityId, systemId);
-      // if (result.success) {
-      //   setCurrentSystems(currentSystems.filter((s) => s.system_id !== systemId));
-      // }
+      // Call removeActivitySystemAction with server action
+      const { removeActivitySystemAction } = await import('@/app/actions/organization');
+      const result = await removeActivitySystemAction(activityId, systemId);
+
+      if (result.success) {
+        setCurrentSystems(currentSystems.filter((s) => s.system_id !== systemId));
+      } else {
+        console.error('Error removing system:', result.message);
+      }
     } catch (error) {
       console.error('Error removing system:', error);
     } finally {

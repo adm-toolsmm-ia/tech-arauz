@@ -1,8 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { ResponsibleRolesInput } from './ResponsibleRolesInput';
 import * as RoleDefinitions from '@/lib/organization/role-definitions';
+
+expect.extend(toHaveNoViolations);
 
 // Mock role definitions
 vi.mock('@/lib/organization/role-definitions', () => ({
@@ -235,5 +238,79 @@ describe('ResponsibleRolesInput', () => {
     await user.keyboard('{Enter}');
 
     expect(onChange).toHaveBeenCalledWith(['manager']);
+  });
+
+  describe('Accessibility (WCAG AA)', () => {
+    it('should have no axe violations when empty', async () => {
+      const onChange = vi.fn();
+      const { container } = render(
+        <ResponsibleRolesInput
+          value={[]}
+          onChange={onChange}
+        />
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no axe violations with selected roles', async () => {
+      const onChange = vi.fn();
+      const { container } = render(
+        <ResponsibleRolesInput
+          value={['manager', 'analyst']}
+          onChange={onChange}
+        />
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no axe violations with dropdown open', async () => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      const { container } = render(
+        <ResponsibleRolesInput
+          value={[]}
+          onChange={onChange}
+        />
+      );
+
+      const input = screen.getByRole('combobox');
+      await user.click(input);
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no axe violations when disabled', async () => {
+      const onChange = vi.fn();
+      const { container } = render(
+        <ResponsibleRolesInput
+          value={['manager']}
+          onChange={onChange}
+          disabled={true}
+        />
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have proper ARIA attributes', () => {
+      const onChange = vi.fn();
+      render(
+        <ResponsibleRolesInput
+          value={[]}
+          onChange={onChange}
+        />
+      );
+
+      const input = screen.getByRole('combobox');
+      expect(input).toHaveAttribute('aria-label', 'Pesquisar e adicionar função responsável');
+      expect(input).toHaveAttribute('aria-autocomplete', 'list');
+      expect(input).toHaveAttribute('aria-expanded', 'false');
+    });
   });
 });

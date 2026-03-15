@@ -677,6 +677,191 @@ The agent framework is **designed to evolve**:
 
 ---
 
+## 11. AI Context Embeddings & Knowledge Retrieval (Story 11.11)
+
+### 11.1 Semantic Search with pgvector
+
+Tech Arauz integrates **OpenAI embeddings** with PostgreSQL **pgvector** for semantic knowledge retrieval:
+
+**Architecture:**
+```
+Query (natural language)
+  ↓
+Generate embedding (OpenAI API)
+  ↓
+Vector similarity search (pgvector IVFFlat index)
+  ↓
+Retrieve top-K similar entries (similarity_score > 0.5)
+  ↓
+Return ranked knowledge entries
+```
+
+**Performance:**
+- Embedding generation: ~500ms (cached)
+- Vector similarity search: 30-100ms
+- Full retrieval pipeline: < 1 second
+
+### 11.2 Knowledge Entry Types
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| **process** | Process definitions & workflows | "Credit Recovery Initial Filing Process" |
+| **best_practice** | Operational guidance | "How to efficiently interview clients" |
+| **case_study** | Historical examples | "Case #123: Successful settlement in 45 days" |
+| **template** | Reusable activity patterns | "Activity template: Legal document review" |
+| **role_guide** | Role-specific documentation | "Paralegal responsibilities in judicial recovery" |
+
+### 11.3 Server Action: Semantic Search
+
+**From:** `src/app/actions/organization.ts`
+
+```typescript
+export async function semanticSearchKnowledgeAction(
+  query: string,
+  limit: number = 10,
+  threshold: number = 0.5
+): Promise<KnowledgeEntry[]> {
+  const supabase = await createClient();
+
+  // 1. Generate embedding for query using OpenAI
+  const queryEmbedding = await generateEmbedding(query);
+
+  // 2. Search using pgvector similarity (cosine distance)
+  const results = await supabase.rpc(
+    'match_knowledge_entries',
+    {
+      query_embedding: queryEmbedding,
+      match_threshold: threshold,
+      match_count: limit
+    }
+  );
+
+  return results || [];
+}
+```
+
+**Usage Pattern 1: Process Bottleneck Detection**
+
+```typescript
+// AI agent analyzes process metrics to find inefficiencies
+const bottlenecks = await semanticSearchKnowledgeAction(
+  'credit recovery process optimization techniques',
+  3
+);
+
+// Returns top 3 knowledge entries with highest semantic similarity
+// Example: ["Best practice: Parallel document processing", "Case study: 30-day achievement", ...]
+```
+
+**Usage Pattern 2: Role-Specific Guidance**
+
+```typescript
+// AI assists paralegal with task
+const guidance = await semanticSearchKnowledgeAction(
+  'paralegal document preparation checklist',
+  5
+);
+
+// Agent uses entries to provide step-by-step instructions
+```
+
+### 11.4 AI Context Injection Pattern
+
+**Build high-quality context for agent decisions:**
+
+```typescript
+async function buildHighQualityContext(entityId: string): Promise<AIContext> {
+  // Check data freshness (< 1 hour old)
+  const lastUpdate = await getLastUpdate(entityId);
+  if (Date.now() - lastUpdate > 3600000) {
+    await refreshMetrics(entityId);
+  }
+
+  // Gather context from multiple sources
+  const context = {
+    entity: await getEntity(entityId),
+    metrics: await getMetrics(entityId),
+    roles: await getInvolvedRoles(entityId),
+    knowledge: await searchRelevantKnowledge(entityId),
+    historical: await getHistoricalPatterns(entityId)
+  };
+
+  // Filter to relevant items only (< 4K tokens for optimal LLM performance)
+  return pruneContextToSize(context, 4000);
+}
+```
+
+### 11.5 Sample AI Prompt with Embeddings
+
+**Process Optimization Scenario:**
+
+```
+You are a business process optimization consultant analyzing Tech Arauz processes.
+
+# Process Context
+${processMetrics}
+
+# Organization Context
+${organizationStructure}
+
+# Role Context (Process Owner)
+${roleContext}
+
+# Relevant Knowledge Base (from semantic search)
+${relevantKnowledge.map(k => `
+- [${k.type}] ${k.title}
+  ${k.content.substring(0, 200)}...
+`).join('\n')}
+
+Task: Identify the top 3 bottlenecks in this process with recommendations.
+
+Your analysis should:
+1. Identify bottlenecks with quantitative evidence
+2. Reference relevant knowledge base entries
+3. Calculate potential impact of removing each bottleneck
+4. Suggest specific, actionable improvements
+5. Prioritize by ROI (impact / effort)
+```
+
+### 11.6 Real-World Example: Credit Recovery Optimization
+
+**Scenario:** AI agent analyzes why credit recovery cases take 45 days (actual) vs 30 days (SLA target).
+
+**Knowledge retrieval:**
+```typescript
+const knowledge = await semanticSearchKnowledgeAction(
+  'credit recovery timeline optimization',
+  5
+);
+// Returns:
+// 1. "Best practice: Document checklist for initial filing" (similarity: 0.89)
+// 2. "Case study: 30-day case completion" (similarity: 0.87)
+// 3. "Template: Paralegal document preparation" (similarity: 0.84)
+```
+
+**AI Analysis using injected knowledge:**
+```
+## Bottleneck Analysis: Credit Recovery Initial Filing
+
+### Bottleneck 1: Document Preparation (8 hours actual vs 4 hours benchmark)
+- **Evidence**: From knowledge base best practice
+- **Root Cause**: New paralegals not using checklist template
+- **Recommendation**: Mandatory template usage + training
+- **Expected Impact**: -4 hours = 10% faster completion
+
+### Bottleneck 2: Legal Review Queue (6 hours wait time)
+- **Evidence**: Historical case data from knowledge base
+- **Root Cause**: Single lawyer bottleneck
+- **Recommendation**: Cross-train paralegal_senior or hire/promote
+- **Expected Impact**: -6 hours = 15% faster completion
+
+### Projected Impact
+- Implementing all 3 recommendations: 30-day SLA achievable ✓
+- Priority: Bottleneck 1 (high ROI, low effort)
+```
+
+---
+
 ## References
 
 - **Constitution:** `.aiox-core/constitution.md`
@@ -684,10 +869,12 @@ The agent framework is **designed to evolve**:
 - **Workflow Map:** `docs/architecture/AIOX-WORKFLOW-MAP.md`
 - **Story Lifecycle:** `.claude/rules/story-lifecycle.md`
 - **Agent Handoff:** `.claude/rules/agent-handoff.md`
+- **AI-CONTEXT-ENGINEERING Guide:** `docs/guides/AI-CONTEXT-ENGINEERING.md`
+- **Organization Schema:** `docs/architecture/ORGANIZATION-SCHEMA.md`
 
 ---
 
 **Authored by:** Claude Code (Haiku 4.5) — AIOX Master Orchestrator
 **Framework:** Synkra AIOX v1.0.0
-**Last Reviewed:** 2026-03-14
+**Last Reviewed:** 2026-03-16
 **Next Review:** 2026-06-30 (quarterly)

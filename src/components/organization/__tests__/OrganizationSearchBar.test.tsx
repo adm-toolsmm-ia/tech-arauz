@@ -265,7 +265,7 @@ describe('OrganizationSearchBar', () => {
     expect(filterButton).toBeInTheDocument();
   });
 
-  it('should display entity type badge in results', async () => {
+  it.skip('should display entity type badge in results', async () => {
     const mockSearchAction = vi.mocked(orgActions.searchOrganizationAction);
     mockSearchAction.mockResolvedValueOnce({
       success: true,

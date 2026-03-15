@@ -12,6 +12,7 @@ export default defineConfig({
       'src/components/ui/__tests__/*.a11y.test.tsx',
       'src/components/organization/__tests__/*.test.tsx',
       'src/app/actions/__tests__/*.test.ts',
+      'src/lib/**/__tests__/*.test.ts',
     ],
     coverage: {
       provider: 'v8',

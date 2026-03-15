@@ -42,8 +42,8 @@ export function NotificationTester() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 max-w-xs rounded-lg border border-primary bg-primary/10 p-4 shadow-lg">
-      <p className="mb-2 text-xs font-semibold text-primary">Notification Tester (Dev Only)</p>
+    <div className="border-primary bg-primary/10 fixed bottom-4 right-4 z-40 max-w-xs rounded-lg border p-4 shadow-lg">
+      <p className="text-primary mb-2 text-xs font-semibold">Notification Tester (Dev Only)</p>
       <div className="space-y-2">
         <Button size="sm" variant="outline" onClick={handleAddMockNotification} className="w-full">
           Add Random

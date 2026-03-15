@@ -52,7 +52,7 @@ function getProjectColorHex(projectId: string, projectIds: string[]): string {
 const TaskListHeaderDefault = ({ headerHeight, fontFamily, fontSize }: any) => {
   return (
     <div
-      className="flex items-center border-b border-border bg-muted/40 font-semibold text-muted-foreground"
+      className="bg-muted/40 flex items-center border-b border-border font-semibold text-muted-foreground"
       style={{ height: headerHeight, fontFamily, fontSize: '0.75rem' }}
     >
       <div className="min-w-[120px] flex-1 truncate px-4">Atividade / Projeto</div>
@@ -83,7 +83,7 @@ const TaskListTableDefault = ({
             className={`flex items-center border-b border-border/50 transition-colors ${
               isProject
                 ? 'bg-muted/10 font-semibold text-foreground'
-                : 'text-muted-foreground hover:bg-muted/30'
+                : 'hover:bg-muted/30 text-muted-foreground'
             }`}
             style={{ height: rowHeight }}
           >
@@ -104,7 +104,7 @@ const TaskListTableDefault = ({
                 </button>
               )}
               {!isProject && (
-                <div className="mr-2 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/30" />
+                <div className="bg-muted-foreground/30 mr-2 h-1.5 w-1.5 shrink-0 rounded-full" />
               )}
               <span className="truncate" title={t.name}>
                 {t.name}
@@ -407,7 +407,7 @@ export function CronogramaGantt({
     <div className="w-full overflow-hidden">
       {/* ✨ Período centralizado no FilterBar (remover duplicação local)
           Gantt renderiza apenas o gráfico, controles ficam sticky no topo */}
-      <div className="scrollbar-thin max-h-[600px] w-full overflow-auto rounded-md border border-border bg-card/50 shadow-sm">
+      <div className="scrollbar-thin bg-card/50 max-h-[600px] w-full overflow-auto rounded-md border border-border shadow-sm">
         <Gantt
           tasks={tasks}
           viewMode={viewMode}

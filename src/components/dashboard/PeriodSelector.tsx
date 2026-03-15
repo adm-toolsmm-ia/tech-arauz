@@ -32,7 +32,7 @@ export function PeriodSelector({
   disabled = false,
 }: PeriodSelectorProps): ReactNode {
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex flex-wrap gap-2">
       {PERIOD_OPTIONS.map((option) => (
         <Button
           key={option.value}

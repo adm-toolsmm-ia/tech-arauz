@@ -167,7 +167,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <h4 className="cursor-help text-sm font-semibold leading-normal text-foreground/90">
+                <h4 className="text-foreground/90 cursor-help text-sm font-semibold leading-normal">
                   {project.project_name}
                 </h4>
               </TooltipTrigger>
@@ -213,7 +213,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
             <TextWithTooltip
               text={project.responsible}
               maxLength={40}
-              className="leading-snug text-foreground/85"
+              className="text-foreground/85 leading-snug"
             />
           </div>
 
@@ -224,7 +224,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
               <TextWithTooltip
                 text={project.area}
                 maxLength={40}
-                className="leading-snug text-foreground/85"
+                className="text-foreground/85 leading-snug"
               />
             </div>
           )}
@@ -256,7 +256,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
               <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <div className="flex-1">
                 <span className="text-[9px] text-muted-foreground">Próximo:</span>
-                <span className="block text-xs text-foreground/80">
+                <span className="text-foreground/80 block text-xs">
                   {formatDateBR(nextDeadline)}
                 </span>
               </div>
@@ -329,7 +329,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
               {project.mensagem_movimentacao}
             </p>
             {project.data_movimentacao && (
-              <p className="text-[9px] text-muted-foreground/60">
+              <p className="text-muted-foreground/60 text-[9px]">
                 {formatRelativeDate(project.data_movimentacao)}
               </p>
             )}

@@ -5,10 +5,7 @@
 
 'use client';
 
-import {
-  filterRegistryRecursos,
-  searchFieldsRecursos,
-} from '@/lib/filters/filters-recursos';
+import { filterRegistryRecursos, searchFieldsRecursos } from '@/lib/filters/filters-recursos';
 import { applyFilters } from '@/lib/filters/filter-utils';
 import { useFilterState } from '@/hooks/useFilterState';
 

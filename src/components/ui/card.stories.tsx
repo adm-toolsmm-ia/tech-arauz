@@ -53,8 +53,8 @@ export const Complex: Story = {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <p className="text-sm font-medium">Progress: 75%</p>
-          <div className="h-2 w-full rounded-full bg-secondary">
-            <div className="h-full w-3/4 rounded-full bg-primary" />
+          <div className="bg-secondary h-2 w-full rounded-full">
+            <div className="bg-primary h-full w-3/4 rounded-full" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -91,7 +91,7 @@ export const Variations: Story = {
       </Card>
 
       {/* Card with accent border */}
-      <Card className="border-l-4 border-l-primary">
+      <Card className="border-l-primary border-l-4">
         <CardHeader>
           <CardTitle>Accent Card</CardTitle>
         </CardHeader>
@@ -107,7 +107,7 @@ export const Variations: Story = {
       </Card>
 
       {/* Minimal card */}
-      <Card className="border-0 bg-secondary">
+      <Card className="bg-secondary border-0">
         <CardContent className="pt-6">
           <p>Minimal card with custom styling</p>
         </CardContent>
@@ -142,8 +142,8 @@ export const Loading: Story = {
         <CardTitle className="animate-pulse">Loading...</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="h-4 w-full animate-pulse rounded bg-secondary" />
-        <div className="h-4 w-3/4 animate-pulse rounded bg-secondary" />
+        <div className="bg-secondary h-4 w-full animate-pulse rounded" />
+        <div className="bg-secondary h-4 w-3/4 animate-pulse rounded" />
       </CardContent>
     </Card>
   ),

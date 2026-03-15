@@ -110,13 +110,7 @@ export const QuarterlyView: Story = {
 function InteractiveWrapper(args: any) {
   const [timeframe, setTimeframe] = React.useState<'week' | 'month' | 'quarter'>('month');
 
-  return (
-    <ProcessMetricsHistory
-      {...args}
-      timeframe={timeframe}
-      onTimeframeChange={setTimeframe}
-    />
-  );
+  return <ProcessMetricsHistory {...args} timeframe={timeframe} onTimeframeChange={setTimeframe} />;
 }
 
 /**

@@ -37,7 +37,7 @@ export function ConversasContent({ initialSessions, initialTotal }: ConversasCon
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/30">
+    <div className="bg-muted/30 flex min-h-screen flex-col">
       <DashboardHeader
         title="Histórico de Conversas"
         subtitle="Gerencie e visualize as sessões registradas pelo assistente."
@@ -48,7 +48,7 @@ export function ConversasContent({ initialSessions, initialTotal }: ConversasCon
           <CardContent className="p-0">
             {initialSessions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <MessageSquare className="mb-4 h-12 w-12 text-muted-foreground/50" />
+                <MessageSquare className="text-muted-foreground/50 mb-4 h-12 w-12" />
                 <h3 className="text-lg font-medium text-foreground">Nenhuma conversa encontrada</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
                   O histórico de chat para sua conta está vazio no momento.
@@ -73,7 +73,7 @@ export function ConversasContent({ initialSessions, initialTotal }: ConversasCon
                     ] || { label: session.status, badge: 'outline' };
 
                     return (
-                      <TableRow key={session.id} className="transition-colors hover:bg-muted/30">
+                      <TableRow key={session.id} className="hover:bg-muted/30 transition-colors">
                         <TableCell className="font-medium text-foreground">
                           {session.agent_name || 'Desconhecido'}
                         </TableCell>

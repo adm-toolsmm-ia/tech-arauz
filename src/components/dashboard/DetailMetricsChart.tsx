@@ -52,7 +52,6 @@ export function DetailMetricsChart({
         year: 365,
       };
       daysToShow = rangeMap[dateRange.type as 'week' | 'month' | '3months' | 'year'] || 30;
-
     }
 
     // Create time series data simulating movements over time
@@ -82,7 +81,14 @@ export function DetailMetricsChart({
 
       // Simulate variance in daily movements
       const baseMovements = Math.round(movementsPerDay * (0.7 + Math.random() * 0.6));
-      const completedProjects = Math.max(0, Math.round(baseMovements * (person.projects_completed / person.total_movements) * (0.8 + Math.random() * 0.4)));
+      const completedProjects = Math.max(
+        0,
+        Math.round(
+          baseMovements *
+            (person.projects_completed / person.total_movements) *
+            (0.8 + Math.random() * 0.4),
+        ),
+      );
 
       data.push({
         day: dayLabel,
@@ -104,9 +110,8 @@ export function DetailMetricsChart({
     const totalMovements = chartData.reduce((sum, d) => sum + d.movements, 0);
     const totalCompleted = chartData.reduce((sum, d) => sum + d.completed, 0);
     const avgMovements = Math.round(totalMovements / chartData.length);
-    const completionRate = totalMovements > 0
-      ? Math.round((totalCompleted / totalMovements) * 100)
-      : 0;
+    const completionRate =
+      totalMovements > 0 ? Math.round((totalCompleted / totalMovements) * 100) : 0;
 
     return { avgMovements, totalCompleted, completionRate };
   }, [chartData]);
@@ -114,18 +119,11 @@ export function DetailMetricsChart({
   return (
     <div className="space-y-6">
       {/* Main Timeline Chart */}
-      <div className="bg-gradient-to-br from-background to-muted/20 rounded-lg p-4 border border-muted">
+      <div className="to-muted/20 rounded-lg border border-muted bg-gradient-to-br from-background p-4">
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-          >
+          <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="day"
-              tick={{ fontSize: 12 }}
-              className="fill-muted-foreground"
-            />
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} className="fill-muted-foreground" />
             <YAxis
               yAxisId="left"
               label={{ value: 'Movimentações', angle: -90, position: 'insideLeft' }}
@@ -177,22 +175,12 @@ export function DetailMetricsChart({
       </div>
 
       {/* Comparison Chart - Movements vs Completed */}
-      <div className="bg-gradient-to-br from-background to-muted/20 rounded-lg p-4 border border-muted">
+      <div className="to-muted/20 rounded-lg border border-muted bg-gradient-to-br from-background p-4">
         <ResponsiveContainer width="100%" height={200}>
-          <BarChart
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-          >
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="day"
-              tick={{ fontSize: 12 }}
-              className="fill-muted-foreground"
-            />
-            <YAxis
-              tick={{ fontSize: 12 }}
-              className="fill-muted-foreground"
-            />
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} className="fill-muted-foreground" />
+            <YAxis tick={{ fontSize: 12 }} className="fill-muted-foreground" />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'var(--background)',
@@ -211,15 +199,15 @@ export function DetailMetricsChart({
 
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="p-3 bg-muted/50 rounded-lg border border-muted/50">
+        <div className="bg-muted/50 border-muted/50 rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Média de Movimentações</p>
           <p className="text-lg font-semibold">{stats.avgMovements}/dia</p>
         </div>
-        <div className="p-3 bg-muted/50 rounded-lg border border-muted/50">
+        <div className="bg-muted/50 border-muted/50 rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Total Concluídos</p>
           <p className="text-lg font-semibold">{stats.totalCompleted}</p>
         </div>
-        <div className="p-3 bg-muted/50 rounded-lg border border-muted/50">
+        <div className="bg-muted/50 border-muted/50 rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Taxa de Conclusão</p>
           <p className="text-lg font-semibold">{stats.completionRate}%</p>
         </div>

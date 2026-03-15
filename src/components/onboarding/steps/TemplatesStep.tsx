@@ -37,7 +37,7 @@ export function TemplatesStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold mb-2">Modelos de Processos</h2>
+        <h2 className="mb-2 text-lg font-semibold">Modelos de Processos</h2>
         <p className="text-sm text-muted-foreground">
           Selecione um modelo pré-configurado ou comece em branco
         </p>
@@ -45,9 +45,9 @@ export function TemplatesStep({
 
       {/* Error Display */}
       {errors.length > 0 && (
-        <Card className="border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800">
+        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
           <CardContent className="pt-4">
-            <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+            <ul className="space-y-1 text-sm text-red-700 dark:text-red-300">
               {errors.map((error, idx) => (
                 <li key={idx} className="flex gap-2">
                   <span>•</span> {error}
@@ -88,19 +88,17 @@ export function TemplatesStep({
                 />
 
                 {/* Template Info */}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <Label
                     htmlFor={`template-${template.id}`}
-                    className="font-semibold text-base cursor-pointer"
+                    className="cursor-pointer text-base font-semibold"
                   >
                     {template.name}
                   </Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {template.description}
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{template.description}</p>
 
                   {template.processCount !== undefined && (
-                    <div className="flex items-center gap-2 mt-3">
+                    <div className="mt-3 flex items-center gap-2">
                       <Badge variant="secondary" className="text-xs">
                         {template.processCount} processos pré-configurados
                       </Badge>
@@ -114,24 +112,23 @@ export function TemplatesStep({
       </div>
 
       {/* Information Card */}
-      <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+      <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
         <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            ℹ️ Informação
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2 text-sm">ℹ️ Informação</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-blue-900 dark:text-blue-100 space-y-2">
+        <CardContent className="space-y-2 text-sm text-blue-900 dark:text-blue-100">
           <p>
             Os modelos incluem processos pré-configurados que você pode customizar posteriormente.
           </p>
           <p>
-            Se nenhum modelo se encaixa perfeitamente, você pode começar em branco e adicionar processos manualmente.
+            Se nenhum modelo se encaixa perfeitamente, você pode começar em branco e adicionar
+            processos manualmente.
           </p>
         </CardContent>
       </Card>
 
       {loading && (
-        <div className="text-center py-4">
+        <div className="py-4 text-center">
           <p className="text-sm text-muted-foreground">Carregando modelos...</p>
         </div>
       )}

@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AlertCircle, Clock, ChevronDown } from 'lucide-react';
 
 interface OrgDocumentation {
@@ -35,7 +31,8 @@ export function DocumentationAccordion({ data, className }: DocumentationAccordi
   }
 
   // Build accordion items from non-null fields
-  const items: Array<{ key: string; label: string; content: React.ReactNode; special?: boolean }> = [];
+  const items: Array<{ key: string; label: string; content: React.ReactNode; special?: boolean }> =
+    [];
 
   // SPECIAL: regra field with destaque
   if (data.regra) {
@@ -75,7 +72,7 @@ export function DocumentationAccordion({ data, className }: DocumentationAccordi
       key: 'steps',
       label: 'Passos',
       content: (
-        <ol className="list-decimal list-inside space-y-2">
+        <ol className="list-inside list-decimal space-y-2">
           {data.steps.map((step, idx) => (
             <li key={idx} className="text-sm">
               {step}
@@ -124,35 +121,33 @@ export function DocumentationAccordion({ data, className }: DocumentationAccordi
             onOpenChange={() => toggleOpen(item.key)}
             className={
               item.special && item.key === 'regra'
-                ? 'border-l-2 border-destructive rounded'
-                : 'border rounded'
+                ? 'rounded border-l-2 border-destructive'
+                : 'rounded border'
             }
           >
-            <CollapsibleTrigger className="w-full px-3 py-2 flex items-center justify-between hover:bg-muted/50">
+            <CollapsibleTrigger className="hover:bg-muted/50 flex w-full items-center justify-between px-3 py-2">
               <div className="flex items-center gap-2">
-                {item.key === 'regra' && (
-                  <AlertCircle className="w-4 h-4 text-destructive" />
-                )}
-                {item.key === 'prazo' && <Clock className="w-4 h-4 text-primary" />}
+                {item.key === 'regra' && <AlertCircle className="h-4 w-4 text-destructive" />}
+                {item.key === 'prazo' && <Clock className="text-primary h-4 w-4" />}
                 <span
                   className={
                     item.special && item.key === 'regra'
                       ? 'font-bold text-destructive'
-                      : 'font-semibold text-sm'
+                      : 'text-sm font-semibold'
                   }
                 >
                   {item.label}
                 </span>
               </div>
               <ChevronDown
-                className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
               />
             </CollapsibleTrigger>
             <CollapsibleContent
               className={
                 item.key === 'regra'
-                  ? 'px-3 py-2 bg-destructive/5 text-destructive/80 border-t'
-                  : 'px-3 py-2 border-t'
+                  ? 'bg-destructive/5 text-destructive/80 border-t px-3 py-2'
+                  : 'border-t px-3 py-2'
               }
             >
               {item.content}

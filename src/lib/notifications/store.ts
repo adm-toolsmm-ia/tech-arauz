@@ -63,7 +63,9 @@ export const useNotificationStore = create<NotificationState>()(
           // Fallback to default state if validation fails
           return { notifications: [] };
         }
-        return persistedState && typeof persistedState === 'object' && 'notifications' in persistedState
+        return persistedState &&
+          typeof persistedState === 'object' &&
+          'notifications' in persistedState
           ? (persistedState as { notifications: Notification[] })
           : { notifications: [] };
       },

@@ -44,7 +44,7 @@ export function ModelCard({
       role="button"
       tabIndex={0}
       className={cn(
-        'flex cursor-pointer flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50',
+        'hover:bg-muted/50 flex cursor-pointer flex-col rounded-lg border p-4 transition-colors',
         isSelected && 'border-primary bg-primary/5',
       )}
       onClick={() => onSelect?.(model)}
@@ -56,7 +56,7 @@ export function ModelCard({
       }}
     >
       <div className="space-y-1.5">
-        <span className="line-clamp-2 text-sm font-semibold leading-tight text-foreground/90">
+        <span className="text-foreground/90 line-clamp-2 text-sm font-semibold leading-tight">
           {model.name}
         </span>
         {model.description && (

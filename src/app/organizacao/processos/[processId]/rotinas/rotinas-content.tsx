@@ -242,11 +242,11 @@ export function RotinasContent({
                           setSelectedRoutine(r);
                         }
                       }}
-                      className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-muted/50"
+                      className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                          <ListTodo className="size-5 text-primary" />
+                        <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+                          <ListTodo className="text-primary size-5" />
                         </div>
                         <div>
                           <p className="font-medium">{r.name}</p>

@@ -10,9 +10,19 @@ expect.extend(toHaveNoViolations);
 // Mock role definitions
 vi.mock('@/lib/organization/role-definitions', () => ({
   getAllRoles: vi.fn(() => [
-    { value: 'manager', label: 'Manager', description: 'Department Manager', category: 'management' },
+    {
+      value: 'manager',
+      label: 'Manager',
+      description: 'Department Manager',
+      category: 'management',
+    },
     { value: 'analyst', label: 'Analyst', description: 'Data analyst', category: 'specialist' },
-    { value: 'coordinator', label: 'Coordinator', description: 'Coordinator', category: 'operational' },
+    {
+      value: 'coordinator',
+      label: 'Coordinator',
+      description: 'Coordinator',
+      category: 'operational',
+    },
   ]),
   getRoleLabel: vi.fn((value: string) => {
     const roles: Record<string, string> = {
@@ -27,24 +37,14 @@ vi.mock('@/lib/organization/role-definitions', () => ({
 describe('ResponsibleRolesInput', () => {
   it('should render with initial value', () => {
     const onChange = vi.fn();
-    render(
-      <ResponsibleRolesInput
-        value={['manager']}
-        onChange={onChange}
-      />
-    );
+    render(<ResponsibleRolesInput value={['manager']} onChange={onChange} />);
 
     expect(screen.getByText('Manager')).toBeInTheDocument();
   });
 
   it('should render tags for each role in value', () => {
     const onChange = vi.fn();
-    render(
-      <ResponsibleRolesInput
-        value={['manager', 'analyst']}
-        onChange={onChange}
-      />
-    );
+    render(<ResponsibleRolesInput value={['manager', 'analyst']} onChange={onChange} />);
 
     expect(screen.getByText('Manager')).toBeInTheDocument();
     expect(screen.getByText('Analyst')).toBeInTheDocument();
@@ -53,10 +53,7 @@ describe('ResponsibleRolesInput', () => {
   it('should remove tag when X button clicked', async () => {
     const onChange = vi.fn();
     const { container } = render(
-      <ResponsibleRolesInput
-        value={['manager', 'analyst']}
-        onChange={onChange}
-      />
+      <ResponsibleRolesInput value={['manager', 'analyst']} onChange={onChange} />,
     );
 
     const removeButtons = container.querySelectorAll('button[aria-label*="Remove"]');
@@ -69,12 +66,7 @@ describe('ResponsibleRolesInput', () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <ResponsibleRolesInput
-        value={['manager']}
-        onChange={onChange}
-      />
-    );
+    render(<ResponsibleRolesInput value={['manager']} onChange={onChange} />);
 
     const input = screen.getByRole('combobox');
     await user.click(input);
@@ -96,12 +88,7 @@ describe('ResponsibleRolesInput', () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <ResponsibleRolesInput
-        value={[]}
-        onChange={onChange}
-      />
-    );
+    render(<ResponsibleRolesInput value={[]} onChange={onChange} />);
 
     const input = screen.getByRole('combobox');
     await user.click(input);
@@ -117,12 +104,7 @@ describe('ResponsibleRolesInput', () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <ResponsibleRolesInput
-        value={['manager', 'analyst']}
-        onChange={onChange}
-      />
-    );
+    render(<ResponsibleRolesInput value={['manager', 'analyst']} onChange={onChange} />);
 
     const input = screen.getByRole('combobox');
     await user.click(input);
@@ -135,12 +117,7 @@ describe('ResponsibleRolesInput', () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
 
-    const { container } = render(
-      <ResponsibleRolesInput
-        value={[]}
-        onChange={onChange}
-      />
-    );
+    const { container } = render(<ResponsibleRolesInput value={[]} onChange={onChange} />);
 
     const input = screen.getByRole('combobox');
     await user.click(input);
@@ -154,12 +131,7 @@ describe('ResponsibleRolesInput', () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <ResponsibleRolesInput
-        value={['manager']}
-        onChange={onChange}
-      />
-    );
+    render(<ResponsibleRolesInput value={['manager']} onChange={onChange} />);
 
     const input = screen.getByRole('combobox');
     await user.click(input);
@@ -174,13 +146,7 @@ describe('ResponsibleRolesInput', () => {
   it('should be disabled when disabled prop is true', () => {
     const onChange = vi.fn();
 
-    render(
-      <ResponsibleRolesInput
-        value={[]}
-        onChange={onChange}
-        disabled={true}
-      />
-    );
+    render(<ResponsibleRolesInput value={[]} onChange={onChange} disabled={true} />);
 
     const input = screen.getByRole('combobox');
     expect(input).toBeDisabled();
@@ -189,12 +155,7 @@ describe('ResponsibleRolesInput', () => {
   it('should show role count when roles selected', () => {
     const onChange = vi.fn();
 
-    render(
-      <ResponsibleRolesInput
-        value={['manager', 'analyst']}
-        onChange={onChange}
-      />
-    );
+    render(<ResponsibleRolesInput value={['manager', 'analyst']} onChange={onChange} />);
 
     expect(screen.getByText('2 roles selected')).toBeInTheDocument();
   });
@@ -203,12 +164,7 @@ describe('ResponsibleRolesInput', () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <ResponsibleRolesInput
-        value={[]}
-        onChange={onChange}
-      />
-    );
+    render(<ResponsibleRolesInput value={[]} onChange={onChange} />);
 
     const input = screen.getByRole('combobox');
     await user.click(input);
@@ -225,12 +181,7 @@ describe('ResponsibleRolesInput', () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <ResponsibleRolesInput
-        value={[]}
-        onChange={onChange}
-      />
-    );
+    render(<ResponsibleRolesInput value={[]} onChange={onChange} />);
 
     const input = screen.getByRole('combobox');
     await user.click(input);
@@ -243,12 +194,7 @@ describe('ResponsibleRolesInput', () => {
   describe('Accessibility (WCAG AA)', () => {
     it('should have no axe violations when empty', async () => {
       const onChange = vi.fn();
-      const { container } = render(
-        <ResponsibleRolesInput
-          value={[]}
-          onChange={onChange}
-        />
-      );
+      const { container } = render(<ResponsibleRolesInput value={[]} onChange={onChange} />);
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -257,10 +203,7 @@ describe('ResponsibleRolesInput', () => {
     it('should have no axe violations with selected roles', async () => {
       const onChange = vi.fn();
       const { container } = render(
-        <ResponsibleRolesInput
-          value={['manager', 'analyst']}
-          onChange={onChange}
-        />
+        <ResponsibleRolesInput value={['manager', 'analyst']} onChange={onChange} />,
       );
 
       const results = await axe(container);
@@ -270,12 +213,7 @@ describe('ResponsibleRolesInput', () => {
     it('should have no axe violations with dropdown open', async () => {
       const onChange = vi.fn();
       const user = userEvent.setup();
-      const { container } = render(
-        <ResponsibleRolesInput
-          value={[]}
-          onChange={onChange}
-        />
-      );
+      const { container } = render(<ResponsibleRolesInput value={[]} onChange={onChange} />);
 
       const input = screen.getByRole('combobox');
       await user.click(input);
@@ -287,11 +225,7 @@ describe('ResponsibleRolesInput', () => {
     it('should have no axe violations when disabled', async () => {
       const onChange = vi.fn();
       const { container } = render(
-        <ResponsibleRolesInput
-          value={['manager']}
-          onChange={onChange}
-          disabled={true}
-        />
+        <ResponsibleRolesInput value={['manager']} onChange={onChange} disabled={true} />,
       );
 
       const results = await axe(container);
@@ -300,12 +234,7 @@ describe('ResponsibleRolesInput', () => {
 
     it('should have proper ARIA attributes', () => {
       const onChange = vi.fn();
-      render(
-        <ResponsibleRolesInput
-          value={[]}
-          onChange={onChange}
-        />
-      );
+      render(<ResponsibleRolesInput value={[]} onChange={onChange} />);
 
       const input = screen.getByRole('combobox');
       expect(input).toHaveAttribute('aria-label', 'Pesquisar e adicionar função responsável');

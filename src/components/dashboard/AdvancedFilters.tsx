@@ -42,7 +42,12 @@ export function AdvancedFilters({
   const [showExpandedFilters, setShowExpandedFilters] = useState(false);
 
   // Performance status presets
-  const statusOptions: Array<{ value: PerformanceStatus; label: string; icon: string; color: string }> = [
+  const statusOptions: Array<{
+    value: PerformanceStatus;
+    label: string;
+    icon: string;
+    color: string;
+  }> = [
     {
       value: 'high',
       label: 'High Performer',
@@ -61,7 +66,12 @@ export function AdvancedFilters({
       icon: '⚠️',
       color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
     },
-    { value: 'all', label: 'Todos', icon: '📊', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' },
+    {
+      value: 'all',
+      label: 'Todos',
+      icon: '📊',
+      color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+    },
   ];
 
   // Completion range options
@@ -78,7 +88,7 @@ export function AdvancedFilters({
     (status: PerformanceStatus) => {
       onChange({ ...value, status });
     },
-    [value, onChange]
+    [value, onChange],
   );
 
   // Handle completion range click
@@ -86,7 +96,7 @@ export function AdvancedFilters({
     (range: CompletionRange) => {
       onChange({ ...value, completionRange: range });
     },
-    [value, onChange]
+    [value, onChange],
   );
 
   // Clear all filters
@@ -100,14 +110,15 @@ export function AdvancedFilters({
   }, [onChange]);
 
   // Check if any filters are active
-  const hasActiveFilters = value.status !== 'all' || value.completionRange !== 'all' || value.searchTerm !== '';
+  const hasActiveFilters =
+    value.status !== 'all' || value.completionRange !== 'all' || value.searchTerm !== '';
 
   return (
     <Card className="bg-muted/30 border-muted">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Filter className="w-4 h-4" />
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Filter className="h-4 w-4" />
             Filtros Avançados
             {activeCount > 0 && totalCount > 0 && (
               <Badge variant="outline" className="ml-2">
@@ -117,7 +128,7 @@ export function AdvancedFilters({
           </CardTitle>
           {hasActiveFilters && (
             <Button variant="ghost" size="sm" onClick={handleClearAll} className="h-6 text-xs">
-              <X className="w-3 h-3 mr-1" />
+              <X className="mr-1 h-3 w-3" />
               Limpar
             </Button>
           )}
@@ -135,7 +146,7 @@ export function AdvancedFilters({
                 variant={value.status === option.value ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusClick(option.value)}
-                className="text-xs justify-start"
+                className="justify-start text-xs"
               >
                 <span className="mr-1">{option.icon}</span>
                 {option.label}
@@ -164,27 +175,28 @@ export function AdvancedFilters({
 
         {/* Active Filters Display */}
         {hasActiveFilters && (
-          <div className="border-t pt-3 space-y-2">
+          <div className="space-y-2 border-t pt-3">
             <p className="text-xs font-medium text-muted-foreground">Filtros Aplicados</p>
             <div className="flex flex-wrap gap-2">
               {value.status !== 'all' && (
                 <Badge
                   variant="secondary"
-                  className="flex items-center gap-1 cursor-pointer hover:bg-secondary/80"
+                  className="hover:bg-secondary/80 flex cursor-pointer items-center gap-1"
                   onClick={() => handleStatusClick('all')}
                 >
                   Status: {statusOptions.find((o) => o.value === value.status)?.label}
-                  <X className="w-3 h-3" />
+                  <X className="h-3 w-3" />
                 </Badge>
               )}
               {value.completionRange !== 'all' && (
                 <Badge
                   variant="secondary"
-                  className="flex items-center gap-1 cursor-pointer hover:bg-secondary/80"
+                  className="hover:bg-secondary/80 flex cursor-pointer items-center gap-1"
                   onClick={() => handleCompletionClick('all')}
                 >
-                  Conclusão: {completionOptions.find((o) => o.value === value.completionRange)?.label}
-                  <X className="w-3 h-3" />
+                  Conclusão:{' '}
+                  {completionOptions.find((o) => o.value === value.completionRange)?.label}
+                  <X className="h-3 w-3" />
                 </Badge>
               )}
               {value.searchTerm && (

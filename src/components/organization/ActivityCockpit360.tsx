@@ -5,8 +5,14 @@ import { FileText, AlertCircle, Users, BarChart3, Trash2, Monitor } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { InfoField, RolesDisplay, DocumentationAccordion, InputOutputList } from '@/components/organization/shared';
+import {
+  InfoField,
+  RolesDisplay,
+  DocumentationAccordion,
+  InputOutputList,
+} from '@/components/organization/shared';
 import { ActivitySystemsModal } from './ActivitySystemsModal';
+import { OrgEntityFormSheet } from './OrgEntityFormSheet';
 import type { OrgActivity, OrgRoutine } from '@/types/organization';
 
 interface ActivityCockpit360Props {
@@ -35,6 +41,8 @@ export function ActivityCockpit360({
   onDelete,
 }: ActivityCockpit360Props) {
   const [showSystemsModal, setShowSystemsModal] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formTab, setFormTab] = useState('info');
 
   const formatExecutionTime = (minutes?: number | null) => {
     if (!minutes) return 'N/A';
@@ -50,35 +58,35 @@ export function ActivityCockpit360({
         <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
           <TabsTrigger
             value="info"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <FileText className="mr-2 size-4" />
             Informações
           </TabsTrigger>
           <TabsTrigger
             value="bpm"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <BarChart3 className="mr-2 size-4" />
             BPM
           </TabsTrigger>
           <TabsTrigger
             value="docs"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <AlertCircle className="mr-2 size-4" />
             Documentos
           </TabsTrigger>
           <TabsTrigger
             value="documentation"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <FileText className="mr-2 size-4" />
             Documentação
           </TabsTrigger>
           <TabsTrigger
             value="sistemas"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <Monitor className="mr-2 size-4" />
             Sistemas
@@ -87,30 +95,43 @@ export function ActivityCockpit360({
 
         {/* Tab: Informações */}
         <TabsContent value="info" className="mt-6 space-y-8">
-          {(onEdit || onDelete) && (
-            <div className="flex justify-end gap-2">
-              {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit}>
-                  Editar
-                </Button>
-              )}
-              {onDelete && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 text-destructive hover:text-destructive"
-                  onClick={onDelete}
-                >
-                  <Trash2 className="size-4" />
-                  Excluir
-                </Button>
-              )}
-            </div>
-          )}
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setFormTab('info');
+                setIsFormOpen(true);
+              }}
+            >
+              Editar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setFormTab('bpm');
+                setIsFormOpen(true);
+              }}
+            >
+              Detalhes BPM
+            </Button>
+            {onDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-destructive hover:text-destructive"
+                onClick={onDelete}
+              >
+                <Trash2 className="size-4" />
+                Excluir
+              </Button>
+            )}
+          </div>
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <FileText className="size-5 text-primary" />
+              <FileText className="text-primary size-5" />
               <h3 className="text-base font-semibold">Dados Principais</h3>
             </div>
             <div className="space-y-4">
@@ -121,37 +142,35 @@ export function ActivityCockpit360({
 
               <div className="flex gap-3">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Complexidade</p>
+                  <p className="mb-1 text-xs text-muted-foreground">Complexidade</p>
                   <Badge className={complexityColors[activity.complexity || 'low']}>
                     {(activity.complexity || 'low').toUpperCase()}
                   </Badge>
                 </div>
 
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Prioridade</p>
+                  <p className="mb-1 text-xs text-muted-foreground">Prioridade</p>
                   <Badge className={priorityColors[activity.priority || 'normal']}>
                     {(activity.priority || 'normal').toUpperCase()}
                   </Badge>
                 </div>
 
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Tempo Médio</p>
+                  <p className="mb-1 text-xs text-muted-foreground">Tempo Médio</p>
                   <Badge variant="outline">
                     {formatExecutionTime(activity.average_execution_time)}
                   </Badge>
                 </div>
               </div>
 
-              {activity.description && (
-                <InfoField label="Descrição" value={activity.description} />
-              )}
+              {activity.description && <InfoField label="Descrição" value={activity.description} />}
             </div>
           </section>
 
           {activity.required_role && (
             <section>
               <div className="mb-4 flex items-center gap-2 border-b pb-2">
-                <Users className="size-5 text-primary" />
+                <Users className="text-primary size-5" />
                 <h3 className="text-base font-semibold">Responsável</h3>
               </div>
               <Badge variant="outline" className="gap-2">
@@ -166,28 +185,20 @@ export function ActivityCockpit360({
           {activity.inputs && activity.inputs.length > 0 && (
             <section>
               <div className="mb-4 flex items-center gap-2 border-b pb-2">
-                <BarChart3 className="size-5 text-primary" />
+                <BarChart3 className="text-primary size-5" />
                 <h3 className="text-base font-semibold">Inputs (Entradas)</h3>
               </div>
-              <InputOutputList
-                items={activity.inputs}
-                direction="input"
-                variant="default"
-              />
+              <InputOutputList items={activity.inputs} direction="input" variant="default" />
             </section>
           )}
 
           {activity.outputs && activity.outputs.length > 0 && (
             <section>
               <div className="mb-4 flex items-center gap-2 border-b pb-2">
-                <BarChart3 className="size-5 text-primary" />
+                <BarChart3 className="text-primary size-5" />
                 <h3 className="text-base font-semibold">Outputs (Saídas)</h3>
               </div>
-              <InputOutputList
-                items={activity.outputs}
-                direction="output"
-                variant="default"
-              />
+              <InputOutputList items={activity.outputs} direction="output" variant="default" />
             </section>
           )}
 
@@ -243,9 +254,7 @@ export function ActivityCockpit360({
           {activity.documentation ? (
             <DocumentationAccordion data={activity.documentation} />
           ) : (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              Sem documentação
-            </div>
+            <div className="py-12 text-center text-sm text-muted-foreground">Sem documentação</div>
           )}
         </TabsContent>
 
@@ -275,6 +284,17 @@ export function ActivityCockpit360({
           />
         </TabsContent>
       </Tabs>
+
+      {/* Edit Form Sheet - Story 13.1: Gap 1 & 2 */}
+      <OrgEntityFormSheet
+        entity="activity"
+        mode="edit"
+        initialData={activity}
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSaved={() => setIsFormOpen(false)}
+        initialTab={formTab}
+      />
     </div>
   );
 }

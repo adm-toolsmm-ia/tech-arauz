@@ -96,7 +96,11 @@ export function useSearchSuggestions(query: string) {
   const cachedSuggestions = getCachedSuggestions();
   const hasCache = cachedSuggestions.length > 0;
 
-  const { data: suggestions, isLoading, error } = useQuery<SuggestionItem[]>({
+  const {
+    data: suggestions,
+    isLoading,
+    error,
+  } = useQuery<SuggestionItem[]>({
     queryKey: ['suggestions', query],
     queryFn: () => fetchSuggestions(query),
     enabled: query.length >= 2,

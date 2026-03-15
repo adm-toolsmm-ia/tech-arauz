@@ -133,10 +133,7 @@ export const Spacing: Story = {
           { name: '4xl', size: 48, value: '3rem' },
         ].map(({ name, size, value }) => (
           <div key={name} className="flex items-center gap-4">
-            <div
-              className="bg-blue-200"
-              style={{ width: `${size}px`, height: '20px' }}
-            />
+            <div className="bg-blue-200" style={{ width: `${size}px`, height: '20px' }} />
             <span className="min-w-12 font-mono">{name}</span>
             <span className="text-gray-600">{size}px</span>
             <span className="text-gray-600">({value})</span>
@@ -193,11 +190,7 @@ export const Shadows: Story = {
           { name: 'xl', shadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' },
           { name: '2xl', shadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)' },
         ].map(({ name, shadow }) => (
-          <div
-            key={name}
-            className="rounded bg-white p-6"
-            style={{ boxShadow: shadow }}
-          >
+          <div key={name} className="rounded bg-white p-6" style={{ boxShadow: shadow }}>
             <p className="text-center text-sm font-semibold">{name}</p>
           </div>
         ))}

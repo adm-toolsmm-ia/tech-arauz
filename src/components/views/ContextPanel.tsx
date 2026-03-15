@@ -85,16 +85,16 @@ export function ContextPanel({
             {title}
           </h2>
           {subtitle && (
-            <p id="context-panel-subtitle" className="text-sm text-muted-foreground mt-1">
+            <p id="context-panel-subtitle" className="mt-1 text-sm text-muted-foreground">
               {subtitle}
             </p>
           )}
 
           {breadcrumb && breadcrumb.length > 0 && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
+            <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
               {breadcrumb.map((item, idx) => (
                 <React.Fragment key={idx}>
-                  {idx > 0 && <ChevronLeft className="w-3 h-3" />}
+                  {idx > 0 && <ChevronLeft className="h-3 w-3" />}
                   {item.isCurrent ? (
                     <span className="font-medium">{item.label}</span>
                   ) : (
@@ -115,7 +115,7 @@ export function ContextPanel({
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="h-8 w-8 p-0 flex-shrink-0"
+          className="h-8 w-8 flex-shrink-0 p-0"
           aria-label="Fechar painel"
         >
           <X className="h-4 w-4" />

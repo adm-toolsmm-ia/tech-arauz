@@ -39,7 +39,7 @@ export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({
         <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
           <TabsTrigger
             value="principal"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <FileText className="mr-2 size-4" />
             Principal
@@ -47,7 +47,7 @@ export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({
           {document.associated_process_id && (
             <TabsTrigger
               value="processo"
-              className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
             >
               <GitBranch className="mr-2 size-4" />
               Processo
@@ -78,7 +78,7 @@ export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <FileText className="size-5 text-primary" />
+              <FileText className="text-primary size-5" />
               <h3 className="text-base font-semibold">Informações</h3>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -98,7 +98,7 @@ export const DocumentCockpit360: React.FC<DocumentCockpit360Props> = ({
           <TabsContent value="processo" className="mt-6">
             {processName ? (
               <Link href={`/organizacao/processos/${document.associated_process_id}/rotinas`}>
-                <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
+                <div className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-colors">
                   <div>
                     <p className="text-sm font-medium">{processName}</p>
                     <p className="mt-1 text-xs text-muted-foreground">

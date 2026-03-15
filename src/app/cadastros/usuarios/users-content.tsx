@@ -310,7 +310,7 @@ export function UsersContent({ users: initialUsers, currentUserId }: UsersConten
                     <TableRow
                       key={user.id}
                       className={cn(
-                        'cursor-pointer transition-colors hover:bg-muted/50',
+                        'hover:bg-muted/50 cursor-pointer transition-colors',
                         selectedUser?.id === user.id && 'bg-muted/50',
                       )}
                       onClick={() => setSelectedUser(user)}

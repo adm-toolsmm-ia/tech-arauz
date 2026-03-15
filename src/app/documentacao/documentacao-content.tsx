@@ -188,7 +188,7 @@ export function DocumentacaoContent({ user, profile }: DocumentacaoContentProps)
 
       <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 80px)' }}>
         {/* ─── Left Sidebar: Document Tree ─── */}
-        <aside className="w-72 flex-shrink-0 overflow-y-auto border-r bg-muted/30 p-4">
+        <aside className="bg-muted/30 w-72 flex-shrink-0 overflow-y-auto border-r p-4">
           <div className="mb-4">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
@@ -233,7 +233,7 @@ export function DocumentacaoContent({ user, profile }: DocumentacaoContentProps)
                             }}
                             className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
                               activeDoc?.id === doc.id
-                                ? 'bg-primary/10 font-medium text-primary'
+                                ? 'bg-primary/10 text-primary font-medium'
                                 : 'text-foreground/70 hover:bg-muted hover:text-foreground'
                             } `}
                           >
@@ -426,7 +426,7 @@ export function DocumentacaoContent({ user, profile }: DocumentacaoContentProps)
                   <li key={item.id}>
                     <a
                       href={`#${item.id}`}
-                      className={`block truncate text-sm transition-colors hover:text-primary ${item.level === 1 ? 'font-medium text-foreground/80' : ''} ${item.level === 2 ? 'pl-3 text-foreground/60' : ''} ${item.level === 3 ? 'pl-6 text-xs text-foreground/50' : ''} `}
+                      className={`hover:text-primary block truncate text-sm transition-colors ${item.level === 1 ? 'text-foreground/80 font-medium' : ''} ${item.level === 2 ? 'text-foreground/60 pl-3' : ''} ${item.level === 3 ? 'text-foreground/50 pl-6 text-xs' : ''} `}
                     >
                       {item.text}
                     </a>

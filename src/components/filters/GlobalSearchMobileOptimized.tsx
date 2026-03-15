@@ -107,11 +107,13 @@ export function GlobalSearchMobileOptimized({
       {/* Mobile-optimized search container */}
       <div className="relative flex items-center gap-2">
         {/* Search Icon */}
-        <Search className={cn(
-          'h-5 w-5 flex-shrink-0 text-muted-foreground',
-          'pointer-events-none',
-          'md:h-4 md:w-4', // Smaller on desktop
-        )} />
+        <Search
+          className={cn(
+            'h-5 w-5 flex-shrink-0 text-muted-foreground',
+            'pointer-events-none',
+            'md:h-4 md:w-4', // Smaller on desktop
+          )}
+        />
 
         {/* Input - Mobile optimized */}
         <Input
@@ -129,7 +131,7 @@ export function GlobalSearchMobileOptimized({
             'pl-2 pr-10',
             'transition-all duration-200',
             'rounded-lg md:rounded-md', // More rounded on mobile
-            isFocused && 'ring-2 ring-primary ring-offset-2',
+            isFocused && 'ring-primary ring-2 ring-offset-2',
           )}
           aria-label="Buscar projetos"
           role="combobox"
@@ -149,9 +151,9 @@ export function GlobalSearchMobileOptimized({
               'h-8 w-8 md:h-6 md:w-6', // 44px touch target on mobile
               'flex items-center justify-center',
               'rounded-sm',
-              'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+              'hover:bg-accent/50 text-muted-foreground hover:text-foreground',
               'transition-colors duration-200',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              'focus-visible:ring-primary focus:outline-none focus-visible:ring-2',
             )}
             aria-label="Limpar busca"
             type="button"
@@ -172,7 +174,7 @@ export function GlobalSearchMobileOptimized({
       </div>
 
       {/* Help Text - Mobile optimized */}
-      <p id="search-help" className="mt-2 text-xs text-muted-foreground hidden md:block">
+      <p id="search-help" className="mt-2 hidden text-xs text-muted-foreground md:block">
         💡 Digite para buscar. Use{' '}
         <kbd className="rounded bg-muted px-1.5 py-0.5 text-xs">Cmd+K</kbd> para focar.
       </p>

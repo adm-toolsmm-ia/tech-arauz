@@ -41,7 +41,11 @@ function getWeekdayLabel(currentDate: Date): string {
   return currentDate.toLocaleDateString('pt-BR', { weekday: 'long' });
 }
 
-export const PeriodNavigationBar: React.FC<PeriodNavigationBarProps> = ({ currentDate, period, onNavigate }) => {
+export const PeriodNavigationBar: React.FC<PeriodNavigationBarProps> = ({
+  currentDate,
+  period,
+  onNavigate,
+}) => {
   const isDay = period === 'day';
 
   return (

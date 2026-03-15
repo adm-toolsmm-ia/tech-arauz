@@ -100,7 +100,7 @@ describe('Bootstrap Server Actions', () => {
     it('should include all template types', async () => {
       const result = await listBootstrapTemplatesAction();
 
-      const ids = result.data?.map(t => t.id) || [];
+      const ids = result.data?.map((t) => t.id) || [];
       expect(ids).toContain('legal_office_default');
       expect(ids).toContain('consultancy_default');
       expect(ids).toContain('corporation_default');
@@ -172,7 +172,7 @@ describe('Bootstrap Server Actions', () => {
         });
 
         expect(result.data?.valid).toBe(false);
-        expect(result.data?.errors.some(e => e.includes('nome é obrigatório'))).toBe(true);
+        expect(result.data?.errors.some((e) => e.includes('nome é obrigatório'))).toBe(true);
       });
 
       it('should require nuclei for each area', async () => {
@@ -186,7 +186,7 @@ describe('Bootstrap Server Actions', () => {
         });
 
         expect(result.data?.valid).toBe(false);
-        expect(result.data?.errors.some(e => e.includes('núcleo'))).toBe(true);
+        expect(result.data?.errors.some((e) => e.includes('núcleo'))).toBe(true);
       });
 
       it('should require nucleus names', async () => {
@@ -200,7 +200,7 @@ describe('Bootstrap Server Actions', () => {
         });
 
         expect(result.data?.valid).toBe(false);
-        expect(result.data?.errors.some(e => e.includes('nome é obrigatório'))).toBe(true);
+        expect(result.data?.errors.some((e) => e.includes('nome é obrigatório'))).toBe(true);
       });
     });
 
@@ -227,7 +227,7 @@ describe('Bootstrap Server Actions', () => {
         const result = await validateWizardStepAction(99, {});
 
         expect(result.data?.valid).toBe(false);
-        expect(result.data?.errors.some(e => e.includes('Passo inválido'))).toBe(true);
+        expect(result.data?.errors.some((e) => e.includes('Passo inválido'))).toBe(true);
       });
     });
   });

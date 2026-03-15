@@ -66,7 +66,7 @@ export function TempoChart({ data, loading = false }: TempoChartProps) {
           <CardTitle>Tempo Médio de Permanência</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80 flex items-center justify-center bg-muted/20 rounded animate-pulse">
+          <div className="bg-muted/20 flex h-80 animate-pulse items-center justify-center rounded">
             <p className="text-sm text-muted-foreground">Carregando...</p>
           </div>
         </CardContent>
@@ -81,7 +81,7 @@ export function TempoChart({ data, loading = false }: TempoChartProps) {
           <CardTitle>Tempo Médio de Permanência</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80 flex items-center justify-center">
+          <div className="flex h-80 items-center justify-center">
             <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
           </div>
         </CardContent>
@@ -97,10 +97,7 @@ export function TempoChart({ data, loading = false }: TempoChartProps) {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={350}>
-          <BarChart
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 0, bottom: 60 }}
-          >
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
             <XAxis
               dataKey="name"
@@ -140,34 +137,34 @@ export function TempoChart({ data, loading = false }: TempoChartProps) {
         <div className="mt-6 space-y-4">
           <div className="grid grid-cols-3 gap-3">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-green-500" />
+              <div className="h-4 w-4 rounded bg-green-500" />
               <span className="text-xs">Rápido (&lt;5d)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-yellow-500" />
+              <div className="h-4 w-4 rounded bg-yellow-500" />
               <span className="text-xs">Médio (5-15d)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-red-500" />
+              <div className="h-4 w-4 rounded bg-red-500" />
               <span className="text-xs">Lento (&gt;15d)</span>
             </div>
           </div>
 
           {/* Summary Stats */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="p-3 bg-muted/50 rounded">
+            <div className="bg-muted/50 rounded p-3">
               <p className="text-xs text-muted-foreground">Média Geral</p>
               <p className="text-lg font-semibold">
                 {(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length).toFixed(1)}d
               </p>
             </div>
-            <div className="p-3 bg-muted/50 rounded">
+            <div className="bg-muted/50 rounded p-3">
               <p className="text-xs text-muted-foreground">Mais Rápido</p>
               <p className="text-lg font-semibold">
                 {Math.min(...chartData.map((d) => d.value)).toFixed(1)}d
               </p>
             </div>
-            <div className="p-3 bg-muted/50 rounded">
+            <div className="bg-muted/50 rounded p-3">
               <p className="text-xs text-muted-foreground">Mais Lento</p>
               <p className="text-lg font-semibold">
                 {Math.max(...chartData.map((d) => d.value)).toFixed(1)}d

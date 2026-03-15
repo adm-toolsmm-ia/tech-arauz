@@ -38,13 +38,13 @@ export function InputsList({ inputs = [] }: InputsListProps) {
       <CardContent>
         <div className="space-y-3">
           {inputs.map((input, idx) => (
-            <div key={idx} className="flex items-start gap-3 pb-3 border-b last:border-0">
+            <div key={idx} className="flex items-start gap-3 border-b pb-3 last:border-0">
               <div className="mt-1">
                 <div className="h-2 w-2 rounded-full bg-blue-500" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm">{input.name}</span>
+                  <span className="text-sm font-medium">{input.name}</span>
                   {input.required && (
                     <Badge variant="outline" className="text-xs">
                       Obrigatório
@@ -52,7 +52,7 @@ export function InputsList({ inputs = [] }: InputsListProps) {
                   )}
                 </div>
                 {input.description && (
-                  <p className="text-xs text-muted-foreground mt-1">{input.description}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{input.description}</p>
                 )}
               </div>
             </div>

@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { OrganizationType, WizardFormData, WizardAreaSetup } from '@/lib/organization/bootstrap-templates';
+import type {
+  OrganizationType,
+  WizardFormData,
+  WizardAreaSetup,
+} from '@/lib/organization/bootstrap-templates';
 import { DEFAULT_WIZARD_DATA, getBootstrapTemplate } from '@/lib/organization/bootstrap-templates';
 import { WizardProgressBar } from './WizardProgressBar';
 import { BasicsStep } from './steps/BasicsStep';
@@ -38,10 +42,7 @@ type WizardStep = 1 | 2 | 3 | 4 | 5;
  * - Dark mode support
  * - Accessibility (WCAG AA)
  */
-export function OrgSetupWizard({
-  onComplete,
-  className,
-}: OrgSetupWizardProps) {
+export function OrgSetupWizard({ onComplete, className }: OrgSetupWizardProps) {
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -71,13 +72,13 @@ export function OrgSetupWizard({
         if (templateResult.success && templateResult.data) {
           const template = templateResult.data;
           // Initialize areas from template
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             template_id: template.id,
-            areas: template.areas.map(area => ({
+            areas: template.areas.map((area) => ({
               name: area.name,
               description: area.description || '',
-              nuclei: area.nuclei.map(nucleus => ({
+              nuclei: area.nuclei.map((nucleus) => ({
                 name: nucleus.name,
                 description: nucleus.description || '',
               })),
@@ -178,35 +179,35 @@ export function OrgSetupWizard({
             <BasicsStep
               organizationType={formData.organization_type}
               onOrganizationTypeChange={(type) =>
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   organization_type: type as OrganizationType,
                 }))
               }
               organizationName={formData.customization.organizationName}
               onOrganizationNameChange={(name) =>
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   customization: { ...prev.customization, organizationName: name },
                 }))
               }
               industry={formData.customization.industry}
               onIndustryChange={(industry) =>
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   customization: { ...prev.customization, industry },
                 }))
               }
               size={formData.customization.size}
               onSizeChange={(size) =>
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   customization: { ...prev.customization, size },
                 }))
               }
               description={formData.customization.description}
               onDescriptionChange={(desc) =>
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   customization: { ...prev.customization, description: desc },
                 }))
@@ -221,19 +222,22 @@ export function OrgSetupWizard({
                 {
                   id: 'legal_office',
                   name: '📋 Escritório Jurídico',
-                  description: 'Estrutura padrão para escritórios de advocacia com áreas como Recuperação de Crédito, Trabalhista, Civil e Tributário',
+                  description:
+                    'Estrutura padrão para escritórios de advocacia com áreas como Recuperação de Crédito, Trabalhista, Civil e Tributário',
                   processCount: 4,
                 },
                 {
                   id: 'consultancy',
                   name: '💼 Consultoria',
-                  description: 'Estrutura padrão para empresas de consultoria com áreas de Estratégia, Operações e Transformação Digital',
+                  description:
+                    'Estrutura padrão para empresas de consultoria com áreas de Estratégia, Operações e Transformação Digital',
                   processCount: 4,
                 },
                 {
                   id: 'corporation',
                   name: '🏢 Corporação',
-                  description: 'Estrutura padrão para grandes corporações com áreas Financeira, Operações, Comercial e RH',
+                  description:
+                    'Estrutura padrão para grandes corporações com áreas Financeira, Operações, Comercial e RH',
                   processCount: 4,
                 },
                 {
@@ -245,7 +249,7 @@ export function OrgSetupWizard({
               ]}
               selectedTemplateId={formData.template_id}
               onTemplateSelect={(id) =>
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   template_id: id,
                 }))
@@ -259,7 +263,7 @@ export function OrgSetupWizard({
             <StructureStep
               areas={formData.areas}
               onAreasChange={(areas) =>
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   areas,
                 }))
@@ -272,7 +276,7 @@ export function OrgSetupWizard({
             <RolesStep
               selectedRoles={formData.customization.selectedRoles || []}
               onRolesChange={(roles) =>
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   customization: { ...prev.customization, selectedRoles: roles },
                 }))
@@ -298,7 +302,7 @@ export function OrgSetupWizard({
                 },
               ]}
               onIntegrationToggle={(id, enabled) =>
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   customization: {
                     ...prev.customization,
@@ -323,7 +327,7 @@ export function OrgSetupWizard({
       </Card>
 
       {/* Navigation Buttons */}
-      <div className="flex gap-3 justify-between">
+      <div className="flex justify-between gap-3">
         <Button
           type="button"
           variant="outline"
@@ -342,7 +346,7 @@ export function OrgSetupWizard({
               disabled={loading || templateLoading}
               aria-label={`Ir para o passo ${currentStep + 1}`}
             >
-              {templateLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {templateLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Próximo →
             </Button>
           ) : (
@@ -353,7 +357,7 @@ export function OrgSetupWizard({
               className="bg-green-600 hover:bg-green-700"
               aria-label="Finalizar e criar organização"
             >
-              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? 'Inicializando...' : 'Finalizar'}
             </Button>
           )}

@@ -39,19 +39,16 @@ export default async function AtividadesPage({ params }: AtividadesPageProps) {
     .eq('id', processId)
     .single();
 
-  const [
-    { data: activitiesRaw, error },
-    { data: activityDocumentsRaw },
-    { data: documentsRaw },
-  ] = await Promise.all([
-    supabase
-      .from('org_activities')
-      .select('*')
-      .eq('routine_id', routineId)
-      .order('name', { ascending: true }),
-    supabase.from('org_activity_documents').select('activity_id, org_document_id'),
-    supabase.from('org_documents').select('*').order('name', { ascending: true }),
-  ]);
+  const [{ data: activitiesRaw, error }, { data: activityDocumentsRaw }, { data: documentsRaw }] =
+    await Promise.all([
+      supabase
+        .from('org_activities')
+        .select('*')
+        .eq('routine_id', routineId)
+        .order('name', { ascending: true }),
+      supabase.from('org_activity_documents').select('activity_id, org_document_id'),
+      supabase.from('org_documents').select('*').order('name', { ascending: true }),
+    ]);
 
   if (error) {
     console.error('Error fetching activities:', error);

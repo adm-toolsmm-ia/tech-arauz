@@ -84,7 +84,7 @@ export function ScheduleCockpit({
           {/* TAB 1: Atividade (padrão ao abrir) */}
           <TabsTrigger
             value="atividade"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <Calendar className="mr-2 size-4" />
             Atividade
@@ -93,7 +93,7 @@ export function ScheduleCockpit({
           {/* TAB 2: Detalhes (do Projeto) */}
           <TabsTrigger
             value="detalhes"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <FileText className="mr-2 size-4" />
             Detalhes
@@ -102,7 +102,7 @@ export function ScheduleCockpit({
           {/* TAB 3: Anotações */}
           <TabsTrigger
             value="anotacoes"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <StickyNote className="mr-2 size-4" />
             Anotações
@@ -111,7 +111,7 @@ export function ScheduleCockpit({
           {/* TAB 4: Entregas */}
           <TabsTrigger
             value="entregas"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <Package className="mr-2 size-4" />
             Entregas
@@ -125,7 +125,7 @@ export function ScheduleCockpit({
           {/* TAB 5: Orçamentos */}
           <TabsTrigger
             value="orcamentos"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <DollarSign className="mr-2 size-4" />
             Orçamentos
@@ -137,7 +137,7 @@ export function ScheduleCockpit({
           {/* TAB 6: Histórico */}
           <TabsTrigger
             value="historicos"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <History className="mr-2 size-4" />
             Histórico
@@ -151,7 +151,7 @@ export function ScheduleCockpit({
           {/* TAB 7: Aprovadores */}
           <TabsTrigger
             value="aprovadores"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <UserCheck className="mr-2 size-4" />
             Aprovadores
@@ -165,7 +165,7 @@ export function ScheduleCockpit({
           {/* TAB 8: Ações */}
           <TabsTrigger
             value="acoes"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <ListChecks className="mr-2 size-4" />
             Ações
@@ -218,13 +218,13 @@ export function ScheduleCockpit({
               <span className="text-xs font-medium text-muted-foreground">Período</span>
               <div className="grid grid-cols-2 gap-3">
                 {schedule.data_inicio && (
-                  <div className="rounded-md bg-muted/30 p-2">
+                  <div className="bg-muted/30 rounded-md p-2">
                     <p className="text-[11px] text-muted-foreground">Início</p>
                     <p className="text-sm font-medium">{formatDateBR(schedule.data_inicio)}</p>
                   </div>
                 )}
                 {schedule.data_fim && (
-                  <div className="rounded-md bg-muted/30 p-2">
+                  <div className="bg-muted/30 rounded-md p-2">
                     <p className="text-[11px] text-muted-foreground">Fim</p>
                     <p className="text-sm font-medium">{formatDateBR(schedule.data_fim)}</p>
                   </div>
@@ -237,7 +237,7 @@ export function ScheduleCockpit({
               <span className="text-xs font-medium text-muted-foreground">Prazos</span>
               <div className="space-y-1">
                 {schedule.data_prazo && (
-                  <div className="rounded-md bg-muted/30 p-2">
+                  <div className="bg-muted/30 rounded-md p-2">
                     <p className="text-[11px] text-muted-foreground">Prazo Original</p>
                     <p className="text-sm font-medium">{formatDateBR(schedule.data_prazo)}</p>
                   </div>

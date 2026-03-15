@@ -61,8 +61,8 @@ function RoutineCockpit360({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-            <ClipboardList className="size-6 text-primary" />
+          <div className="bg-primary/10 flex size-12 items-center justify-center rounded-lg">
+            <ClipboardList className="text-primary size-6" />
           </div>
           <div>
             <h3 className="font-semibold">{routine.name}</h3>
@@ -343,11 +343,11 @@ export function RotinasContent({ routines: initialRoutines, processes }: Rotinas
                             setSelectedRoutine(routine);
                           }
                         }}
-                        className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-muted/50"
+                        className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                            <ClipboardList className="size-5 text-primary" />
+                          <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+                            <ClipboardList className="text-primary size-5" />
                           </div>
                           <div>
                             <p className="font-medium">{routine.name}</p>

@@ -20,8 +20,10 @@ function calculateTeamAverages(allData: PerformanceMetrics[]) {
 
   const totalMovements = allData.reduce((sum, d) => sum + d.total_movements, 0);
   const totalDuration = allData.reduce((sum, d) => sum + d.average_duration_days, 0);
-  const totalCompletion = allData.reduce((sum, d) =>
-    sum + (d.total_movements > 0 ? (d.projects_completed / d.total_movements) * 100 : 0), 0
+  const totalCompletion = allData.reduce(
+    (sum, d) =>
+      sum + (d.total_movements > 0 ? (d.projects_completed / d.total_movements) * 100 : 0),
+    0,
   );
 
   return {
@@ -34,25 +36,24 @@ function calculateTeamAverages(allData: PerformanceMetrics[]) {
 /**
  * Export performance data to JSON (nested structure with comparison)
  */
-export function exportToJSON(
-  person: PerformanceMetrics,
-  options: ExportOptions = {}
-) {
-  const efficiency = person.total_movements > 0
-    ? Math.round((person.projects_completed / person.total_movements) * 100)
-    : 0;
+export function exportToJSON(person: PerformanceMetrics, options: ExportOptions = {}) {
+  const efficiency =
+    person.total_movements > 0
+      ? Math.round((person.projects_completed / person.total_movements) * 100)
+      : 0;
 
-  const movementsPerDay = person.average_duration_days > 0
-    ? person.total_movements / person.average_duration_days
-    : 0;
+  const movementsPerDay =
+    person.average_duration_days > 0 ? person.total_movements / person.average_duration_days : 0;
 
-  const teamAverages = options.allData && options.includeComparison
-    ? calculateTeamAverages(options.allData)
-    : null;
+  const teamAverages =
+    options.allData && options.includeComparison ? calculateTeamAverages(options.allData) : null;
 
-  const performanceDelta = teamAverages && teamAverages.avgMovements > 0
-    ? Math.round(((person.total_movements - teamAverages.avgMovements) / teamAverages.avgMovements) * 100)
-    : 0;
+  const performanceDelta =
+    teamAverages && teamAverages.avgMovements > 0
+      ? Math.round(
+          ((person.total_movements - teamAverages.avgMovements) / teamAverages.avgMovements) * 100,
+        )
+      : 0;
 
   const jsonData = {
     metadata: {
@@ -71,19 +72,25 @@ export function exportToJSON(
         movementsPerDay: movementsPerDay.toFixed(2),
       },
     },
-    ...(teamAverages && options.includeComparison && {
-      comparison: {
-        teamAverages: {
-          avgMovements: teamAverages.avgMovements,
-          avgDuration: `${teamAverages.avgDuration} dias`,
-          avgCompletion: `${teamAverages.avgCompletion}%`,
+    ...(teamAverages &&
+      options.includeComparison && {
+        comparison: {
+          teamAverages: {
+            avgMovements: teamAverages.avgMovements,
+            avgDuration: `${teamAverages.avgDuration} dias`,
+            avgCompletion: `${teamAverages.avgCompletion}%`,
+          },
+          performance: {
+            movementsDelta: `${performanceDelta > 0 ? '+' : ''}${performanceDelta}%`,
+            status:
+              performanceDelta > 20
+                ? 'High Performer'
+                : performanceDelta > 0
+                  ? 'Above Average'
+                  : 'At Risk',
+          },
         },
-        performance: {
-          movementsDelta: `${performanceDelta > 0 ? '+' : ''}${performanceDelta}%`,
-          status: performanceDelta > 20 ? 'High Performer' : performanceDelta > 0 ? 'Above Average' : 'At Risk',
-        },
-      },
-    }),
+      }),
   };
 
   return JSON.stringify(jsonData, null, 2);
@@ -107,42 +114,56 @@ export function downloadJSON(jsonString: string, filename: string) {
 export function exportToCSV(
   person: PerformanceMetrics,
   filename: string,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ) {
-  const efficiency = person.total_movements > 0
-    ? Math.round((person.projects_completed / person.total_movements) * 100)
-    : 0;
+  const efficiency =
+    person.total_movements > 0
+      ? Math.round((person.projects_completed / person.total_movements) * 100)
+      : 0;
 
-  const movementsPerDay = person.average_duration_days > 0
-    ? (person.total_movements / person.average_duration_days).toFixed(1)
-    : '0';
+  const movementsPerDay =
+    person.average_duration_days > 0
+      ? (person.total_movements / person.average_duration_days).toFixed(1)
+      : '0';
 
-  const teamAverages = options.allData && options.includeComparison
-    ? calculateTeamAverages(options.allData)
-    : null;
+  const teamAverages =
+    options.allData && options.includeComparison ? calculateTeamAverages(options.allData) : null;
 
-  const headers = [
-    'Métrica',
-    'Valor',
-    ...(teamAverages ? ['Média de Time', 'Vs Média'] : []),
-  ];
+  const headers = ['Métrica', 'Valor', ...(teamAverages ? ['Média de Time', 'Vs Média'] : [])];
 
   const rows = [
     ['Responsável', person.responsible, '', ''],
-    ['Movimentações Totais', person.total_movements.toString(), teamAverages?.avgMovements.toString() || '',
-      teamAverages ? `${((person.total_movements - teamAverages.avgMovements) / teamAverages.avgMovements * 100).toFixed(1)}%` : ''],
-    ['Tempo Médio (dias)', person.average_duration_days.toString(), teamAverages?.avgDuration.toString() || '',
-      teamAverages ? `${(person.average_duration_days - teamAverages.avgDuration).toFixed(1)} dias` : ''],
+    [
+      'Movimentações Totais',
+      person.total_movements.toString(),
+      teamAverages?.avgMovements.toString() || '',
+      teamAverages
+        ? `${(((person.total_movements - teamAverages.avgMovements) / teamAverages.avgMovements) * 100).toFixed(1)}%`
+        : '',
+    ],
+    [
+      'Tempo Médio (dias)',
+      person.average_duration_days.toString(),
+      teamAverages?.avgDuration.toString() || '',
+      teamAverages
+        ? `${(person.average_duration_days - teamAverages.avgDuration).toFixed(1)} dias`
+        : '',
+    ],
     ['Projetos Concluídos', person.projects_completed.toString(), '', ''],
     ['Lead Time Médio (dias)', person.lead_time_average_days.toString(), '', ''],
-    ['Taxa de Conclusão', `${efficiency}%`, teamAverages ? `${teamAverages.avgCompletion}%` : '', ''],
+    [
+      'Taxa de Conclusão',
+      `${efficiency}%`,
+      teamAverages ? `${teamAverages.avgCompletion}%` : '',
+      '',
+    ],
     ['Movimentações por Dia', movementsPerDay, '', ''],
     ['Data de Exportação', new Date().toLocaleDateString('pt-BR'), '', ''],
     ['Hora de Exportação', new Date().toLocaleTimeString('pt-BR'), '', ''],
   ];
 
   const csvContent = [
-    headers.map(h => `"${h}"`).join(','),
+    headers.map((h) => `"${h}"`).join(','),
     ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
   ].join('\n');
 
@@ -160,24 +181,29 @@ export function exportToCSV(
 export async function exportToPDF(
   person: PerformanceMetrics,
   filename: string,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ) {
   try {
-    const efficiency = person.total_movements > 0
-      ? Math.round((person.projects_completed / person.total_movements) * 100)
-      : 0;
+    const efficiency =
+      person.total_movements > 0
+        ? Math.round((person.projects_completed / person.total_movements) * 100)
+        : 0;
 
-    const movementsPerDay = person.average_duration_days > 0
-      ? (person.total_movements / person.average_duration_days).toFixed(1)
-      : '0';
+    const movementsPerDay =
+      person.average_duration_days > 0
+        ? (person.total_movements / person.average_duration_days).toFixed(1)
+        : '0';
 
-    const teamAverages = options.allData && options.includeComparison
-      ? calculateTeamAverages(options.allData)
-      : null;
+    const teamAverages =
+      options.allData && options.includeComparison ? calculateTeamAverages(options.allData) : null;
 
-    const performanceDelta = teamAverages && teamAverages.avgMovements > 0
-      ? Math.round(((person.total_movements - teamAverages.avgMovements) / teamAverages.avgMovements) * 100)
-      : 0;
+    const performanceDelta =
+      teamAverages && teamAverages.avgMovements > 0
+        ? Math.round(
+            ((person.total_movements - teamAverages.avgMovements) / teamAverages.avgMovements) *
+              100,
+          )
+        : 0;
 
     // Dynamically import html2pdf to avoid SSR issues
     const html2pdf = (await import('html2pdf.js')).default;
@@ -241,14 +267,18 @@ export async function exportToPDF(
         </tr>
       </table>
 
-      ${teamAverages ? `
+      ${
+        teamAverages
+          ? `
       <!-- Performance Comparison -->
       <h3 style="color: #333; font-size: 14px; margin-top: 20px; margin-bottom: 10px; border-left: 4px solid #0066cc; padding-left: 10px;">Comparação com Time</h3>
       <div style="padding: 15px; background-color: ${performanceDelta > 0 ? '#e8f5e9' : '#fff3e0'}; border-radius: 5px; margin-bottom: 20px;">
         <p style="margin: 0 0 5px 0; color: #333; font-weight: bold;">Status: ${performanceDelta > 20 ? '🌟 High Performer' : performanceDelta > 0 ? '📈 Acima da Média' : '⚠️ Em Risco'}</p>
         <p style="margin: 0; color: #666; font-size: 12px;">Desempenho ${performanceDelta > 0 ? '+' : ''}${performanceDelta}% vs Média do Time</p>
       </div>
-      ` : ''}
+      `
+          : ''
+      }
 
       <!-- Footer -->
       <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; font-size: 11px; color: #999;">

@@ -89,7 +89,8 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
   const [formData, setFormData] = React.useState<NucleusFormData>(DEFAULT_FORM);
 
   const [isProcessFormOpen, setIsProcessFormOpen] = React.useState(false);
-  const [processFormData, setProcessFormData] = React.useState<ProcessFormData>(DEFAULT_PROCESS_FORM);
+  const [processFormData, setProcessFormData] =
+    React.useState<ProcessFormData>(DEFAULT_PROCESS_FORM);
   const [isProcessLoading, setIsProcessLoading] = React.useState(false);
 
   const {
@@ -412,11 +413,11 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
                             setSelectedNucleus(nucleus);
                           }
                         }}
-                        className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-muted/50"
+                        className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                            <GitBranch className="size-5 text-primary" />
+                          <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+                            <GitBranch className="text-primary size-5" />
                           </div>
                           <div>
                             <p className="font-medium">{nucleus.name}</p>
@@ -605,9 +606,7 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
               <Textarea
                 id="process-description"
                 value={processFormData.description}
-                onChange={(e) =>
-                  setProcessFormData((p) => ({ ...p, description: e.target.value }))
-                }
+                onChange={(e) => setProcessFormData((p) => ({ ...p, description: e.target.value }))}
                 placeholder="Descrição do processo"
                 rows={3}
               />

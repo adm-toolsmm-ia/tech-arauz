@@ -72,13 +72,13 @@ export function RisksList({ risks = [] }: RisksListProps) {
             const riskSeverity = typeof risk === 'string' ? undefined : risk.severity;
 
             return (
-              <div key={idx} className="flex items-start gap-3 pb-3 border-b last:border-0">
+              <div key={idx} className="flex items-start gap-3 border-b pb-3 last:border-0">
                 <div className="mt-1">
                   <div className="h-2 w-2 rounded-full bg-red-500" />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{riskName}</span>
+                    <span className="text-sm font-medium">{riskName}</span>
                     {riskSeverity && (
                       <Badge className={`text-xs ${getRiskColor(riskSeverity)}`}>
                         {getRiskSeverityLabel(riskSeverity)}

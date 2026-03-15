@@ -197,7 +197,7 @@ export function BulkActionToolbar({
 
   return (
     <>
-      <div className="sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky bottom-0 left-0 right-0 border-t backdrop-blur">
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="font-semibold">
@@ -288,9 +288,10 @@ export function BulkActionToolbar({
       </div>
 
       {/* Bulk Update Dialog */}
-      <Dialog open={updateDialog.open} onOpenChange={(open) =>
-        setUpdateDialog((prev) => ({ ...prev, open }))
-      }>
+      <Dialog
+        open={updateDialog.open}
+        onOpenChange={(open) => setUpdateDialog((prev) => ({ ...prev, open }))}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Editar {selectedCount} item(ns)</DialogTitle>
@@ -348,7 +349,9 @@ export function BulkActionToolbar({
                   updateDialog.isSubmitting || !updateDialog.fieldName || !updateDialog.fieldValue
                 }
               >
-                {updateDialog.isSubmitting ? 'Atualizando...' : `Atualizar ${selectedCount} item(ns)`}
+                {updateDialog.isSubmitting
+                  ? 'Atualizando...'
+                  : `Atualizar ${selectedCount} item(ns)`}
               </Button>
             </div>
           </div>
@@ -369,16 +372,10 @@ export function BulkActionToolbar({
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialog(false)}
-            >
+            <Button variant="outline" onClick={() => setDeleteDialog(false)}>
               Cancelar
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleBulkDelete}
-            >
+            <Button variant="destructive" onClick={handleBulkDelete}>
               Deletar Permanentemente
             </Button>
           </div>
@@ -386,9 +383,10 @@ export function BulkActionToolbar({
       </Dialog>
 
       {/* Import Dialog */}
-      <Dialog open={importState.open} onOpenChange={(open) =>
-        setImportState((prev) => ({ ...prev, open }))
-      }>
+      <Dialog
+        open={importState.open}
+        onOpenChange={(open) => setImportState((prev) => ({ ...prev, open }))}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Importar {entityType}</DialogTitle>
@@ -399,15 +397,15 @@ export function BulkActionToolbar({
 
           <div className="space-y-4">
             {importState.error && (
-              <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <div className="bg-destructive/10 flex items-start gap-2 rounded-lg p-3 text-sm text-destructive">
+                <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <span>{importState.error}</span>
               </div>
             )}
 
             {importState.success && (
-              <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700 flex items-start gap-2 dark:bg-green-950 dark:text-green-300">
-                <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700 dark:bg-green-950 dark:text-green-300">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <span>{importState.success}</span>
               </div>
             )}
@@ -452,10 +450,7 @@ export function BulkActionToolbar({
               >
                 Cancelar
               </Button>
-              <Button
-                onClick={handleImport}
-                disabled={!importState.file || importState.isLoading}
-              >
+              <Button onClick={handleImport} disabled={!importState.file || importState.isLoading}>
                 {importState.isLoading ? 'Importando...' : 'Importar'}
               </Button>
             </div>

@@ -77,7 +77,7 @@ export function CronogramaTableView({
     <div className="overflow-x-auto rounded-lg border bg-card">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-muted/40">
+          <tr className="bg-muted/40 border-b">
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -114,7 +114,7 @@ export function CronogramaTableView({
             displaySchedules.map((s) => (
               <tr
                 key={s.id}
-                className="cursor-pointer border-b transition-colors last:border-0 hover:bg-muted/30"
+                className="hover:bg-muted/30 cursor-pointer border-b transition-colors last:border-0"
                 onClick={() => onActivityClick(s)}
               >
                 <td className="px-3 py-2.5">
@@ -169,7 +169,7 @@ export function CronogramaTableView({
           )}
         </tbody>
       </table>
-      <div className="border-t bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+      <div className="bg-muted/20 border-t px-3 py-2 text-xs text-muted-foreground">
         {displaySchedules.length} atividade{displaySchedules.length !== 1 ? 's' : ''}
         {hideCompleted && ' (excluindo concluídas)'}
       </div>

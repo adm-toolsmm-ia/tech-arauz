@@ -56,9 +56,9 @@ export function RecentSearchesPanel({
 
   if (recentItems.length === 0) {
     return (
-      <div className={cn('text-center text-sm text-muted-foreground py-8', className)}>
+      <div className={cn('py-8 text-center text-sm text-muted-foreground', className)}>
         <p>Nenhuma busca recente</p>
-        <p className="text-xs mt-2">Suas buscas aparecerão aqui</p>
+        <p className="mt-2 text-xs">Suas buscas aparecerão aqui</p>
       </div>
     );
   }
@@ -66,8 +66,8 @@ export function RecentSearchesPanel({
   return (
     <div className={className}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 px-4 pt-4">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
+      <div className="mb-4 flex items-center justify-between px-4 pt-4">
+        <h3 className="flex items-center gap-2 text-sm font-semibold">
           <Clock className="h-4 w-4" />
           Buscas Recentes
         </h3>
@@ -77,7 +77,7 @@ export function RecentSearchesPanel({
           onClick={handleClearAll}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
-          <Trash2 className="h-3 w-3 mr-1" />
+          <Trash2 className="mr-1 h-3 w-3" />
           Limpar
         </Button>
       </div>
@@ -90,7 +90,7 @@ export function RecentSearchesPanel({
               key={item.id}
               onClick={() => onSelectSearch(item.query)}
               className={cn(
-                'w-full text-left px-3 py-2 rounded-sm',
+                'w-full rounded-sm px-3 py-2 text-left',
                 'text-sm text-foreground',
                 'hover:bg-accent/50',
                 'transition-colors duration-150',
@@ -99,7 +99,7 @@ export function RecentSearchesPanel({
               )}
             >
               <span className="truncate font-medium">{item.query}</span>
-              <span className="ml-2 text-xs text-muted-foreground whitespace-nowrap">
+              <span className="ml-2 whitespace-nowrap text-xs text-muted-foreground">
                 {getTimeString(item.timestamp)}
               </span>
 
@@ -110,7 +110,7 @@ export function RecentSearchesPanel({
                   removeSearch(item.id);
                 }}
                 className={cn(
-                  'ml-2 p-1 rounded hover:bg-destructive/20',
+                  'hover:bg-destructive/20 ml-2 rounded p-1',
                   'opacity-0 group-hover:opacity-100',
                   'transition-opacity duration-150',
                 )}

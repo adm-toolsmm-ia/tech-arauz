@@ -120,4 +120,4 @@ export const ProjectTeam: React.FC<ProjectTeamProps> = ({ projectId, responsavel
       </p>
     </div>
   );
-}
+};

@@ -257,7 +257,7 @@
 
   /* Ticket Card - Hover sutil */
   .ticket-card {
-    @apply cursor-pointer rounded-lg border bg-card p-4 shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md;
+    @apply hover:border-primary/30 cursor-pointer rounded-lg border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md;
   }
 
   /* Status Badge Base */

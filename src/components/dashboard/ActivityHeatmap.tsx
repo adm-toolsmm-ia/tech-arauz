@@ -32,7 +32,7 @@ export function ActivityHeatmap({ data, loading = false }: ActivityHeatmapProps)
               day: dayIndex,
               hour: hourIndex,
               value: 0,
-            }))
+            })),
         );
     }
 
@@ -51,9 +51,11 @@ export function ActivityHeatmap({ data, loading = false }: ActivityHeatmapProps)
             hour: hourIndex,
             // Simulate activity (higher during business hours, lower on weekends)
             value: Math.round(
-              avgPerBucket * (0.5 + Math.random() * 1.5) * (hourIndex >= 9 && hourIndex <= 17 ? 1.5 : 0.7)
+              avgPerBucket *
+                (0.5 + Math.random() * 1.5) *
+                (hourIndex >= 9 && hourIndex <= 17 ? 1.5 : 0.7),
             ),
-          }))
+          })),
       );
   }, [data]);
 
@@ -80,7 +82,7 @@ export function ActivityHeatmap({ data, loading = false }: ActivityHeatmapProps)
           <CardTitle>Atividade por Dia e Hora</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80 flex items-center justify-center bg-muted/20 rounded animate-pulse">
+          <div className="bg-muted/20 flex h-80 animate-pulse items-center justify-center rounded">
             <p className="text-sm text-muted-foreground">Carregando...</p>
           </div>
         </CardContent>
@@ -92,20 +94,22 @@ export function ActivityHeatmap({ data, loading = false }: ActivityHeatmapProps)
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
         <CardTitle>Atividade por Dia e Hora</CardTitle>
-        <p className="text-sm text-muted-foreground">Intensidade de movimentações durante a semana</p>
+        <p className="text-sm text-muted-foreground">
+          Intensidade de movimentações durante a semana
+        </p>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <div className="space-y-4">
             {/* Heatmap Grid */}
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="overflow-hidden rounded-lg border border-border">
               {/* Hour Headers */}
               <div className="flex">
-                <div className="w-12 h-10 flex items-center justify-center text-xs font-medium text-muted-foreground border-r border-border" />
+                <div className="flex h-10 w-12 items-center justify-center border-r border-border text-xs font-medium text-muted-foreground" />
                 {Array.from({ length: 24 }, (_, i) => (
                   <div
                     key={`hour-${i}`}
-                    className="flex-1 h-10 flex items-center justify-center text-xs font-medium text-muted-foreground border-r border-border last:border-r-0"
+                    className="flex h-10 flex-1 items-center justify-center border-r border-border text-xs font-medium text-muted-foreground last:border-r-0"
                   >
                     {i.toString().padStart(2, '0')}
                   </div>
@@ -114,9 +118,12 @@ export function ActivityHeatmap({ data, loading = false }: ActivityHeatmapProps)
 
               {/* Rows for each day */}
               {heatmapData.map((dayData, dayIndex) => (
-                <div key={`day-${dayIndex}`} className="flex border-t border-border first:border-t-0">
+                <div
+                  key={`day-${dayIndex}`}
+                  className="flex border-t border-border first:border-t-0"
+                >
                   {/* Day Label */}
-                  <div className="w-12 h-10 flex items-center justify-center text-xs font-medium text-muted-foreground border-r border-border">
+                  <div className="flex h-10 w-12 items-center justify-center border-r border-border text-xs font-medium text-muted-foreground">
                     {dayNames[dayIndex]}
                   </div>
 
@@ -124,14 +131,14 @@ export function ActivityHeatmap({ data, loading = false }: ActivityHeatmapProps)
                   {dayData.map((cell) => (
                     <div
                       key={`cell-${dayIndex}-${cell.hour}`}
-                      className={`flex-1 h-10 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-primary transition-all group relative border-r border-border last:border-r-0 ${getHeatColor(
+                      className={`hover:ring-primary group relative flex h-10 flex-1 cursor-pointer items-center justify-center border-r border-border transition-all last:border-r-0 hover:ring-2 ${getHeatColor(
                         cell.value,
-                        maxValue
+                        maxValue,
                       )}`}
                       title={`${dayNames[dayIndex]} ${cell.hour.toString().padStart(2, '0')}:00 - ${cell.value} movimentações`}
                     >
                       {/* Tooltip on hover */}
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-background border border-border rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 transform whitespace-nowrap rounded border border-border bg-background px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100">
                         {cell.value} mov.
                       </div>
                     </div>
@@ -145,31 +152,31 @@ export function ActivityHeatmap({ data, loading = false }: ActivityHeatmapProps)
               <p className="text-sm font-medium">Legenda</p>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-muted/20 rounded border border-border" />
+                  <div className="bg-muted/20 h-6 w-6 rounded border border-border" />
                   <span className="text-xs text-muted-foreground">Nenhuma</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-blue-200 dark:bg-blue-900/40 rounded border border-border" />
+                  <div className="h-6 w-6 rounded border border-border bg-blue-200 dark:bg-blue-900/40" />
                   <span className="text-xs text-muted-foreground">Baixa</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-blue-400 dark:bg-blue-800/60 rounded border border-border" />
+                  <div className="h-6 w-6 rounded border border-border bg-blue-400 dark:bg-blue-800/60" />
                   <span className="text-xs text-muted-foreground">Média</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-orange-400 dark:bg-orange-800/60 rounded border border-border" />
+                  <div className="h-6 w-6 rounded border border-border bg-orange-400 dark:bg-orange-800/60" />
                   <span className="text-xs text-muted-foreground">Alta</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-red-500 dark:bg-red-900/80 rounded border border-border" />
+                  <div className="h-6 w-6 rounded border border-border bg-red-500 dark:bg-red-900/80" />
                   <span className="text-xs text-muted-foreground">Muito Alta</span>
                 </div>
               </div>
             </div>
 
             {/* Summary */}
-            <div className="p-3 bg-muted/50 rounded">
-              <p className="text-xs text-muted-foreground mb-1">📊 Pico de Atividade</p>
+            <div className="bg-muted/50 rounded p-3">
+              <p className="mb-1 text-xs text-muted-foreground">📊 Pico de Atividade</p>
               <p className="text-sm font-medium">Entre 09:00 e 17:00 (horário comercial)</p>
             </div>
 

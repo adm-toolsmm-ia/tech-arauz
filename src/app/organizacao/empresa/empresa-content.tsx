@@ -183,14 +183,11 @@ export function EmpresaContent({
   const [isAreaLoading, setIsAreaLoading] = React.useState(false);
   const [isNucleusLoading, setIsNucleusLoading] = React.useState(false);
   const [isResourceFormOpen, setIsResourceFormOpen] = React.useState(false);
-  const [resourceFormType, setResourceFormType] =
-    React.useState<ResourceFormType | null>(null);
+  const [resourceFormType, setResourceFormType] = React.useState<ResourceFormType | null>(null);
   const [resourceFormData, setResourceFormData] =
     React.useState<ResourceFormData>(DEFAULT_RESOURCE_FORM);
-  const [editingVinculo, setEditingVinculo] =
-    React.useState<EmpresaVinculo | null>(null);
-  const [vinculoToDelete, setVinculoToDelete] =
-    React.useState<EmpresaVinculo | null>(null);
+  const [editingVinculo, setEditingVinculo] = React.useState<EmpresaVinculo | null>(null);
+  const [vinculoToDelete, setVinculoToDelete] = React.useState<EmpresaVinculo | null>(null);
   const [isResourceLoading, setIsResourceLoading] = React.useState(false);
   const [isSystemResourceFormOpen, setIsSystemResourceFormOpen] = React.useState(false);
   const [editingSystemResource, setEditingSystemResource] =
@@ -288,9 +285,7 @@ export function EmpresaContent({
 
   const processOptions = React.useMemo(
     () =>
-      linkedData
-        ? Object.entries(linkedData.processMap).map(([id, name]) => ({ id, name }))
-        : [],
+      linkedData ? Object.entries(linkedData.processMap).map(([id, name]) => ({ id, name })) : [],
     [linkedData],
   );
 
@@ -413,12 +408,7 @@ export function EmpresaContent({
     } finally {
       setIsResourceLoading(false);
     }
-  }, [
-    resourceFormData,
-    resourceFormType,
-    editingVinculo,
-    router,
-  ]);
+  }, [resourceFormData, resourceFormType, editingVinculo, router]);
 
   const openSystemResourceForm = React.useCallback(
     (system?: OrgSystem, resource?: OrgSystemResource) => {
@@ -438,8 +428,7 @@ export function EmpresaContent({
   );
 
   const handleSystemResourceCreateOrUpdate = React.useCallback(async () => {
-    const system =
-      selectedVinculo?.type === 'sistemas' ? selectedVinculo.entity : null;
+    const system = selectedVinculo?.type === 'sistemas' ? selectedVinculo.entity : null;
     if (!system) return;
     if (!systemResourceFormData.name.trim()) {
       toast.error('Nome é obrigatório');
@@ -477,12 +466,7 @@ export function EmpresaContent({
     } finally {
       setIsSystemResourceLoading(false);
     }
-  }, [
-    selectedVinculo,
-    editingSystemResource,
-    systemResourceFormData,
-    router,
-  ]);
+  }, [selectedVinculo, editingSystemResource, systemResourceFormData, router]);
 
   const [processSystemToUnlink, setProcessSystemToUnlink] = React.useState<{
     processId: string;
@@ -647,8 +631,8 @@ export function EmpresaContent({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="flex size-14 items-center justify-center rounded-xl bg-primary/10">
-                <Building className="size-7 text-primary" />
+              <div className="bg-primary/10 flex size-14 items-center justify-center rounded-xl">
+                <Building className="text-primary size-7" />
               </div>
               <div>
                 <CardTitle className="text-xl">{tenant.name}</CardTitle>
@@ -854,9 +838,7 @@ export function EmpresaContent({
                           purpose: 'purpose' in e ? (e.purpose ?? '') : '',
                           type: 'type' in e ? (e.type ?? '') : '',
                           associated_process_id:
-                            'associated_process_id' in e
-                              ? (e.associated_process_id ?? '')
-                              : '',
+                            'associated_process_id' in e ? (e.associated_process_id ?? '') : '',
                         });
                         setResourceFormType(null);
                         setIsResourceFormOpen(true);
@@ -1094,9 +1076,7 @@ export function EmpresaContent({
               <Input
                 id="resource-name"
                 value={resourceFormData.name}
-                onChange={(e) =>
-                  setResourceFormData((p) => ({ ...p, name: e.target.value }))
-                }
+                onChange={(e) => setResourceFormData((p) => ({ ...p, name: e.target.value }))}
                 placeholder="Nome"
               />
             </div>
@@ -1112,31 +1092,25 @@ export function EmpresaContent({
                 rows={3}
               />
             </div>
-            {(resourceFormType === 'system' ||
-              (editingVinculo?.type === 'sistemas')) && (
+            {(resourceFormType === 'system' || editingVinculo?.type === 'sistemas') && (
               <div className="grid gap-2">
                 <Label htmlFor="resource-purpose">Propósito</Label>
                 <Input
                   id="resource-purpose"
                   value={resourceFormData.purpose}
-                  onChange={(e) =>
-                    setResourceFormData((p) => ({ ...p, purpose: e.target.value }))
-                  }
+                  onChange={(e) => setResourceFormData((p) => ({ ...p, purpose: e.target.value }))}
                   placeholder="Propósito do sistema"
                 />
               </div>
             )}
-            {(resourceFormType === 'document' ||
-              editingVinculo?.type === 'documentos') && (
+            {(resourceFormType === 'document' || editingVinculo?.type === 'documentos') && (
               <>
                 <div className="grid gap-2">
                   <Label htmlFor="resource-type">Tipo</Label>
                   <Input
                     id="resource-type"
                     value={resourceFormData.type}
-                    onChange={(e) =>
-                      setResourceFormData((p) => ({ ...p, type: e.target.value }))
-                    }
+                    onChange={(e) => setResourceFormData((p) => ({ ...p, type: e.target.value }))}
                     placeholder="Tipo do documento"
                   />
                 </div>
@@ -1189,10 +1163,7 @@ export function EmpresaContent({
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={!!vinculoToDelete}
-        onOpenChange={(open) => !open && setVinculoToDelete(null)}
-      >
+      <Dialog open={!!vinculoToDelete} onOpenChange={(open) => !open && setVinculoToDelete(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Excluir item</DialogTitle>
@@ -1238,9 +1209,7 @@ export function EmpresaContent({
               <Input
                 id="empresa-system-resource-name"
                 value={systemResourceFormData.name}
-                onChange={(e) =>
-                  setSystemResourceFormData((p) => ({ ...p, name: e.target.value }))
-                }
+                onChange={(e) => setSystemResourceFormData((p) => ({ ...p, name: e.target.value }))}
                 placeholder="Nome do recurso"
               />
             </div>

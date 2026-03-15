@@ -35,7 +35,13 @@ const getStatusStyle = (status: string) => {
   return statusStyles[status] || statusStyles.draft;
 };
 
-export const AgentCard: React.FC<AgentCardProps> = ({ agent, isSelected, onSelect, onEdit, onDelete }) => {
+export const AgentCard: React.FC<AgentCardProps> = ({
+  agent,
+  isSelected,
+  onSelect,
+  onEdit,
+  onDelete,
+}) => {
   const statusStyle = getStatusStyle(agent.status);
 
   return (
@@ -44,7 +50,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, isSelected, onSelec
       tabIndex={0}
       className={cn(
         'relative flex cursor-pointer flex-col rounded-lg border transition-colors',
-        'p-4 hover:bg-muted/50',
+        'hover:bg-muted/50 p-4',
         isSelected && 'border-primary bg-primary/5',
       )}
       onClick={() => onSelect?.(agent)}

@@ -13,9 +13,9 @@ interface ErrorFallbackProps {
 export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, onRetry, label }) => {
   return (
     <div className="flex min-h-[300px] items-center justify-center p-6">
-      <Card className="w-full max-w-md border-destructive/20">
+      <Card className="border-destructive/20 w-full max-w-md">
         <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+          <div className="bg-destructive/10 flex h-12 w-12 items-center justify-center rounded-full">
             <AlertTriangle className="h-6 w-6 text-destructive" />
           </div>
 

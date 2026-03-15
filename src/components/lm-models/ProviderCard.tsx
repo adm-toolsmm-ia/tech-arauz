@@ -30,7 +30,7 @@ export function ProviderCard({
     <div
       className={cn(
         'relative flex flex-col rounded-lg border transition-colors',
-        'p-4 hover:bg-muted/50',
+        'hover:bg-muted/50 p-4',
         'cursor-default',
       )}
     >

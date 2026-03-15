@@ -33,49 +33,43 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createSession = useCallback(
-    async (agentId: string) => {
-      try {
-        setError(null);
-        setIsLoading(true);
+  const createSession = useCallback(async (agentId: string) => {
+    try {
+      setError(null);
+      setIsLoading(true);
 
-        const newSession = await createChatSession(agentId);
-        setSession(newSession);
-        setMessages([]); // Start with fresh message history
+      const newSession = await createChatSession(agentId);
+      setSession(newSession);
+      setMessages([]); // Start with fresh message history
 
-        return newSession;
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'Failed to create session';
-        setError(errorMsg);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+      return newSession;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to create session';
+      setError(errorMsg);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const loadSession = useCallback(
-    async (sessionId: string) => {
-      try {
-        setError(null);
-        setIsLoading(true);
+  const loadSession = useCallback(async (sessionId: string) => {
+    try {
+      setError(null);
+      setIsLoading(true);
 
-        const loadedSession = await getChatSession(sessionId);
-        setSession(loadedSession);
-        setMessages(loadedSession.chat_messages || []);
+      const loadedSession = await getChatSession(sessionId);
+      setSession(loadedSession);
+      setMessages(loadedSession.chat_messages || []);
 
-        return loadedSession;
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'Failed to load session';
-        setError(errorMsg);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+      return loadedSession;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to load session';
+      setError(errorMsg);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -100,7 +94,7 @@ export function useChat() {
         throw err;
       }
     },
-    [session]
+    [session],
   );
 
   const clearSession = useCallback(() => {

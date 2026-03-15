@@ -1,10 +1,5 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import {
-  exportToCSV,
-  exportToJSON,
-  downloadJSON,
-  generateFilename,
-} from './export-utils';
+import { exportToCSV, exportToJSON, downloadJSON, generateFilename } from './export-utils';
 import type { PerformanceMetrics } from '@/app/dashboard/operacoes/actions';
 
 // Mock data

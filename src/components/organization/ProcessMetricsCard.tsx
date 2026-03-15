@@ -25,16 +25,12 @@ interface ProcessMetricsCardProps {
  *
  * Story 11.9: Process Metrics & SLAs Display
  */
-export function ProcessMetricsCard({
-  processId,
-  sla,
-  recentMetrics,
-}: ProcessMetricsCardProps) {
+export function ProcessMetricsCard({ processId, sla, recentMetrics }: ProcessMetricsCardProps) {
   // Calculate compliance status based on actual vs SLA
   const getComplianceStatus = (
     avgDuration?: number | null,
     targetDuration?: number | null,
-    compliancePct?: number | null
+    compliancePct?: number | null,
   ): {
     status: 'on-track' | 'warning' | 'critical';
     color: string;
@@ -72,12 +68,10 @@ export function ProcessMetricsCard({
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Métricas do Processo</CardTitle>
-          <CardDescription>
-            Nenhuma métrica disponível para este processo.
-          </CardDescription>
+          <CardDescription>Nenhuma métrica disponível para este processo.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6 text-sm text-muted-foreground">
+          <div className="py-6 text-center text-sm text-muted-foreground">
             Métricas serão exibidas após os primeiros registros de conclusão.
           </div>
         </CardContent>
@@ -88,7 +82,7 @@ export function ProcessMetricsCard({
   const complianceStatus = getComplianceStatus(
     recentMetrics?.avg_duration_days,
     sla?.target_duration_days,
-    recentMetrics?.compliance_pct
+    recentMetrics?.compliance_pct,
   );
 
   const avgDuration = recentMetrics?.avg_duration_days || 0;
@@ -105,7 +99,7 @@ export function ProcessMetricsCard({
             <CardDescription>
               {recentMetrics?.period_start && recentMetrics?.period_end
                 ? `Período: ${new Date(recentMetrics.period_start).toLocaleDateString()} - ${new Date(
-                    recentMetrics.period_end
+                    recentMetrics.period_end,
                   ).toLocaleDateString()}`
                 : 'Período: Últimas execuções'}
             </CardDescription>
@@ -118,30 +112,30 @@ export function ProcessMetricsCard({
 
       <CardContent className="space-y-4">
         {/* Status Badge */}
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           <Badge variant="outline">{complianceStatus.label}</Badge>
           <span className="text-sm font-medium">{compliancePct.toFixed(1)}% de conformidade</span>
         </div>
 
         {/* Metrics Grid - Responsive */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {/* Target SLA */}
           <div className="rounded-md border p-3" role="group" aria-label="SLA Alvo">
-            <p className="text-xs font-medium text-muted-foreground mb-1">SLA Alvo</p>
+            <p className="mb-1 text-xs font-medium text-muted-foreground">SLA Alvo</p>
             <p className="text-lg font-bold">{targetDuration}</p>
             <p className="text-xs text-muted-foreground">dias</p>
           </div>
 
           {/* Avg Duration */}
           <div className="rounded-md border p-3" role="group" aria-label="Duração Média">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Duração Média</p>
+            <p className="mb-1 text-xs font-medium text-muted-foreground">Duração Média</p>
             <p className="text-lg font-bold">{avgDuration.toFixed(1)}</p>
             <p className="text-xs text-muted-foreground">dias</p>
           </div>
 
           {/* Instance Count */}
           <div className="rounded-md border p-3" role="group" aria-label="Instâncias Executadas">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Instâncias</p>
+            <p className="mb-1 text-xs font-medium text-muted-foreground">Instâncias</p>
             <p className="text-lg font-bold">{instanceCount}</p>
             <p className="text-xs text-muted-foreground">executadas</p>
           </div>
@@ -168,8 +162,10 @@ export function ProcessMetricsCard({
 
         {/* SLA Thresholds */}
         {sla && (
-          <div className="text-xs text-muted-foreground pt-2 border-t">
-            <p>Limites: Aviso {sla.warning_threshold_pct}% | Crítico {sla.critical_threshold_pct}%</p>
+          <div className="border-t pt-2 text-xs text-muted-foreground">
+            <p>
+              Limites: Aviso {sla.warning_threshold_pct}% | Crítico {sla.critical_threshold_pct}%
+            </p>
           </div>
         )}
       </CardContent>

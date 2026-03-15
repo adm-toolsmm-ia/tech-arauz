@@ -67,7 +67,7 @@ describe('Activity-System & Metrics Server Actions', () => {
     chain.order.mockImplementation(() => Promise.resolve({ data: resolveData, error: null }));
 
     // Make the chain itself awaitable (for direct await chains at the end of query)
-    chain.then = function(resolve: any, reject: any) {
+    chain.then = function (resolve: any, reject: any) {
       return Promise.resolve({ data: resolveData, error: null }).then(resolve, reject);
     };
 
@@ -174,7 +174,7 @@ describe('Activity-System & Metrics Server Actions', () => {
       expect(capturedChain.insert).toHaveBeenCalledWith(
         expect.objectContaining({
           tenant_id: tenantId,
-        })
+        }),
       );
     });
 
@@ -278,7 +278,7 @@ describe('Activity-System & Metrics Server Actions', () => {
           chain.order.mockImplementation(() => Promise.resolve(errorData));
 
           // Make the chain itself awaitable with error
-          chain.then = function(resolve: any, reject: any) {
+          chain.then = function (resolve: any, reject: any) {
             return Promise.resolve(errorData).then(resolve, reject);
           };
 
@@ -296,7 +296,11 @@ describe('Activity-System & Metrics Server Actions', () => {
   describe('getActivitySystemsAction', () => {
     it('should retrieve all systems for activity', async () => {
       const mockData = [
-        { system_id: systemId, usage_context: usageContext, org_systems: { id: systemId, name: 'System 1' } },
+        {
+          system_id: systemId,
+          usage_context: usageContext,
+          org_systems: { id: systemId, name: 'System 1' },
+        },
       ];
 
       mockSupabase.from.mockImplementation((table: string) => {
@@ -345,7 +349,6 @@ describe('Activity-System & Metrics Server Actions', () => {
       expect(result.success).toBe(true);
       expect(result.data).toEqual([]);
     });
-
   });
 });
 
@@ -382,7 +385,7 @@ describe('Process Metrics Server Actions', () => {
     chain.order.mockImplementation(() => Promise.resolve({ data: resolveData, error: null }));
 
     // Make the chain itself awaitable (for direct await chains at the end of query)
-    chain.then = function(resolve: any, reject: any) {
+    chain.then = function (resolve: any, reject: any) {
       return Promise.resolve({ data: resolveData, error: null }).then(resolve, reject);
     };
 
@@ -423,7 +426,12 @@ describe('Process Metrics Server Actions', () => {
   describe('getProcessSLAsAction', () => {
     it('should retrieve SLA definitions', async () => {
       const mockSLAs = [
-        { id: 'sla-1', process_id: processId, metric_name: 'completion_time', target_duration_days: 5 },
+        {
+          id: 'sla-1',
+          process_id: processId,
+          metric_name: 'completion_time',
+          target_duration_days: 5,
+        },
       ];
 
       mockSupabase.from.mockImplementation((table: string) => {

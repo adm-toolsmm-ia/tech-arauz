@@ -24,24 +24,59 @@ export const ORGANIZATION_ROLES: RoleDefinition[] = [
   // Management (Gestão)
   { value: 'diretor', label: 'Diretor', description: 'Direção/Diretoria', category: 'management' },
   { value: 'gerente', label: 'Gerente', description: 'Gerência de área', category: 'management' },
-  { value: 'coordenador', label: 'Coordenador', description: 'Coordenação de núcleo/processo', category: 'management' },
+  {
+    value: 'coordenador',
+    label: 'Coordenador',
+    description: 'Coordenação de núcleo/processo',
+    category: 'management',
+  },
 
   // Specialist (Especialistas)
-  { value: 'especialista', label: 'Especialista', description: 'Especialista técnico', category: 'specialist' },
-  { value: 'analista_senior', label: 'Analista Sênior', description: 'Analista com senioridade', category: 'specialist' },
-  { value: 'analista_junior', label: 'Analista Júnior', description: 'Analista em treinamento', category: 'specialist' },
+  {
+    value: 'especialista',
+    label: 'Especialista',
+    description: 'Especialista técnico',
+    category: 'specialist',
+  },
+  {
+    value: 'analista_senior',
+    label: 'Analista Sênior',
+    description: 'Analista com senioridade',
+    category: 'specialist',
+  },
+  {
+    value: 'analista_junior',
+    label: 'Analista Júnior',
+    description: 'Analista em treinamento',
+    category: 'specialist',
+  },
 
   // Operational (Operacional)
-  { value: 'operacional', label: 'Operacional', description: 'Executor operacional', category: 'operational' },
-  { value: 'administrativo', label: 'Administrativo', description: 'Apoio administrativo', category: 'operational' },
-  { value: 'supervisor', label: 'Supervisor', description: 'Supervisão operacional', category: 'operational' },
+  {
+    value: 'operacional',
+    label: 'Operacional',
+    description: 'Executor operacional',
+    category: 'operational',
+  },
+  {
+    value: 'administrativo',
+    label: 'Administrativo',
+    description: 'Apoio administrativo',
+    category: 'operational',
+  },
+  {
+    value: 'supervisor',
+    label: 'Supervisor',
+    description: 'Supervisão operacional',
+    category: 'operational',
+  },
 ];
 
 /**
  * Get all roles in a specific category
  */
 export function getRolesByCategory(category: RoleDefinition['category']): RoleDefinition[] {
-  return ORGANIZATION_ROLES.filter(r => r.category === category);
+  return ORGANIZATION_ROLES.filter((r) => r.category === category);
 }
 
 /**
@@ -55,14 +90,14 @@ export function getAllRoles(): RoleDefinition[] {
  * Get role label by value
  */
 export function getRoleLabel(value: string): string | undefined {
-  return ORGANIZATION_ROLES.find(r => r.value === value)?.label;
+  return ORGANIZATION_ROLES.find((r) => r.value === value)?.label;
 }
 
 /**
  * Get role definition by value
  */
 export function getRoleDefinition(value: string): RoleDefinition | undefined {
-  return ORGANIZATION_ROLES.find(r => r.value === value);
+  return ORGANIZATION_ROLES.find((r) => r.value === value);
 }
 
 /**

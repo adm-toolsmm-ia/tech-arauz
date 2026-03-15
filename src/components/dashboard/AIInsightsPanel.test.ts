@@ -46,7 +46,9 @@ describe('AIInsightsPanel Component', () => {
   });
 
   it('should calculate team average completion correctly', () => {
-    const teamCompletion = mockTeamData.reduce((sum, d) => (sum + d.projects_completed / d.total_movements), 0) / mockTeamData.length;
+    const teamCompletion =
+      mockTeamData.reduce((sum, d) => sum + d.projects_completed / d.total_movements, 0) /
+      mockTeamData.length;
 
     expect(teamCompletion).toBeGreaterThan(0);
     expect(teamCompletion).toBeLessThan(1);
@@ -54,8 +56,10 @@ describe('AIInsightsPanel Component', () => {
 
   it('should identify acceleration opportunity for high performers', () => {
     const personCompletion = (mockPerson.projects_completed / mockPerson.total_movements) * 100;
-    const teamAvgMovements = mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
-    const performanceDelta = ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
+    const teamAvgMovements =
+      mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
+    const performanceDelta =
+      ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
 
     const hasAccelerationOpportunity = personCompletion > 70 && performanceDelta > 10;
 
@@ -73,7 +77,8 @@ describe('AIInsightsPanel Component', () => {
     };
 
     const personCompletion = (slowPerson.projects_completed / slowPerson.total_movements) * 100;
-    const hasOptimizationOpportunity = slowPerson.average_duration_days > 25 && personCompletion > 60;
+    const hasOptimizationOpportunity =
+      slowPerson.average_duration_days > 25 && personCompletion > 60;
 
     expect(hasOptimizationOpportunity).toBe(true);
   });
@@ -88,8 +93,10 @@ describe('AIInsightsPanel Component', () => {
       lead_time_average_days: 40,
     };
 
-    const teamAvgMovements = mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
-    const performanceDelta = ((lowPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
+    const teamAvgMovements =
+      mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
+    const performanceDelta =
+      ((lowPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
     const personCompletion = (lowPerson.projects_completed / lowPerson.total_movements) * 100;
 
     const isAtRisk = performanceDelta < -15 && personCompletion < 50;
@@ -98,8 +105,10 @@ describe('AIInsightsPanel Component', () => {
   });
 
   it('should identify consistent high performance', () => {
-    const teamAvgMovements = mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
-    const performanceDelta = ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
+    const teamAvgMovements =
+      mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
+    const performanceDelta =
+      ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
     const personCompletion = (mockPerson.projects_completed / mockPerson.total_movements) * 100;
 
     const isConsistentlyHigh = performanceDelta > 20 && personCompletion > 75;
@@ -117,15 +126,18 @@ describe('AIInsightsPanel Component', () => {
       lead_time_average_days: 30, // 15 day gap
     };
 
-    const hasLeadTimeOpportunity = personWithGap.lead_time_average_days > personWithGap.average_duration_days + 10;
+    const hasLeadTimeOpportunity =
+      personWithGap.lead_time_average_days > personWithGap.average_duration_days + 10;
 
     expect(hasLeadTimeOpportunity).toBe(true);
   });
 
   it('should calculate risk score as Low for high performers', () => {
     const personCompletion = (mockPerson.projects_completed / mockPerson.total_movements) * 100;
-    const teamAvgMovements = mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
-    const performanceDelta = ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
+    const teamAvgMovements =
+      mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
+    const performanceDelta =
+      ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
 
     const isRisk = performanceDelta < -15 && personCompletion < 50;
     const riskScore = isRisk ? 'High' : 'Low';
@@ -135,7 +147,10 @@ describe('AIInsightsPanel Component', () => {
 
   it('should calculate prediction trend as Strong Growth', () => {
     const personCompletion = (mockPerson.projects_completed / mockPerson.total_movements) * 100;
-    const teamAvgCompletion = mockTeamData.reduce((sum, d) => sum + d.projects_completed / d.total_movements, 0) / mockTeamData.length * 100;
+    const teamAvgCompletion =
+      (mockTeamData.reduce((sum, d) => sum + d.projects_completed / d.total_movements, 0) /
+        mockTeamData.length) *
+      100;
 
     const trend = (personCompletion - teamAvgCompletion) / 10;
     const trendLabel = trend > 2 ? 'Strong Growth' : trend > 0.5 ? 'Steady Growth' : 'Stable';
@@ -145,8 +160,10 @@ describe('AIInsightsPanel Component', () => {
 
   it('should generate confidence scores between 0 and 100', () => {
     const personCompletion = (mockPerson.projects_completed / mockPerson.total_movements) * 100;
-    const teamAvgMovements = mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
-    const performanceDelta = ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
+    const teamAvgMovements =
+      mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
+    const performanceDelta =
+      ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
 
     const confidence = Math.min(90, 70 + Math.abs(performanceDelta));
 
@@ -166,8 +183,10 @@ describe('AIInsightsPanel Component', () => {
     let insightCount = 0;
 
     const personCompletion = (mockPerson.projects_completed / mockPerson.total_movements) * 100;
-    const teamAvgMovements = mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
-    const performanceDelta = ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
+    const teamAvgMovements =
+      mockTeamData.reduce((sum, d) => sum + d.total_movements, 0) / mockTeamData.length;
+    const performanceDelta =
+      ((mockPerson.total_movements - teamAvgMovements) / teamAvgMovements) * 100;
 
     if (personCompletion > 70 && performanceDelta > 10) insightCount++;
     if (mockPerson.average_duration_days > 25 && personCompletion > 60) insightCount++;

@@ -153,7 +153,7 @@ function parseCSVRecords(content: string): string[][] {
 export function validateCSVData(
   data: Record<string, unknown>[],
   entityType: string,
-  requiredFields: string[]
+  requiredFields: string[],
 ): ImportResult {
   const errors: ImportError[] = [];
   const validData: Record<string, unknown>[] = [];
@@ -237,7 +237,7 @@ export function exportAsCSV(entities: ExportableEntity[], options?: ExportOption
 
   // Skip system fields
   const headers = Array.from(allKeys).filter(
-    (key) => !['tenant_id', 'id', 'created_at', 'updated_at'].includes(key) || includeIds
+    (key) => !['tenant_id', 'id', 'created_at', 'updated_at'].includes(key) || includeIds,
   );
 
   if (headers.length === 0) return '';
@@ -337,7 +337,10 @@ export function getRequiredFields(entityType: string): string[] {
 /**
  * Validate import/export file format
  */
-export function validateFileFormat(filename: string): { valid: boolean; format: 'csv' | 'json' | null } {
+export function validateFileFormat(filename: string): {
+  valid: boolean;
+  format: 'csv' | 'json' | null;
+} {
   const ext = filename.split('.').pop()?.toLowerCase();
   if (ext === 'csv') return { valid: true, format: 'csv' };
   if (ext === 'json') return { valid: true, format: 'json' };

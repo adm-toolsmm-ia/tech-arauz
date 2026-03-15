@@ -17,7 +17,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -32,7 +32,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText(/3 selecionado/i)).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText(/de processos/i)).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText('Editar')).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText('Deletar')).toBeInTheDocument();
@@ -92,7 +92,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText('Mais')).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     const editButton = screen.getByText('Editar');
@@ -128,7 +128,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     const editButton = screen.getByText('Editar');
@@ -147,7 +147,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     const editButton = screen.getByText('Editar');
@@ -169,7 +169,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={onBulkDelete}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     const deleteButton = screen.getByText('Deletar');
@@ -196,7 +196,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText('1 selecionado')).toBeInTheDocument();
@@ -209,7 +209,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText('2 selecionados')).toBeInTheDocument();
@@ -224,7 +224,7 @@ describe('BulkActionToolbar', () => {
         onBulkDelete={vi.fn()}
         onExport={vi.fn()}
         onImport={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByRole('button', { name: /Editar/i })).toBeInTheDocument();

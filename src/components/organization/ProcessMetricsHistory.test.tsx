@@ -34,35 +34,20 @@ describe('ProcessMetricsHistory', () => {
   ];
 
   it('should render chart title and description', () => {
-    render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-      />
-    );
+    render(<ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />);
 
     expect(screen.getByText('Histórico de Métricas')).toBeInTheDocument();
     expect(screen.getByText(/Tendências de duração/i)).toBeInTheDocument();
   });
 
   it('should render empty state when no metrics provided', () => {
-    render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={[]}
-      />
-    );
+    render(<ProcessMetricsHistory processId="process-1" metrics={[]} />);
 
     expect(screen.getByText('Nenhum histórico disponível para este período.')).toBeInTheDocument();
   });
 
   it('should render timeframe selector buttons', () => {
-    render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-      />
-    );
+    render(<ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />);
 
     expect(screen.getByRole('button', { name: /Semana/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Mês/i })).toBeInTheDocument();
@@ -70,13 +55,7 @@ describe('ProcessMetricsHistory', () => {
   });
 
   it('should highlight active timeframe button', () => {
-    render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-        timeframe="month"
-      />
-    );
+    render(<ProcessMetricsHistory processId="process-1" metrics={mockMetrics} timeframe="month" />);
 
     const monthButton = screen.getByRole('button', { name: /Mês/i });
     expect(monthButton).toHaveAttribute('data-state', 'active');
@@ -92,7 +71,7 @@ describe('ProcessMetricsHistory', () => {
         metrics={mockMetrics}
         timeframe="month"
         onTimeframeChange={mockOnTimeframeChange}
-      />
+      />,
     );
 
     const weekButton = screen.getByRole('button', { name: /Semana/i });
@@ -103,10 +82,7 @@ describe('ProcessMetricsHistory', () => {
 
   it('should render duration chart with data', () => {
     const { container } = render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-      />
+      <ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />,
     );
 
     expect(screen.getByText('Duração Média Ao Longo do Tempo')).toBeInTheDocument();
@@ -116,10 +92,7 @@ describe('ProcessMetricsHistory', () => {
 
   it('should render compliance chart with data', () => {
     const { container } = render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-      />
+      <ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />,
     );
 
     expect(screen.getByText('Taxa de Conformidade ao SLA')).toBeInTheDocument();
@@ -127,36 +100,21 @@ describe('ProcessMetricsHistory', () => {
   });
 
   it('should calculate total instances correctly', () => {
-    render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-      />
-    );
+    render(<ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />);
 
     // Total: 10 + 12 = 22
     expect(screen.getByText('22')).toBeInTheDocument();
   });
 
   it('should calculate average duration correctly', () => {
-    render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-      />
-    );
+    render(<ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />);
 
     // Average: (3.5 + 4.2) / 2 = 3.85
     expect(screen.getByText('3.85')).toBeInTheDocument();
   });
 
   it('should calculate average compliance correctly', () => {
-    render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-      />
-    );
+    render(<ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />);
 
     // Average: (85 + 78) / 2 = 81.5
     expect(screen.getByText('81.5')).toBeInTheDocument();
@@ -174,12 +132,7 @@ describe('ProcessMetricsHistory', () => {
       },
     ];
 
-    render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={unsortedMetrics}
-      />
-    );
+    render(<ProcessMetricsHistory processId="process-1" metrics={unsortedMetrics} />);
 
     // Should render without errors and in correct order
     expect(screen.getByText('Histórico de Métricas')).toBeInTheDocument();
@@ -187,10 +140,7 @@ describe('ProcessMetricsHistory', () => {
 
   it('should be responsive on mobile', () => {
     const { container } = render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-      />
+      <ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />,
     );
 
     // Check for ResponsiveContainer (Recharts)
@@ -198,12 +148,7 @@ describe('ProcessMetricsHistory', () => {
   });
 
   it('should display chart legends', () => {
-    render(
-      <ProcessMetricsHistory
-        processId="process-1"
-        metrics={mockMetrics}
-      />
-    );
+    render(<ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />);
 
     expect(screen.getByText('Duração Média')).toBeInTheDocument();
     expect(screen.getByText('Conformidade %')).toBeInTheDocument();
@@ -211,12 +156,7 @@ describe('ProcessMetricsHistory', () => {
 
   describe('Accessibility (WCAG AA)', () => {
     it('should have no axe violations when empty', async () => {
-      const { container } = render(
-        <ProcessMetricsHistory
-          processId="process-1"
-          metrics={[]}
-        />
-      );
+      const { container } = render(<ProcessMetricsHistory processId="process-1" metrics={[]} />);
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -224,10 +164,7 @@ describe('ProcessMetricsHistory', () => {
 
     it('should have no axe violations with metrics', async () => {
       const { container } = render(
-        <ProcessMetricsHistory
-          processId="process-1"
-          metrics={mockMetrics}
-        />
+        <ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />,
       );
 
       const results = await axe(container);
@@ -236,11 +173,7 @@ describe('ProcessMetricsHistory', () => {
 
     it('should have no axe violations with week timeframe selected', async () => {
       const { container } = render(
-        <ProcessMetricsHistory
-          processId="process-1"
-          metrics={mockMetrics}
-          timeframe="week"
-        />
+        <ProcessMetricsHistory processId="process-1" metrics={mockMetrics} timeframe="week" />,
       );
 
       const results = await axe(container);
@@ -249,11 +182,7 @@ describe('ProcessMetricsHistory', () => {
 
     it('should have no axe violations with month timeframe selected', async () => {
       const { container } = render(
-        <ProcessMetricsHistory
-          processId="process-1"
-          metrics={mockMetrics}
-          timeframe="month"
-        />
+        <ProcessMetricsHistory processId="process-1" metrics={mockMetrics} timeframe="month" />,
       );
 
       const results = await axe(container);
@@ -262,11 +191,7 @@ describe('ProcessMetricsHistory', () => {
 
     it('should have no axe violations with quarter timeframe selected', async () => {
       const { container } = render(
-        <ProcessMetricsHistory
-          processId="process-1"
-          metrics={mockMetrics}
-          timeframe="quarter"
-        />
+        <ProcessMetricsHistory processId="process-1" metrics={mockMetrics} timeframe="quarter" />,
       );
 
       const results = await axe(container);
@@ -274,24 +199,14 @@ describe('ProcessMetricsHistory', () => {
     });
 
     it('should have proper ARIA labels on timeframe selector', () => {
-      render(
-        <ProcessMetricsHistory
-          processId="process-1"
-          metrics={mockMetrics}
-        />
-      );
+      render(<ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />);
 
       const timeframeGroup = screen.getByRole('group', { name: /Selecionador de período/i });
       expect(timeframeGroup).toBeInTheDocument();
     });
 
     it('should have proper ARIA labels on stat regions', () => {
-      render(
-        <ProcessMetricsHistory
-          processId="process-1"
-          metrics={mockMetrics}
-        />
-      );
+      render(<ProcessMetricsHistory processId="process-1" metrics={mockMetrics} />);
 
       const regions = screen.getAllByRole('region');
       expect(regions.length).toBeGreaterThan(0);
@@ -302,11 +217,7 @@ describe('ProcessMetricsHistory', () => {
 
     it('should have aria-pressed attributes on timeframe buttons', () => {
       render(
-        <ProcessMetricsHistory
-          processId="process-1"
-          metrics={mockMetrics}
-          timeframe="month"
-        />
+        <ProcessMetricsHistory processId="process-1" metrics={mockMetrics} timeframe="month" />,
       );
 
       const monthButton = screen.getByRole('button', { name: /Mês/i });
@@ -326,7 +237,7 @@ describe('ProcessMetricsHistory', () => {
           metrics={mockMetrics}
           timeframe="month"
           onTimeframeChange={mockOnTimeframeChange}
-        />
+        />,
       );
 
       const weekButton = screen.getByRole('button', { name: /Semana/i });

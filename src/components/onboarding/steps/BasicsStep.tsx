@@ -55,7 +55,7 @@ export function BasicsStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold mb-2">Informações Básicas da Organização</h2>
+        <h2 className="mb-2 text-lg font-semibold">Informações Básicas da Organização</h2>
         <p className="text-sm text-muted-foreground">
           Configure os detalhes fundamentais da sua organização
         </p>
@@ -63,9 +63,9 @@ export function BasicsStep({
 
       {/* Error Display */}
       {errors.length > 0 && (
-        <Card className="border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800">
+        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
           <CardContent className="pt-4">
-            <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+            <ul className="space-y-1 text-sm text-red-700 dark:text-red-300">
               {errors.map((error, idx) => (
                 <li key={idx} className="flex gap-2">
                   <span>•</span> {error}

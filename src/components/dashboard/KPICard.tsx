@@ -33,7 +33,7 @@ export const KPICard: React.FC<KPICardProps> = ({
         'shadow-soft transition-all duration-300 hover:shadow-card-hover',
         'animate-scale-in hover:-translate-y-0.5',
         onClick && 'cursor-pointer',
-        active && 'ring-2 ring-primary ring-offset-2',
+        active && 'ring-primary ring-2 ring-offset-2',
         className,
       )}
       onClick={onClick}
@@ -59,7 +59,7 @@ export const KPICard: React.FC<KPICardProps> = ({
             {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
           </div>
           <div className={cn('rounded-lg p-3', active ? 'bg-primary/20' : 'bg-primary/10')}>
-            <Icon className="h-6 w-6 text-primary" />
+            <Icon className="text-primary h-6 w-6" />
           </div>
         </div>
       </CardContent>

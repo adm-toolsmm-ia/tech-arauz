@@ -28,28 +28,18 @@ interface WizardProgressBarProps {
  * - Accessibility: ARIA labels, semantic structure
  * - Dark mode support
  */
-export function WizardProgressBar({
-  steps,
-  currentStep,
-  className,
-}: WizardProgressBarProps) {
+export function WizardProgressBar({ steps, currentStep, className }: WizardProgressBarProps) {
   const progressPercentage = (currentStep / steps.length) * 100;
 
   return (
-    <div
-      className={cn('space-y-4', className)}
-      role="region"
-      aria-label="Progresso do assistente"
-    >
+    <div className={cn('space-y-4', className)} role="region" aria-label="Progresso do assistente">
       {/* Progress Bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium text-foreground">
             Passo {currentStep} de {steps.length}
           </span>
-          <span className="text-xs text-muted-foreground">
-            {Math.round(progressPercentage)}%
-          </span>
+          <span className="text-xs text-muted-foreground">{Math.round(progressPercentage)}%</span>
         </div>
         <Progress
           value={progressPercentage}
@@ -68,38 +58,29 @@ export function WizardProgressBar({
           const isPast = step.number < currentStep;
 
           return (
-            <div
-              key={step.number}
-              className="flex flex-col items-center gap-1 flex-shrink-0"
-            >
+            <div key={step.number} className="flex flex-shrink-0 flex-col items-center gap-1">
               {/* Step Circle */}
               <button
                 type="button"
                 aria-label={`${step.label}${isCurrent ? ' (atual)' : isCompleted ? ' (concluído)' : ''}`}
                 className={cn(
-                  'h-10 w-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all',
+                  'flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-all',
                   isCurrent
                     ? 'bg-primary text-primary-foreground ring-2 ring-ring'
                     : isCompleted
                       ? 'bg-green-600 text-white'
-                      : 'bg-muted text-muted-foreground'
+                      : 'bg-muted text-muted-foreground',
                 )}
                 disabled
               >
-                {isCompleted ? (
-                  <Check className="h-5 w-5" />
-                ) : (
-                  step.number
-                )}
+                {isCompleted ? <Check className="h-5 w-5" /> : step.number}
               </button>
 
               {/* Label */}
               <span
                 className={cn(
-                  'text-xs font-medium text-center max-w-[60px] break-words transition-colors',
-                  isCurrent || isCompleted
-                    ? 'text-foreground'
-                    : 'text-muted-foreground'
+                  'max-w-[60px] break-words text-center text-xs font-medium transition-colors',
+                  isCurrent || isCompleted ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
                 {step.label}

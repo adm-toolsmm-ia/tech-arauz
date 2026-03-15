@@ -157,7 +157,7 @@ export const HistoryMovementsChart: React.FC<HistoryMovementsChartProps> = ({ pr
       </CardContent>
     </Card>
   );
-}
+};
 
 function buildData(
   projects: Array<any>,

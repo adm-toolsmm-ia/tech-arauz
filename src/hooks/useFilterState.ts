@@ -53,17 +53,14 @@ interface UseFilterStateReturn {
   isFiltersEmpty: boolean;
 }
 
-interface UseModuleFiltersReturn<T extends Record<string, any>>
-  extends UseFilterStateReturn {
+interface UseModuleFiltersReturn<T extends Record<string, any>> extends UseFilterStateReturn {
   filteredData: T[];
 }
 
 /**
  * Hook for managing filter state with optional persistence
  */
-export function useFilterState(
-  options: UseFilterStateOptions,
-): UseFilterStateReturn {
+export function useFilterState(options: UseFilterStateOptions): UseFilterStateReturn {
   const {
     moduleId,
     definitions,

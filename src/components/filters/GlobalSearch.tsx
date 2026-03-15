@@ -118,7 +118,7 @@ export function GlobalSearch({
           className={cn(
             'pl-9 pr-9',
             'transition-all duration-200',
-            isFocused && 'ring-2 ring-primary ring-offset-2',
+            isFocused && 'ring-primary ring-2 ring-offset-2',
           )}
           aria-label="Buscar projetos"
           role="combobox"
@@ -137,7 +137,7 @@ export function GlobalSearch({
               'absolute right-3 top-1/2 -translate-y-1/2',
               'text-muted-foreground hover:text-foreground',
               'transition-colors duration-200',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              'focus-visible:ring-primary focus:outline-none focus-visible:ring-2',
               'p-0.5',
             )}
             aria-label="Limpar busca"

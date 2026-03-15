@@ -97,8 +97,8 @@ export function ProjectsAgendaView<T extends ProjectForAgenda>({
       {projects.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/50">
-              <CalendarDays className="h-8 w-8 text-muted-foreground/40" />
+            <div className="bg-muted/50 mx-auto flex h-16 w-16 items-center justify-center rounded-full">
+              <CalendarDays className="text-muted-foreground/40 h-8 w-8" />
             </div>
             <h3 className="mt-4 text-sm font-medium text-foreground">Nenhum projeto no período</h3>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -119,7 +119,7 @@ export function ProjectsAgendaView<T extends ProjectForAgenda>({
                   <Card
                     key={p.id}
                     className={cn(
-                      'transition-colors hover:bg-muted/50',
+                      'hover:bg-muted/50 transition-colors',
                       onProjectClick && 'cursor-pointer',
                     )}
                     onClick={() => onProjectClick?.(p)}

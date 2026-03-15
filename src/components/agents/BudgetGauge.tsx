@@ -23,7 +23,12 @@ function getGaugeBg(percentage: number): string {
   return 'bg-red-500';
 }
 
-export const BudgetGauge: React.FC<BudgetGaugeProps> = ({ spentUsd, limitUsd, usagePercentage, className }) => {
+export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
+  spentUsd,
+  limitUsd,
+  usagePercentage,
+  className,
+}) => {
   const clampedPercentage = Math.min(usagePercentage, 100);
   const color = getGaugeColor(clampedPercentage);
   const bg = getGaugeBg(clampedPercentage);

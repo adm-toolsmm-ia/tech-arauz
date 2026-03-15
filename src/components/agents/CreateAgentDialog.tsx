@@ -336,7 +336,7 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
                 </Select>
               </div>
               {formData.usage_type === 'chatbot' && (
-                <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
+                <div className="bg-muted/30 space-y-3 rounded-lg border p-4">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="show-in-shortcut">Exibir no seletor de chatbot</Label>
                     <Switch

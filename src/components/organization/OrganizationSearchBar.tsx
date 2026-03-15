@@ -4,11 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, ChevronDown, Loader2, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { SearchResult, SearchFilters, EntityType } from '@/lib/organization/search';
@@ -128,10 +124,7 @@ export function OrganizationSearchBar({
 
   const handleSelectResult = (result: SearchResult) => {
     // Save to recent searches
-    const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(
-      0,
-      5
-    );
+    const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(0, 5);
     setRecentSearches(updated);
     localStorage.setItem('org-search-history', JSON.stringify(updated));
 
@@ -146,15 +139,11 @@ export function OrganizationSearchBar({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < results.length - 1 ? prev + 1 : 0
-        );
+        setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev > 0 ? prev - 1 : results.length - 1
-        );
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
         break;
       case 'Enter':
         e.preventDefault();
@@ -223,11 +212,13 @@ export function OrganizationSearchBar({
           </PopoverTrigger>
           <PopoverContent className="w-72">
             <div className="space-y-4">
-              <h3 className="font-semibold text-sm">Filtros Avançados</h3>
+              <h3 className="text-sm font-semibold">Filtros Avançados</h3>
 
               {/* Entity type filter */}
               <div>
-                <label htmlFor="entity-type-filter" className="text-sm font-medium">Tipo de Entidade</label>
+                <label htmlFor="entity-type-filter" className="text-sm font-medium">
+                  Tipo de Entidade
+                </label>
                 <div id="entity-type-filter" className="mt-2 flex flex-wrap gap-2">
                   {(
                     [
@@ -244,11 +235,7 @@ export function OrganizationSearchBar({
                   ).map((type) => (
                     <Badge
                       key={type}
-                      variant={
-                        filters.entityType?.includes(type)
-                          ? 'default'
-                          : 'outline'
-                      }
+                      variant={filters.entityType?.includes(type) ? 'default' : 'outline'}
                       className="cursor-pointer"
                       onClick={() => {
                         const currentTypes = Array.isArray(filters.entityType)
@@ -293,9 +280,7 @@ export function OrganizationSearchBar({
             {loading && (
               <div className="flex items-center justify-center px-4 py-8">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  Buscando...
-                </span>
+                <span className="ml-2 text-sm text-muted-foreground">Buscando...</span>
               </div>
             )}
 
@@ -307,19 +292,15 @@ export function OrganizationSearchBar({
                     onClick={() => handleSelectResult(result)}
                     onMouseEnter={() => setSelectedIndex(idx)}
                     className={`w-full px-4 py-3 text-left transition-colors ${
-                      idx === selectedIndex
-                        ? 'bg-accent text-accent-foreground'
-                        : 'hover:bg-muted'
+                      idx === selectedIndex ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'
                     }`}
                     role="option"
                     aria-selected={idx === selectedIndex}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <p className="font-medium text-sm">{result.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {result.breadcrumb}
-                        </p>
+                        <p className="text-sm font-medium">{result.name}</p>
+                        <p className="text-xs text-muted-foreground">{result.breadcrumb}</p>
                       </div>
                       <Badge variant="secondary" className="ml-2">
                         {ENTITY_TYPE_LABELS[result.type]}
@@ -341,18 +322,14 @@ export function OrganizationSearchBar({
             {!query && recentSearches.length > 0 && !loading && (
               <div className="divide-y">
                 <div className="px-4 py-2">
-                  <p className="text-xs font-semibold text-muted-foreground">
-                    Buscas Recentes
-                  </p>
+                  <p className="text-xs font-semibold text-muted-foreground">Buscas Recentes</p>
                 </div>
                 {recentSearches.map((search, idx) => (
                   <button
                     key={search}
                     onClick={() => handleQueryChange(search)}
                     className={`w-full px-4 py-2 text-left text-sm transition-colors ${
-                      idx === selectedIndex
-                        ? 'bg-accent text-accent-foreground'
-                        : 'hover:bg-muted'
+                      idx === selectedIndex ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'
                     }`}
                     role="option"
                     aria-selected={idx === selectedIndex}

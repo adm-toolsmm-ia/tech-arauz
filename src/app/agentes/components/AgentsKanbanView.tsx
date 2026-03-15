@@ -59,7 +59,7 @@ export function AgentsKanbanView({ agents, selectedId, onAgentClick }: AgentsKan
 function AgentKanbanCard({ agent }: { agent: UIAgent }) {
   return (
     <div className="space-y-1.5">
-      <span className="line-clamp-2 text-sm font-semibold leading-tight text-foreground/90">
+      <span className="text-foreground/90 line-clamp-2 text-sm font-semibold leading-tight">
         {agent.name}
       </span>
       {agent.description && (

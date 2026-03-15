@@ -55,6 +55,7 @@ interface OrgEntityFormSheetProps {
   isOpen?: boolean;
   onClose?: () => void;
   onSaved?: (saved: Entity) => void;
+  initialTab?: string;
 }
 
 type FormData = Partial<Entity> & {
@@ -109,12 +110,13 @@ export function OrgEntityFormSheet({
   isOpen = true,
   onClose,
   onSaved,
+  initialTab = 'info',
 }: OrgEntityFormSheetProps) {
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = useState('info');
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   // Initialize form from initialData
   useEffect(() => {
@@ -131,12 +133,15 @@ export function OrgEntityFormSheet({
         impacts: (initialData as any).impacts || [],
       };
 
-      const activityData = entity === 'activity' ? {
-        complexity: (initialData as OrgActivity).complexity || 'low',
-        priority: (initialData as OrgActivity).priority || 'normal',
-        required_role: (initialData as OrgActivity).required_role || null,
-        average_execution_time: (initialData as OrgActivity).average_execution_time || null,
-      } : {};
+      const activityData =
+        entity === 'activity'
+          ? {
+              complexity: (initialData as OrgActivity).complexity || 'low',
+              priority: (initialData as OrgActivity).priority || 'normal',
+              required_role: (initialData as OrgActivity).required_role || null,
+              average_execution_time: (initialData as OrgActivity).average_execution_time || null,
+            }
+          : {};
 
       setFormData({ ...baseData, ...activityData });
       setIsDirty(false);
@@ -147,6 +152,13 @@ export function OrgEntityFormSheet({
       setErrors({});
     }
   }, [initialData, isOpen, mode, entity]);
+
+  // Update active tab when initialTab prop changes
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, isOpen]);
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -166,7 +178,10 @@ export function OrgEntityFormSheet({
     setIsDirty(true);
   };
 
-  const handleRemoveArrayItem = (field: 'inputs' | 'outputs' | 'risks' | 'impacts', idx: number) => {
+  const handleRemoveArrayItem = (
+    field: 'inputs' | 'outputs' | 'risks' | 'impacts',
+    idx: number,
+  ) => {
     const current = formData[field] || [];
     setFormData((prev) => ({
       ...prev,
@@ -187,9 +202,7 @@ export function OrgEntityFormSheet({
     setIsSaving(true);
     try {
       const action =
-        mode === 'create'
-          ? serverActions[entity].create
-          : serverActions[entity].update;
+        mode === 'create' ? serverActions[entity].create : serverActions[entity].update;
 
       // Prepare payload
       const payload = {
@@ -231,12 +244,17 @@ export function OrgEntityFormSheet({
         const createAction = serverActions[entity].create as (payload: any) => Promise<any>;
         result = await createAction(createPayload);
       } else {
-        const updateAction = serverActions[entity].update as (id: string, payload: any) => Promise<any>;
+        const updateAction = serverActions[entity].update as (
+          id: string,
+          payload: any,
+        ) => Promise<any>;
         result = await updateAction((initialData as any).id, payload);
       }
 
       if (result.success && result.data) {
-        toast.success(`✅ ${entityLabels[entity]} ${mode === 'create' ? 'criada' : 'atualizada'} com sucesso!`);
+        toast.success(
+          `✅ ${entityLabels[entity]} ${mode === 'create' ? 'criada' : 'atualizada'} com sucesso!`,
+        );
         setIsDirty(false);
         onSaved?.(result.data);
         onClose?.();
@@ -257,7 +275,7 @@ export function OrgEntityFormSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
-      <SheetContent side="right" className="w-full max-w-2xl p-0 overflow-hidden flex flex-col">
+      <SheetContent side="right" className="flex w-full max-w-2xl flex-col overflow-hidden p-0">
         <SheetHeader className="border-b px-6 py-4">
           <SheetTitle>{title}</SheetTitle>
         </SheetHeader>
@@ -279,9 +297,15 @@ export function OrgEntityFormSheet({
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full rounded-none border-b px-6" style={{
-              gridTemplateColumns: entity === 'process' || entity === 'activity' ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)',
-            }}>
+            <TabsList
+              className="grid w-full rounded-none border-b px-6"
+              style={{
+                gridTemplateColumns:
+                  entity === 'process' || entity === 'activity'
+                    ? 'repeat(3, 1fr)'
+                    : 'repeat(2, 1fr)',
+              }}
+            >
               <TabsTrigger value="info">Informações</TabsTrigger>
               {(entity === 'process' || entity === 'activity') && (
                 <TabsTrigger value="bpm">BPM</TabsTrigger>
@@ -299,7 +323,7 @@ export function OrgEntityFormSheet({
                   placeholder={`Nome da ${entityLabels[entity].toLowerCase()}`}
                   className={errors.name ? 'border-red-500' : ''}
                 />
-                {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+                {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
               </div>
 
               <div>
@@ -330,7 +354,7 @@ export function OrgEntityFormSheet({
                   disabled={isSaving}
                 />
                 {errors.responsible_roles && (
-                  <p className="text-xs text-red-500 mt-1">{errors.responsible_roles}</p>
+                  <p className="mt-1 text-xs text-red-500">{errors.responsible_roles}</p>
                 )}
               </div>
 
@@ -407,7 +431,7 @@ export function OrgEntityFormSheet({
               <TabsContent value="bpm" className="space-y-6 p-6">
                 {/* Inputs */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="mb-3 flex items-center justify-between">
                     <h3 className="font-semibold">Inputs (Entradas)</h3>
                     <Button
                       variant="outline"
@@ -415,7 +439,7 @@ export function OrgEntityFormSheet({
                       onClick={() => handleAddArrayItem('inputs')}
                       className="gap-1"
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="h-3 w-3" />
                       Adicionar
                     </Button>
                   </div>
@@ -437,7 +461,7 @@ export function OrgEntityFormSheet({
                           size="sm"
                           onClick={() => handleRemoveArrayItem('inputs', idx)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
@@ -446,7 +470,7 @@ export function OrgEntityFormSheet({
 
                 {/* Outputs */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="mb-3 flex items-center justify-between">
                     <h3 className="font-semibold">Outputs (Saídas)</h3>
                     <Button
                       variant="outline"
@@ -454,7 +478,7 @@ export function OrgEntityFormSheet({
                       onClick={() => handleAddArrayItem('outputs')}
                       className="gap-1"
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="h-3 w-3" />
                       Adicionar
                     </Button>
                   </div>
@@ -476,7 +500,7 @@ export function OrgEntityFormSheet({
                           size="sm"
                           onClick={() => handleRemoveArrayItem('outputs', idx)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
@@ -485,7 +509,7 @@ export function OrgEntityFormSheet({
 
                 {/* Risks (Processo e Atividade) */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="mb-3 flex items-center justify-between">
                     <h3 className="font-semibold">Riscos</h3>
                     <Button
                       variant="outline"
@@ -493,7 +517,7 @@ export function OrgEntityFormSheet({
                       onClick={() => handleAddArrayItem('risks')}
                       className="gap-1"
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="h-3 w-3" />
                       Adicionar
                     </Button>
                   </div>
@@ -515,7 +539,7 @@ export function OrgEntityFormSheet({
                           size="sm"
                           onClick={() => handleRemoveArrayItem('risks', idx)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
@@ -525,7 +549,7 @@ export function OrgEntityFormSheet({
                 {/* Impacts (apenas Atividade) */}
                 {entity === 'activity' && (
                   <div>
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="mb-3 flex items-center justify-between">
                       <h3 className="font-semibold">Impactos</h3>
                       <Button
                         variant="outline"
@@ -533,7 +557,7 @@ export function OrgEntityFormSheet({
                         onClick={() => handleAddArrayItem('impacts')}
                         className="gap-1"
                       >
-                        <Plus className="w-3 h-3" />
+                        <Plus className="h-3 w-3" />
                         Adicionar
                       </Button>
                     </div>
@@ -555,7 +579,7 @@ export function OrgEntityFormSheet({
                             size="sm"
                             onClick={() => handleRemoveArrayItem('impacts', idx)}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       ))}
@@ -646,7 +670,7 @@ export function OrgEntityFormSheet({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-end gap-3 border-t bg-muted/50 px-6 py-4">
+        <div className="bg-muted/50 flex justify-end gap-3 border-t px-6 py-4">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
             Cancelar
           </Button>

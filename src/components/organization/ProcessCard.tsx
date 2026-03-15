@@ -13,12 +13,7 @@ interface ProcessCardProps {
   onClick?: () => void;
 }
 
-export function ProcessCard({
-  process,
-  nucleusName,
-  areaName,
-  onClick,
-}: ProcessCardProps) {
+export function ProcessCard({ process, nucleusName, areaName, onClick }: ProcessCardProps) {
   const inputsCount = process.inputs?.length ?? 0;
   const outputsCount = process.outputs?.length ?? 0;
 
@@ -35,10 +30,10 @@ export function ProcessCard({
       }}
       className="cursor-pointer transition-shadow hover:shadow-md"
     >
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="space-y-3 p-4">
         <div className="flex items-start gap-3">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <GitBranch className="size-6 text-primary" />
+          <div className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-lg">
+            <GitBranch className="text-primary size-6" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold">{process.name}</p>

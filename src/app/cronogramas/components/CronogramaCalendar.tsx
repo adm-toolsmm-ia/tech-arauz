@@ -162,7 +162,7 @@ function MonthView({
                       'relative flex aspect-square flex-col items-center justify-start gap-0.5 rounded-lg p-1 text-sm transition-all',
                       'hover:bg-accent/60 focus:outline-none focus:ring-2 focus:ring-ring/50',
                       isToday && 'bg-accent font-bold',
-                      isSelected && 'bg-primary/5 ring-2 ring-primary',
+                      isSelected && 'bg-primary/5 ring-primary ring-2',
                       hasDelayed &&
                         daySchedules.length > 0 &&
                         'ring-1 ring-red-300 dark:ring-red-700',
@@ -172,7 +172,7 @@ function MonthView({
                       className={cn(
                         'mt-0.5 text-xs leading-none',
                         isToday &&
-                          'flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground',
+                          'bg-primary text-primary-foreground flex h-5 w-5 items-center justify-center rounded-full font-bold',
                         !isToday && date.getMonth() !== month && 'text-muted-foreground/50',
                       )}
                     >
@@ -230,7 +230,7 @@ function MonthView({
                           }, new Map<string, Schedule[]>()),
                         ).map(([projectName, projSchedules]) => (
                           <div key={projectName} className="space-y-1.5">
-                            <h4 className="line-clamp-1 border-b pb-1 text-[11px] font-bold uppercase text-foreground/80">
+                            <h4 className="text-foreground/80 line-clamp-1 border-b pb-1 text-[11px] font-bold uppercase">
                               {projectName}
                             </h4>
                             {projSchedules.map((s) => {
@@ -240,7 +240,7 @@ function MonthView({
                                   key={s.id}
                                   role="button"
                                   tabIndex={0}
-                                  className="flex cursor-pointer items-start gap-2 rounded p-1.5 transition-colors hover:bg-muted/50"
+                                  className="hover:bg-muted/50 flex cursor-pointer items-start gap-2 rounded p-1.5 transition-colors"
                                   onClick={() => onSelectDay(date)}
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter' || e.key === ' ') {
@@ -343,20 +343,20 @@ function WeekView({
                   'flex min-h-[120px] flex-col rounded-lg border p-2 transition-all',
                   'hover:border-primary/50 hover:bg-accent/30 focus:outline-none focus:ring-2 focus:ring-ring/50',
                   isToday && 'border-primary bg-primary/5 shadow-sm',
-                  isSelected && 'ring-2 ring-primary',
+                  isSelected && 'ring-primary ring-2',
                   hasDelayed && 'border-red-300 dark:border-red-700',
                 )}
               >
-                {isToday && <div className="mb-1 h-0.5 w-full rounded-full bg-primary" />}
+                {isToday && <div className="bg-primary mb-1 h-0.5 w-full rounded-full" />}
                 <div className="mb-1.5 flex items-center justify-between">
-                  <span className={cn('text-xs font-medium', isToday && 'font-bold text-primary')}>
+                  <span className={cn('text-xs font-medium', isToday && 'text-primary font-bold')}>
                     {DAY_NAMES[date.getDay()]}
                   </span>
                   <span
                     className={cn(
                       'text-xs',
                       isToday
-                        ? 'flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground'
+                        ? 'bg-primary text-primary-foreground flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold'
                         : 'text-muted-foreground',
                     )}
                   >
@@ -434,7 +434,7 @@ function DayView({
             variant="outline"
             size="icon"
             onClick={() => onNavigate(-1)}
-            className="h-8 w-8 hover:bg-accent/60"
+            className="hover:bg-accent/60 h-8 w-8"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -454,7 +454,7 @@ function DayView({
             variant="outline"
             size="icon"
             onClick={() => onNavigate(1)}
-            className="h-8 w-8 hover:bg-accent/60"
+            className="hover:bg-accent/60 h-8 w-8"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -463,7 +463,7 @@ function DayView({
         <div className="scrollbar-thin flex-1 overflow-y-auto pr-2">
           {schedules.length === 0 ? (
             <div className="flex h-[200px] flex-col items-center justify-center text-center">
-              <CalendarDays className="mb-2 h-10 w-10 text-muted-foreground/30" />
+              <CalendarDays className="text-muted-foreground/30 mb-2 h-10 w-10" />
               <p className="font-medium text-muted-foreground">
                 Nenhuma pauta ou atividade para este dia.
               </p>
@@ -477,7 +477,7 @@ function DayView({
                     key={schedule.id}
                     role="button"
                     tabIndex={0}
-                    className="cursor-pointer border-l-4 transition-colors hover:bg-muted/50"
+                    className="hover:bg-muted/50 cursor-pointer border-l-4 transition-colors"
                     style={{ borderLeftColor: PROJECT_COLORS[colorIdx] }}
                     onClick={() => onActivityClick(schedule)}
                     onKeyDown={(e) => {

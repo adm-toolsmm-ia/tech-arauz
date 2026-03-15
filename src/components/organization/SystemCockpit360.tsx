@@ -46,14 +46,14 @@ export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({
         <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
           <TabsTrigger
             value="principal"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <FileText className="mr-2 size-4" />
             Principal
           </TabsTrigger>
           <TabsTrigger
             value="recursos"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <Settings className="mr-2 size-4" />
             Recursos
@@ -86,7 +86,7 @@ export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <FileText className="size-5 text-primary" />
+              <FileText className="text-primary size-5" />
               <h3 className="text-base font-semibold">Informações</h3>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -131,7 +131,7 @@ export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({
               {resources.map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                  className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-colors"
                 >
                   <div>
                     <p className="text-sm font-medium">{r.name}</p>

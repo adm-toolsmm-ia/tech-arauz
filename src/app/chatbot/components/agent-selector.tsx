@@ -76,31 +76,28 @@ export function AgentSelector({
   if (isFetching || isLoading) {
     return (
       <div className="flex items-center justify-center py-4">
-        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error) {
-    return (
-      <div className="text-xs text-destructive bg-destructive/10 p-2 rounded">
-        {error}
-      </div>
-    );
+    return <div className="bg-destructive/10 rounded p-2 text-xs text-destructive">{error}</div>;
   }
 
   if (agents.length === 0) {
-    return (
-      <div className="text-xs text-muted-foreground">No agents available</div>
-    );
+    return <div className="text-xs text-muted-foreground">No agents available</div>;
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <Select value={selectedAgent?.id || ''} onValueChange={(agentId) => {
-        const agent = agents.find((a) => a.id === agentId);
-        if (agent) onAgentSelect(agent);
-      }}>
+      <Select
+        value={selectedAgent?.id || ''}
+        onValueChange={(agentId) => {
+          const agent = agents.find((a) => a.id === agentId);
+          if (agent) onAgentSelect(agent);
+        }}
+      >
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Choose an agent..." />
         </SelectTrigger>
@@ -114,9 +111,7 @@ export function AgentSelector({
       </Select>
 
       {selectedAgent && (
-        <div className="text-xs text-muted-foreground">
-          {selectedAgent.description}
-        </div>
+        <div className="text-xs text-muted-foreground">{selectedAgent.description}</div>
       )}
 
       {/* TODO: New chat button will go here in Phase 2 */}

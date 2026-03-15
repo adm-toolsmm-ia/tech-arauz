@@ -152,7 +152,7 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ schedules, del
   if (timelineItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Calendar className="mb-4 size-12 text-muted-foreground/50" />
+        <Calendar className="text-muted-foreground/50 mb-4 size-12" />
         <p className="text-sm text-muted-foreground">Nenhum cronograma ou entrega cadastrado</p>
       </div>
     );
@@ -165,4 +165,4 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ schedules, del
       ))}
     </div>
   );
-}
+};

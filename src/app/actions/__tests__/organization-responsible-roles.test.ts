@@ -56,7 +56,7 @@ describe('Responsible Roles Server Actions', () => {
     chain.order.mockImplementation(() => Promise.resolve({ data: resolveData, error: null }));
 
     // Make the chain itself awaitable (for direct await chains at the end of query)
-    chain.then = function(resolve: any, reject: any) {
+    chain.then = function (resolve: any, reject: any) {
       return Promise.resolve({ data: resolveData, error: null }).then(resolve, reject);
     };
 

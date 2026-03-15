@@ -5,7 +5,12 @@ import { FileText, Clock, AlertCircle, Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { InfoField, OrgEntityCard, RolesDisplay, DocumentationAccordion } from '@/components/organization/shared';
+import {
+  InfoField,
+  OrgEntityCard,
+  RolesDisplay,
+  DocumentationAccordion,
+} from '@/components/organization/shared';
 import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
 import type { OrgRoutine, OrgActivity } from '@/types/organization';
 import { getActivitiesByRoutine } from '@/app/actions/organization';
@@ -51,14 +56,14 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
         <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
           <TabsTrigger
             value="principal"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <FileText className="mr-2 size-4" />
             Principal
           </TabsTrigger>
           <TabsTrigger
             value="atividades"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <Clock className="mr-2 size-4" />
             Atividades
@@ -68,7 +73,7 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
           </TabsTrigger>
           <TabsTrigger
             value="documentacao"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <AlertCircle className="mr-2 size-4" />
             Documentação
@@ -98,7 +103,7 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <FileText className="size-5 text-primary" />
+              <FileText className="text-primary size-5" />
               <h3 className="text-base font-semibold">Informações</h3>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -109,7 +114,7 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <Users className="size-5 text-primary" />
+              <Users className="text-primary size-5" />
               <h3 className="text-base font-semibold">Roles responsáveis</h3>
             </div>
             <RolesDisplay roles={routine.responsible_roles || []} />
@@ -168,9 +173,7 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
           {routine.documentation && Object.keys(routine.documentation).length > 0 ? (
             <DocumentationAccordion data={routine.documentation} />
           ) : (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              Sem documentação
-            </div>
+            <div className="py-12 text-center text-sm text-muted-foreground">Sem documentação</div>
           )}
         </TabsContent>
       </Tabs>

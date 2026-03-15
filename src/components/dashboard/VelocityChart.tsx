@@ -30,11 +30,7 @@ interface VelocityChartProps {
  * - Smooth animations
  * - Period-aware bucketing
  */
-export function VelocityChart({
-  data,
-  period = 'mensal',
-  loading = false,
-}: VelocityChartProps) {
+export function VelocityChart({ data, period = 'mensal', loading = false }: VelocityChartProps) {
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
 
@@ -63,9 +59,7 @@ export function VelocityChart({
 
       topPeople.forEach((person) => {
         // Simulate velocity data
-        dataPoint[person.name] = Math.round(
-          person.movements / (days / 7) + Math.random() * 5
-        );
+        dataPoint[person.name] = Math.round(person.movements / (days / 7) + Math.random() * 5);
       });
 
       return dataPoint;
@@ -81,7 +75,7 @@ export function VelocityChart({
           <CardTitle>Velocidade ao Longo do Período</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80 flex items-center justify-center bg-muted/20 rounded animate-pulse">
+          <div className="bg-muted/20 flex h-80 animate-pulse items-center justify-center rounded">
             <p className="text-sm text-muted-foreground">Carregando...</p>
           </div>
         </CardContent>
@@ -96,7 +90,7 @@ export function VelocityChart({
           <CardTitle>Velocidade ao Longo do Período</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80 flex items-center justify-center">
+          <div className="flex h-80 items-center justify-center">
             <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
           </div>
         </CardContent>
@@ -112,16 +106,9 @@ export function VelocityChart({
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={350}>
-          <LineChart
-            data={timeSeriesData}
-            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-          >
+          <LineChart data={timeSeriesData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis
-              dataKey="week"
-              tick={{ fontSize: 12 }}
-              className="fill-muted-foreground"
-            />
+            <XAxis dataKey="week" tick={{ fontSize: 12 }} className="fill-muted-foreground" />
             <YAxis
               label={{ value: 'Movimentações/Semana', angle: -90, position: 'insideLeft' }}
               tick={{ fontSize: 12 }}
@@ -155,18 +142,19 @@ export function VelocityChart({
 
         {/* Summary Stats */}
         <div className="mt-6 grid grid-cols-2 gap-4">
-          <div className="p-3 bg-muted/50 rounded">
+          <div className="bg-muted/50 rounded p-3">
             <p className="text-xs text-muted-foreground">Período</p>
             <p className="text-lg font-semibold capitalize">{period}</p>
           </div>
-          <div className="p-3 bg-muted/50 rounded">
+          <div className="bg-muted/50 rounded p-3">
             <p className="text-xs text-muted-foreground">Top Performer</p>
             <p className="text-lg font-semibold">{chartData[0]?.name}</p>
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground mt-4">
-          💡 Em Phase 2, este gráfico mostrará dados reais de velocidade agregados por dia/semana/mês
+        <p className="mt-4 text-xs text-muted-foreground">
+          💡 Em Phase 2, este gráfico mostrará dados reais de velocidade agregados por
+          dia/semana/mês
         </p>
       </CardContent>
     </Card>

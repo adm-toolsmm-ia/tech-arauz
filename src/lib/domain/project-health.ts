@@ -15,7 +15,8 @@ function normalizeStatus(status: string | null | undefined): string {
 
 export function isConsideredActive(status: string | null | undefined): boolean {
   const normalized = normalizeStatus(status);
-  return normalized !== 'cancelado' && normalized !== 'concluido';
+  const inactiveStatuses = ['cancelado', 'concluido', 'paralisado'];
+  return !inactiveStatuses.includes(normalized);
 }
 
 export function getOverdueData(
@@ -27,8 +28,9 @@ export function getOverdueData(
     return { isOverdue: false, maxDays: 0 };
   }
 
-  // Verifica prazo da fase (se houver no novo model) e o prazo_cronograma (end_date)
-  const datesToCheck = [project.end_date, project.prazo_cronograma]
+  // Verifica apenas end_date para determinar se está atrasado
+  // prazo_cronograma não é considerado para overdue status
+  const datesToCheck = [project.end_date]
     .filter((d): d is string => typeof d === 'string')
     .map((d) => new Date(d));
 

@@ -69,6 +69,10 @@ export async function getBootstrapTemplatesAction(
     }
 
     const template = getBootstrapTemplate(organizationType);
+    if (!template) {
+      throw new Error(`Tipo de organização inválido: ${organizationType}`);
+    }
+
     return {
       success: true,
       message: 'Template obtido com sucesso',

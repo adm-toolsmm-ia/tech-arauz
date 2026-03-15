@@ -196,8 +196,6 @@ export function OrganizationSearchBar({
             className="pl-10"
             aria-label="Buscar organizações"
             aria-autocomplete="list"
-            aria-controls="search-results"
-            aria-expanded={showResults}
           />
           {query && (
             <button

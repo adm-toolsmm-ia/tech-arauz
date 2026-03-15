@@ -19,8 +19,8 @@ describe('Switch A11y', () => {
   it('should support checked and disabled states', async () => {
     const { container } = render(
       <div>
-        <Switch id="enabled" defaultChecked />
-        <Switch id="disabled" disabled />
+        <Switch id="enabled" defaultChecked aria-label="Enabled switch" />
+        <Switch id="disabled" disabled aria-label="Disabled switch" />
       </div>,
     );
     const results = await axe(container);

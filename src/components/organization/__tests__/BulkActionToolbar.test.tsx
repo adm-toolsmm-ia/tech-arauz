@@ -20,7 +20,7 @@ describe('BulkActionToolbar', () => {
       />
     );
 
-    expect(container.firstChild).toBeEmptyDOMElement();
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('should render when selectedCount > 0', () => {

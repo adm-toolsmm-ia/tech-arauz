@@ -2,9 +2,11 @@
 // Schema Prisma — Tech Arauz (Supabase/PostgreSQL)
 // =============================================================================
 // Local canônico: docs/architecture/data/schema.prisma (engenharia/arquitetura AI)
-// Extraído via MCP Supabase (list_tables). Última atualização: 2026-03-01 (migration 048).
+// Extraído via MCP Supabase (list_tables). Última atualização: 2026-03-16 (migration 070 EPIC 11).
 // O projeto usa Supabase diretamente (não Prisma em runtime); este arquivo
 // serve como documentação do schema e referência para LLMs/ferramentas/agentes AIOX.
+// EPIC 11 Additions (v0.2.4): org_activity_systems, org_process_slas, org_process_metrics,
+// org_role_definitions, org_role_permissions, org_activity_templates, org_process_versions
 //
 // Para usar com Prisma: configurar datasource para PostgreSQL e
 // apontar url para a connection string do Supabase.
@@ -17,6 +19,22 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// ENUMS — Organizational Module (EPIC 10+)
+// =============================================================================
+
+enum org_activity_complexity {
+  low
+  medium
+  high
+}
+
+enum org_activity_priority {
+  low
+  normal
+  high
 }
 
 // -----------------------------------------------------------------------------
@@ -61,6 +79,29 @@ model Tenant {
   modelIncidents      ModelIncident[]
   modelFallbackPolicies ModelFallbackPolicy[]
   modelChangeLog      ModelChangeLog[]
+
+  // EPIC 10: Organizational Knowledge Graph
+  orgAreas           OrgArea[]
+  orgNuclei          OrgNucleus[]
+  orgProcesses       OrgProcess[]
+  orgRoutines        OrgRoutine[]
+  orgActivities      OrgActivity[]
+  orgSystems         OrgSystem[]
+  orgSystemResources OrgSystemResource[]
+  orgSuppliers       OrgSupplier[]
+  orgServices        OrgService[]
+  orgDocuments       OrgDocument[]
+  orgKnowledgeEntries OrgKnowledgeEntry[]
+  bulkOperationLogs  BulkOperationLog[]
+
+  // EPIC 11: Organizational Enrichment
+  orgActivitySystems OrgActivitySystem[]
+  orgProcessSlas     OrgProcessSla[]
+  orgProcessMetrics  OrgProcessMetric[]
+  orgRoleDefinitions OrgRoleDefinition[]
+  orgRolePermissions OrgRolePermission[]
+  orgActivityTemplates OrgActivityTemplate[]
+  orgProcessVersions OrgProcessVersion[]
 
   @@map("tenants")
 }
@@ -926,4 +967,381 @@ model ModelChangeLog {
   model  LmModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
 
   @@map("model_change_log")
+}
+
+// =============================================================================
+// EPIC 10: Organizational Knowledge Graph — Hierarchy & Resources
+// =============================================================================
+
+model OrgArea {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  name               String
+  description        String?
+  objective          String?
+  responsibleRoles   Json?    @default("[]") @map("responsible_roles")
+  documentation      Json?    @default("{}") @map("documentation")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  nuclei      OrgNucleus[]
+  processes   OrgProcess[]
+  documents   OrgDocument[]
+
+  @@unique([tenantId, name])
+  @@map("org_areas")
+}
+
+model OrgNucleus {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  areaId             String   @map("area_id") @db.Uuid
+  name               String
+  description        String?
+  objective          String?
+  responsibleRoles   Json?    @default("[]") @map("responsible_roles")
+  documentation      Json?    @default("{}") @map("documentation")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  tenant    Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  area      OrgArea     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  processes OrgProcess[]
+  routines  OrgRoutine[]
+  templates OrgActivityTemplate[]
+
+  @@unique([tenantId, areaId, name])
+  @@map("org_nuclei")
+}
+
+model OrgProcess {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  areaId             String?  @map("area_id") @db.Uuid
+  nucleusId          String?  @map("nucleus_id") @db.Uuid
+  name               String
+  description        String?
+  objective          String?
+  inputs             Json?    @default("[]") @map("inputs")
+  outputs            Json?    @default("[]") @map("outputs")
+  responsibleRoles   Json?    @default("[]") @map("responsible_roles")
+  risks              Json?    @default("[]") @map("risks")
+  impacts            Json?    @default("[]") @map("impacts")
+  documentation      Json?    @default("{}") @map("documentation")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  area         OrgArea?           @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  nucleus      OrgNucleus?        @relation(fields: [nucleusId], references: [id], onDelete: SetNull)
+  routines     OrgRoutine[]
+  slas         OrgProcessSla[]
+  metrics      OrgProcessMetric[]
+  versions     OrgProcessVersion[]
+  documents    OrgDocument[]
+
+  @@unique([tenantId, name])
+  @@map("org_processes")
+}
+
+model OrgRoutine {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  processId          String   @map("process_id") @db.Uuid
+  name               String
+  description        String?
+  objective          String?
+  responsibleRoles   Json?    @default("[]") @map("responsible_roles")
+  documentation      Json?    @default("{}") @map("documentation")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  tenant     Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  process    OrgProcess    @relation(fields: [processId], references: [id], onDelete: Cascade)
+  activities OrgActivity[]
+
+  @@unique([tenantId, processId, name])
+  @@map("org_routines")
+}
+
+model OrgActivity {
+  id                     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId               String                  @map("tenant_id") @db.Uuid
+  routineId              String                  @map("routine_id") @db.Uuid
+  name                   String
+  description            String?
+  objective              String?
+  complexity             org_activity_complexity @default(medium)
+  priority               org_activity_priority   @default(normal)
+  requiredRole           String?                 @map("required_role")
+  averageExecutionTime   Int?                    @map("average_execution_time")
+  inputs                 Json?                   @default("[]") @map("inputs")
+  outputs                Json?                   @default("[]") @map("outputs")
+  risks                  Json?                   @default("[]") @map("risks")
+  impacts                Json?                   @default("[]") @map("impacts")
+  responsibleRoles       Json?                   @default("[]") @map("responsible_roles") // Story 11.1
+  documentation          Json?                   @default("{}") @map("documentation")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @default(now()) @map("updated_at")
+
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  routine        OrgRoutine           @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  systems        OrgActivitySystem[]  // Story 11.2
+  templates      OrgActivityTemplate[]
+
+  @@unique([tenantId, routineId, name])
+  @@map("org_activities")
+}
+
+model OrgSystem {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  name               String
+  description        String?
+  purpose            String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  resources  OrgSystemResource[]
+  activities OrgActivitySystem[] // Story 11.2
+
+  @@unique([tenantId, name])
+  @@map("org_systems")
+}
+
+model OrgSystemResource {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  systemId   String   @map("system_id") @db.Uuid
+  name       String
+  description String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  system OrgSystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  @@unique([systemId, name])
+  @@map("org_system_resources")
+}
+
+model OrgSupplier {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  name               String
+  description        String?
+  responsibleRoles   Json?    @default("[]") @map("responsible_roles")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  @@map("org_suppliers")
+}
+
+model OrgService {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  name               String
+  description        String?
+  responsibleRoles   Json?    @default("[]") @map("responsible_roles")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  @@map("org_services")
+}
+
+model OrgDocument {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId             String   @map("tenant_id") @db.Uuid
+  name                 String
+  type                 String?
+  description          String?
+  associatedProcessId  String?  @map("associated_process_id") @db.Uuid
+  responsibleRoles     Json?    @default("[]") @map("responsible_roles")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @default(now()) @map("updated_at")
+
+  tenant    Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  process   OrgProcess? @relation(fields: [associatedProcessId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, name])
+  @@map("org_documents")
+}
+
+model OrgKnowledgeEntry {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  title              String
+  content            String
+  type               String   // process, best_practice, case_study, template, role_guide
+  relatedEntityId    String?  @map("related_entity_id") @db.Uuid
+  relatedEntityType  String?  @map("related_entity_type")
+  embedding          String?  // pgvector(1536) stored as string in Prisma
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, title])
+  @@map("org_knowledge_entries")
+}
+
+model BulkOperationLog {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  operationType    String   @map("operation_type") // import_csv, import_json, export_csv, export_json, bulk_update, bulk_delete
+  entityType       String   @map("entity_type")
+  totalRecords     Int      @map("total_records")
+  successfulRecords Int     @map("successful_records")
+  failedRecords    Int      @map("failed_records")
+  errors           Json?    @default("[]") @map("errors")
+  startedAt        DateTime @map("started_at")
+  completedAt      DateTime? @map("completed_at")
+  createdBy        String?  @map("created_by") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("bulk_operation_logs")
+}
+
+// =============================================================================
+// EPIC 11: Organizational Enrichment — SLAs, Roles, Templating, Versioning
+// =============================================================================
+
+model OrgActivitySystem {
+  activityId   String   @map("activity_id") @db.Uuid
+  systemId     String   @map("system_id") @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  usageContext String?  @map("usage_context")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+
+  activity OrgActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  system   OrgSystem   @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  tenant   Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([activityId, systemId])
+  @@map("org_activity_systems")
+}
+
+model OrgProcessSla {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId               String   @map("tenant_id") @db.Uuid
+  processId              String   @map("process_id") @db.Uuid
+  metricName             String   @map("metric_name")
+  targetDurationDays     Int      @map("target_duration_days")
+  warningThresholdPct    Decimal  @default(80) @map("warning_threshold_pct") @db.Decimal(5, 2)
+  criticalThresholdPct   Decimal  @default(95) @map("critical_threshold_pct") @db.Decimal(5, 2)
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @default(now()) @map("updated_at")
+
+  tenant  Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  process OrgProcess @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, processId, metricName])
+  @@map("org_process_slas")
+}
+
+model OrgProcessMetric {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  processId        String   @map("process_id") @db.Uuid
+  periodStart      DateTime @db.Date @map("period_start")
+  periodEnd        DateTime @db.Date @map("period_end")
+  metricName       String   @map("metric_name")
+  avgDurationDays  Decimal? @map("avg_duration_days") @db.Decimal(10, 2)
+  compliancePct    Decimal? @map("compliance_pct") @db.Decimal(5, 2)
+  instancesCount   Int      @default(0) @map("instances_count")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @map("updated_at")
+
+  tenant  Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  process OrgProcess @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, processId, metricName, periodStart, periodEnd])
+  @@map("org_process_metrics")
+}
+
+model OrgRoleDefinition {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  roleId    String   @map("role_id")
+  roleName  String   @map("role_name")
+  description String?
+  category  String   // management, specialist, operational, external
+  level     Int?     // 1-10 hierarchical ordering
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  permissions OrgRolePermission[]
+
+  @@unique([tenantId, roleId])
+  @@map("org_role_definitions")
+}
+
+model OrgRolePermission {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  roleId        String   @map("role_id")
+  resourceType  String   @map("resource_type") // area, process, activity, document, system, supplier, routine
+  action        String   // view, create, edit, delete, approve, manage
+  scope         String   @default("own_tenant") // own_tenant, own_unit, all_units
+  conditions    Json?    @default("{}") @map("conditions")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, roleId, resourceType, action])
+  @@map("org_role_permissions")
+}
+
+model OrgActivityTemplate {
+  id             String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String                  @map("tenant_id") @db.Uuid
+  nucleusId      String?                 @map("nucleus_id") @db.Uuid
+  name           String
+  description    String?
+  complexity     org_activity_complexity @default(medium)
+  priority       org_activity_priority   @default(normal)
+  inputs         Json?                   @default("[]") @map("inputs")
+  outputs        Json?                   @default("[]") @map("outputs")
+  risks          Json?                   @default("[]") @map("risks")
+  impacts        Json?                   @default("[]") @map("impacts")
+  documentation  Json?                   @default("{}") @map("documentation")
+  createdAt      DateTime                @default(now()) @map("created_at")
+  updatedAt      DateTime                @default(now()) @map("updated_at")
+
+  tenant    Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  nucleus   OrgNucleus? @relation(fields: [nucleusId], references: [id], onDelete: Cascade)
+  activity  OrgActivity[]
+
+  @@unique([tenantId, name])
+  @@map("org_activity_templates")
+}
+
+model OrgProcessVersion {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  processId       String   @map("process_id") @db.Uuid
+  versionNumber   Int      @map("version_number")
+  processSnapshot Json     @map("process_snapshot") // Complete snapshot of process at this version
+  changeSummary   String?  @map("change_summary")
+  changedBy       String?  @map("changed_by") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  tenant  Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  process OrgProcess @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, processId, versionNumber])
+  @@map("org_process_versions")
 }

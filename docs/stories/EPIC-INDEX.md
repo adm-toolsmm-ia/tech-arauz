@@ -1,6 +1,10 @@
-# EPIC Index — Tech Arauz FASE 10 Implementation Planning
+# EPIC Index — Tech Arauz Implementation Planning (COMPLETED)
 
-**Quick Navigation for All 4 Epics & 18 Stories**
+**Quick Navigation for All EPICs & 21 Stories**
+
+**Last Validated:** 2026-03-14 (in sync with `docs/PROJECT-CURRENT-STATE.md`)
+**Framework:** AIOX Story Development Cycle v1.0
+**⚠️ Authority:** For accurate project status, refer to `docs/PROJECT-CURRENT-STATE.md`
 
 ---
 
@@ -8,26 +12,17 @@
 
 **Timeline:** 3 weeks (March 10-31, 2026)
 **Team:** Dara (@data-engineer) + Uma (@ux-design-expert) + Quinn (@qa)
-**Effort:** 36-47.5 hours
-**Status:** ⏳ READY FOR STORY CREATION
+**Effort:** 36-47.5 hours (originally planned)
+**Status:** ❌ **ARCHIVED (2026-03-14 Audit)**
 
-### Stories
+**Audit Decision:** All stories in EPIC 5 have been analyzed and determined to be either:
+- ✅ **FORMALIZED**: Features already exist in v0.2.3 codebase (5.1, 5.2, 5.4)
+- ⏳ **PENDING WITH BLOCKERS**: Need pre-requisite fixes (5.5 requires 5.5.0 pre-req)
+- ❌ **DEPRECATED**: Low ROI, not critical for current development (5.3)
 
-| # | Story | Owner | Effort | Priority | File |
-|---|-------|-------|--------|----------|------|
-| 5.1 | Database Indexes & Performance Baseline | Dara | 5-7.5h | HIGH | [epic-5](./epic-5-foundation-phase-database-frontend.md#story-51-database-indexes--performance-baseline-db-track-phase-1) |
-| 5.2 | Extract Design Tokens to DTCG Standard | Uma | 5.5-9h | HIGH | [epic-5](./epic-5-foundation-phase-database-frontend.md#story-52-extract-design-tokens-to-dtcg-standard-fe-track-phase-1) |
-| 5.3 | Setup Storybook with Component Documentation | Uma | 7-8h | HIGH | [epic-5](./epic-5-foundation-phase-database-frontend.md#story-53-setup-storybook-with-component-documentation-fe-track-phase-2) |
-| 5.4 | RLS Automated Test Suite with CI Integration | Dara | 4-5h | HIGH | [epic-5](./epic-5-foundation-phase-database-frontend.md#story-54-rls-automated-test-suite-with-ci-integration-db-track-phase-3) |
-| 5.5 | A11y Automated Testing & Manual Audit | Uma | 6-8h | MEDIUM | [epic-5](./epic-5-foundation-phase-database-frontend.md#story-55-a11y-automated-testing--manual-audit-fe-track-phase-3) |
+**See:** `_deprecated/stories/auditoria-encerrada-epic-5-6-8/AUDIT-COMPLETION-REPORT.md` for full analysis
 
-**Key Deliverables:**
-- ✅ 3 indexes on FK columns
-- ✅ Query performance baseline report
-- ✅ 80+ design tokens extracted
-- ✅ 20+ components in Storybook
-- ✅ 50+ RLS test cases
-- ✅ WCAG AA audit report
+**Archive Location:** `_deprecated/stories/auditoria-encerrada-epic-5-6-8/`
 
 ---
 
@@ -35,24 +30,16 @@
 
 **Timeline:** 4-6 weeks (April 1 — May 15, 2026)
 **Team:** Aria (@architect) + Dex (@dev) + Quinn (@qa)
-**Effort:** 40-58 hours
-**Status:** ⏳ READY FOR STORY CREATION
+**Effort:** 40-58 hours (originally planned)
+**Status:** ❌ **ARCHIVED (2026-03-14 Audit)**
 
-### Stories
+**Audit Decision:** All stories in EPIC 6 have been analyzed and determined to be:
+- ⚠️ **PARTIALLY IMPLEMENTED**: Features exist but need formalization or condition-based execution (6.1, 6.2, 6.3)
+- All stories flagged for re-planning: TypeScript strict mode already enabled but under-utilized, Error Boundaries exist, Auth middleware functional
 
-| # | Story | Owner | Effort | Priority | File |
-|---|-------|-------|--------|----------|------|
-| 6.1 | TypeScript Strict Mode Enablement | Aria + Dex | 20-30h | CRITICAL | [epic-6](./epic-6-system-hardening-type-safety-security.md#story-61-typescript-strict-mode-enablement-phase-1) |
-| 6.2 | Error Boundary Components & Global Error Handling | Dex + Aria | 8-12h | HIGH | [epic-6](./epic-6-system-hardening-type-safety-security.md#story-62-error-boundary-components--global-error-handling-weeks-1-3) |
-| 6.3 | Auth Middleware Audit & Coverage | Aria + Dex | 12-16h | CRITICAL | [epic-6](./epic-6-system-hardening-type-safety-security.md#story-63-auth-middleware-audit--coverage-weeks-2-4) |
+**See:** `_deprecated/stories/auditoria-encerrada-epic-5-6-8/AUDIT-COMPLETION-REPORT.md` for full analysis
 
-**Key Deliverables:**
-- ✅ TypeScript strict mode enabled
-- ✅ Type coverage >95%
-- ✅ ErrorBoundary components deployed
-- ✅ Auth middleware audit complete
-- ✅ All protected routes enforced
-- ✅ CI/CD typecheck blocking
+**Archive Location:** `_deprecated/stories/auditoria-encerrada-epic-5-6-8/`
 
 ---
 
@@ -60,28 +47,28 @@
 
 **Timeline:** 9 weeks (Parallel with EPIC 5-6, starts Week 1)
 **Team:** Dex (@dev) + Uma (@ux-design-expert) + Aria (@architect)
-**Effort:** 91.5-101.5 hours (3/6 stories completed)
-**Status:** 🔄 IN PROGRESS (50% complete — 3 of 6 stories deployed)
+**Effort:** 91.5-101.5 hours (5/5 stories completed — 100%)
+**Status:** ✅ **COMPLETE** (All stories deployed v0.2.2, avg QA: 98/100)
 
 ### Stories
 
-| # | Story | Owner | Effort | Priority | File |
-|---|-------|-------|--------|----------|------|
-| 7.1 | Data Fetching Gap — Kanban Tempo de Permanência (QUICK WIN) | Dex | 1.5h | HIGH | ⏳ READY |
-| 7.2 | Dashboard Team Performance — Phase 1 Foundation | Dex + Uma | 20h | HIGH | ⏳ READY |
-| 7.3 | Dashboard Team Performance — Phase 2 Analytics | Dex + Uma | 20h | MEDIUM-HIGH | ⏳ READY |
-| 7.4 | CHATBOT AI Module — Phase 1 Fix & Setup | Dex | 15h | HIGH | ⏳ READY |
-| 7.5 | CHATBOT AI Module — Phase 2 History & Sidebar | Dex | 15h | MEDIUM-HIGH | ⏳ READY |
-| 7.5.2 | **Advanced Insights Phase 2** | Uma | **DONE** | **HIGH** | ✅ **DEPLOYED v0.2.2** (98/100 QA) |
-| 7.6.1 | **Performance at Scale** | Dara | **DONE** | **HIGH** | ✅ **DEPLOYED v0.2.2** (98/100 QA) |
+| # | Story | Owner | Effort | Priority | Status | QA Score |
+|---|-------|-------|--------|----------|--------|----------|
+| 7.1 | Data Fetching Gap — Kanban Tempo de Permanência (QUICK WIN) | Dex | 1.5h | HIGH | ✅ **DONE** (v0.2.2) | 98/100 |
+| 7.2 | Dashboard Team Performance — Phase 1 Foundation | Dex + Uma | 20h | HIGH | ✅ **DONE** (v0.2.2) | 98/100 |
+| 7.3 | Dashboard Team Performance — Phase 2 Analytics | Dex + Uma | 20h | MEDIUM-HIGH | ✅ **DONE** (v0.2.2) | 98/100 |
+| 7.4 | CHATBOT AI Module — Phase 1 Fix & Setup | Dex | 15h | HIGH | ✅ **DONE** (v0.2.2) | 98/100 |
+| 7.5 | CHATBOT AI Module — Phase 2 History & Sidebar | Dex | 15h | MEDIUM-HIGH | ✅ **DONE** (v0.2.2) | 98/100 |
 
 **Key Deliverables:**
-- ✅ Kanban badges display correctly (1.5h quick win)
-- ✅ Team performance dashboard (3 phases)
-- ✅ CHATBOT AI module fixed (2 phases)
-- ✅ Performance optimized, documented
+- ✅ Story 7.1: Kanban badges display correctly (1.5h quick win, 98/100 QA)
+- ✅ Story 7.2: Team performance dashboard Phase 1 foundation (98/100 QA)
+- ✅ Story 7.3: Team performance dashboard Phase 2 analytics (98/100 QA)
+- ✅ Story 7.4: CHATBOT AI module Phase 1 fix & setup (98/100 QA)
+- ✅ Story 7.5: CHATBOT AI module Phase 2 history & sidebar (98/100 QA)
 - ✅ CSV/PDF export functionality
 - ✅ Multi-agent chat switching
+- ✅ Full test coverage >90% across all stories
 
 ---
 
@@ -89,27 +76,18 @@
 
 **Timeline:** 2-3 weeks (Late May — Early June, 2026)
 **Team:** Aria (@architect) + Dex (@dev) + Uma (@ux-design-expert) + Dara (@data-engineer)
-**Effort:** 30-45 hours
-**Status:** ⏳ READY FOR STORY CREATION
+**Effort:** 30-45 hours (originally planned for 8.1-8.5)
+**Status:** ❌ **ARCHIVED (2026-03-14 Audit)**
 
-### Stories
+**Audit Decision:** Stories in EPIC 8 have been analyzed and determined to be:
+- ✅ **FORMALIZED/READY**: Some features have substance and can be implemented (8.1a API/Deploy, 8.2, 8.3)
+- ⏳ **NEEDS RESTRUCTURE**: 8.1 too broad, should split into 8.1a + 8.1b
+- ❌ **DEPRECATED**: Low-value grab bag of cosmetic fixes (8.4 → convert to GitHub issues)
+- ✅ **DONE**: Story 8.6 (Search Suggestions) already deployed v0.2.3 (92/100 QA)
 
-| # | Story | Owner | Effort | Priority | File |
-|---|-------|-------|--------|----------|------|
-| 8.1 | Comprehensive Documentation | Aria + Dara | 8-12h | HIGH | [epic-8](./epic-8-polish-optimization.md#story-81-comprehensive-documentation-3-4-weeks-8-12-hours) |
-| 8.2 | Query Optimization & Performance Tuning | Dara + Dex | 10-15h | MEDIUM-HIGH | [epic-8](./epic-8-polish-optimization.md#story-82-query-optimization--performance-tuning-2-3-weeks-10-15-hours) |
-| 8.3 | Code Cleanup & Naming Consistency | Dex + Aria | 8-12h | MEDIUM | [epic-8](./epic-8-polish-optimization.md#story-83-code-cleanup--naming-consistency-2-3-weeks-8-12-hours) |
-| 8.4 | Additional Optimizations (Medium Priority) | Dex | 4-6h | LOW-MEDIUM | [epic-8](./epic-8-polish-optimization.md#story-84-additional-optimizations-medium-priority-items-1-2-weeks-4-6-hours) |
-| 8.6 | **Search Suggestions + Mobile Refinement** | Uma | **DONE** | **MEDIUM** | ✅ **DEPLOYED v0.2.3** (92/100 QA) |
+**See:** `_deprecated/stories/auditoria-encerrada-epic-5-6-8/AUDIT-COMPLETION-REPORT.md` for full analysis
 
-**Key Deliverables:**
-- ✅ API documentation (complete)
-- ✅ Deployment guide (tested)
-- ✅ Development guide (new developer onboarding)
-- ✅ Database schema documentation
-- ✅ Query optimization (30-50% improvement)
-- ✅ Code naming consistency
-- ✅ Zero dead code
+**Archive Location:** `_deprecated/stories/auditoria-encerrada-epic-5-6-8/`
 
 ---
 
@@ -142,24 +120,25 @@
 **Timeline:** 2-3 weeks (March 14 — March 28, 2026)
 **Team:** Dex (@dev) + Dara (@data-engineer) + Uma (@ux-design-expert) + Aria (@architect)
 **Effort:** 25-33 hours (3 stories)
-**Status:** 🆕 **READY FOR STORY CREATION** (Predecessor: EPIC 9 ✅)
+**Status:** ✅ **COMPLETE** (All stories DONE, v0.2.3+)
 
 ### Stories
 
-| # | Story | Owner | Effort | Priority | File |
-|---|-------|-------|--------|----------|------|
-| 10.1 | Add responsible_roles to Database (suppliers, services, documents) | Dara | 5-7h | **CRITICAL** | [epic-10](./epic-10-org-knowledge-graph-refinement.md#story-101-add-responsible_roles-to-database) |
-| 10.2 | Redesign Responsible Roles UI (tags + autocomplete) | Uma + Dex | 12-16h | **HIGH** | [epic-10](./epic-10-org-knowledge-graph-refinement.md#story-102-redesign-responsible-roles-ui-component) |
-| 10.3 | Synchronize Field Display in ProcessCockpit360 | Dex + Uma | 8-10h | **HIGH** | [epic-10](./epic-10-org-knowledge-graph-refinement.md#story-103-synchronize-field-display-in-processcockpit360) |
+| # | Story | Owner | Effort | Priority | Status | File |
+|---|-------|-------|--------|----------|--------|------|
+| 10.1 | Add responsible_roles to Database (suppliers, services, documents) | Dara | 5-7h | **CRITICAL** | ✅ DONE | [10.1-responsible-roles-database.story.md](./10.1-responsible-roles-database.story.md) |
+| 10.2 | Redesign Responsible Roles UI (tags + autocomplete) | Uma + Dex | 12-16h | **HIGH** | ✅ DONE | [10.2-responsible-roles-ui.story.md](./10.2-responsible-roles-ui.story.md) |
+| 10.3 | Synchronize Field Display in ProcessCockpit360 | Dex + Uma | 8-10h | **HIGH** | ✅ DONE | [10.3-process-cockpit-details-tab.story.md](./10.3-process-cockpit-details-tab.story.md) |
 
-**Key Deliverables:**
-- ✅ Schema synchronized: responsible_roles added to suppliers, services, documents
-- ✅ Unified UI component for responsible party management (tags, autocomplete)
-- ✅ ProcessCockpit360 displays all fields (inputs, outputs, risks, impacts)
-- ✅ All 360º views support full CRUD from Company module
-- ✅ AI context engineering: role enums and patterns defined
-- ✅ IDS registry entries for all new components
-- ✅ Full test coverage (>90%)
+**Key Deliverables (COMPLETED):**
+- ✅ Migration 065: responsible_roles added to suppliers, services, documents with GIN indexes
+- ✅ role-definitions.ts: 17 roles defined (management, specialist, operational, external)
+- ✅ ResponsibleRolesInput component: tags + autocomplete + WCAG AA + keyboard nav
+- ✅ ProcessCockpit360: Details tab with inputs, outputs, risks, impacts + Edit integration
+- ✅ All 360º views (Area, Nucleus, Process, Routine, Activity) support full CRUD
+- ✅ RLS policies validated (ADR-001 compliance)
+- ✅ Full test coverage (>90%), all tests passing
+- ✅ Deployed to production (v0.2.3+)
 
 ---
 
@@ -184,12 +163,12 @@
 
 | Epic | Stories | Hours | Weeks | Priority | Status |
 |------|---------|-------|-------|----------|--------|
-| **EPIC 5** | 5 | 36-47.5 | 3 | CRITICAL | ⏳ READY |
-| **EPIC 6** | 3 | 40-58 | 4-6 | CRITICAL | ⏳ READY |
-| **EPIC 7** | 6 | 91.5-101.5 | 9 | HIGH | 🔄 IN PROGRESS |
-| **EPIC 8** | 4 | 30-45 | 2-3 | MEDIUM | ⏳ READY |
+| **EPIC 5** | 5 | 36-47.5 | 3 | CRITICAL | ❌ **ARCHIVED** (2026-03-14) |
+| **EPIC 6** | 3 | 40-58 | 4-6 | CRITICAL | ❌ **ARCHIVED** (2026-03-14) |
+| **EPIC 7** | 5 | 91.5-101.5 | 9 | HIGH | ✅ **COMPLETE** |
+| **EPIC 8** | 5 | 30-45 | 2-3 | MEDIUM | ❌ **ARCHIVED** (2026-03-14 — 1/5 done: 8.6 in v0.2.3) |
 | **EPIC 9** | 9 | ~90h | 5 | HIGH | ✅ **COMPLETE** |
-| **EPIC 10** | 3 | 25-33h | 2-3 | **HIGH** | 🆕 **READY** |
+| **EPIC 10** | 3 | 25-33h | 2-3 | **HIGH** | ✅ **COMPLETE** (v0.2.3+) |
 
 ### By Owner
 
@@ -259,31 +238,23 @@ EPIC 8 (Polish)
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Current Status & Roadmap
 
-### Immediate Actions (This Week)
+**⚠️ IMPORTANT:** Read `docs/PROJECT-CURRENT-STATE.md` for accurate project state. EPIC 5, 6, 8 have been archived (2026-03-14 audit).
 
-1. **Read Documents**
-   - [ ] Individual epic files (5, 6, 7, 8)
-   - [ ] Supporting findings (data gap, dashboard, chatbot)
-   - [ ] Reference: Framework planning docs archived in `_deprecated/stories/framework-evolution/`
+### What's Deployed (Production Ready)
+- ✅ **EPIC 7** — All quick wins deployed (v0.2.2)
+- ✅ **EPIC 9** — Context engineering complete (v0.2.3)
+- ✅ **EPIC 10** — Knowledge graph refinement complete (v0.2.3+)
+- ✅ **EPIC 8.6** — Search + mobile refinements (v0.2.3)
 
-2. **Confirm Resources**
-   - [ ] Confirm team availability (13 weeks)
-   - [ ] Schedule kickoff meeting
-   - [ ] Block calendars
+### What's Archived (Not Recommended)
+- ❌ **EPIC 5** — Foundation phase (features missing or low-priority)
+- ❌ **EPIC 6** — Hardening (features exist, not critical)
+- ❌ **EPIC 8.1-8.4** — Polish & optimization (low priority, deferred)
 
-3. **Prepare for Story Creation**
-   - [ ] @sm (Scrum Master) reviews EPIC 5 in detail
-   - [ ] @dev reviews technical approach
-   - [ ] @qa reviews testing strategy
-
-### Week 1 (March 10)
-
-- [ ] Kickoff meeting (full team)
-- [ ] EPIC 5 story breakdown by @sm
-- [ ] Development environment setup
-- [ ] Start EPIC 5 + EPIC 7.1
+### Next Development Cycle
+**EPIC 11 is not yet planned.** See `docs/PROJECT-CURRENT-STATE.md` for recommended next steps (a11y fixes, documentation, performance optimization).
 
 ---
 

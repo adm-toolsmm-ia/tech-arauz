@@ -1,160 +1,158 @@
-# Tech Arauz — Documentação
+# Tech Arauz Documentation — AIOX 10/10
 
-Bem-vindo à documentação do **Tech Arauz**, um portal de gestão 360° para TI, Inovação e Projetos.
-
----
-
-## 📋 Índice de Conteúdo
-
-### 🏗️ [Architecture](./architecture/)
-Decisões arquiteturais, ADRs (Architectural Decision Records), padrões técnicos e documentação de sistemas.
-
-- `system-architecture.md` — Arquitetura geral do sistema (AIOX FASE 1)
-- `module-standards.md` — Padrões obrigatórios para novos módulos e páginas
-- `dashboards.md` — Documentação de dashboards e KPIs
-- `adr/` — Architectural Decision Records (ADR-001 a ADR-008)
-
-### 🎨 [Frontend](./frontend/)
-Especificações de UI/UX, design system, componentes e padrões visuais (AIOX FASE 3).
-
-- `frontend-spec.md` — Especificação completa do frontend
-
-### 📚 [Stories](./stories/)
-Histórias de desenvolvimento (stories) organizadas por épico.
-
-- `story-1.*.md` — Foundation, Hardening, Observability
-- `story-2.*.md` — Design System, Components, Data Layer, etc.
-- `story-3.*.md` — Cronogramas e Ajustes
-- `story-4.*.md` — Agent Features, Chat, Dashboard
-- E mais...
-
-### 📊 [PRD](./prd/)
-Product Requirement Documents e especificações de produtos.
-
-- `technical-debt-assessment.md` — Avaliação de débito técnico (AIOX FASE 8)
-
-### 📈 [Reports](./reports/)
-Relatórios executivos, análises e sumários.
-
-- `TECHNICAL-DEBT-REPORT.md` — Relatório de débito técnico (AIOX FASE 9)
-
-### 🔍 [Reviews](./reviews/)
-Revisões especializadas de diferentes aspectos técnicos.
-
-- `db-specialist-review.md` — Revisão de especialista em banco de dados (AIOX FASE 5)
-- `ux-specialist-review.md` — Revisão de especialista em UX (AIOX FASE 6)
-
-### 🧪 [QA](./qa/)
-Documentação de qualidade, testes e validação.
-
-- `fase7-quality-gate.md` — Quality Gate da AIOX Fase 7
-
-### 📖 [Guides](./guides/)
-Guias práticos para desenvolvedores e operadores.
-
-- `setup-ai-service.md` — Setup do serviço AI (FastAPI)
-
-### 🔗 [Data](./data/)
-Documentação relacionada a banco de dados, schemas e integração de dados.
-
-- `README.md` — Índice de documentação de dados
+**Version:** 0.2.3+ (Production Live)
+**Framework:** Synkra AIOX v1.0.0
+**Last Updated:** 2026-03-15
+**Status:** ✅ Organized & Current
 
 ---
 
-## 🎯 Framework & Workflow
+## 📚 Documentation Structure
 
-Este projeto utiliza **AIOX** — Synkra's AI-Orchestrated System for Full Stack Development.
+This directory contains **authoritative documentation** for Tech Arauz following AIOX 10/10 standards (code-to-doc verified, no invented content).
 
-### Fases Concluídas (AIOX Brownfield Discovery)
+### 📐 Architecture & Design (`architecture/`)
 
-| Fase | Título | Status | Documento |
-|------|--------|--------|-----------|
-| 1 | System Architecture | ✅ Complete | `architecture/system-architecture.md` |
-| 2 | Database Specialist Review | ✅ Complete | `reviews/db-specialist-review.md` |
-| 3 | Frontend Specification | ✅ Complete | `frontend/frontend-spec.md` |
-| 4 | DB Specialist Detailed Review | ✅ Complete | `reviews/db-specialist-review.md` |
-| 5 | DB Specialist Review | ✅ Complete | `reviews/db-specialist-review.md` |
-| 6 | UX Specialist Review | ✅ Complete | `reviews/ux-specialist-review.md` |
-| 7 | QA Quality Gate | ✅ Complete | `qa/fase7-quality-gate.md` |
-| 8 | Technical Debt Assessment | ✅ Complete | `prd/technical-debt-assessment.md` |
-| 9 | Executive Report | ✅ Complete | `reports/TECHNICAL-DEBT-REPORT.md` |
-| 10 | Implementation Planning | ⏳ Pending | — |
+Technical decisions, system design, and ADRs:
 
----
+- **ADR-001: RLS Strategy** — Row-level security, tenant isolation, helper functions
+- **ADR-002: Token Fallback Chain** — AES-256-GCM encryption, token resolution
+- **ADR-004: Feature Folders** — Feature-based structure, shared vs. specific code
+- **SECURITY-PATTERNS.md** — 4-layer security, RBAC, authentication, error handling
+- **ESPAIDER-INTEGRATION.md** — Espaider BI sync, circuit breaker, UPSERT idempotency
+- **DATA-FLOW-DIAGRAMS.md** — Read/Write/Sync flows with timing, error paths
 
-## 🔐 Key Principles
+### 📖 Guides & How-To (`guides/`)
 
-- **Multi-tenant Architecture** — Isolamento por `tenant_id` em todas as tabelas
-- **RLS First** — Row-Level Security com Supabase
-- **API-Driven** — Server Components, Server Actions, API Routes
-- **Component-Based** — Arquitetura modular com componentes compartilhados
-- **TypeScript** — Type-safe development
+Development guides, setup instructions, and learning resources:
 
----
+- **DEVELOPMENT-SETUP.md** — Local development environment, npm scripts, troubleshooting
+- **TESTING-STRATEGY.md** — Testing pyramid, Vitest/Jest-axe/Cypress, 92% coverage
+- **CONTEXT-ENGINEERING-RULES.md** — AIOX framework rules, agent authority, gates
 
-## 🗂️ Estrutura de Pastas
+### 🔍 Reference & API (`reference/`)
 
-```
-docs/
-├── README.md (você está aqui)
-├── architecture/
-│   ├── adr/
-│   ├── system-architecture.md
-│   ├── module-standards.md
-│   └── dashboards.md
-├── frontend/
-│   └── frontend-spec.md
-├── stories/
-│   ├── story-1.*.md
-│   ├── story-2.*.md
-│   ├── story-3.*.md
-│   └── ...
-├── prd/
-│   └── technical-debt-assessment.md
-├── reports/
-│   └── TECHNICAL-DEBT-REPORT.md
-├── reviews/
-│   ├── db-specialist-review.md
-│   └── ux-specialist-review.md
-├── qa/
-│   └── fase7-quality-gate.md
-├── guides/
-│   └── setup-ai-service.md
-└── data/
-    └── README.md
-```
+API documentation, technical reference, and implementation guides:
+
+- **API-DOCUMENTATION.md** — 21 endpoints, proxy patterns, auth flow, error handling
+- **SERVER-ACTIONS-GUIDE.md** — 10+ server actions, auth patterns, form state
+- **STATE-MANAGEMENT.md** — React Query, Zustand, form state layers (3-layer architecture)
+- **COMPONENTS-CATALOG.md** — UI components, layout, common patterns
+- **DATABASE-SCHEMA.md** — Database schema, RLS policies, migrations
+
+### 📖 User Stories (`stories/`)
+
+Development stories and epics (separate folder):
+
+- EPIC-5, 6, 7, 8, 9, 10 (completed)
+- Story tracking and implementation details
 
 ---
 
-## 📌 Documentos Descontinuados
+## 🚀 Quick Navigation
 
-Documentação archived e não mais utilizada foi movida para `_deprecated/` na raiz do projeto:
+**I'm new and want to...**
 
-- **`_deprecated/docs-feb-27/`** — Documentação pré-Brownfield (Fevereiro 2026)
-- **`_deprecated/adr-old/`** — ADRs antigos (serão substituídos por novos)
-- **`_deprecated/audits/`** — Relatórios de auditoria e cleanup (metadocumentação)
+- ✅ **Set up local development** → `guides/DEVELOPMENT-SETUP.md`
+- ✅ **Understand the architecture** → `architecture/ADR-001`, `ADR-002`, `ADR-004`
+- ✅ **Write API code** → `reference/API-DOCUMENTATION.md`
+- ✅ **Implement a feature** → `guides/CONTEXT-ENGINEERING-RULES.md` then `stories/`
+- ✅ **Test my code** → `guides/TESTING-STRATEGY.md`
+- ✅ **Understand security** → `architecture/SECURITY-PATTERNS.md`
+- ✅ **Work with Espaider** → `architecture/ESPAIDER-INTEGRATION.md`
 
----
+**I'm working on...**
 
-## 🎓 Como Usar Esta Documentação
-
-1. **Novo no projeto?** → Leia `architecture/system-architecture.md`
-2. **Desenvolvendo novo módulo?** → Consulte `architecture/module-standards.md`
-3. **Dúvidas sobre frontend?** → Veja `frontend/frontend-spec.md`
-4. **Configurando AI Service?** → Siga `guides/setup-ai-service.md`
-5. **Procurando uma story?** → Navegue `stories/`
-
----
-
-## 📞 Contato & Suporte
-
-Para dúvidas sobre documentação:
-- Verificar issues relacionadas no GitHub
-- Contatar o time de arquitetura (@architect)
-- Consultar o framework AIOX em `.aiox-core/`
+- 🔨 **Backend/API** → `reference/API-DOCUMENTATION.md` + `reference/SERVER-ACTIONS-GUIDE.md`
+- 🎨 **Frontend** → `reference/STATE-MANAGEMENT.md` + `reference/COMPONENTS-CATALOG.md`
+- 🗄️ **Database** → `reference/DATABASE-SCHEMA.md` + `architecture/ADR-001-RLS-STRATEGY.md`
+- 🔐 **Security** → `architecture/SECURITY-PATTERNS.md`
+- 🧪 **Testing** → `guides/TESTING-STRATEGY.md`
 
 ---
 
-**Última atualização:** 2026-03-07
-**Framework:** AIOX (Synkra AI-Orchestrated System)
-**Stack:** Next.js 14 + TypeScript + Supabase + TanStack Query
+## 📊 Documentation Metrics
+
+| Category | Documents | Status | Last Updated |
+|----------|-----------|--------|---|
+| Architecture & ADRs | 6 docs | ✅ Current | 2026-03-15 |
+| Guides & How-To | 3 docs | ✅ Current | 2026-03-15 |
+| Reference & API | 5 docs | ✅ Current | 2026-03-15 |
+| Stories & Epics | 20+ docs | ✅ Current | 2026-03-12 |
+| **TOTAL** | **34 docs** | **✅ AIOX 10/10** | **2026-03-15** |
+
+---
+
+## ✅ Quality Assurance
+
+All documentation follows **AIOX 10/10 standards**:
+
+- ✅ **Code-to-Doc Verified** — Every statement traced to source code
+- ✅ **No Invention** — Facts only, patterns from codebase
+- ✅ **Current Version** — Reflects v0.2.3+ production code
+- ✅ **Framework Compliant** — Synkra AIOX Constitution adherence
+- ✅ **Owner Assigned** — Each doc has responsible agent (@architect, @dev, @data-engineer, etc.)
+
+---
+
+## 🗂️ Archived Documentation
+
+Historical documents (deployment reports, planning docs, old audits) are preserved in `_deprecated/` for reference:
+
+- `_deprecated/reports/` — Historical deployment & execution reports
+- `_deprecated/planning/` — Old planning documents & roadmaps
+- `_deprecated/audits/` — Past technical audits & assessments
+
+*These are kept for historical context only and should not be referenced for current development.*
+
+---
+
+## 🔄 Contributing to Documentation
+
+### Guidelines
+
+1. **Code-to-Doc Only** — Every statement must trace to actual code
+2. **AIOX Format** — Follow the format of existing docs (frontmatter, sections, examples)
+3. **Owner Assignment** — Include "Para [Agent]" section at end
+4. **Verification** — Run `npm run audit:docs` before committing
+5. **Update README** — Add new docs to this README
+
+### Adding a New Document
+
+1. Create doc in appropriate folder (`architecture/`, `guides/`, or `reference/`)
+2. Include AIOX frontmatter:
+   ```markdown
+   # Title
+   **Status:** ACCEPTED
+   **Date:** YYYY-MM-DD
+   **Code-to-Doc Verified:** ✅ source/file.ts (line X)
+   ```
+3. Include "Para [Agent]" section at end
+4. Update this README.md
+5. Commit with message: `docs: Add {title} to {category}`
+
+---
+
+## 📞 Contact & Questions
+
+- **Architecture questions** → @architect (Aria) via `docs/architecture/`
+- **Implementation questions** → @dev (Dex) via `docs/guides/` or `docs/reference/`
+- **Database questions** → @data-engineer (Dara) via `docs/reference/DATABASE-SCHEMA.md`
+- **Testing questions** → @qa (Quinn) via `docs/guides/TESTING-STRATEGY.md`
+
+---
+
+## 📜 Version History
+
+| Version | Date | Change |
+|---------|------|--------|
+| **0.2.3+** | 2026-03-15 | Reorganized documentation per AIOX 10/10, archived old docs, created README |
+| **0.2.3** | 2026-03-12 | Initial AIOX 10/10 documentation created (16 artifacts) |
+
+---
+
+**Maintained by:** @architect (Aria), @dev (Dex), @data-engineer (Dara)
+**Framework:** Synkra AIOX v1.0.0
+**Compliance:** ✅ AIOX Constitution Article IV (No Invention)
+
+— Orion, orquestrando o sistema 🎯

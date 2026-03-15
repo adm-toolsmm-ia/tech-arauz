@@ -22,6 +22,8 @@ import { InputsList } from '@/components/organization/InputsList';
 import { OutputsList } from '@/components/organization/OutputsList';
 import { RisksList } from '@/components/organization/RisksList';
 import { ImpactsList } from '@/components/organization/ImpactsList';
+import { ProcessMetricsCard } from '@/components/organization/ProcessMetricsCard';
+import { ProcessMetricsHistory } from '@/components/organization/ProcessMetricsHistory';
 import type { OrgProcess, OrgRoutine, OrgSystem } from '@/types/organization';
 import { getRoutinesByProcess } from '@/app/actions/organization';
 
@@ -59,6 +61,7 @@ export function ProcessCockpit360({
   const [showEditProcess, setShowEditProcess] = useState(false);
   const [routines, setRoutines] = useState<OrgRoutine[]>(initialRoutines);
   const [loadingRoutines, setLoadingRoutines] = useState(false);
+  const [metricsTimeframe, setMetricsTimeframe] = useState<'week' | 'month' | 'quarter'>('month');
 
   useEffect(() => {
     if (!process?.id) return;
@@ -119,6 +122,13 @@ export function ProcessCockpit360({
             {systems.length > 0 && (
               <span className="ml-2 text-xs text-muted-foreground">({systems.length})</span>
             )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="metricas"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <BarChart3 className="mr-2 size-4" />
+            Métricas
           </TabsTrigger>
         </TabsList>
 
@@ -330,6 +340,33 @@ export function ProcessCockpit360({
               </div>
             </div>
           )}
+        </TabsContent>
+
+        {/* Tab: Métricas - Story 11.9 */}
+        <TabsContent value="metricas" className="mt-6 space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium">Período:</label>
+              <select
+                value={metricsTimeframe}
+                onChange={(e) => setMetricsTimeframe(e.target.value as 'week' | 'month' | 'quarter')}
+                className="border rounded-md px-3 py-2 text-sm"
+              >
+                <option value="week">Semanal</option>
+                <option value="month">Mensal</option>
+                <option value="quarter">Trimestral</option>
+              </select>
+            </div>
+
+            <ProcessMetricsCard processId={process.id} />
+
+            <ProcessMetricsHistory
+              processId={process.id}
+              timeframe={metricsTimeframe}
+              onTimeframeChange={setMetricsTimeframe}
+              metrics={[]}
+            />
+          </div>
         </TabsContent>
       </Tabs>
 

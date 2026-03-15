@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
-import { FileText, AlertCircle, Users, BarChart3, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, AlertCircle, Users, BarChart3, Trash2, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { InfoField, RolesDisplay, DocumentationAccordion, InputOutputList } from '@/components/organization/shared';
+import { ActivitySystemsModal } from './ActivitySystemsModal';
 import type { OrgActivity, OrgRoutine } from '@/types/organization';
 
 interface ActivityCockpit360Props {
@@ -33,6 +34,8 @@ export function ActivityCockpit360({
   onEdit,
   onDelete,
 }: ActivityCockpit360Props) {
+  const [showSystemsModal, setShowSystemsModal] = useState(false);
+
   const formatExecutionTime = (minutes?: number | null) => {
     if (!minutes) return 'N/A';
     if (minutes < 60) return `${minutes}min`;
@@ -72,6 +75,13 @@ export function ActivityCockpit360({
           >
             <FileText className="mr-2 size-4" />
             Documentação
+          </TabsTrigger>
+          <TabsTrigger
+            value="sistemas"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <Monitor className="mr-2 size-4" />
+            Sistemas
           </TabsTrigger>
         </TabsList>
 
@@ -237,6 +247,32 @@ export function ActivityCockpit360({
               Sem documentação
             </div>
           )}
+        </TabsContent>
+
+        {/* Tab: Sistemas - Story 11.8 */}
+        <TabsContent value="sistemas" className="mt-6">
+          <div className="space-y-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSystemsModal(true)}
+              className="gap-2"
+            >
+              <Monitor className="size-4" />
+              Gerenciar Sistemas
+            </Button>
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              Sistemas associados a esta atividade serão exibidos aqui
+            </div>
+          </div>
+
+          <ActivitySystemsModal
+            isOpen={showSystemsModal}
+            onClose={() => setShowSystemsModal(false)}
+            onSave={() => setShowSystemsModal(false)}
+            activityId={activity.id}
+            availableSystems={[]}
+          />
         </TabsContent>
       </Tabs>
     </div>

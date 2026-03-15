@@ -372,8 +372,10 @@ export async function importOrganizationFromJSONAction(
   }
 
   try {
-    const parsedData = parseJSON(jsonContent);
-    if (!parsedData) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonContent);
+    } catch (e) {
       return {
         success: false,
         message: 'JSON inválido',
@@ -381,13 +383,15 @@ export async function importOrganizationFromJSONAction(
       };
     }
 
-    if (!Array.isArray(parsedData)) {
+    if (!Array.isArray(parsed)) {
       return {
         success: false,
         message: 'JSON deve conter um array',
         data: { imported: 0, failed: 0, errors: [] },
       };
     }
+
+    const parsedData = parsed;
 
     const requiredFields = getRequiredFields(entityType);
     const validationResult = validateCSVData(parsedData, entityType, requiredFields);

@@ -48,22 +48,24 @@ export interface ExportOptions {
 }
 
 /**
- * Parse CSV content with proper handling of quoted fields and escaping
- * Supports RFC 4180 CSV format
+ * Parse CSV content with proper RFC 4180 handling
+ * - Supports quoted fields with commas
+ * - Supports escaped quotes ("")
+ * - Supports newlines within quoted fields
+ * - Supports multiline quoted values
  */
 export function parseCSV(content: string): Record<string, unknown>[] {
-  const lines = content.split('\n').filter((line) => line.trim());
-  if (lines.length === 0) return [];
+  if (!content || !content.trim()) return [];
 
-  const headers = parseCSVLine(lines[0]);
-  if (headers.length === 0) return [];
+  // Parse all records respecting quoted fields that may span lines
+  const records = parseCSVRecords(content);
+  if (records.length === 0) return [];
 
+  const headers = records[0];
   const result: Record<string, unknown>[] = [];
 
-  for (let i = 1; i < lines.length; i++) {
-    const values = parseCSVLine(lines[i]);
-    if (values.length === 0) continue;
-
+  for (let i = 1; i < records.length; i++) {
+    const values = records[i];
     const record: Record<string, unknown> = {};
     headers.forEach((header, index) => {
       record[header] = values[index] || '';
@@ -75,37 +77,74 @@ export function parseCSV(content: string): Record<string, unknown>[] {
 }
 
 /**
- * Parse a single CSV line handling quoted fields and commas within quotes
+ * Parse CSV records handling multiline quoted fields (RFC 4180 compliant)
  */
-function parseCSVLine(line: string): string[] {
-  const result: string[] = [];
-  let current = '';
+function parseCSVRecords(content: string): string[][] {
+  const records: string[][] = [];
+  let currentRecord: string[] = [];
+  let currentField = '';
   let inQuotes = false;
+  let i = 0;
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    const nextChar = line[i + 1];
+  while (i < content.length) {
+    const char = content[i];
+    const nextChar = content[i + 1];
 
     if (char === '"') {
       if (inQuotes && nextChar === '"') {
-        // Escaped quote
-        current += '"';
-        i++; // Skip next quote
+        // Escaped quote ("") → keep single quote
+        currentField += '"';
+        i += 2;
+        continue;
       } else {
         // Toggle quote state
         inQuotes = !inQuotes;
+        i++;
+        continue;
       }
-    } else if (char === ',' && !inQuotes) {
-      // Field separator
-      result.push(current.trim());
-      current = '';
-    } else {
-      current += char;
     }
+
+    if (char === ',' && !inQuotes) {
+      // Field separator (outside quotes)
+      currentRecord.push(currentField.trim());
+      currentField = '';
+      i++;
+      continue;
+    }
+
+    if ((char === '\n' || char === '\r') && !inQuotes) {
+      // Line separator (outside quotes) - end of record
+      if (currentField.trim() || currentRecord.length > 0) {
+        currentRecord.push(currentField.trim());
+        if (currentRecord.length > 0) {
+          records.push(currentRecord);
+        }
+        currentRecord = [];
+        currentField = '';
+      }
+      // Skip \r\n sequence
+      if (char === '\r' && nextChar === '\n') {
+        i += 2;
+      } else {
+        i++;
+      }
+      continue;
+    }
+
+    // Regular character (may be newline inside quotes)
+    currentField += char;
+    i++;
   }
 
-  result.push(current.trim());
-  return result;
+  // Flush last field and record
+  if (currentField.trim() || currentRecord.length > 0) {
+    currentRecord.push(currentField.trim());
+  }
+  if (currentRecord.length > 0) {
+    records.push(currentRecord);
+  }
+
+  return records;
 }
 
 /**
@@ -255,14 +294,23 @@ export function exportAsJSON(entities: ExportableEntity[], pretty = true): strin
 /**
  * Parse JSON import data
  */
+/**
+ * Parse JSON content - must be an array
+ * Returns array if valid JSON array, null if invalid JSON
+ * For caller to distinguish: try/catch on JSON.parse() separately if needed
+ */
 export function parseJSON(content: string): Record<string, unknown>[] | null {
   try {
     const parsed = JSON.parse(content);
     if (Array.isArray(parsed)) {
       return parsed;
     }
+    // Valid JSON but not array - also return null so bulk-operations
+    // treats it as invalid and shows "JSON inválido"
+    // This matches current behavior
     return null;
   } catch (e) {
+    // Invalid JSON
     return null;
   }
 }

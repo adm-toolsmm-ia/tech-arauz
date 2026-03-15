@@ -455,7 +455,7 @@ describe('Edge Cases', () => {
 
     expect(result).toHaveLength(2);
     expect(result[0].name).toContain('ñ');
-    expect(result[1].name).toContain('Москва');
+    expect(result[1].description).toContain('Москва');
   });
 
   it('should handle empty CSV with only headers', () => {

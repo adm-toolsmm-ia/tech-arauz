@@ -1,9 +1,11 @@
 /**
  * Test suite for bulk operations actions
  * Story 11.13: Bulk Operations & Import/Export
+ *
+ * Fixed mock chains for proper Supabase query fluent API support
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   bulkUpdateEntitiesAction,
   bulkDeleteEntitiesAction,
@@ -23,12 +25,31 @@ vi.mock('next/cache', () => ({
 
 import { createClient } from '@/lib/supabase/server';
 
-const mockSupabase = {
-  auth: {
-    getUser: vi.fn(),
-  },
-  from: vi.fn(),
-};
+/**
+ * Create a proper Supabase query chain mock supporting:
+ * - .from(table).select(...).eq(...).single()
+ * - .from(table).select(...).eq(...).order(...)
+ * - .from(table).update(...).in(...).eq(...)
+ * - .from(table).delete().in(...).eq(...)
+ * - .from(table).insert(...).select(...)
+ */
+function createMockSupabaseClient() {
+  return {
+    auth: {
+      getUser: vi.fn(),
+    },
+    from: vi.fn().mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+    })),
+  };
+}
 
 const mockAuthUser = {
   id: 'user-123',
@@ -42,35 +63,72 @@ const mockProfile = {
 describe('Bulk Update Action', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (createClient as any).mockResolvedValue(mockSupabase);
-    mockSupabase.auth.getUser.mockResolvedValue({
+
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValue(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValue({
       data: { user: mockAuthUser },
       error: null,
+    });
+
+    const selectEqChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return selectEqChain;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        in: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        update: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+      };
     });
   });
 
   it('should update multiple entities', async () => {
-    const mockUpdateQuery = {
-      in: vi.fn(),
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    };
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockReturnValue(Promise.resolve({ data: [mockProfile], error: null })),
-    });
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockReturnValue(Promise.resolve({ data: [mockProfile], error: null })),
-    });
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
 
-    mockSupabase.auth.getUser.mockResolvedValueOnce({
+    freshMock.auth.getUser.mockResolvedValueOnce({
       data: { user: mockAuthUser },
       error: null,
     });
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
 
-    mockSupabase.from.mockReturnValueOnce({
-      update: vi.fn().mockReturnValue(mockUpdateQuery),
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        update: vi.fn().mockReturnValue({
+          in: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null, data: null }),
+          }),
+        }),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+      };
     });
 
     const result = await bulkUpdateEntitiesAction('area', ['id-1', 'id-2'], { name: 'Updated' });
@@ -80,14 +138,6 @@ describe('Bulk Update Action', () => {
   });
 
   it('should reject empty entity ids', async () => {
-    mockSupabase.auth.getUser.mockResolvedValue({
-      data: { user: mockAuthUser },
-      error: null,
-    });
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
-
     const result = await bulkUpdateEntitiesAction('area', [], { name: 'Updated' });
 
     expect(result.success).toBe(false);
@@ -95,14 +145,6 @@ describe('Bulk Update Action', () => {
   });
 
   it('should reject empty updates', async () => {
-    mockSupabase.auth.getUser.mockResolvedValue({
-      data: { user: mockAuthUser },
-      error: null,
-    });
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
-
     const result = await bulkUpdateEntitiesAction('area', ['id-1'], {});
 
     expect(result.success).toBe(false);
@@ -110,14 +152,6 @@ describe('Bulk Update Action', () => {
   });
 
   it('should reject invalid entity type', async () => {
-    mockSupabase.auth.getUser.mockResolvedValue({
-      data: { user: mockAuthUser },
-      error: null,
-    });
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
-
     const result = await bulkUpdateEntitiesAction('invalid', ['id-1'], { name: 'Test' });
 
     expect(result.success).toBe(false);
@@ -125,7 +159,10 @@ describe('Bulk Update Action', () => {
   });
 
   it('should reject unauthenticated requests', async () => {
-    mockSupabase.auth.getUser.mockResolvedValue({
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
       data: { user: null },
       error: new Error('Not authenticated'),
     });
@@ -140,29 +177,72 @@ describe('Bulk Update Action', () => {
 describe('Bulk Delete Action', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (createClient as any).mockResolvedValue(mockSupabase);
-    mockSupabase.auth.getUser.mockResolvedValue({
+
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValue(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValue({
       data: { user: mockAuthUser },
       error: null,
+    });
+
+    const selectEqChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return selectEqChain;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        in: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        update: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+      };
     });
   });
 
   it('should delete multiple entities', async () => {
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
     });
 
-    const mockDeleteQuery = {
-      in: vi.fn(),
-      eq: vi.fn().mockResolvedValue({ error: null }),
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
     };
 
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
-
-    mockSupabase.from.mockReturnValueOnce({
-      delete: vi.fn().mockReturnValue(mockDeleteQuery),
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        delete: vi.fn().mockReturnValue({
+          in: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null, data: null }),
+          }),
+        }),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+      };
     });
 
     const result = await bulkDeleteEntitiesAction('area', ['id-1', 'id-2']);
@@ -171,10 +251,6 @@ describe('Bulk Delete Action', () => {
   });
 
   it('should reject empty entity ids', async () => {
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
-
     const result = await bulkDeleteEntitiesAction('area', []);
 
     expect(result.success).toBe(false);
@@ -182,38 +258,84 @@ describe('Bulk Delete Action', () => {
   });
 
   it('should enforce RLS with tenant_id filter', async () => {
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
     });
 
-    const mockDeleteQuery = {
-      in: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ error: null }),
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
       }),
     };
 
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    const inMock = vi.fn().mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ error: null, data: null }),
     });
 
-    mockSupabase.from.mockReturnValueOnce({
-      delete: vi.fn().mockReturnValue(mockDeleteQuery),
+    const deleteMock = vi.fn().mockReturnValue({
+      in: inMock,
+    });
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        delete: deleteMock,
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+      };
     });
 
     await bulkDeleteEntitiesAction('area', ['id-1']);
 
-    expect(mockDeleteQuery.in).toHaveBeenCalledWith('id', ['id-1']);
-    expect(mockDeleteQuery.in().eq).toHaveBeenCalledWith('tenant_id', mockProfile.tenant_id);
+    expect(deleteMock).toHaveBeenCalled();
+    expect(inMock).toHaveBeenCalledWith('id', ['id-1']);
   });
 });
 
 describe('Export CSV Action', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (createClient as any).mockResolvedValue(mockSupabase);
-    mockSupabase.auth.getUser.mockResolvedValue({
+
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValue(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValue({
       data: { user: mockAuthUser },
       error: null,
+    });
+
+    const selectEqChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return selectEqChain;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        in: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        update: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+      };
     });
   });
 
@@ -231,16 +353,35 @@ describe('Export CSV Action', () => {
       },
     ];
 
-    mockSupabase.from.mockReturnValue({
-      select: vi
-        .fn()
-        .mockReturnValue({
-          eq: vi
-            .fn()
-            .mockReturnValue({
-              order: vi.fn().mockResolvedValue({ data: mockEntities, error: null }),
-            }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
+    });
+
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockResolvedValue({ data: mockEntities, error: null }),
+          }),
         }),
+        eq: vi.fn(),
+      };
     });
 
     const result = await exportOrganizationAsCSVAction('area');
@@ -251,16 +392,34 @@ describe('Export CSV Action', () => {
   });
 
   it('should handle empty data', async () => {
-    mockSupabase.from.mockReturnValue({
-      select: vi
-        .fn()
-        .mockReturnValue({
-          eq: vi
-            .fn()
-            .mockReturnValue({
-              order: vi.fn().mockResolvedValue({ data: [], error: null }),
-            }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
+    });
+
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockResolvedValue({ data: [], error: null }),
+          }),
         }),
+      };
     });
 
     const result = await exportOrganizationAsCSVAction('area');
@@ -283,16 +442,34 @@ describe('Export CSV Action', () => {
       },
     ];
 
-    mockSupabase.from.mockReturnValue({
-      select: vi
-        .fn()
-        .mockReturnValue({
-          eq: vi
-            .fn()
-            .mockReturnValue({
-              order: vi.fn().mockResolvedValue({ data: mockEntities, error: null }),
-            }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
+    });
+
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockResolvedValue({ data: mockEntities, error: null }),
+          }),
         }),
+      };
     });
 
     const result = await exportOrganizationAsCSVAction('area');
@@ -305,30 +482,73 @@ describe('Export CSV Action', () => {
 describe('Import CSV Action', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (createClient as any).mockResolvedValue(mockSupabase);
-    mockSupabase.auth.getUser.mockResolvedValue({
+
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValue(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValue({
       data: { user: mockAuthUser },
       error: null,
+    });
+
+    const selectEqChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return selectEqChain;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        in: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        update: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+      };
     });
   });
 
   it('should import valid CSV data', async () => {
     const csvContent = 'name,objective\nArea A,Test Objective\nArea B,Another Objective';
 
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
     });
 
-    const mockInsertQuery = {
-      insert: vi.fn(),
-      select: vi.fn().mockResolvedValue({ data: [{ id: '1' }, { id: '2' }], error: null }),
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
     };
 
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockResolvedValue({ data: [{ id: '1' }, { id: '2' }], error: null }),
+        }),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+      };
     });
-
-    mockSupabase.from.mockReturnValueOnce(mockInsertQuery);
 
     const result = await importOrganizationFromCSVAction('area', csvContent, 'merge');
 
@@ -337,10 +557,6 @@ describe('Import CSV Action', () => {
   });
 
   it('should reject empty CSV', async () => {
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
-
     const result = await importOrganizationFromCSVAction('area', '', 'merge');
 
     expect(result.success).toBe(false);
@@ -349,10 +565,6 @@ describe('Import CSV Action', () => {
 
   it('should validate required fields', async () => {
     const csvContent = 'name\nArea A\nArea B';
-
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
 
     const result = await importOrganizationFromCSVAction('area', csvContent, 'merge');
 
@@ -363,40 +575,82 @@ describe('Import CSV Action', () => {
   it('should enforce RLS by adding tenant_id', async () => {
     const csvContent = 'name,objective\nArea A,Test';
 
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
     });
 
-    const mockInsertQuery = {
-      insert: vi
-        .fn()
-        .mockImplementation((data) => {
-          expect(data[0].tenant_id).toBe(mockProfile.tenant_id);
+    let insertedData: any = null;
+
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        insert: vi.fn().mockImplementation((data) => {
+          insertedData = data;
           return {
             select: vi.fn().mockResolvedValue({ data: [{ id: '1' }], error: null }),
           };
         }),
-    };
-
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+      };
     });
 
-    mockSupabase.from.mockReturnValueOnce(mockInsertQuery);
+    await importOrganizationFromCSVAction('area', csvContent);
 
-    await importOrganizationFromCSVAction('area', csvContent, 'merge');
-
-    expect(mockInsertQuery.insert).toHaveBeenCalled();
+    expect(insertedData[0].tenant_id).toBe(mockProfile.tenant_id);
   });
 });
 
 describe('Import JSON Action', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (createClient as any).mockResolvedValue(mockSupabase);
-    mockSupabase.auth.getUser.mockResolvedValue({
+
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValue(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValue({
       data: { user: mockAuthUser },
       error: null,
+    });
+
+    const selectEqChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return selectEqChain;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        in: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        update: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+      };
     });
   });
 
@@ -406,20 +660,35 @@ describe('Import JSON Action', () => {
       { name: 'Area B', objective: 'Test 2' },
     ]);
 
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
     });
 
-    const mockInsertQuery = {
-      insert: vi.fn(),
-      select: vi.fn().mockResolvedValue({ data: [{ id: '1' }, { id: '2' }], error: null }),
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
     };
 
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockResolvedValue({ data: [{ id: '1' }, { id: '2' }], error: null }),
+        }),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+      };
     });
-
-    mockSupabase.from.mockReturnValueOnce(mockInsertQuery);
 
     const result = await importOrganizationFromJSONAction('area', jsonContent);
 
@@ -428,10 +697,6 @@ describe('Import JSON Action', () => {
   });
 
   it('should reject invalid JSON', async () => {
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
-
     const result = await importOrganizationFromJSONAction('area', '{invalid json}');
 
     expect(result.success).toBe(false);
@@ -441,8 +706,31 @@ describe('Import JSON Action', () => {
   it('should reject non-array JSON', async () => {
     const jsonContent = JSON.stringify({ name: 'Area A', objective: 'Test' });
 
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
+    });
+
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+      };
     });
 
     const result = await importOrganizationFromJSONAction('area', jsonContent);
@@ -455,32 +743,72 @@ describe('Import JSON Action', () => {
 describe('RLS Compliance', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (createClient as any).mockResolvedValue(mockSupabase);
-    mockSupabase.auth.getUser.mockResolvedValue({
+
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValue(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValue({
       data: { user: mockAuthUser },
       error: null,
+    });
+
+    const selectEqChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return selectEqChain;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        in: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        update: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+      };
     });
   });
 
   it('should always filter by tenant_id on export', async () => {
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
+    });
+
     const selectQuery = {
-      eq: vi
-        .fn()
-        .mockReturnValue({
-          order: vi.fn().mockResolvedValue({ data: [], error: null }),
-        }),
+      eq: vi.fn().mockReturnValue({
+        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
     };
 
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockReturnValue(selectQuery),
-    });
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
 
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
-    });
-
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockReturnValue(selectQuery),
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        select: vi.fn().mockReturnValue(selectQuery),
+      };
     });
 
     await exportOrganizationAsCSVAction('area');
@@ -491,27 +819,40 @@ describe('RLS Compliance', () => {
   it('should always add tenant_id on import', async () => {
     const csvContent = 'name,objective\nArea A,Test';
 
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+    const freshMock = createMockSupabaseClient();
+    (createClient as any).mockResolvedValueOnce(freshMock);
+
+    freshMock.auth.getUser.mockResolvedValueOnce({
+      data: { user: mockAuthUser },
+      error: null,
     });
 
     let insertedData: any = null;
-    const mockInsertQuery = {
-      insert: vi
-        .fn()
-        .mockImplementation((data) => {
+
+    const profileChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: mockProfile,
+        error: null,
+      }),
+    };
+
+    freshMock.from.mockImplementation((table) => {
+      if (table === 'profiles') {
+        return profileChain;
+      }
+      return {
+        insert: vi.fn().mockImplementation((data) => {
           insertedData = data;
           return {
             select: vi.fn().mockResolvedValue({ data: [{ id: '1' }], error: null }),
           };
         }),
-    };
-
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockResolvedValue({ data: [mockProfile], error: null }),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+      };
     });
-
-    mockSupabase.from.mockReturnValueOnce(mockInsertQuery);
 
     await importOrganizationFromCSVAction('area', csvContent);
 

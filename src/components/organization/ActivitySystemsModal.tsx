@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -57,14 +57,7 @@ export function ActivitySystemsModal({
   const [isFetching, setIsFetching] = useState(false);
   const [isOpen_dropdown, setIsOpen_dropdown] = useState(false);
 
-  // Fetch current systems on mount or when activityId changes
-  useEffect(() => {
-    if (isOpen && activityId) {
-      fetchCurrentSystems();
-    }
-  }, [isOpen, activityId]);
-
-  const fetchCurrentSystems = async () => {
+  const fetchCurrentSystems = useCallback(async () => {
     setIsFetching(true);
     try {
       // Import dynamically to avoid server component issues
@@ -84,7 +77,14 @@ export function ActivitySystemsModal({
     } finally {
       setIsFetching(false);
     }
-  };
+  }, [activityId]);
+
+  // Fetch current systems on mount or when activityId changes
+  useEffect(() => {
+    if (isOpen && activityId) {
+      fetchCurrentSystems();
+    }
+  }, [isOpen, activityId, fetchCurrentSystems]);
 
   const handleAddSystem = async () => {
     if (!selectedSystemId) return;

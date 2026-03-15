@@ -263,6 +263,23 @@ export const CardMobile: StoryObj = {
   },
 };
 
+// Component for Week View story
+function HistoryWeekViewComponent() {
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
+    'week'
+  );
+  return (
+    <div>
+      <ProcessMetricsHistory
+        processId="proc-001"
+        metrics={mockMetricsHistory}
+        timeframe={timeframe}
+        onTimeframeChange={setTimeframe}
+      />
+    </div>
+  );
+}
+
 /**
  * ProcessMetricsHistory — Week View
  * - Time series data over 7 days
@@ -271,22 +288,25 @@ export const CardMobile: StoryObj = {
  * - Period selector with Week selected
  */
 export const HistoryWeekView: StoryObj = {
-  render: () => {
-    const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
-      'week'
-    );
-    return (
-      <div>
-        <ProcessMetricsHistory
-          processId="proc-001"
-          metrics={mockMetricsHistory}
-          timeframe={timeframe}
-          onTimeframeChange={setTimeframe}
-        />
-      </div>
-    );
-  },
+  render: () => <HistoryWeekViewComponent />,
 };
+
+// Component for Month View story
+function HistoryMonthViewComponent() {
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
+    'month'
+  );
+  return (
+    <div>
+      <ProcessMetricsHistory
+        processId="proc-001"
+        metrics={mockMetricsHistory}
+        timeframe={timeframe}
+        onTimeframeChange={setTimeframe}
+      />
+    </div>
+  );
+}
 
 /**
  * ProcessMetricsHistory — Month View
@@ -295,21 +315,7 @@ export const HistoryWeekView: StoryObj = {
  * - Demonstrates warning trend visualization
  */
 export const HistoryMonthView: StoryObj = {
-  render: () => {
-    const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
-      'month'
-    );
-    return (
-      <div>
-        <ProcessMetricsHistory
-          processId="proc-001"
-          metrics={mockMetricsHistory}
-          timeframe={timeframe}
-          onTimeframeChange={setTimeframe}
-        />
-      </div>
-    );
-  },
+  render: () => <HistoryMonthViewComponent />,
 };
 
 /**
@@ -344,6 +350,21 @@ export const HistoryDarkMode: StoryObj = {
   ),
 };
 
+// Component for Mobile View story
+function HistoryMobileComponent() {
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
+    'week'
+  );
+  return (
+    <ProcessMetricsHistory
+      processId="proc-001"
+      metrics={mockMetricsHistory}
+      timeframe={timeframe}
+      onTimeframeChange={setTimeframe}
+    />
+  );
+}
+
 /**
  * ProcessMetricsHistory — Mobile Viewport (320px)
  * - Charts responsive and readable on mobile
@@ -352,25 +373,35 @@ export const HistoryDarkMode: StoryObj = {
  * - Period selector wraps on mobile
  */
 export const HistoryMobile: StoryObj = {
-  render: () => {
-    const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
-      'week'
-    );
-    return (
-      <ProcessMetricsHistory
-        processId="proc-001"
-        metrics={mockMetricsHistory}
-        timeframe={timeframe}
-        onTimeframeChange={setTimeframe}
-      />
-    );
-  },
+  render: () => <HistoryMobileComponent />,
   parameters: {
     viewport: {
       defaultViewport: 'mobile1',
     },
   },
 };
+
+// Component for Dashboard View story
+function DashboardViewComponent() {
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
+    'month'
+  );
+  return (
+    <div className="space-y-6 max-w-4xl">
+      <ProcessMetricsCard
+        processId="proc-001"
+        sla={mockSla}
+        recentMetrics={mockMetricsOnTrack}
+      />
+      <ProcessMetricsHistory
+        processId="proc-001"
+        metrics={mockMetricsHistory}
+        timeframe={timeframe}
+        onTimeframeChange={setTimeframe}
+      />
+    </div>
+  );
+}
 
 /**
  * Combined View — Card + History (Dashboard Style)
@@ -380,26 +411,7 @@ export const HistoryMobile: StoryObj = {
  * - Both responsive and dark-mode aware
  */
 export const DashboardView: StoryObj = {
-  render: () => {
-    const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
-      'month'
-    );
-    return (
-      <div className="space-y-6 max-w-4xl">
-        <ProcessMetricsCard
-          processId="proc-001"
-          sla={mockSla}
-          recentMetrics={mockMetricsOnTrack}
-        />
-        <ProcessMetricsHistory
-          processId="proc-001"
-          metrics={mockMetricsHistory}
-          timeframe={timeframe}
-          onTimeframeChange={setTimeframe}
-        />
-      </div>
-    );
-  },
+  render: () => <DashboardViewComponent />,
 };
 
 /**
@@ -425,7 +437,7 @@ export const A11yContrastTest: StoryObj = {
           <li>✓ Red indicator: 4.5:1 contrast ratio</li>
           <li>✓ Chart text on background: 5.2:1 ratio</li>
           <li>✓ ARIA labels on all metrics</li>
-          <li>✓ role="group" on metric groupings</li>
+          <li>✓ role=&quot;group&quot; on metric groupings</li>
           <li>✓ aria-label describes each metric</li>
         </ul>
       </div>

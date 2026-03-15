@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { GitBranch, FileText, ClipboardList, Users, Monitor, Plus, Unlink } from 'lucide-react';
+import { GitBranch, FileText, ClipboardList, Users, Monitor, Plus, Unlink, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -346,8 +346,9 @@ export function ProcessCockpit360({
         <TabsContent value="metricas" className="mt-6 space-y-6">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <label className="text-sm font-medium">Período:</label>
+              <label htmlFor="metricsTimeframeSelect" className="text-sm font-medium">Período:</label>
               <select
+                id="metricsTimeframeSelect"
                 value={metricsTimeframe}
                 onChange={(e) => setMetricsTimeframe(e.target.value as 'week' | 'month' | 'quarter')}
                 className="border rounded-md px-3 py-2 text-sm"

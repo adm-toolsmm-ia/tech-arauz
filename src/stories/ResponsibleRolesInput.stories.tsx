@@ -248,7 +248,7 @@ export const A11yKeyboardNavigation: Story = {
         </h4>
         <ul className="space-y-1 text-sm text-amber-800 dark:text-amber-200">
           <li>✓ ARIA labels on input (aria-label)</li>
-          <li>✓ Role attribute (role="combobox")</li>
+          <li>✓ Role attribute (role=&quot;combobox&quot;)</li>
           <li>✓ aria-expanded indicates dropdown state</li>
           <li>✓ aria-controls links to listbox</li>
           <li>✓ Listbox role on dropdown container</li>
@@ -322,8 +322,8 @@ export const SearchAndFilter: Story = {
     <div className="space-y-4">
       <div className="rounded bg-green-50 p-3 dark:bg-green-950 text-sm">
         <p className="text-green-900 dark:text-green-100">
-          💡 Try typing in the input field to filter roles. Try typing "ger"
-          to find "Gerente"
+          💡 Try typing in the input field to filter roles. Try typing &quot;ger&quot;
+          to find &quot;Gerente&quot;
         </p>
       </div>
       <InteractiveWrapper defaultValue={['diretor']} />

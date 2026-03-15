@@ -15,6 +15,8 @@ import type {
   OrgService,
   OrgDocument,
 } from '@/types/organization';
+import type { SearchResult, SearchFilters, EntityType } from '@/lib/organization/search';
+import { rankSearchMatch, applyFilters, paginateResults } from '@/lib/organization/search';
 
 export interface OrgActionResult<T = unknown> {
   success: boolean;
@@ -1177,4 +1179,306 @@ export async function getProcessMetricsAction(
 
   if (error) return { success: false, message: `Erro ao buscar métricas: ${error.message}` };
   return { success: true, message: 'Métricas recuperadas com sucesso', data: data || [] };
+}
+
+// --- EPIC 11: Story 11.10 - Advanced Search & Filter ---
+
+/**
+ * Advanced search across all organizational entities
+ * Story 11.10: Advanced Search & Filter for Organizations
+ *
+ * Searches:
+ * - Areas, Nuclei, Processes, Routines, Activities
+ * - Systems, Suppliers, Services, Documents
+ *
+ * Fields:
+ * - name (exact, prefix, fuzzy match)
+ * - description, objective, documentation
+ */
+export async function searchOrganizationAction(
+  query: string,
+  filters?: SearchFilters
+): Promise<OrgActionResult<SearchResult[]>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  if (!query.trim()) {
+    return { success: true, message: 'Query vazia', data: [] };
+  }
+
+  const q = query.toLowerCase().trim();
+  const results: SearchResult[] = [];
+
+  try {
+    // Search Areas
+    const { data: areas } = await ctx.supabase
+      .from('org_areas')
+      .select('id, name, description, objective, documentation')
+      .eq('tenant_id', ctx.tenantId);
+
+    if (areas) {
+      for (const area of areas) {
+        const score = rankSearchMatch(
+          q,
+          area.name,
+          area.description,
+          area.objective,
+          area.documentation?.overview
+        );
+        if (score > 0) {
+          results.push({
+            id: area.id,
+            type: 'area',
+            name: area.name,
+            breadcrumb: area.name,
+            score,
+          });
+        }
+      }
+    }
+
+    // Search Nuclei
+    const { data: nuclei } = await ctx.supabase
+      .from('org_nuclei')
+      .select('id, name, description, objective, documentation, area_id')
+      .eq('tenant_id', ctx.tenantId);
+
+    if (nuclei) {
+      for (const n of nuclei) {
+        const score = rankSearchMatch(
+          q,
+          n.name,
+          n.description,
+          n.objective,
+          n.documentation?.overview
+        );
+        if (score > 0) {
+          const area = areas?.find((a) => a.id === n.area_id);
+          const breadcrumb = area
+            ? `${area.name} / ${n.name}`
+            : n.name;
+
+          results.push({
+            id: n.id,
+            type: 'nucleus',
+            name: n.name,
+            breadcrumb,
+            score,
+          });
+        }
+      }
+    }
+
+    // Search Processes
+    const { data: processes } = await ctx.supabase
+      .from('org_processes')
+      .select('id, name, description, objective, documentation, area_id, nucleus_id')
+      .eq('tenant_id', ctx.tenantId);
+
+    if (processes) {
+      for (const p of processes) {
+        const score = rankSearchMatch(
+          q,
+          p.name,
+          p.description,
+          p.objective,
+          p.documentation?.overview
+        );
+        if (score > 0) {
+          let breadcrumb = p.name;
+          const area = areas?.find((a) => a.id === p.area_id);
+          const nucleus = nuclei?.find((n) => n.id === p.nucleus_id);
+
+          if (area && nucleus) {
+            breadcrumb = `${area.name} / ${nucleus.name} / ${p.name}`;
+          } else if (area) {
+            breadcrumb = `${area.name} / ${p.name}`;
+          } else if (nucleus) {
+            breadcrumb = `${nucleus.name} / ${p.name}`;
+          }
+
+          results.push({
+            id: p.id,
+            type: 'process',
+            name: p.name,
+            breadcrumb,
+            score,
+          });
+        }
+      }
+    }
+
+    // Search Routines
+    const { data: routines } = await ctx.supabase
+      .from('org_routines')
+      .select('id, name, description, objective, documentation, process_id')
+      .eq('tenant_id', ctx.tenantId);
+
+    if (routines) {
+      for (const r of routines) {
+        const score = rankSearchMatch(
+          q,
+          r.name,
+          r.description,
+          r.objective,
+          r.documentation?.overview
+        );
+        if (score > 0) {
+          const process = processes?.find((p) => p.id === r.process_id);
+          const breadcrumb = process
+            ? `${process.name} / ${r.name}`
+            : r.name;
+
+          results.push({
+            id: r.id,
+            type: 'routine',
+            name: r.name,
+            breadcrumb,
+            score,
+          });
+        }
+      }
+    }
+
+    // Search Activities
+    const { data: activities } = await ctx.supabase
+      .from('org_activities')
+      .select('id, name, description, objective, documentation, routine_id')
+      .eq('tenant_id', ctx.tenantId);
+
+    if (activities) {
+      for (const a of activities) {
+        const score = rankSearchMatch(
+          q,
+          a.name,
+          a.description,
+          a.objective,
+          a.documentation?.overview
+        );
+        if (score > 0) {
+          const routine = routines?.find((r) => r.id === a.routine_id);
+          const breadcrumb = routine
+            ? `${routine.name} / ${a.name}`
+            : a.name;
+
+          results.push({
+            id: a.id,
+            type: 'activity',
+            name: a.name,
+            breadcrumb,
+            score,
+          });
+        }
+      }
+    }
+
+    // Search Systems
+    const { data: systems } = await ctx.supabase
+      .from('org_systems')
+      .select('id, name, description, purpose')
+      .eq('tenant_id', ctx.tenantId);
+
+    if (systems) {
+      for (const s of systems) {
+        const score = rankSearchMatch(q, s.name, s.description, s.purpose);
+        if (score > 0) {
+          results.push({
+            id: s.id,
+            type: 'system',
+            name: s.name,
+            breadcrumb: s.name,
+            score,
+          });
+        }
+      }
+    }
+
+    // Search Suppliers
+    const { data: suppliers } = await ctx.supabase
+      .from('org_suppliers')
+      .select('id, name, description')
+      .eq('tenant_id', ctx.tenantId);
+
+    if (suppliers) {
+      for (const s of suppliers) {
+        const score = rankSearchMatch(q, s.name, s.description);
+        if (score > 0) {
+          results.push({
+            id: s.id,
+            type: 'supplier',
+            name: s.name,
+            breadcrumb: s.name,
+            score,
+          });
+        }
+      }
+    }
+
+    // Search Services
+    const { data: services } = await ctx.supabase
+      .from('org_services')
+      .select('id, name, description')
+      .eq('tenant_id', ctx.tenantId);
+
+    if (services) {
+      for (const s of services) {
+        const score = rankSearchMatch(q, s.name, s.description);
+        if (score > 0) {
+          results.push({
+            id: s.id,
+            type: 'service',
+            name: s.name,
+            breadcrumb: s.name,
+            score,
+          });
+        }
+      }
+    }
+
+    // Search Documents
+    const { data: documents } = await ctx.supabase
+      .from('org_documents')
+      .select('id, name, description, associated_process_id')
+      .eq('tenant_id', ctx.tenantId);
+
+    if (documents) {
+      for (const d of documents) {
+        const score = rankSearchMatch(q, d.name, d.description);
+        if (score > 0) {
+          const process = processes?.find(
+            (p) => p.id === d.associated_process_id
+          );
+          const breadcrumb = process
+            ? `${process.name} / ${d.name}`
+            : d.name;
+
+          results.push({
+            id: d.id,
+            type: 'document',
+            name: d.name,
+            breadcrumb,
+            score,
+          });
+        }
+      }
+    }
+
+    // Apply filters
+    let filtered = applyFilters(results, filters || {});
+
+    // Sort by score descending
+    filtered.sort((a, b) => b.score - a.score);
+
+    // Paginate (20 per page)
+    const paginated = paginateResults(filtered, 0, 20);
+
+    return {
+      success: true,
+      message: `${filtered.length} resultado(s) encontrado(s)`,
+      data: paginated.results,
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Erro desconhecido';
+    return { success: false, message: `Erro na busca: ${msg}` };
+  }
 }

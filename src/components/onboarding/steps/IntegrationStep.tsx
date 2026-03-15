@@ -1,0 +1,206 @@
+'use client';
+
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+
+interface IntegrationStepProps {
+  integrations: {
+    id: string;
+    name: string;
+    description: string;
+    enabled: boolean;
+  }[];
+  onIntegrationToggle: (id: string, enabled: boolean) => void;
+  summary?: {
+    organizationName?: string;
+    organizationType?: string;
+    areaCount?: number;
+    nucleusCount?: number;
+    roleCount?: number;
+  };
+  errors?: string[];
+}
+
+/**
+ * IntegrationStep component
+ * Story 11.12: Step 5 - Integration configuration and final review
+ *
+ * Allows user to:
+ * - Enable/disable system integrations (Espaider, etc)
+ * - Review all configuration before final submission
+ * - Confirm bootstrap initialization
+ */
+export function IntegrationStep({
+  integrations,
+  onIntegrationToggle,
+  summary,
+  errors = [],
+}: IntegrationStepProps) {
+  const nucleusCount = summary?.nucleusCount || 0;
+  const areaCount = summary?.areaCount || 0;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold mb-2">Integrações e Revisão Final</h2>
+        <p className="text-sm text-muted-foreground">
+          Configure as integrações de sistemas e revise as configurações antes de finalizar
+        </p>
+      </div>
+
+      {/* Error Display */}
+      {errors.length > 0 && (
+        <Card className="border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800">
+          <CardContent className="pt-4">
+            <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+              {errors.map((error, idx) => (
+                <li key={idx} className="flex gap-2">
+                  <span>•</span> {error}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Configuration Summary */}
+      {summary && (
+        <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              Resumo da Configuração
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            {summary.organizationName && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Organização</p>
+                <p className="font-semibold">{summary.organizationName}</p>
+              </div>
+            )}
+
+            {summary.organizationType && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Tipo</p>
+                <Badge variant="secondary" className="w-fit">
+                  {summary.organizationType}
+                </Badge>
+              </div>
+            )}
+
+            {areaCount > 0 && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Áreas</p>
+                <p className="font-semibold">{areaCount} área{areaCount !== 1 ? 's' : ''}</p>
+              </div>
+            )}
+
+            {nucleusCount > 0 && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Núcleos</p>
+                <p className="font-semibold">{nucleusCount} núcleo{nucleusCount !== 1 ? 's' : ''}</p>
+              </div>
+            )}
+
+            {summary.roleCount && summary.roleCount > 0 && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Funções</p>
+                <p className="font-semibold">{summary.roleCount} função{summary.roleCount !== 1 ? 's' : ''}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* System Integrations */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Integrações de Sistemas</CardTitle>
+          <CardDescription>
+            Configure quais sistemas externos você deseja integrar
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {integrations.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhuma integração disponível</p>
+          ) : (
+            integrations.map((integration) => (
+              <div
+                key={integration.id}
+                className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+              >
+                <Checkbox
+                  id={`integration-${integration.id}`}
+                  checked={integration.enabled}
+                  onCheckedChange={(checked) =>
+                    onIntegrationToggle(integration.id, checked as boolean)
+                  }
+                  className="mt-1"
+                  aria-label={`Ativar integração ${integration.name}`}
+                />
+
+                <div className="flex-1 min-w-0">
+                  <Label
+                    htmlFor={`integration-${integration.id}`}
+                    className="font-medium text-sm cursor-pointer"
+                  >
+                    {integration.name}
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {integration.description}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Final Confirmation */}
+      <Card className="bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-600" />
+            Próximos Passos
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-amber-900 dark:text-amber-100 space-y-3">
+          <p>
+            Ao confirmar, a seguinte estrutura será criada em sua organização:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Todas as áreas e núcleos configurados</li>
+            <li>Processos padrão do modelo selecionado</li>
+            <li>Funções responsáveis disponíveis para atribuição</li>
+            {integrations.some(i => i.enabled) && (
+              <li>Integrações de sistemas habilitadas</li>
+            )}
+          </ul>
+          <p className="mt-3">
+            Você poderá editar, adicionar ou remover qualquer elemento após a inicialização.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Help Section */}
+      <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <CardHeader>
+          <CardTitle className="text-sm">❓ Precisa de Ajuda?</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-blue-900 dark:text-blue-100 space-y-2">
+          <p>
+            Se algo não estiver claro, você pode voltar aos passos anteriores para revisar ou ajustar as configurações.
+          </p>
+          <p>
+            Todas as mudanças podem ser feitas após a inicialização na seção de Configurações.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

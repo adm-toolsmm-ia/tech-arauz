@@ -1181,6 +1181,132 @@ export async function getProcessMetricsAction(
   return { success: true, message: 'Métricas recuperadas com sucesso', data: data || [] };
 }
 
+// --- EPIC 11: Story 13.1 - SLA Management (Create/Edit/Delete) ---
+
+/**
+ * Create a new process SLA
+ * Story 13.1 Phase 3: SLA Management
+ */
+export async function createProcessSlaAction(
+  processId: string,
+  metricName: string,
+  targetDurationDays: number,
+  warningThresholdPct: number,
+  criticalThresholdPct: number,
+  description?: string
+): Promise<OrgActionResult<any>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  // Validation
+  if (targetDurationDays <= 0) {
+    return { success: false, message: 'Duração alvo deve ser maior que 0' };
+  }
+  if (warningThresholdPct < 0 || warningThresholdPct > 100) {
+    return { success: false, message: 'Threshold de aviso deve estar entre 0 e 100' };
+  }
+  if (criticalThresholdPct < 0 || criticalThresholdPct > 100) {
+    return { success: false, message: 'Threshold crítico deve estar entre 0 e 100' };
+  }
+  if (warningThresholdPct >= criticalThresholdPct) {
+    return { success: false, message: 'Threshold de aviso deve ser menor que crítico' };
+  }
+
+  const data = {
+    process_id: processId,
+    metric_name: metricName,
+    target_duration_days: targetDurationDays,
+    warning_threshold_pct: warningThresholdPct,
+    critical_threshold_pct: criticalThresholdPct,
+    description: description || null,
+    tenant_id: ctx.tenantId,
+  };
+
+  const { data: created, error } = await ctx.supabase
+    .from('org_process_slas')
+    .insert([data])
+    .select()
+    .single();
+
+  if (error) return { success: false, message: `Erro ao criar SLA: ${error.message}` };
+  revalidatePath('/organizacao/processos');
+  return { success: true, message: 'SLA criado com sucesso!', data: created };
+}
+
+/**
+ * Update an existing process SLA
+ * Story 13.1 Phase 3: SLA Management
+ */
+export async function updateProcessSlaAction(
+  slaId: string,
+  updates: {
+    metricName?: string;
+    targetDurationDays?: number;
+    warningThresholdPct?: number;
+    criticalThresholdPct?: number;
+    description?: string;
+  }
+): Promise<OrgActionResult<any>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  // Validation
+  if (updates.targetDurationDays !== undefined && updates.targetDurationDays <= 0) {
+    return { success: false, message: 'Duração alvo deve ser maior que 0' };
+  }
+  if (updates.warningThresholdPct !== undefined && (updates.warningThresholdPct < 0 || updates.warningThresholdPct > 100)) {
+    return { success: false, message: 'Threshold de aviso deve estar entre 0 e 100' };
+  }
+  if (updates.criticalThresholdPct !== undefined && (updates.criticalThresholdPct < 0 || updates.criticalThresholdPct > 100)) {
+    return { success: false, message: 'Threshold crítico deve estar entre 0 e 100' };
+  }
+
+  // Build update payload (convert camelCase to snake_case)
+  const payload: Record<string, any> = {};
+  if (updates.metricName !== undefined) payload.metric_name = updates.metricName;
+  if (updates.targetDurationDays !== undefined) payload.target_duration_days = updates.targetDurationDays;
+  if (updates.warningThresholdPct !== undefined) payload.warning_threshold_pct = updates.warningThresholdPct;
+  if (updates.criticalThresholdPct !== undefined) payload.critical_threshold_pct = updates.criticalThresholdPct;
+  if (updates.description !== undefined) payload.description = updates.description;
+
+  const { data: updated, error } = await ctx.supabase
+    .from('org_process_slas')
+    .update(payload)
+    .eq('id', slaId)
+    .eq('tenant_id', ctx.tenantId)
+    .select()
+    .single();
+
+  if (error) return { success: false, message: `Erro ao atualizar SLA: ${error.message}` };
+  revalidatePath('/organizacao/processos');
+  return { success: true, message: 'SLA atualizado com sucesso!', data: updated };
+}
+
+/**
+ * Delete a process SLA
+ * Story 13.1 Phase 3: SLA Management
+ */
+export async function deleteProcessSlaAction(slaId: string): Promise<OrgActionResult> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { data: existing } = await ctx.supabase
+    .from('org_process_slas')
+    .select('metric_name')
+    .eq('id', slaId)
+    .single();
+
+  const { error } = await ctx.supabase
+    .from('org_process_slas')
+    .delete()
+    .eq('id', slaId)
+    .eq('tenant_id', ctx.tenantId);
+
+  if (error) return { success: false, message: `Erro ao excluir SLA: ${error.message}` };
+  revalidatePath('/organizacao/processos');
+  return { success: true, message: `SLA "${existing?.metric_name ?? 'N/A'}" excluído com sucesso!` };
+}
+
 // --- EPIC 11: Story 11.10 - Advanced Search & Filter ---
 
 /**

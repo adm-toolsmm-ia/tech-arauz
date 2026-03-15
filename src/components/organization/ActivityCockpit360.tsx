@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { InfoField, RolesDisplay, DocumentationAccordion, InputOutputList } from '@/components/organization/shared';
 import { ActivitySystemsModal } from './ActivitySystemsModal';
+import { OrgEntityFormSheet } from './OrgEntityFormSheet';
 import type { OrgActivity, OrgRoutine } from '@/types/organization';
 
 interface ActivityCockpit360Props {
@@ -35,6 +36,8 @@ export function ActivityCockpit360({
   onDelete,
 }: ActivityCockpit360Props) {
   const [showSystemsModal, setShowSystemsModal] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formTab, setFormTab] = useState('info');
 
   const formatExecutionTime = (minutes?: number | null) => {
     if (!minutes) return 'N/A';
@@ -87,26 +90,39 @@ export function ActivityCockpit360({
 
         {/* Tab: Informações */}
         <TabsContent value="info" className="mt-6 space-y-8">
-          {(onEdit || onDelete) && (
-            <div className="flex justify-end gap-2">
-              {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit}>
-                  Editar
-                </Button>
-              )}
-              {onDelete && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 text-destructive hover:text-destructive"
-                  onClick={onDelete}
-                >
-                  <Trash2 className="size-4" />
-                  Excluir
-                </Button>
-              )}
-            </div>
-          )}
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setFormTab('info');
+                setIsFormOpen(true);
+              }}
+            >
+              Editar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setFormTab('bpm');
+                setIsFormOpen(true);
+              }}
+            >
+              Detalhes BPM
+            </Button>
+            {onDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-destructive hover:text-destructive"
+                onClick={onDelete}
+              >
+                <Trash2 className="size-4" />
+                Excluir
+              </Button>
+            )}
+          </div>
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
@@ -275,6 +291,17 @@ export function ActivityCockpit360({
           />
         </TabsContent>
       </Tabs>
+
+      {/* Edit Form Sheet - Story 13.1: Gap 1 & 2 */}
+      <OrgEntityFormSheet
+        entity="activity"
+        mode="edit"
+        initialData={activity}
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSaved={() => setIsFormOpen(false)}
+        initialTab={formTab}
+      />
     </div>
   );
 }

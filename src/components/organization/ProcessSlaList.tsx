@@ -41,13 +41,16 @@ export function ProcessSlaList({
       const result = await deleteProcessSlaAction(slaToDelete.id);
 
       if (result.success) {
-        setSlaToDelete(null);
         onDeleteSuccess?.();
       } else {
         console.error('Error deleting SLA:', result.message);
       }
+      // Close dialog in both success and error cases
+      setSlaToDelete(null);
     } catch (error) {
       console.error('Error deleting SLA:', error);
+      // Close dialog even on exception
+      setSlaToDelete(null);
     } finally {
       setIsDeleting(false);
     }
@@ -63,7 +66,7 @@ export function ProcessSlaList({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8">
+          <div className="flex items-center justify-center py-8" role="status">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         </CardContent>
@@ -148,7 +151,9 @@ export function ProcessSlaList({
         </CardContent>
       </Card>
 
-      <AlertDialog open={!!slaToDelete} onOpenChange={(open) => !open && setSlaToDelete(null)}>
+      <AlertDialog open={!!slaToDelete} onOpenChange={(open) => {
+        if (!open) setSlaToDelete(null);
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Deletar SLA?</AlertDialogTitle>
@@ -157,7 +162,7 @@ export function ProcessSlaList({
               ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting} onClick={() => setSlaToDelete(null)}>Cancelar</AlertDialogCancel>
           <AlertDialogAction onClick={handleDeleteConfirm} disabled={isDeleting}>
             {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Deletar

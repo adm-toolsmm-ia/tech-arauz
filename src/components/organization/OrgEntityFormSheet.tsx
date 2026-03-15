@@ -55,6 +55,7 @@ interface OrgEntityFormSheetProps {
   isOpen?: boolean;
   onClose?: () => void;
   onSaved?: (saved: Entity) => void;
+  initialTab?: string;
 }
 
 type FormData = Partial<Entity> & {
@@ -109,12 +110,13 @@ export function OrgEntityFormSheet({
   isOpen = true,
   onClose,
   onSaved,
+  initialTab = 'info',
 }: OrgEntityFormSheetProps) {
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = useState('info');
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   // Initialize form from initialData
   useEffect(() => {
@@ -147,6 +149,13 @@ export function OrgEntityFormSheet({
       setErrors({});
     }
   }, [initialData, isOpen, mode, entity]);
+
+  // Update active tab when initialTab prop changes
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, isOpen]);
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

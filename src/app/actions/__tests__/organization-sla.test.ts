@@ -104,6 +104,12 @@ describe('Process SLA Management - Story 13.1', () => {
     expect(result.message).toContain('menor que');
   });
 
+  it('validate warning < critical threshold', async () => {
+    const result = await createProcessSlaAction(processId, 'metric', 5, 75, 95);
+    expect(result.success).toBe(true);
+    expect(result.message).toContain('sucesso');
+  });
+
   it('should update SLA with valid changes', async () => {
     mockSupabase.from.mockImplementation((table: string) => {
       if (table === 'profiles') {

@@ -267,6 +267,7 @@ export function AtividadesContent({
         outputs: [],
         risks: [],
         impacts: [],
+        responsible_roles: [],
         documentation: {},
       });
       if (result.success && result.data) {

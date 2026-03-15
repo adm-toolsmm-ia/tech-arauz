@@ -140,10 +140,10 @@ export function ResponsibleRolesInput({
       </div>
 
       {/* Input + Dropdown */}
-      <div className="relative">
+      <div className="relative w-full">
         <Input
           ref={inputRef}
-          placeholder="Search and add roles..."
+          placeholder="Pesquisar e adicionar funções..."
           value={inputValue}
           onChange={e => {
             setInputValue(e.target.value);
@@ -153,16 +153,19 @@ export function ResponsibleRolesInput({
           onKeyDown={handleKeyDown}
           onFocus={() => setOpen(true)}
           disabled={disabled}
-          aria-label="Add responsible role"
+          aria-label="Pesquisar e adicionar função responsável"
           aria-autocomplete="list"
           aria-expanded={open}
+          aria-controls="roles-listbox"
           role="combobox"
           autoComplete="off"
+          className="focus:ring-2 focus:ring-ring focus:ring-offset-2"
         />
 
         {/* Autocomplete Dropdown */}
         {open && filteredRoles.length > 0 && (
           <div
+            id="roles-listbox"
             className="absolute top-full left-0 right-0 z-50 mt-1 border rounded-md bg-popover shadow-md max-h-60 overflow-y-auto"
             role="listbox"
           >

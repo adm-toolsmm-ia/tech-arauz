@@ -943,3 +943,238 @@ export async function runBootstrapAction(
     data: { areasCreated: created?.length ?? 0 },
   };
 }
+
+// --- EPIC 11: Story 11.7 - Responsible Roles Actions ---
+
+/**
+ * Update all responsible roles for an activity (replace mode)
+ * Story 11.7: Implement Server Actions for Responsible Roles
+ */
+export async function updateActivityResponsibleRolesAction(
+  activityId: string,
+  roles: string[]
+): Promise<OrgActionResult<OrgActivity>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { data, error } = await ctx.supabase
+    .from('org_activities')
+    .update({
+      responsible_roles: roles,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', activityId)
+    .eq('tenant_id', ctx.tenantId)
+    .select()
+    .single();
+
+  if (error) return { success: false, message: `Erro ao atualizar funções responsáveis: ${error.message}` };
+
+  // TODO: Audit logging - logAuditEvent()
+  revalidatePath('/organizacao');
+  return { success: true, message: 'Funções responsáveis atualizadas!', data: data as OrgActivity };
+}
+
+/**
+ * Add single role to activity (append mode)
+ * Story 11.7: Implement Server Actions for Responsible Roles
+ */
+export async function addActivityResponsibleRoleAction(
+  activityId: string,
+  role: string
+): Promise<OrgActionResult<OrgActivity>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  // Fetch current roles
+  const { data: activity, error: fetchError } = await ctx.supabase
+    .from('org_activities')
+    .select('responsible_roles')
+    .eq('id', activityId)
+    .eq('tenant_id', ctx.tenantId)
+    .single();
+
+  if (fetchError) return { success: false, message: 'Atividade não encontrada' };
+
+  const currentRoles = activity?.responsible_roles || [];
+  if (currentRoles.includes(role)) {
+    return { success: false, message: 'Função já adicionada' };
+  }
+
+  const newRoles = [...currentRoles, role];
+  return updateActivityResponsibleRolesAction(activityId, newRoles);
+}
+
+/**
+ * Remove single role from activity
+ * Story 11.7: Implement Server Actions for Responsible Roles
+ */
+export async function removeActivityResponsibleRoleAction(
+  activityId: string,
+  role: string
+): Promise<OrgActionResult<OrgActivity>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  // Fetch current roles
+  const { data: activity, error: fetchError } = await ctx.supabase
+    .from('org_activities')
+    .select('responsible_roles')
+    .eq('id', activityId)
+    .eq('tenant_id', ctx.tenantId)
+    .single();
+
+  if (fetchError) return { success: false, message: 'Atividade não encontrada' };
+
+  const currentRoles = activity?.responsible_roles || [];
+  const newRoles = currentRoles.filter((r: string) => r !== role);
+
+  return updateActivityResponsibleRolesAction(activityId, newRoles);
+}
+
+/**
+ * Fetch current responsible roles for activity (read-only)
+ * Story 11.7: Implement Server Actions for Responsible Roles
+ */
+export async function getActivityResponsibleRolesAction(
+  activityId: string
+): Promise<OrgActionResult<string[]>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { data, error } = await ctx.supabase
+    .from('org_activities')
+    .select('responsible_roles')
+    .eq('id', activityId)
+    .eq('tenant_id', ctx.tenantId)
+    .single();
+
+  if (error) return { success: false, message: 'Atividade não encontrada' };
+  return { success: true, message: 'Funções recuperadas com sucesso', data: data?.responsible_roles || [] };
+}
+
+// --- EPIC 11: Story 11.8 - Activity-System Actions ---
+
+/**
+ * Add system to activity (insert into org_activity_systems junction)
+ * Story 11.8: Activity-System Relationship UI
+ */
+export async function addActivitySystemAction(
+  activityId: string,
+  systemId: string,
+  usageContext?: string
+): Promise<OrgActionResult> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { error } = await ctx.supabase.from('org_activity_systems').insert({
+    activity_id: activityId,
+    system_id: systemId,
+    tenant_id: ctx.tenantId,
+    usage_context: usageContext || null,
+  });
+
+  if (error) return { success: false, message: `Erro ao adicionar sistema: ${error.message}` };
+
+  // TODO: Audit logging
+  revalidatePath('/organizacao');
+  return { success: true, message: 'Sistema adicionado à atividade!' };
+}
+
+/**
+ * Remove system from activity (delete from org_activity_systems junction)
+ * Story 11.8: Activity-System Relationship UI
+ */
+export async function removeActivitySystemAction(
+  activityId: string,
+  systemId: string
+): Promise<OrgActionResult> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { error } = await ctx.supabase
+    .from('org_activity_systems')
+    .delete()
+    .eq('activity_id', activityId)
+    .eq('system_id', systemId)
+    .eq('tenant_id', ctx.tenantId);
+
+  if (error) return { success: false, message: `Erro ao remover sistema: ${error.message}` };
+
+  // TODO: Audit logging
+  revalidatePath('/organizacao');
+  return { success: true, message: 'Sistema removido da atividade!' };
+}
+
+/**
+ * Get all systems linked to an activity
+ * Story 11.8: Activity-System Relationship UI
+ */
+export async function getActivitySystemsAction(
+  activityId: string
+): Promise<OrgActionResult<any[]>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { data, error } = await ctx.supabase
+    .from('org_activity_systems')
+    .select(
+      `
+      system_id,
+      usage_context,
+      org_systems:system_id (id, name)
+    `
+    )
+    .eq('activity_id', activityId)
+    .eq('tenant_id', ctx.tenantId);
+
+  if (error) return { success: false, message: `Erro ao buscar sistemas: ${error.message}` };
+  return { success: true, message: 'Sistemas recuperados com sucesso', data: data || [] };
+}
+
+// --- EPIC 11: Story 11.9 - Process Metrics Actions ---
+
+/**
+ * Get SLA definitions for a process
+ * Story 11.9: Process Metrics & SLAs Display
+ */
+export async function getProcessSLAsAction(
+  processId: string
+): Promise<OrgActionResult<any[]>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { data, error } = await ctx.supabase
+    .from('org_process_slas')
+    .select('*')
+    .eq('process_id', processId)
+    .eq('tenant_id', ctx.tenantId);
+
+  if (error) return { success: false, message: `Erro ao buscar SLAs: ${error.message}` };
+  return { success: true, message: 'SLAs recuperadas com sucesso', data: data || [] };
+}
+
+/**
+ * Get metrics for a process in a period
+ * Story 11.9: Process Metrics & SLAs Display
+ */
+export async function getProcessMetricsAction(
+  processId: string,
+  periodStart: string,
+  periodEnd: string
+): Promise<OrgActionResult<any[]>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  const { data, error } = await ctx.supabase
+    .from('org_process_metrics')
+    .select('*')
+    .eq('process_id', processId)
+    .eq('tenant_id', ctx.tenantId)
+    .gte('period_start', periodStart)
+    .lte('period_end', periodEnd)
+    .order('period_start', { ascending: false });
+
+  if (error) return { success: false, message: `Erro ao buscar métricas: ${error.message}` };
+  return { success: true, message: 'Métricas recuperadas com sucesso', data: data || [] };
+}

@@ -84,6 +84,7 @@ export interface OrgActivity {
   outputs: OrgInputOutput[];
   risks: string[];
   impacts: string[];
+  responsible_roles: string[]; // Story 11.1: Added for role-based activity management
   documentation: OrgActivityDocumentation;
   created_at: string;
   updated_at: string;
@@ -221,4 +222,132 @@ export interface OrgAIContext {
   avgExecutionTime: string | null; // Formatted like "45 min", "2h 30m"
   complexity?: 'low' | 'medium' | 'high'; // Activity only
   priority?: 'low' | 'normal' | 'high'; // Activity only
+}
+
+// =============================================================================
+// EPIC 11: New entity types for Organizational Enrichment & BPM Mastery
+// =============================================================================
+
+/**
+ * Story 11.2: Activity-System relationship (many-to-many junction)
+ * Maps which systems are used in each activity
+ */
+export interface OrgActivitySystem {
+  activity_id: string;
+  system_id: string;
+  tenant_id: string;
+  usage_context?: string; // e.g., "data entry", "query lookup", "report generation"
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Story 11.2 extended: Activity with systems
+ * Populated when needed with JOIN from org_activity_systems
+ */
+export interface OrgActivityWithSystems extends OrgActivity {
+  systems?: OrgSystem[];
+}
+
+/**
+ * Story 11.3: Service Level Agreement definition for a process
+ * Defines performance targets and thresholds
+ */
+export interface OrgProcessSla {
+  id: string;
+  tenant_id: string;
+  process_id: string;
+  metric_name: string; // e.g., "completion_time", "quality_score"
+  target_duration_days: number;
+  warning_threshold_pct: number; // e.g., 80 = warning at 80% of SLA
+  critical_threshold_pct: number; // e.g., 95 = critical at 95% of SLA
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Story 11.3: Aggregated process metrics for a time period
+ * Stores observed performance metrics
+ */
+export interface OrgProcessMetrics {
+  id: string;
+  tenant_id: string;
+  process_id: string;
+  period_start: string; // DATE as ISO string
+  period_end: string;
+  metric_name: string;
+  avg_duration_days?: number;
+  compliance_pct?: number; // Percentage of instances meeting SLA
+  instances_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Story 11.4: Role definition in organizational hierarchy
+ * Defines organizational roles and their metadata
+ */
+export interface OrgRoleDefinition {
+  id: string;
+  tenant_id: string;
+  role_id: string; // e.g., "diretor", "gerente", "coordenador", "analista_senior"
+  role_name: string;
+  description?: string;
+  category: 'management' | 'specialist' | 'operational' | 'external';
+  level: number; // 1-10: hierarchical ordering (10 = most senior)
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Story 11.4: Role-based permission grant
+ * Defines what actions a role can perform on resource types
+ */
+export interface OrgRolePermission {
+  id: string;
+  tenant_id: string;
+  role_id: string;
+  resource_type: string; // area|process|activity|document|system|supplier|routine
+  action: string; // view|create|edit|delete|approve|manage
+  scope: string; // own_tenant|own_unit|all_units
+  conditions?: Record<string, unknown>; // Complex permission rules (future use)
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Story 11.5: Reusable activity pattern template
+ * Allows cloning activities from templates within a nucleus
+ */
+export interface OrgActivityTemplate {
+  id: string;
+  tenant_id: string;
+  nucleus_id?: string;
+  name: string;
+  description?: string;
+  complexity: OrgActivityComplexity;
+  priority: OrgActivityPriority;
+  inputs: OrgInputOutput[];
+  outputs: OrgInputOutput[];
+  risks: string[];
+  impacts: string[];
+  documentation: OrgActivityDocumentation;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Story 11.5: Immutable process version snapshot
+ * Append-only audit trail of process changes
+ */
+export interface OrgProcessVersion {
+  id: string;
+  tenant_id: string;
+  process_id: string;
+  version_number: number; // Auto-incrementing per process
+  process_snapshot: Record<string, unknown>; // Complete process state at this version
+  change_summary?: string;
+  changed_by?: string; // Profile ID of who made the change
+  created_at: string;
+  // Note: No updated_at — versions are immutable
 }

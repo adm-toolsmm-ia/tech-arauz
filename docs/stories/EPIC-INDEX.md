@@ -142,22 +142,115 @@
 
 ---
 
+## 📋 EPIC 11: Organizational Enrichment & BPM Mastery 🚀
+
+**Timeline:** 4-5 weeks (March 28 — April 25, 2026)
+**Team:** Dex (@dev) + Dara (@data-engineer) + Uma (@ux-design-expert) + Aria (@architect) + Alex (@analyst)
+**Effort:** 55-70 hours (14 stories)
+**Status:** 🔄 **READY FOR PLANNING** (Depends on EPIC 9-10 completion)
+
+### Vision
+
+Transform Tech Arauz from a **project management platform** into a comprehensive **360° Organizational Management & BPM Platform** with:
+
+- Advanced Role Management (responsible parties at all hierarchical levels)
+- Process-Activity-System Integration (complete data relationships)
+- BPM Mastery (metrics, SLAs, versioning, templates)
+- AI Context Engineering (deep organizational context for intelligent systems)
+- Bootstrap & Customization (reusable organizational patterns)
+- Frontend Synchronization (complete UI implementation)
+
+### Stories
+
+| # | Story | Owner | Effort | Priority | Status | File |
+|---|-------|-------|--------|----------|--------|------|
+| 11.1 | Add responsible_roles to Activities (DB) | Dara | 3-4h | **CRITICAL** | ⏳ READY | [Story 11.1](./11.1-add-responsible-roles-to-activities-db.story.md) |
+| 11.2 | Create Activity-System Relationship Table | Dara | 4-5h | **HIGH** | ⏳ READY | [Story 11.2](./11.2-activity-system-relationships.story.md) |
+| 11.3 | Create Process SLAs & Metrics Table | Dara + Aria | 5-6h | **HIGH** | ⏳ READY | [Story 11.3](./11.3-process-slas-metrics.story.md) |
+| 11.4 | Create Role Permissions & Governance Table | Aria + Dara | 6-7h | **MEDIUM** | ⏳ READY | [Story 11.4](./11.4-role-permissions-governance.story.md) |
+| 11.5 | Add Activity Templates & Process Versioning | Dara + Aria | 5-6h | **MEDIUM** | ⏳ READY | [Story 11.5](./11.5-activity-templates-process-versioning.story.md) |
+| 11.6 | Implement ResponsibleRolesInput Component (UI) | Uma + Dex | 10-12h | **HIGH** | ⏳ READY | [Story 11.6](./11.6-responsible-roles-input-component.story.md) |
+| 11.7 | Implement Server Actions for Responsible Roles | Dex | 6-8h | **HIGH** | ⏳ READY | [Story 11.7](./11.7-responsible-roles-server-actions.story.md) |
+| 11.8 | Implement Activity-System Relationship Management (UI) | Dex + Uma | 8-10h | **HIGH** | ⏳ READY | [Story 11.8](./11.8-activity-system-ui.story.md) |
+| 11.9 | Display Process Metrics & SLAs in UI | Dex + Uma | 7-9h | **MEDIUM** | ⏳ READY | [Story 11.9](./11.9-process-metrics-display.story.md) |
+| 11.10 | Advanced Search & Filter for Organizations | Dex + Uma | 9-11h | **MEDIUM** | ⏳ READY | [Story 11.10](./11.10-advanced-org-search.story.md) |
+| 11.11 | AI Context Embeddings for Knowledge Base | Alex + Dex | 8-10h | **MEDIUM** | ⏳ READY | [Story 11.11](./11.11-ai-embeddings.story.md) |
+| 11.12 | Organizational Setup Wizard (Bootstrap Customization) | Uma + Dex | 10-12h | **MEDIUM** | ⏳ READY | [Story 11.12](./11.12-org-setup-wizard.story.md) |
+| 11.13 | Bulk Operations & Import/Export | Dex | 10-12h | **MEDIUM** | ⏳ READY | [Story 11.13](./11.13-bulk-operations.story.md) |
+| 11.14 | Complete Documentation & AI Context Patterns | Alex + Aria | 8-10h | **MEDIUM** | ⏳ READY | [Story 11.14](./11.14-documentation-ai-patterns.story.md) |
+
+### Key Deliverables
+
+**Phase 1: Schema Enhancements (Week 1)**
+- ✅ Add `responsible_roles` to Activities
+- ✅ Create Activity-System junction table
+- ✅ Create Process SLAs & Metrics tables
+- ✅ Create Role Permissions governance table
+- ✅ Create Activity Templates & Process Versioning tables
+
+**Phase 2: Backend Implementation (Weeks 2-3)**
+- ✅ Implement 25+ new Server Actions
+- ✅ RLS policies for all new tables
+- ✅ Audit logging for responsible party changes
+
+**Phase 3: Frontend Synchronization (Weeks 3-4)**
+- ✅ ResponsibleRolesInput component (advanced)
+- ✅ Activity-System management UI
+- ✅ Process metrics display (charts)
+- ✅ Advanced search/filter across org
+- ✅ Bulk edit/delete operations
+
+**Phase 4: AI Context Engineering (Week 4-5)**
+- ✅ Semantic search embeddings for knowledge base
+- ✅ Role context injector for AI agents
+- ✅ Process metrics context transformer
+- ✅ Organizational setup wizard
+- ✅ Complete documentation & ADR-005
+
+### Success Metrics
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| All 14 stories delivered | 100% | 🔄 PLANNING |
+| Zero critical bugs | 0 | 🔄 PLANNING |
+| RLS policy coverage | 100% | 🔄 PLANNING |
+| Test coverage | >95% | 🔄 PLANNING |
+| API response time | <500ms | 🔄 PLANNING |
+| Onboarding time (wizard) | <5 min | 🔄 PLANNING |
+| Semantic search relevance | >80% | 🔄 PLANNING |
+
+### Dependencies
+
+✅ **Depends on:**
+- EPIC 9 (Context Engineering) — COMPLETE ✅
+- EPIC 10 (Refinement) — COMPLETE ✅
+
+⏳ **Blocks:**
+- Potentially EPIC 12 (Advanced Analytics & Reporting)
+
+### Full Documentation
+
+📖 **[EPIC 11: Organizational Enrichment & BPM Mastery](./EPIC-11-Organizational-Enrichment-BPM-Mastery.md)**
+
+---
+
 ## 📊 Summary Metrics
 
 ### Total Program
 
 | Metric | Value |
 |--------|-------|
-| **Total Stories** | 21 (18 main + 3 refinement in EPIC 10) |
-| **Total Epics** | 6 (EPIC 5-10) |
-| **Total Effort** | 280-360 hours |
-| **Total Timeline** | 15 weeks (March 10 — June 30, 2026) |
+| **Total Stories** | 35 (18 main + 3 refinement in EPIC 10 + 14 in EPIC 11) |
+| **Total Epics** | 7 (EPIC 5-11) |
+| **Total Effort** | 335-430 hours |
+| **Total Timeline** | 19 weeks (March 10 — July 30, 2026) |
 | **Team Size** | 5 people |
 | **Avg/Week Capacity** | 18-24 hours |
-| **Quality Improvement** | 8.5/10 → 9.5/10 |
+| **Quality Improvement** | 8.5/10 → 9.7/10 |
 | **Performance Gain** | 20-50% query improvement |
 | **Team Velocity Gain** | 25% faster feature development |
-| **Org Knowledge Graph** | Complete & synchronized |
+| **Org Knowledge Graph** | Complete, synchronized, enriched with BPM |
+| **Platform Capabilities** | Project Mgmt → Org Management 360° |
 
 ### By Epic
 
@@ -169,6 +262,7 @@
 | **EPIC 8** | 5 | 30-45 | 2-3 | MEDIUM | ❌ **ARCHIVED** (2026-03-14 — 1/5 done: 8.6 in v0.2.3) |
 | **EPIC 9** | 9 | ~90h | 5 | HIGH | ✅ **COMPLETE** |
 | **EPIC 10** | 3 | 25-33h | 2-3 | **HIGH** | ✅ **COMPLETE** (v0.2.3+) |
+| **EPIC 11** | 14 | 55-70h | 4-5 | **HIGH** | 🔄 **READY FOR PLANNING** |
 
 ### By Owner
 
@@ -254,7 +348,27 @@ EPIC 8 (Polish)
 - ❌ **EPIC 8.1-8.4** — Polish & optimization (low priority, deferred)
 
 ### Next Development Cycle
-**EPIC 11 is not yet planned.** See `docs/PROJECT-CURRENT-STATE.md` for recommended next steps (a11y fixes, documentation, performance optimization).
+
+#### 🚀 EPIC 11: Organizational Enrichment & BPM Mastery
+**Status:** 🔄 READY FOR PLANNING
+**Timeline:** March 28 — April 25, 2026
+**Effort:** 55-70 hours (14 stories)
+
+**Vision:** Transform Tech Arauz into a 360° Organizational Management & BPM Platform with:
+- Advanced role management (responsible parties at all levels)
+- Process-Activity-System integration (complete data relationships)
+- BPM mastery (metrics, SLAs, versioning, templates)
+- AI context engineering (semantic search, role injection)
+- Bootstrap customization (reusable org patterns)
+- Frontend synchronization (complete UI implementation)
+
+**Key Deliverables:**
+1. ✅ Phase 1: Schema enhancements (5 tables)
+2. ✅ Phase 2: Backend implementation (25+ Server Actions)
+3. ✅ Phase 3: Frontend synchronization (10+ components)
+4. ✅ Phase 4: AI context engineering + documentation
+
+**📖 Full Details:** See [EPIC 11: Organizational Enrichment & BPM Mastery](./EPIC-11-Organizational-Enrichment-BPM-Mastery.md)
 
 ---
 

@@ -1,0 +1,213 @@
+---
+handoff:
+  from_agent: pm
+  to_agents: [data-engineer, architect]
+  timestamp: 2026-03-28T09:15:00Z
+  consumed: false
+
+context:
+  epic_id: 11
+  epic_name: "Organizational Enrichment & BPM Mastery"
+  wave: 1
+  wave_name: "SQUAD-SCHEMA (Week 1)"
+  mode: autonomous_engine
+  execution_plan: ".aiox/EPIC-11-EXECUTION.yaml"
+
+story_context:
+  active_stories:
+    - story_id: 11.1
+      title: "Add responsible_roles to Activities (DB)"
+      owner: dara
+      effort: 3-4h
+      priority: CRITICAL
+      dependencies: []
+      acceptance_criteria:
+        - Migration 066 created
+        - responsible_roles JSONB column added
+        - GIN index created
+        - RLS policies updated
+        - TypeScript OrgActivity interface updated
+        - DB lint passing
+        - Rollback script tested
+
+    - story_id: 11.2
+      title: "Create Activity-System Relationship Table"
+      owner: dara
+      effort: 4-5h
+      priority: HIGH
+      dependencies: ["11.1"]
+      acceptance_criteria:
+        - New org_activity_system_junction table created
+        - Foreign keys to org_activities and org_systems
+        - RLS policies (ADR-001)
+        - TypeScript interface added
+        - Migration 067 created
+
+    - story_id: 11.3
+      title: "Create Process SLAs & Metrics Table"
+      owner: dara
+      effort: 5-6h
+      priority: HIGH
+      dependencies: []
+      acceptance_criteria:
+        - org_process_slas table created
+        - org_process_metrics table created
+        - Foreign keys to org_processes
+        - RLS policies (ADR-001)
+        - Metrics: response_time, completion_rate, quality_score
+        - Migration 068 created
+
+    - story_id: 11.4
+      title: "Create Role Permissions & Governance Table"
+      owner: aria
+      effort: 6-7h
+      priority: MEDIUM
+      dependencies: ["11.3"]
+      acceptance_criteria:
+        - org_role_permissions table created
+        - permission_type: read, write, delete, execute, approve
+        - scope: entity-level, organization-level, global
+        - Migration 069 created
+        - TypeScript interface added
+
+    - story_id: 11.5
+      title: "Add Activity Templates & Process Versioning"
+      owner: dara
+      effort: 5-6h
+      priority: MEDIUM
+      dependencies: ["11.2", "11.3"]
+      acceptance_criteria:
+        - org_activity_templates table created
+        - org_process_versions table created
+        - Version control with created_at, created_by
+        - RLS policies (ADR-001)
+        - Migrations 070a, 070b created
+
+shared_context:
+  project_root: "C:\\Users\\Gabriel Cristofolini\\Documents\\SOLUCOESSISTEMAS\\tech-arauz"
+  stack:
+    database: Supabase PostgreSQL
+    migrations_path: "supabase/migrations"
+    schema_path: "packages/core/src/types/database.ts"
+  standards:
+    rls_policy: "USING true, WITH CHECK true per ADR-001"
+    migrations_required: 5 (066-070)
+    test_coverage_target: ">95%"
+    performance_requirement: "GIN indexes on JSONB columns"
+
+task_assignments:
+  dara:
+    primary: [11.1, 11.2, 11.3, 11.5]
+    responsibility: "Database migrations, DDL, RLS policies"
+    success_criteria:
+      - All 5 migrations applied successfully
+      - Zero DB lint errors
+      - GIN indexes created on all JSONB columns
+      - RLS policies validated
+      - Rollback scripts tested
+    gate_dependencies: ["aria_architecture_sign_off"]
+
+  aria:
+    primary: [11.3, 11.4, 11.5]
+    responsibility: "Architecture validation, security review, performance sign-off"
+    success_criteria:
+      - Schema design reviewed for data integrity
+      - RLS policy patterns validated (ADR-001 compliance)
+      - Index strategy approved
+      - No architectural anti-patterns
+      - Performance baseline acceptable
+    gate_dependencies: []
+
+coordination:
+  parallel_execution: true
+  blocking_relationships:
+    - "11.2 depends on 11.1 (dara can work on 11.1 first)"
+    - "11.4 depends on 11.3 (aria can review 11.3 early)"
+    - "11.5 depends on 11.2 + 11.3 (both start concurrently)"
+  checkpoints:
+    - "2026-03-31 09:00: Stories 11.1-11.3 progress check"
+    - "2026-04-03 17:00: WAVE 1 gate verification (aria sign-off required)"
+
+gate_criteria:
+  wave_1_gate:
+    name: "Schema Validation Gate"
+    owner: aria
+    must_pass:
+      - all_5_migrations_applied
+      - zero_db_lint_errors
+      - aria_architecture_review_approved
+      - rls_policies_validated
+      - performance_baseline_set
+    failure_action: "escalate_to_pm"
+    scheduled: 2026-04-04T17:00:00Z
+
+key_documents:
+  - "docs/stories/11.1-add-responsible-roles-to-activities-db.story.md"
+  - "docs/stories/11.2-activity-system-relationships.story.md"
+  - "docs/stories/11.3-process-slas-metrics.story.md"
+  - "docs/stories/11.4-role-permissions-governance.story.md"
+  - "docs/stories/11.5-activity-templates-process-versioning.story.md"
+  - ".aiox/EPIC-11-EXECUTION.yaml"
+  - "supabase/migrations/" (reference folder)
+  - "packages/core/src/types/database.ts" (TypeScript types)
+
+aiox_10_10_checklist:
+  story_driven: "✅ 5 stories fully specified"
+  agent_authority: "✅ Dara (schema) + Aria (validation)"
+  quality_first: ">95% test coverage target"
+  no_invention: "✅ All per EPIC-11 spec"
+  cli_first: "✅ Using AIOX commands"
+  code_intelligence: "✅ IDS registry tracking"
+  absolute_imports: "✅ Enforced in schema"
+  architecture_validated: "🔄 Aria sign-off required"
+  rls_compliance: "✅ ADR-001 enforced"
+  documentation: "🔄 Embedded in migrations"
+
+next_actions:
+  for_dara:
+    - "Read all 5 story files"
+    - "Create migration 066: responsible_roles to org_activities"
+    - "Create migration 067: Activity-System junction table"
+    - "Create migration 068: Process SLAs & Metrics tables"
+    - "Create migration 070a/070b: Activity Templates & versioning"
+    - "Update TypeScript types in packages/core/src/types/database.ts"
+    - "Test migrations with dry-run"
+    - "Create rollback scripts"
+    - "Run DB lint validation"
+    - "Await Aria sign-off before applying to production"
+
+  for_aria:
+    - "Read story files 11.3, 11.4, 11.5"
+    - "Review migration scripts for data integrity"
+    - "Validate RLS policy patterns (ADR-001 compliance)"
+    - "Check index strategy for JSONB columns"
+    - "Assess performance implications"
+    - "Sign off on architecture: approved | needs-revision | blocked"
+    - "If revision needed, communicate specific changes to Dara"
+    - "Update EPIC-11-EXECUTION.yaml with sign-off timestamp"
+
+collaboration_points:
+  - Dara creates migrations → Aria reviews for architecture/security
+  - Aria reviews → Dara updates if needed
+  - Final sign-off → Both confirm ready for WAVE 2
+  - Checkpoint: 2026-03-31 (progress check)
+  - Gate: 2026-04-04 (formal gate + sign-off)
+
+escalation:
+  if_blocked: "Contact @pm (Morgan) via handoff update"
+  if_dara_blocked: "Aria can unblock with approval of alternative design"
+  if_aria_blocked: "Dara can request architectural guidance or escalate to @architect review"
+  critical_failure: "Escalate to @aiox-master *correct-course"
+
+success_outcome:
+  all_5_migrations_ready_for_production: true
+  rls_policies_validated: true
+  performance_baseline_established: true
+  wave_1_complete: true
+  wave_2_can_begin: true
+  gate_status: "PASSED"
+
+---
+created_by: Morgan (@pm)
+created_date: 2026-03-28T09:15:00Z
+target_completion: 2026-04-04T17:00:00Z

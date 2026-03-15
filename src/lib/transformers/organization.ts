@@ -90,6 +90,7 @@ export interface DBOrgActivity {
   outputs: unknown;
   risks: unknown;
   impacts: unknown;
+  responsible_roles: unknown;
   documentation: unknown;
   created_at: string;
   updated_at: string;
@@ -282,6 +283,7 @@ export function dbActivityToUI(row: DBOrgActivity): OrgActivity {
     outputs: parseJsonArrayOfObjects(row.outputs),
     risks: parseJsonArray(row.risks),
     impacts: parseJsonArray(row.impacts),
+    responsible_roles: parseJsonArray(row.responsible_roles),
     documentation: parseJsonObject(row.documentation) as OrgActivity['documentation'],
     created_at: row.created_at,
     updated_at: row.updated_at,

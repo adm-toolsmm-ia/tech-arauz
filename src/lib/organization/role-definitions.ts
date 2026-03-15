@@ -1,39 +1,40 @@
 /**
  * Organization Role Definitions — Role Registry
  * Story 10.2: Responsible Roles UI Component
- * Extensível para EPIC 11 (DB-driven roles)
+ * Story 11.6: ResponsibleRolesInput Component (EPIC 11)
+ * Story 11.4: Role Permissions & Governance
+ *
+ * Roles synced with Migration 069 (org_role_definitions seed)
+ * Extensível para future DB-driven roles
  */
 
 export interface RoleDefinition {
   value: string;
   label: string;
-  description: string;
+  description?: string;
   category: 'management' | 'specialist' | 'operational' | 'external';
 }
 
+/**
+ * ORGANIZATION_ROLES — 9 default roles (Story 11.4 + 11.6)
+ * Aligned with Migration 069 org_role_definitions seed
+ * Organizados por categoria hierárquica
+ */
 export const ORGANIZATION_ROLES: RoleDefinition[] = [
-  // Management
-  { value: 'ceo', label: 'CEO', description: 'Chief Executive Officer', category: 'management' },
-  { value: 'manager', label: 'Manager', description: 'Department Manager', category: 'management' },
-  { value: 'director', label: 'Director', description: 'Area Director', category: 'management' },
-  { value: 'head_of_department', label: 'Head of Department', description: 'Department Head', category: 'management' },
+  // Management (Gestão)
+  { value: 'diretor', label: 'Diretor', description: 'Direção/Diretoria', category: 'management' },
+  { value: 'gerente', label: 'Gerente', description: 'Gerência de área', category: 'management' },
+  { value: 'coordenador', label: 'Coordenador', description: 'Coordenação de núcleo/processo', category: 'management' },
 
-  // Specialist
-  { value: 'vendor_manager', label: 'Vendor Manager', description: 'Manages supplier relationships', category: 'specialist' },
-  { value: 'procurement_lead', label: 'Procurement Lead', description: 'Leads procurement activities', category: 'specialist' },
-  { value: 'analyst', label: 'Analyst', description: 'Data or business analyst', category: 'specialist' },
-  { value: 'compliance_officer', label: 'Compliance Officer', description: 'Ensures regulatory compliance', category: 'specialist' },
-  { value: 'legal_reviewer', label: 'Legal Reviewer', description: 'Reviews legal documents', category: 'specialist' },
-  { value: 'service_lead', label: 'Service Lead', description: 'Leads service operations', category: 'specialist' },
+  // Specialist (Especialistas)
+  { value: 'especialista', label: 'Especialista', description: 'Especialista técnico', category: 'specialist' },
+  { value: 'analista_senior', label: 'Analista Sênior', description: 'Analista com senioridade', category: 'specialist' },
+  { value: 'analista_junior', label: 'Analista Júnior', description: 'Analista em treinamento', category: 'specialist' },
 
-  // Operational
-  { value: 'coordinator', label: 'Coordinator', description: 'Coordinates processes', category: 'operational' },
-  { value: 'executor', label: 'Executor', description: 'Executes tasks', category: 'operational' },
-  { value: 'operations_manager', label: 'Operations Manager', description: 'Manages operations', category: 'operational' },
-
-  // External
-  { value: 'external_consultant', label: 'External Consultant', description: 'Consultant from outside org', category: 'external' },
-  { value: 'partner', label: 'Partner', description: 'External partner', category: 'external' },
+  // Operational (Operacional)
+  { value: 'operacional', label: 'Operacional', description: 'Executor operacional', category: 'operational' },
+  { value: 'administrativo', label: 'Administrativo', description: 'Apoio administrativo', category: 'operational' },
+  { value: 'supervisor', label: 'Supervisor', description: 'Supervisão operacional', category: 'operational' },
 ];
 
 /**

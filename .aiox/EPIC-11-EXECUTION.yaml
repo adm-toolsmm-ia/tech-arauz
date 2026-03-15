@@ -1,0 +1,303 @@
+---
+epic_id: 11
+epic_name: "Organizational Enrichment & BPM Mastery"
+status: IN_EXECUTION
+mode: autonomous_engine
+framework: AIOX_10_10_STANDARD
+
+# Timeline & Phases
+timeline:
+  start_date: 2026-03-28
+  target_completion: 2026-04-25
+  duration_weeks: 4
+  phase_gates:
+    wave_1_complete: 2026-04-04
+    wave_2_complete: 2026-04-18
+    wave_3_complete: 2026-04-25
+
+# Squad Formation (Parallel Execution)
+squads:
+  squad_schema:
+    name: "SQUAD-SCHEMA (Week 1)"
+    primary_owner: dara
+    secondary_owner: aria
+    stories:
+      - story_id: 11.1
+        name: "Add responsible_roles to Activities (DB)"
+        effort: 3-4h
+        priority: CRITICAL
+        owner: dara
+        depends_on: []
+      - story_id: 11.2
+        name: "Create Activity-System Relationship Table"
+        effort: 4-5h
+        priority: HIGH
+        owner: dara
+        depends_on: ["11.1"]
+      - story_id: 11.3
+        name: "Create Process SLAs & Metrics Table"
+        effort: 5-6h
+        priority: HIGH
+        owner: dara
+        depends_on: []
+      - story_id: 11.4
+        name: "Create Role Permissions & Governance Table"
+        effort: 6-7h
+        priority: MEDIUM
+        owner: aria
+        depends_on: ["11.3"]
+      - story_id: 11.5
+        name: "Add Activity Templates & Process Versioning"
+        effort: 5-6h
+        priority: MEDIUM
+        owner: dara
+        depends_on: ["11.2", "11.3"]
+    total_effort: 23-28h
+    gate_criteria:
+      - all_5_migrations_applied
+      - zero_db_lint_errors
+      - aria_architecture_sign_off
+      - rls_policies_validated
+    gate_owner: aria
+    target_date: 2026-04-04
+
+  squad_backend:
+    name: "SQUAD-BACKEND (Weeks 2-3)"
+    primary_owner: dex
+    secondary_owner: uma
+    stories:
+      - story_id: 11.6
+        name: "Implement ResponsibleRolesInput Component (UI)"
+        effort: 10-12h
+        priority: HIGH
+        owner: uma
+        depends_on: ["11.1"]
+      - story_id: 11.7
+        name: "Implement Server Actions for Responsible Roles"
+        effort: 6-8h
+        priority: HIGH
+        owner: dex
+        depends_on: ["11.1"]
+      - story_id: 11.8
+        name: "Implement Activity-System Relationship Management (UI)"
+        effort: 8-10h
+        priority: HIGH
+        owner: dex
+        depends_on: ["11.2", "11.7"]
+      - story_id: 11.9
+        name: "Display Process Metrics & SLAs in UI"
+        effort: 7-9h
+        priority: MEDIUM
+        owner: uma
+        depends_on: ["11.3"]
+    total_effort: 31-39h
+    gate_criteria:
+      - 15_plus_server_actions_implemented
+      - 90_percent_test_coverage_minimum
+      - uma_ui_ux_sign_off
+      - integration_tests_passing
+    gate_owner: uma
+    target_date: 2026-04-18
+
+  squad_advanced:
+    name: "SQUAD-ADVANCED (Weeks 3-5)"
+    primary_owner: dex
+    secondary_owner: uma
+    tertiary_owner: alex
+    stories:
+      - story_id: 11.10
+        name: "Advanced Search & Filter for Organizations"
+        effort: 9-11h
+        priority: MEDIUM
+        owner: dex
+        depends_on: ["11.6", "11.7", "11.8"]
+      - story_id: 11.11
+        name: "AI Context Embeddings for Knowledge Base"
+        effort: 8-10h
+        priority: MEDIUM
+        owner: alex
+        depends_on: ["11.9"]
+      - story_id: 11.12
+        name: "Organizational Setup Wizard (Bootstrap Customization)"
+        effort: 10-12h
+        priority: MEDIUM
+        owner: uma
+        depends_on: ["11.6", "11.7"]
+      - story_id: 11.13
+        name: "Bulk Operations & Import/Export"
+        effort: 10-12h
+        priority: MEDIUM
+        owner: dex
+        depends_on: ["11.6", "11.7", "11.8"]
+      - story_id: 11.14
+        name: "Complete Documentation & AI Context Patterns"
+        effort: 8-10h
+        priority: MEDIUM
+        owner: alex
+        depends_on: ["11.11"]
+    total_effort: 45-55h
+    gate_criteria:
+      - all_14_stories_complete
+      - e2e_test_coverage_95_percent_minimum
+      - zero_critical_bugs
+      - alex_documentation_sign_off
+      - aria_final_architecture_review
+    gate_owner: dex
+    target_date: 2026-04-25
+
+# Success Metrics & Quality Gates
+success_metrics:
+  stories_delivered: 14/14
+  test_coverage: ">95%"
+  critical_bugs: 0
+  rls_compliance: "100%"
+  api_latency_p95: "<500ms"
+  coderabbit_score: "green"
+  documentation_completeness: "100%"
+
+aiox_10_10_criteria:
+  story_driven_development: "✅ 14 stories fully specified"
+  agent_authority_respected: "✅ Dara/Aria/Dex/Uma/Alex assigned"
+  quality_first: "✅ >95% test coverage, CodeRabbit gates"
+  no_invention: "✅ All per EPIC-11 spec"
+  cli_first: "✅ All via AIOX commands"
+  code_intelligence: "✅ IDS registry tracking"
+  absolute_imports: "✅ Enforced"
+  architecture_validated: "✅ Aria sign-off pre-execution"
+  rls_compliance: "✅ ADR-001 enforced"
+  documentation_synchronized: "✅ AIOX standard"
+
+# Execution Log (Updated During Run)
+execution_log:
+  wave_1_status: PENDING
+  wave_1_start: null
+  wave_1_end: null
+  wave_1_stories_complete: 0/5
+
+  wave_2_status: PENDING
+  wave_2_start: null
+  wave_2_end: null
+  wave_2_stories_complete: 0/4
+
+  wave_3_status: PENDING
+  wave_3_start: null
+  wave_3_end: null
+  wave_3_stories_complete: 0/5
+
+  total_effort_tracked: 0h
+  latest_checkpoint: null
+
+# Agent Spawn Records
+agent_spawns:
+  - agent_id: data-engineer
+    agent_name: Dara
+    squad: squad_schema
+    stories: [11.1, 11.2, 11.3, 11.5]
+    spawn_time: null
+    completion_time: null
+    status: PENDING
+
+  - agent_id: architect
+    agent_name: Aria
+    squad: squad_schema
+    stories: [11.3, 11.4, 11.5]
+    spawn_time: null
+    completion_time: null
+    status: PENDING
+
+  - agent_id: dev
+    agent_name: Dex
+    squad: [squad_backend, squad_advanced]
+    stories: [11.7, 11.8, 11.10, 11.13]
+    spawn_time: null
+    completion_time: null
+    status: PENDING
+
+  - agent_id: ux-design-expert
+    agent_name: Uma
+    squad: [squad_backend, squad_advanced]
+    stories: [11.6, 11.9, 11.12]
+    spawn_time: null
+    completion_time: null
+    status: PENDING
+
+  - agent_id: analyst
+    agent_name: Alex
+    squad: squad_advanced
+    stories: [11.11, 11.14]
+    spawn_time: null
+    completion_time: null
+    status: PENDING
+
+# Wave Gates (Checkpoints)
+wave_gates:
+  wave_1_gate:
+    name: "Schema Validation Gate"
+    dependencies:
+      - all_5_migrations_deployed
+      - zero_lint_errors
+      - aria_review_approved
+    owner: aria
+    scheduled: 2026-04-04T17:00:00Z
+    status: PENDING
+
+  wave_2_gate:
+    name: "Backend & UI Integration Gate"
+    dependencies:
+      - squad_backend_4_stories_complete
+      - integration_tests_passing
+      - 90_percent_coverage_verified
+    owner: uma
+    scheduled: 2026-04-18T17:00:00Z
+    status: PENDING
+
+  wave_3_gate:
+    name: "Final Delivery & Documentation Gate"
+    dependencies:
+      - all_14_stories_complete
+      - e2e_tests_passing
+      - zero_critical_issues
+      - documentation_complete
+    owner: dex
+    scheduled: 2026-04-25T17:00:00Z
+    status: PENDING
+
+# Checkpoint Schedule (Every 3 days during execution)
+checkpoints:
+  - date: 2026-03-31
+    wave: 1
+    check: "Stories 11.1-11.3 progress check"
+  - date: 2026-04-03
+    wave: 1
+    check: "WAVE 1 completion verification"
+  - date: 2026-04-07
+    wave: 2
+    check: "Stories 11.6-11.7 progress check"
+  - date: 2026-04-11
+    wave: 2
+    check: "Stories 11.8-11.9 progress check"
+  - date: 2026-04-15
+    wave: 2
+    check: "WAVE 2 completion verification"
+  - date: 2026-04-19
+    wave: 3
+    check: "Stories 11.10-11.12 progress check"
+  - date: 2026-04-23
+    wave: 3
+    check: "Stories 11.13-11.14 final checks"
+  - date: 2026-04-25
+    wave: 3
+    check: "FINAL: v0.2.4 delivery readiness"
+
+# Rollback Plan (If Issues Detected)
+rollback_strategy:
+  mechanism: "All migrations are reversible via Supabase migration down"
+  contact_escalation: "@aiox-master if gates fail"
+  maximum_rework_cycles: 2
+  if_blocked: "Escalate to @pm *correct-course"
+
+---
+created_by: Morgan (@pm)
+created_date: 2026-03-28T09:00:00Z
+framework_version: AIOX_10_10_STANDARD
+compliance_audited: true

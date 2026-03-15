@@ -111,11 +111,14 @@ export function useSearchHistory() {
   /**
    * Remove specific search from history
    */
-  const removeSearch = useCallback((id: string) => {
-    const updated = history.filter((item) => item.id !== id);
-    setHistory(updated);
-    saveHistory(updated);
-  }, [history]);
+  const removeSearch = useCallback(
+    (id: string) => {
+      const updated = history.filter((item) => item.id !== id);
+      setHistory(updated);
+      saveHistory(updated);
+    },
+    [history],
+  );
 
   /**
    * Clear all search history
@@ -137,9 +140,12 @@ export function useSearchHistory() {
   /**
    * Get recent searches (default: last 5)
    */
-  const getRecentSearches = useCallback((limit: number = 5) => {
-    return history.slice(0, limit);
-  }, [history]);
+  const getRecentSearches = useCallback(
+    (limit: number = 5) => {
+      return history.slice(0, limit);
+    },
+    [history],
+  );
 
   return {
     history,

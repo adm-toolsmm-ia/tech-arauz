@@ -25,10 +25,9 @@ describe('Search Components - Accessibility (WCAG AA)', () => {
   it('should have no accessibility violations - GlobalSearchMobileOptimized', async () => {
     const onSearch = vi.fn();
 
-    const { container } = render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    const { container } = render(<GlobalSearchMobileOptimized onSearch={onSearch} />, {
+      wrapper: Wrapper,
+    });
 
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -37,10 +36,7 @@ describe('Search Components - Accessibility (WCAG AA)', () => {
   it('should have proper ARIA labels on input', () => {
     const onSearch = vi.fn();
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -52,10 +48,7 @@ describe('Search Components - Accessibility (WCAG AA)', () => {
   it('should have proper ARIA states for dropdown', () => {
     const onSearch = vi.fn();
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -66,10 +59,9 @@ describe('Search Components - Accessibility (WCAG AA)', () => {
   it('should have accessible clear button', () => {
     const onSearch = vi.fn();
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} placeholder="Search..." />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} placeholder="Search..." />, {
+      wrapper: Wrapper,
+    });
 
     const input = screen.getByTestId('global-search-input-mobile') as HTMLInputElement;
 
@@ -87,10 +79,9 @@ describe('Search Components - Accessibility (WCAG AA)', () => {
   it('should have color contrast compliant design', () => {
     const onSearch = vi.fn();
 
-    const { container } = render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    const { container } = render(<GlobalSearchMobileOptimized onSearch={onSearch} />, {
+      wrapper: Wrapper,
+    });
 
     // Check for muted-foreground class (should be WCAG AA compliant)
     const elements = container.querySelectorAll('.text-muted-foreground');
@@ -100,10 +91,7 @@ describe('Search Components - Accessibility (WCAG AA)', () => {
   it('should support keyboard navigation on focus', () => {
     const onSearch = vi.fn();
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -118,10 +106,7 @@ describe('Search Components - Accessibility (WCAG AA)', () => {
   it('should have descriptive help text', () => {
     const onSearch = vi.fn();
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -160,10 +145,9 @@ describe('Search Components - Accessibility (WCAG AA)', () => {
   it('should be screen reader friendly', () => {
     const onSearch = vi.fn();
 
-    const { container } = render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    const { container } = render(<GlobalSearchMobileOptimized onSearch={onSearch} />, {
+      wrapper: Wrapper,
+    });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -178,10 +162,9 @@ describe('Search Components - Accessibility (WCAG AA)', () => {
   it('should have proper focus indicators', () => {
     const onSearch = vi.fn();
 
-    const { container } = render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    const { container } = render(<GlobalSearchMobileOptimized onSearch={onSearch} />, {
+      wrapper: Wrapper,
+    });
 
     const input = screen.getByTestId('global-search-input-mobile');
 

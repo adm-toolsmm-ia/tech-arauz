@@ -24,8 +24,8 @@ export function AgentTypeListItem({
     <div
       role="button"
       tabIndex={0}
-      className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50 ${
-        isSelected ? 'ring-2 ring-primary' : ''
+      className={`hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors ${
+        isSelected ? 'ring-primary ring-2' : ''
       }`}
       onClick={() => onSelect(type)}
       onKeyDown={(e) => {

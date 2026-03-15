@@ -61,9 +61,9 @@ export function ChatbotContent() {
   return (
     <div className="flex h-full gap-6 p-6">
       {/* Sidebar: Agent Selector & History */}
-      <aside className="w-64 flex flex-col gap-4">
-        <Card className="p-4 flex-1 flex flex-col gap-4 overflow-auto">
-          <div className="font-semibold text-sm">Select Agent</div>
+      <aside className="flex w-64 flex-col gap-4">
+        <Card className="flex flex-1 flex-col gap-4 overflow-auto p-4">
+          <div className="text-sm font-semibold">Select Agent</div>
           <AgentSelector
             selectedAgent={selectedAgent}
             onAgentSelect={handleAgentChange}
@@ -71,25 +71,23 @@ export function ChatbotContent() {
           />
 
           {/* TODO: Chat history sidebar in Phase 2 */}
-          <div className="text-xs text-muted-foreground">
-            Chat history coming in Phase 2
-          </div>
+          <div className="text-xs text-muted-foreground">Chat history coming in Phase 2</div>
         </Card>
       </aside>
 
       {/* Main Chat Area */}
-      <main className="flex-1 flex flex-col gap-4">
+      <main className="flex flex-1 flex-col gap-4">
         {error && (
-          <div className="p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive text-sm">
+          <div className="bg-destructive/10 rounded-lg border border-destructive p-4 text-sm text-destructive">
             <p>{error}</p>
-            <p className="text-xs mt-2">Try refreshing the page or selecting a different agent.</p>
+            <p className="mt-2 text-xs">Try refreshing the page or selecting a different agent.</p>
           </div>
         )}
 
         {selectedAgent ? (
-          <Card className="flex-1 flex flex-col overflow-hidden">
-            <div className="p-4 border-b bg-muted/50">
-              <h2 className="font-semibold text-lg">{selectedAgent.name}</h2>
+          <Card className="flex flex-1 flex-col overflow-hidden">
+            <div className="bg-muted/50 border-b p-4">
+              <h2 className="text-lg font-semibold">{selectedAgent.name}</h2>
               {selectedAgent.description && (
                 <p className="text-sm text-muted-foreground">{selectedAgent.description}</p>
               )}
@@ -104,9 +102,9 @@ export function ChatbotContent() {
             />
           </Card>
         ) : (
-          <Card className="flex-1 flex items-center justify-center">
+          <Card className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <p className="text-muted-foreground mb-4">Select an agent to begin</p>
+              <p className="mb-4 text-muted-foreground">Select an agent to begin</p>
               <p className="text-xs text-muted-foreground">
                 Chatbot agents appear in the left sidebar
               </p>

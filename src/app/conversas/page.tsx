@@ -54,12 +54,7 @@ export default async function ConversasPage() {
     if (sessionsError) {
       console.error('Error fetching initial sessions:', sessionsError);
       // Fallback to empty sessions if query fails
-      return (
-        <ConversasContent
-          initialSessions={[]}
-          initialTotal={0}
-        />
-      );
+      return <ConversasContent initialSessions={[]} initialTotal={0} />;
     }
 
     const sessionsData = {
@@ -89,11 +84,6 @@ export default async function ConversasPage() {
   } catch (error) {
     console.error('Fatal error in ConversasPage:', error);
     // Render empty state as fallback
-    return (
-      <ConversasContent
-        initialSessions={[]}
-        initialTotal={0}
-      />
-    );
+    return <ConversasContent initialSessions={[]} initialTotal={0} />;
   }
 }

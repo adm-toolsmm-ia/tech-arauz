@@ -147,7 +147,7 @@ export function ProjectsKanbanView<T extends KanbanProject>({
     return (
       <div className="grid auto-cols-[280px] grid-flow-col gap-4 overflow-x-auto pb-4">
         {Array.from({ length: 3 }).map((_, col) => (
-          <div key={col} className="space-y-3 rounded-lg border bg-muted/20 p-3">
+          <div key={col} className="bg-muted/20 space-y-3 rounded-lg border p-3">
             <div className="h-6 w-24 animate-pulse rounded bg-muted" />
             {Array.from({ length: 2 }).map((_, row) => (
               <SkeletonKanbanCard key={row} />

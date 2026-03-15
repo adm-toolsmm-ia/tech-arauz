@@ -3,7 +3,12 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import type { User } from '@supabase/supabase-js';
-import { parseCSV, validateCSVData, parseJSON, getRequiredFields } from '@/lib/organization/import-export';
+import {
+  parseCSV,
+  validateCSVData,
+  parseJSON,
+  getRequiredFields,
+} from '@/lib/organization/import-export';
 
 export interface OrgActionResult<T = unknown> {
   success: boolean;
@@ -68,7 +73,7 @@ function getTableName(entityType: string): string {
 export async function bulkUpdateEntitiesAction(
   entityType: string,
   entityIds: string[],
-  updates: Record<string, unknown>
+  updates: Record<string, unknown>,
 ): Promise<OrgActionResult<{ updated: number; failed: number; errors: Error[] }>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -136,7 +141,7 @@ export async function bulkUpdateEntitiesAction(
  */
 export async function bulkDeleteEntitiesAction(
   entityType: string,
-  entityIds: string[]
+  entityIds: string[],
 ): Promise<OrgActionResult<{ deleted: number; errors: Error[] }>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -192,7 +197,7 @@ export async function bulkDeleteEntitiesAction(
  * Export organization entities as CSV
  */
 export async function exportOrganizationAsCSVAction(
-  entityType: string
+  entityType: string,
 ): Promise<OrgActionResult<string>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -228,7 +233,7 @@ export async function exportOrganizationAsCSVAction(
       Object.entries(entity)
         .filter(([key]) => !['id', 'tenant_id', 'created_at', 'updated_at'].includes(key))
         .map(([, value]) => escapeCSVField(value))
-        .join(',')
+        .join(','),
     );
 
     const csv = [headers, ...rows].join('\n');
@@ -250,7 +255,7 @@ export async function exportOrganizationAsCSVAction(
 export async function importOrganizationFromCSVAction(
   entityType: string,
   csvContent: string,
-  mode: 'merge' | 'replace' = 'merge'
+  mode: 'merge' | 'replace' = 'merge',
 ): Promise<
   OrgActionResult<{
     imported: number;
@@ -355,7 +360,7 @@ export async function importOrganizationFromCSVAction(
  */
 export async function importOrganizationFromJSONAction(
   entityType: string,
-  jsonContent: string
+  jsonContent: string,
 ): Promise<
   OrgActionResult<{
     imported: number;

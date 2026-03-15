@@ -86,7 +86,7 @@ export function EmpresaListView({ vinculos, selectedId, onItemClick }: EmpresaLi
                               onItemClick(v);
                             }
                           }}
-                          className={`flex cursor-pointer items-center gap-3 p-4 transition-colors hover:bg-muted/50 ${
+                          className={`hover:bg-muted/50 flex cursor-pointer items-center gap-3 p-4 transition-colors ${
                             isSelected ? 'bg-muted/70' : ''
                           }`}
                         >

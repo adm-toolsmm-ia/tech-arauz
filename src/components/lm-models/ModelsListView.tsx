@@ -113,7 +113,7 @@ export function ModelsListView({
           setSortDirection('asc');
         }
       }}
-      className="flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-primary"
+      className="hover:text-primary flex items-center gap-1.5 text-xs font-semibold transition-colors"
     >
       {label}
       {sortBy === column &&
@@ -145,7 +145,7 @@ export function ModelsListView({
     <div className="w-full space-y-4">
       {/* Acoes em massa */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3">
+        <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-3">
           <span className="text-xs font-medium text-muted-foreground">
             {selectedIds.size} modelo{selectedIds.size !== 1 ? 's' : ''} selecionado
             {selectedIds.size !== 1 ? 's' : ''}
@@ -186,7 +186,7 @@ export function ModelsListView({
       <div className="hidden overflow-hidden rounded-lg border bg-card md:block">
         <div className="max-h-[600px] overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="sticky top-0 border-b bg-muted/50">
+            <thead className="bg-muted/50 sticky top-0 border-b">
               <tr>
                 <th className="w-8 px-3 py-2 text-left">
                   <Checkbox
@@ -223,7 +223,7 @@ export function ModelsListView({
                   key={model.id}
                   role="button"
                   tabIndex={0}
-                  className="cursor-pointer transition-colors hover:bg-muted/50"
+                  className="hover:bg-muted/50 cursor-pointer transition-colors"
                   onClick={() => onSelectModel?.(model.id)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -238,7 +238,7 @@ export function ModelsListView({
                       onCheckedChange={() => toggleSelect(model.id)}
                     />
                   </td>
-                  <td className="cursor-pointer truncate px-3 py-2 font-medium text-foreground/90 transition-colors hover:text-primary">
+                  <td className="text-foreground/90 hover:text-primary cursor-pointer truncate px-3 py-2 font-medium transition-colors">
                     <div>
                       <p className="font-semibold">{model.name}</p>
                       <p className="font-mono text-[10px] text-muted-foreground">
@@ -246,7 +246,7 @@ export function ModelsListView({
                       </p>
                     </div>
                   </td>
-                  <td className="px-3 py-2 text-foreground/80">
+                  <td className="text-foreground/80 px-3 py-2">
                     <div className="flex items-center gap-2">
                       <span>{getProviderEmoji(model.provider_id, providers)}</span>
                       <span className="text-xs">
@@ -267,10 +267,10 @@ export function ModelsListView({
                       </Badge>
                     )}
                   </td>
-                  <td className="px-3 py-2 font-mono text-foreground/80">
+                  <td className="text-foreground/80 px-3 py-2 font-mono">
                     {formatTokens(model.context_window)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-foreground/80">
+                  <td className="text-foreground/80 px-3 py-2 font-mono">
                     {formatTokens(model.max_tokens)}
                   </td>
                   <td className="px-3 py-2">

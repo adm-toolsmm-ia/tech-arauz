@@ -59,11 +59,7 @@ export function BpmDocumentationPanel({
   const hasRisks = risks.length > 0;
   const hasImpacts = impacts.length > 0;
   const hasDocMeta =
-    doc?.horario_limite ||
-    doc?.regra ||
-    doc?.prazo ||
-    doc?.disponivel_a_partir ||
-    doc?.doc;
+    doc?.horario_limite || doc?.regra || doc?.prazo || doc?.disponivel_a_partir || doc?.doc;
 
   if (
     !hasInputs &&
@@ -84,16 +80,14 @@ export function BpmDocumentationPanel({
         <Badge variant="secondary" className="gap-1">
           <BookOpen className="size-3" />
           Fonte: {(doc as OrgDocumentation).source}
-          {(doc as OrgDocumentation).doc != null
-            ? ` (${(doc as OrgDocumentation).doc})`
-            : null}
+          {(doc as OrgDocumentation).doc != null ? ` (${(doc as OrgDocumentation).doc})` : null}
         </Badge>
       )}
 
       {hasDocMeta && doc ? (
         <section>
           <div className="mb-2 flex items-center gap-2 border-b pb-2">
-            <Clock className="size-4 text-primary" />
+            <Clock className="text-primary size-4" />
             <h4 className="text-sm font-semibold">Regras e prazos</h4>
           </div>
           <ul className="space-y-1 text-sm text-muted-foreground">
@@ -128,7 +122,7 @@ export function BpmDocumentationPanel({
       {hasActivityDocs && (
         <section>
           <div className="mb-2 flex items-center gap-2 border-b pb-2">
-            <FileText className="size-4 text-primary" />
+            <FileText className="text-primary size-4" />
             <h4 className="text-sm font-semibold">Documentação</h4>
           </div>
           <div className="space-y-3 text-sm">
@@ -148,7 +142,9 @@ export function BpmDocumentationPanel({
               return (
                 <div key={k}>
                   <p className="text-xs font-medium text-muted-foreground">{label}</p>
-                  <p className="mt-0.5 whitespace-pre-wrap">{String((doc as Record<string, unknown>)?.[k] ?? '')}</p>
+                  <p className="mt-0.5 whitespace-pre-wrap">
+                    {String((doc as Record<string, unknown>)?.[k] ?? '')}
+                  </p>
                 </div>
               );
             })}
@@ -159,7 +155,7 @@ export function BpmDocumentationPanel({
       {hasSteps && (
         <section>
           <div className="mb-2 flex items-center gap-2 border-b pb-2">
-            <ListOrdered className="size-4 text-primary" />
+            <ListOrdered className="text-primary size-4" />
             <h4 className="text-sm font-semibold">Passos</h4>
           </div>
           <ol className="list-inside list-decimal space-y-1 text-sm">
@@ -173,7 +169,7 @@ export function BpmDocumentationPanel({
       {(hasInputs || hasOutputs) && (
         <section>
           <div className="mb-2 flex items-center gap-2 border-b pb-2">
-            <FileText className="size-4 text-primary" />
+            <FileText className="text-primary size-4" />
             <h4 className="text-sm font-semibold">Inputs e outputs</h4>
           </div>
           <div className="grid gap-3 text-sm md:grid-cols-2">
@@ -196,7 +192,7 @@ export function BpmDocumentationPanel({
       {(hasRisks || hasImpacts) && (
         <section>
           <div className="mb-2 flex items-center gap-2 border-b pb-2">
-            <AlertTriangle className="size-4 text-primary" />
+            <AlertTriangle className="text-primary size-4" />
             <h4 className="text-sm font-semibold">Riscos e impactos</h4>
           </div>
           <div className="grid gap-3 text-sm md:grid-cols-2">

@@ -39,8 +39,8 @@ export function ProcessCockpit({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-            <GitBranch className="size-6 text-primary" />
+          <div className="bg-primary/10 flex size-12 items-center justify-center rounded-lg">
+            <GitBranch className="text-primary size-6" />
           </div>
           <div>
             <h3 className="font-semibold">{process.name}</h3>

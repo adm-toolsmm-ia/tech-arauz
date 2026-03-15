@@ -57,14 +57,15 @@ export default async function RecursosPage() {
     name: p.name,
   }));
 
-  const resourcesBySystemId = systemResources.reduce<
-    Record<string, OrgSystemResource[]>
-  >((acc, r) => {
-    const list = acc[r.system_id] ?? [];
-    list.push(r);
-    acc[r.system_id] = list;
-    return acc;
-  }, {});
+  const resourcesBySystemId = systemResources.reduce<Record<string, OrgSystemResource[]>>(
+    (acc, r) => {
+      const list = acc[r.system_id] ?? [];
+      list.push(r);
+      acc[r.system_id] = list;
+      return acc;
+    },
+    {},
+  );
 
   const processMap = processes.reduce<Record<string, string>>((acc, p) => {
     acc[p.id] = p.name;

@@ -3,7 +3,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
 import { getAllRoles, getRoleLabel } from '@/lib/organization/role-definitions';
@@ -39,8 +45,8 @@ export function ResponsibleRolesInput({
   const allRoles = getAllRoles();
   const selectedRoles = new Set(value);
   const filteredRoles = allRoles.filter(
-    role => !selectedRoles.has(role.value) &&
-             role.label.toLowerCase().includes(inputValue.toLowerCase())
+    (role) =>
+      !selectedRoles.has(role.value) && role.label.toLowerCase().includes(inputValue.toLowerCase()),
   );
 
   const handleSelect = (roleValue: string) => {
@@ -54,7 +60,7 @@ export function ResponsibleRolesInput({
   };
 
   const handleRemove = (roleValue: string) => {
-    onChange(value.filter(r => r !== roleValue));
+    onChange(value.filter((r) => r !== roleValue));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -66,14 +72,12 @@ export function ResponsibleRolesInput({
       case 'ArrowDown':
         e.preventDefault();
         setOpen(true);
-        setHighlightedIndex(prev =>
-          prev < filteredRoles.length - 1 ? prev + 1 : prev
-        );
+        setHighlightedIndex((prev) => (prev < filteredRoles.length - 1 ? prev + 1 : prev));
         break;
 
       case 'ArrowUp':
         e.preventDefault();
-        setHighlightedIndex(prev => (prev > 0 ? prev - 1 : 0));
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
         break;
 
       case 'Enter':
@@ -114,12 +118,12 @@ export function ResponsibleRolesInput({
   return (
     <div ref={containerRef} className="space-y-2">
       {/* Tag Display */}
-      <div className="flex flex-wrap gap-2 p-2 border rounded-md bg-background min-h-10">
-        {value.map(roleValue => (
+      <div className="flex min-h-10 flex-wrap gap-2 rounded-md border bg-background p-2">
+        {value.map((roleValue) => (
           <Badge
             key={roleValue}
             variant="secondary"
-            className="gap-1 flex items-center"
+            className="flex items-center gap-1"
             role="option"
             aria-selected="true"
           >
@@ -145,7 +149,7 @@ export function ResponsibleRolesInput({
           ref={inputRef}
           placeholder="Pesquisar e adicionar funções..."
           value={inputValue}
-          onChange={e => {
+          onChange={(e) => {
             setInputValue(e.target.value);
             setHighlightedIndex(0);
             setOpen(true);
@@ -166,7 +170,7 @@ export function ResponsibleRolesInput({
         {open && filteredRoles.length > 0 && (
           <div
             id="roles-listbox"
-            className="absolute top-full left-0 right-0 z-50 mt-1 border rounded-md bg-popover shadow-md max-h-60 overflow-y-auto"
+            className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-md border bg-popover shadow-md"
             role="listbox"
           >
             <Command>
@@ -178,17 +182,13 @@ export function ResponsibleRolesInput({
                       key={role.value}
                       value={role.value}
                       onSelect={() => handleSelect(role.value)}
-                      className={`cursor-pointer ${
-                        index === highlightedIndex ? 'bg-accent' : ''
-                      }`}
+                      className={`cursor-pointer ${index === highlightedIndex ? 'bg-accent' : ''}`}
                       role="option"
                       aria-selected={index === highlightedIndex}
                     >
-                      <div className="flex flex-col gap-0.5 flex-1">
+                      <div className="flex flex-1 flex-col gap-0.5">
                         <span className="font-medium">{role.label}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {role.description}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{role.description}</span>
                       </div>
                     </CommandItem>
                   ))}

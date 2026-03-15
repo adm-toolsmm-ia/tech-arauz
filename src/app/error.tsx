@@ -18,9 +18,9 @@ export default function Error({
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-6">
-      <Card className="w-full max-w-lg border-destructive/20">
+      <Card className="border-destructive/20 w-full max-w-lg">
         <CardContent className="flex flex-col items-center gap-6 pt-8 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+          <div className="bg-destructive/10 flex h-16 w-16 items-center justify-center rounded-full">
             <AlertTriangle className="h-8 w-8 text-destructive" />
           </div>
 

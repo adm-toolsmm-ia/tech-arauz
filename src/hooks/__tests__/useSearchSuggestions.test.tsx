@@ -109,9 +109,7 @@ describe('useSearchSuggestions', () => {
   });
 
   it('should handle API errors gracefully', async () => {
-    global.fetch = vi.fn(() =>
-      Promise.reject(new Error('Network error')),
-    ) as any;
+    global.fetch = vi.fn(() => Promise.reject(new Error('Network error'))) as any;
 
     const { result } = renderHook(() => useSearchSuggestions('test'), {
       wrapper: createWrapper(),

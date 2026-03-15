@@ -954,7 +954,7 @@ export async function runBootstrapAction(
  */
 export async function updateActivityResponsibleRolesAction(
   activityId: string,
-  roles: string[]
+  roles: string[],
 ): Promise<OrgActionResult<OrgActivity>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -970,7 +970,8 @@ export async function updateActivityResponsibleRolesAction(
     .select()
     .single();
 
-  if (error) return { success: false, message: `Erro ao atualizar funções responsáveis: ${error.message}` };
+  if (error)
+    return { success: false, message: `Erro ao atualizar funções responsáveis: ${error.message}` };
 
   // TODO: Audit logging - logAuditEvent()
   revalidatePath('/organizacao');
@@ -983,7 +984,7 @@ export async function updateActivityResponsibleRolesAction(
  */
 export async function addActivityResponsibleRoleAction(
   activityId: string,
-  role: string
+  role: string,
 ): Promise<OrgActionResult<OrgActivity>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1013,7 +1014,7 @@ export async function addActivityResponsibleRoleAction(
  */
 export async function removeActivityResponsibleRoleAction(
   activityId: string,
-  role: string
+  role: string,
 ): Promise<OrgActionResult<OrgActivity>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1039,7 +1040,7 @@ export async function removeActivityResponsibleRoleAction(
  * Story 11.7: Implement Server Actions for Responsible Roles
  */
 export async function getActivityResponsibleRolesAction(
-  activityId: string
+  activityId: string,
 ): Promise<OrgActionResult<string[]>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1052,7 +1053,11 @@ export async function getActivityResponsibleRolesAction(
     .single();
 
   if (error) return { success: false, message: 'Atividade não encontrada' };
-  return { success: true, message: 'Funções recuperadas com sucesso', data: data?.responsible_roles || [] };
+  return {
+    success: true,
+    message: 'Funções recuperadas com sucesso',
+    data: data?.responsible_roles || [],
+  };
 }
 
 // --- EPIC 11: Story 11.8 - Activity-System Actions ---
@@ -1064,7 +1069,7 @@ export async function getActivityResponsibleRolesAction(
 export async function addActivitySystemAction(
   activityId: string,
   systemId: string,
-  usageContext?: string
+  usageContext?: string,
 ): Promise<OrgActionResult> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1089,7 +1094,7 @@ export async function addActivitySystemAction(
  */
 export async function removeActivitySystemAction(
   activityId: string,
-  systemId: string
+  systemId: string,
 ): Promise<OrgActionResult> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1113,7 +1118,7 @@ export async function removeActivitySystemAction(
  * Story 11.8: Activity-System Relationship UI
  */
 export async function getActivitySystemsAction(
-  activityId: string
+  activityId: string,
 ): Promise<OrgActionResult<any[]>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1125,7 +1130,7 @@ export async function getActivitySystemsAction(
       system_id,
       usage_context,
       org_systems:system_id (id, name)
-    `
+    `,
     )
     .eq('activity_id', activityId)
     .eq('tenant_id', ctx.tenantId);
@@ -1140,9 +1145,7 @@ export async function getActivitySystemsAction(
  * Get SLA definitions for a process
  * Story 11.9: Process Metrics & SLAs Display
  */
-export async function getProcessSLAsAction(
-  processId: string
-): Promise<OrgActionResult<any[]>> {
+export async function getProcessSLAsAction(processId: string): Promise<OrgActionResult<any[]>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
 
@@ -1163,7 +1166,7 @@ export async function getProcessSLAsAction(
 export async function getProcessMetricsAction(
   processId: string,
   periodStart: string,
-  periodEnd: string
+  periodEnd: string,
 ): Promise<OrgActionResult<any[]>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1193,7 +1196,7 @@ export async function createProcessSlaAction(
   targetDurationDays: number,
   warningThresholdPct: number,
   criticalThresholdPct: number,
-  description?: string
+  description?: string,
 ): Promise<OrgActionResult<any>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1245,7 +1248,7 @@ export async function updateProcessSlaAction(
     warningThresholdPct?: number;
     criticalThresholdPct?: number;
     description?: string;
-  }
+  },
 ): Promise<OrgActionResult<any>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1254,19 +1257,28 @@ export async function updateProcessSlaAction(
   if (updates.targetDurationDays !== undefined && updates.targetDurationDays <= 0) {
     return { success: false, message: 'Duração alvo deve ser maior que 0' };
   }
-  if (updates.warningThresholdPct !== undefined && (updates.warningThresholdPct < 0 || updates.warningThresholdPct > 100)) {
+  if (
+    updates.warningThresholdPct !== undefined &&
+    (updates.warningThresholdPct < 0 || updates.warningThresholdPct > 100)
+  ) {
     return { success: false, message: 'Threshold de aviso deve estar entre 0 e 100' };
   }
-  if (updates.criticalThresholdPct !== undefined && (updates.criticalThresholdPct < 0 || updates.criticalThresholdPct > 100)) {
+  if (
+    updates.criticalThresholdPct !== undefined &&
+    (updates.criticalThresholdPct < 0 || updates.criticalThresholdPct > 100)
+  ) {
     return { success: false, message: 'Threshold crítico deve estar entre 0 e 100' };
   }
 
   // Build update payload (convert camelCase to snake_case)
   const payload: Record<string, any> = {};
   if (updates.metricName !== undefined) payload.metric_name = updates.metricName;
-  if (updates.targetDurationDays !== undefined) payload.target_duration_days = updates.targetDurationDays;
-  if (updates.warningThresholdPct !== undefined) payload.warning_threshold_pct = updates.warningThresholdPct;
-  if (updates.criticalThresholdPct !== undefined) payload.critical_threshold_pct = updates.criticalThresholdPct;
+  if (updates.targetDurationDays !== undefined)
+    payload.target_duration_days = updates.targetDurationDays;
+  if (updates.warningThresholdPct !== undefined)
+    payload.warning_threshold_pct = updates.warningThresholdPct;
+  if (updates.criticalThresholdPct !== undefined)
+    payload.critical_threshold_pct = updates.criticalThresholdPct;
   if (updates.description !== undefined) payload.description = updates.description;
 
   const { data: updated, error } = await ctx.supabase
@@ -1304,7 +1316,10 @@ export async function deleteProcessSlaAction(slaId: string): Promise<OrgActionRe
 
   if (error) return { success: false, message: `Erro ao excluir SLA: ${error.message}` };
   revalidatePath('/organizacao/processos');
-  return { success: true, message: `SLA "${existing?.metric_name ?? 'N/A'}" excluído com sucesso!` };
+  return {
+    success: true,
+    message: `SLA "${existing?.metric_name ?? 'N/A'}" excluído com sucesso!`,
+  };
 }
 
 // --- EPIC 11: Story 11.10 - Advanced Search & Filter ---
@@ -1323,7 +1338,7 @@ export async function deleteProcessSlaAction(slaId: string): Promise<OrgActionRe
  */
 export async function searchOrganizationAction(
   query: string,
-  filters?: SearchFilters
+  filters?: SearchFilters,
 ): Promise<OrgActionResult<SearchResult[]>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) return { success: false, message: ctx.error };
@@ -1349,7 +1364,7 @@ export async function searchOrganizationAction(
           area.name,
           area.description,
           area.objective,
-          area.documentation?.overview
+          area.documentation?.overview,
         );
         if (score > 0) {
           results.push({
@@ -1376,13 +1391,11 @@ export async function searchOrganizationAction(
           n.name,
           n.description,
           n.objective,
-          n.documentation?.overview
+          n.documentation?.overview,
         );
         if (score > 0) {
           const area = areas?.find((a) => a.id === n.area_id);
-          const breadcrumb = area
-            ? `${area.name} / ${n.name}`
-            : n.name;
+          const breadcrumb = area ? `${area.name} / ${n.name}` : n.name;
 
           results.push({
             id: n.id,
@@ -1408,7 +1421,7 @@ export async function searchOrganizationAction(
           p.name,
           p.description,
           p.objective,
-          p.documentation?.overview
+          p.documentation?.overview,
         );
         if (score > 0) {
           let breadcrumb = p.name;
@@ -1447,13 +1460,11 @@ export async function searchOrganizationAction(
           r.name,
           r.description,
           r.objective,
-          r.documentation?.overview
+          r.documentation?.overview,
         );
         if (score > 0) {
           const process = processes?.find((p) => p.id === r.process_id);
-          const breadcrumb = process
-            ? `${process.name} / ${r.name}`
-            : r.name;
+          const breadcrumb = process ? `${process.name} / ${r.name}` : r.name;
 
           results.push({
             id: r.id,
@@ -1479,13 +1490,11 @@ export async function searchOrganizationAction(
           a.name,
           a.description,
           a.objective,
-          a.documentation?.overview
+          a.documentation?.overview,
         );
         if (score > 0) {
           const routine = routines?.find((r) => r.id === a.routine_id);
-          const breadcrumb = routine
-            ? `${routine.name} / ${a.name}`
-            : a.name;
+          const breadcrumb = routine ? `${routine.name} / ${a.name}` : a.name;
 
           results.push({
             id: a.id,
@@ -1571,12 +1580,8 @@ export async function searchOrganizationAction(
       for (const d of documents) {
         const score = rankSearchMatch(q, d.name, d.description);
         if (score > 0) {
-          const process = processes?.find(
-            (p) => p.id === d.associated_process_id
-          );
-          const breadcrumb = process
-            ? `${process.name} / ${d.name}`
-            : d.name;
+          const process = processes?.find((p) => p.id === d.associated_process_id);
+          const breadcrumb = process ? `${process.name} / ${d.name}` : d.name;
 
           results.push({
             id: d.id,

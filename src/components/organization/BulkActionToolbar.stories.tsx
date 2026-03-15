@@ -34,7 +34,9 @@ export const Hidden: Story = {
   },
   render: () => (
     <div>
-      <p className="mb-4 text-sm text-muted-foreground">Toolbar é hidden quando selectedCount = 0</p>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Toolbar é hidden quando selectedCount = 0
+      </p>
       <div className="h-8" />
     </div>
   ),

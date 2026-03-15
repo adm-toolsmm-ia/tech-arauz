@@ -184,9 +184,7 @@ function parseJsonArrayOfObjects(val: unknown): OrgInputOutput[] {
     }
     return [];
   })();
-  return arr.map((v) =>
-    typeof v === 'string' ? { name: v } : (v as OrgInputOutput),
-  );
+  return arr.map((v) => (typeof v === 'string' ? { name: v } : (v as OrgInputOutput)));
 }
 
 function parseJsonObject(val: unknown): Record<string, unknown> {
@@ -435,9 +433,7 @@ function formatExecutionTime(minutes: number | null): string | null {
  * const context = toAIContext(process);
  * // { entityType: "process", entityId: "123", title: "Approval", ... }
  */
-export function toAIContext(
-  entity: OrgProcess | OrgRoutine | OrgActivity
-): OrgAIContext {
+export function toAIContext(entity: OrgProcess | OrgRoutine | OrgActivity): OrgAIContext {
   const documentation = entity.documentation || {};
   const inputs = (entity as OrgProcess)?.inputs || [];
   const outputs = (entity as OrgProcess)?.outputs || [];
@@ -445,16 +441,20 @@ export function toAIContext(
   const impacts = (entity as OrgActivity)?.impacts || [];
 
   // Discriminated union: detect entity type by presence of distinctive fields
-  const entityType = 'average_execution_time' in entity
-    ? 'activity'
-    : 'activities_count' in entity
-      ? 'routine'
-      : 'process';
+  const entityType =
+    'average_execution_time' in entity
+      ? 'activity'
+      : 'activities_count' in entity
+        ? 'routine'
+        : 'process';
 
   // Handle roles - OrgActivity uses required_role (singular), others use responsible_roles (array)
-  const roles = 'average_execution_time' in entity
-    ? ((entity as OrgActivity)?.required_role ? [(entity as OrgActivity).required_role!] : [])
-    : (entity as OrgProcess | OrgRoutine)?.responsible_roles || [];
+  const roles =
+    'average_execution_time' in entity
+      ? (entity as OrgActivity)?.required_role
+        ? [(entity as OrgActivity).required_role!]
+        : []
+      : (entity as OrgProcess | OrgRoutine)?.responsible_roles || [];
 
   return {
     entityType: entityType as 'process' | 'routine' | 'activity',
@@ -486,10 +486,11 @@ export function toAIContext(
       name: typeof im === 'string' ? im : (im as any)?.name || '',
       description: (typeof im === 'object' ? (im as any)?.description : undefined) || undefined,
     })),
-    avgExecutionTime: 'average_execution_time' in entity
-      ? formatExecutionTime(entity.average_execution_time)
-      : null,
-    ...(('complexity' in entity) && { complexity: entity.complexity }),
-    ...(('priority' in entity) && { priority: entity.priority }),
+    avgExecutionTime:
+      'average_execution_time' in entity
+        ? formatExecutionTime(entity.average_execution_time)
+        : null,
+    ...('complexity' in entity && { complexity: entity.complexity }),
+    ...('priority' in entity && { priority: entity.priority }),
   };
 }

@@ -33,12 +33,8 @@ const mockActivity: OrgActivity = {
   required_role: 'admin',
   average_execution_time: 30,
   responsible_roles: ['admin', 'reviewer'],
-  inputs: [
-    { name: 'Raw Documents', description: 'Incoming files', required: true },
-  ],
-  outputs: [
-    { name: 'Processed Data', description: 'Categorized files', required: true },
-  ],
+  inputs: [{ name: 'Raw Documents', description: 'Incoming files', required: true }],
+  outputs: [{ name: 'Processed Data', description: 'Categorized files', required: true }],
   risks: ['Lost documents', 'Incorrect categorization'],
   impacts: ['Process delay', 'Manual rework'],
   documentation: { procedures: 'Step 1: Review...' },

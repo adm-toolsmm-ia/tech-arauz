@@ -108,7 +108,7 @@ export function ProcessSlaModal({
           parseInt(targetDuration, 10),
           parseInt(warningThreshold, 10),
           parseInt(criticalThreshold, 10),
-          description || undefined
+          description || undefined,
         );
 
         if (result.success) {

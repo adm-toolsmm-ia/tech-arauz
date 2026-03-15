@@ -62,11 +62,7 @@ describe('Organization Search - Ranking Algorithm', () => {
     });
 
     it('should rank description match as 50', () => {
-      const score = rankSearchMatch(
-        'Gestão',
-        'Recuperação',
-        'Gestão de créditos'
-      );
+      const score = rankSearchMatch('Gestão', 'Recuperação', 'Gestão de créditos');
       expect(score).toBe(50);
     });
 
@@ -75,18 +71,13 @@ describe('Organization Search - Ranking Algorithm', () => {
         'Créditos',
         'Recuperação',
         'Descrição qualquer',
-        'Recuperar créditos'
+        'Recuperar créditos',
       );
       expect(score).toBe(40);
     });
 
     it('should return 0 for no match', () => {
-      const score = rankSearchMatch(
-        'Inexistente',
-        'Recuperação',
-        'Descrição',
-        'Objetivo'
-      );
+      const score = rankSearchMatch('Inexistente', 'Recuperação', 'Descrição', 'Objetivo');
       expect(score).toBe(0);
     });
   });
@@ -224,9 +215,7 @@ describe('Organization Search - Ranking Algorithm', () => {
       ];
 
       const facets = buildFacets(extendedResults);
-      expect(facets.areas[0].count).toBeGreaterThanOrEqual(
-        facets.areas[1].count
-      );
+      expect(facets.areas[0].count).toBeGreaterThanOrEqual(facets.areas[1].count);
     });
   });
 

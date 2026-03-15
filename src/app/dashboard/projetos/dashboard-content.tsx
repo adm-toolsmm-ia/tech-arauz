@@ -402,7 +402,7 @@ export function DashboardContent({
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <BarChart3 className="size-5 text-primary" />
+                    <BarChart3 className="text-primary size-5" />
                     <div>
                       <CardTitle className="text-base">{activeFilter.label}</CardTitle>
                       <p className="mt-0.5 text-xs text-muted-foreground">
@@ -447,7 +447,7 @@ export function DashboardContent({
                               handleProjectClick(project);
                             }
                           }}
-                          className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="hover:bg-muted/50 group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <div className="min-w-0 flex-1 space-y-1">
                             <div className="flex items-center gap-2">
@@ -552,7 +552,7 @@ export function DashboardContent({
                             handleProjectClick(project);
                           }
                         }}
-                        className="group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="hover:bg-muted/50 group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <div className="min-w-0 flex-1 space-y-1">
                           <div className="flex items-center gap-2">

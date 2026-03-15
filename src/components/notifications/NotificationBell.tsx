@@ -49,7 +49,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className })
         className={cn(
           'relative inline-flex items-center justify-center rounded-md p-2',
           'transition-colors hover:bg-accent',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+          'focus-visible:ring-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           'text-foreground dark:text-sidebar-foreground',
         )}
         aria-label={`Notificações (${unreadCount} não lidas)`}

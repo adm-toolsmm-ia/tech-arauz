@@ -278,7 +278,7 @@ export function LmProviderCockpit({
                     href={provider.docs_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                    className="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
                   >
                     {provider.docs_url}
                     <ExternalLink className="size-3" />
@@ -336,7 +336,7 @@ export function LmProviderCockpit({
                           href={model.docs_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                          className="text-primary mt-1 inline-flex items-center gap-1 text-xs hover:underline"
                         >
                           Documentação
                           <ExternalLink className="size-3" />

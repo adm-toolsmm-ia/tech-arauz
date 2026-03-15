@@ -84,4 +84,4 @@ export const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({ project, del
       />
     </div>
   );
-}
+};

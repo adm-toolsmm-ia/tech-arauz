@@ -9,6 +9,7 @@ Story 11.12: Organizational Setup Wizard
 Multi-step wizard component for initializing organization structure.
 
 **Features:**
+
 - 5-step form with progress tracking
 - Form validation at each step
 - Mobile responsive design
@@ -16,10 +17,12 @@ Multi-step wizard component for initializing organization structure.
 - WCAG AA accessibility compliant
 
 **Props:**
+
 - `onComplete?: (organizationId: string) => void` - Callback when wizard completes
 - `className?: string` - Custom CSS class
 
 **Usage:**
+
 ```tsx
 <OrgSetupWizard onComplete={(id) => redirect('/organizacao')} />
 ```
@@ -29,22 +32,22 @@ Multi-step wizard component for initializing organization structure.
 Visual progress indicator showing current step and completion status.
 
 **Features:**
+
 - Progress percentage display
 - Step labels
 - Visual completion indicators (checkmarks)
 - Mobile-friendly step indicators
 
 **Props:**
+
 - `steps: WizardStep[]` - Array of steps with completion status
 - `currentStep: number` - Current step number (1-indexed)
 - `className?: string` - Custom CSS class
 
 **Usage:**
+
 ```tsx
-<WizardProgressBar
-  steps={steps}
-  currentStep={3}
-/>
+<WizardProgressBar steps={steps} currentStep={3} />
 ```
 
 ### Step Components
@@ -54,6 +57,7 @@ Visual progress indicator showing current step and completion status.
 Organization basics form (Step 1).
 
 **Collects:**
+
 - Organization type (legal_office, consultancy, corporation, other)
 - Organization name
 - Industry
@@ -65,6 +69,7 @@ Organization basics form (Step 1).
 Template selection (Step 2).
 
 **Features:**
+
 - Radio button selection
 - Template descriptions
 - Process count display
@@ -74,6 +79,7 @@ Template selection (Step 2).
 Area and nucleus customization (Step 3).
 
 **Features:**
+
 - Add/remove areas
 - Add/remove nuclei per area
 - Edit area and nucleus names
@@ -84,6 +90,7 @@ Area and nucleus customization (Step 3).
 Responsible roles assignment (Step 4).
 
 **Features:**
+
 - Uses ResponsibleRolesInput component (Story 11.6)
 - Pre-configured role categories
 - Tag-based selection
@@ -93,6 +100,7 @@ Responsible roles assignment (Step 4).
 System integrations and final review (Step 5).
 
 **Features:**
+
 - Integration toggles
 - Configuration summary
 - Confirmation messaging
@@ -179,6 +187,7 @@ Target: ≥90% for all components
 Located in `*.stories.tsx` files
 
 **OrgSetupWizard stories:**
+
 - Default
 - DesktopView
 - TabletView
@@ -187,6 +196,7 @@ Located in `*.stories.tsx` files
 - AccessibilityCompliant
 
 **WizardProgressBar stories:**
+
 - Step1 through Step5
 - AllCompleted
 - DarkMode
@@ -234,7 +244,9 @@ Located in `*.stories.tsx` files
 All components support dark mode via CSS variables.
 
 ```css
-.dark .component { /* dark mode styles */ }
+.dark .component {
+  /* dark mode styles */
+}
 ```
 
 ## Performance

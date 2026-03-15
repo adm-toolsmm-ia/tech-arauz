@@ -102,8 +102,8 @@ export function SelectedDayPanel({
     return (
       <Card className="animate-in slide-in-from-top-2">
         <CardContent className="py-12 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/50">
-            <CalendarDays className="h-8 w-8 text-muted-foreground/40" />
+          <div className="bg-muted/50 mx-auto flex h-16 w-16 items-center justify-center rounded-full">
+            <CalendarDays className="text-muted-foreground/40 h-8 w-8" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-foreground">Nenhuma atividade</h3>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -114,7 +114,7 @@ export function SelectedDayPanel({
               month: 'long',
             })}
           </p>
-          <p className="mt-3 text-xs text-muted-foreground/70">
+          <p className="text-muted-foreground/70 mt-3 text-xs">
             Selecione outro dia no calendário ou ajuste os filtros.
           </p>
         </CardContent>
@@ -126,7 +126,7 @@ export function SelectedDayPanel({
     <Card className="animate-in slide-in-from-top-2">
       <CardContent className="p-4">
         <div className="mb-4 flex items-center gap-2">
-          <CalendarIcon className="h-4 w-4 text-primary" />
+          <CalendarIcon className="text-primary h-4 w-4" />
           <h3 className="text-sm font-semibold">
             {date.toLocaleDateString('pt-BR', {
               weekday: 'long',
@@ -147,7 +147,7 @@ export function SelectedDayPanel({
                 key={s.id}
                 role="button"
                 tabIndex={0}
-                className="flex cursor-pointer items-center gap-3 rounded-lg border bg-card p-2.5 transition-colors hover:bg-muted/50"
+                className="hover:bg-muted/50 flex cursor-pointer items-center gap-3 rounded-lg border bg-card p-2.5 transition-colors"
                 onClick={() => onActivityClick(s)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {

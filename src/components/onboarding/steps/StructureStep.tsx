@@ -26,13 +26,9 @@ interface StructureStepProps {
  * - Edit area and nucleus names and descriptions
  * - Visual hierarchy display
  */
-export function StructureStep({
-  areas,
-  onAreasChange,
-  errors = [],
-}: StructureStepProps) {
+export function StructureStep({ areas, onAreasChange, errors = [] }: StructureStepProps) {
   const [expandedAreas, setExpandedAreas] = useState<string[]>(
-    areas.map((_, idx) => `area-${idx}`)
+    areas.map((_, idx) => `area-${idx}`),
   );
 
   const handleAddArea = () => {
@@ -48,7 +44,7 @@ export function StructureStep({
   const handleRemoveArea = (areaIdx: number) => {
     const updated = areas.filter((_, idx) => idx !== areaIdx);
     onAreasChange(updated);
-    setExpandedAreas(expandedAreas.filter(id => id !== `area-${areaIdx}`));
+    setExpandedAreas(expandedAreas.filter((id) => id !== `area-${areaIdx}`));
   };
 
   const handleUpdateArea = (areaIdx: number, field: 'name' | 'description', value: string) => {
@@ -81,7 +77,7 @@ export function StructureStep({
     areaIdx: number,
     nucleusIdx: number,
     field: 'name' | 'description',
-    value: string
+    value: string,
   ) => {
     const updated = [...areas];
     if (field === 'name') {
@@ -94,17 +90,15 @@ export function StructureStep({
 
   const toggleAreaExpanded = (areaIdx: number) => {
     const areaId = `area-${areaIdx}`;
-    setExpandedAreas(prev =>
-      prev.includes(areaId)
-        ? prev.filter(id => id !== areaId)
-        : [...prev, areaId]
+    setExpandedAreas((prev) =>
+      prev.includes(areaId) ? prev.filter((id) => id !== areaId) : [...prev, areaId],
     );
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold mb-2">Estrutura Organizacional</h2>
+        <h2 className="mb-2 text-lg font-semibold">Estrutura Organizacional</h2>
         <p className="text-sm text-muted-foreground">
           Configure as áreas e núcleos da sua organização
         </p>
@@ -112,9 +106,9 @@ export function StructureStep({
 
       {/* Error Display */}
       {errors.length > 0 && (
-        <Card className="border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800">
+        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
           <CardContent className="pt-4">
-            <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+            <ul className="space-y-1 text-sm text-red-700 dark:text-red-300">
               {errors.map((error, idx) => (
                 <li key={idx} className="flex gap-2">
                   <span>•</span> {error}
@@ -137,7 +131,7 @@ export function StructureStep({
               <button
                 type="button"
                 onClick={() => toggleAreaExpanded(areaIdx)}
-                className="w-full text-left p-4 hover:bg-muted/50 transition-colors flex items-center justify-between"
+                className="hover:bg-muted/50 flex w-full items-center justify-between p-4 text-left transition-colors"
                 aria-expanded={isExpanded}
                 aria-label={`Área: ${area.name}`}
               >
@@ -147,7 +141,7 @@ export function StructureStep({
                     {area.nuclei.length} núcleo{area.nuclei.length !== 1 ? 's' : ''}
                   </p>
                 </div>
-                <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-2">
                   <Button
                     type="button"
                     variant="ghost"
@@ -160,9 +154,7 @@ export function StructureStep({
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                  <span className="text-muted-foreground">
-                    {isExpanded ? '▼' : '▶'}
-                  </span>
+                  <span className="text-muted-foreground">{isExpanded ? '▼' : '▶'}</span>
                 </div>
               </button>
 
@@ -200,9 +192,9 @@ export function StructureStep({
                   </div>
 
                   {/* Nuclei */}
-                  <div className="space-y-3 mt-4 pt-4 border-t">
+                  <div className="mt-4 space-y-3 border-t pt-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-sm">Núcleos</h4>
+                      <h4 className="text-sm font-medium">Núcleos</h4>
                       <Button
                         type="button"
                         variant="outline"
@@ -210,13 +202,13 @@ export function StructureStep({
                         onClick={() => handleAddNucleus(areaIdx)}
                         aria-label={`Adicionar núcleo à área ${area.name}`}
                       >
-                        <PlusIcon className="h-4 w-4 mr-2" />
+                        <PlusIcon className="mr-2 h-4 w-4" />
                         Adicionar Núcleo
                       </Button>
                     </div>
 
                     {area.nuclei.map((nucleus, nucleusIdx) => (
-                      <Card key={nucleusIdx} className="bg-muted/30 p-3 space-y-2">
+                      <Card key={nucleusIdx} className="bg-muted/30 space-y-2 p-3">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 space-y-2">
                             <Label
@@ -260,7 +252,12 @@ export function StructureStep({
                             placeholder="Descrição do núcleo..."
                             value={nucleus.description || ''}
                             onChange={(e) =>
-                              handleUpdateNucleus(areaIdx, nucleusIdx, 'description', e.target.value)
+                              handleUpdateNucleus(
+                                areaIdx,
+                                nucleusIdx,
+                                'description',
+                                e.target.value,
+                              )
                             }
                             rows={1}
                             className="resize-none text-sm"
@@ -285,7 +282,7 @@ export function StructureStep({
         className="w-full"
         aria-label="Adicionar nova área"
       >
-        <Plus className="h-4 w-4 mr-2" />
+        <Plus className="mr-2 h-4 w-4" />
         Adicionar Área
       </Button>
     </div>

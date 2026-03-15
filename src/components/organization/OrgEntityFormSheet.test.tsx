@@ -55,21 +55,14 @@ const mockActivity: OrgActivity = {
 
 describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
   it('renders in create mode with initial values', () => {
-    render(
-      <OrgEntityFormSheet entity="activity" mode="create" isOpen={true} />
-    );
+    render(<OrgEntityFormSheet entity="activity" mode="create" isOpen={true} />);
 
     expect(screen.getByDisplayValue('')).toBeInTheDocument(); // Empty name field
   });
 
   it('renders in edit mode with initial data', () => {
     render(
-      <OrgEntityFormSheet
-        entity="activity"
-        mode="edit"
-        isOpen={true}
-        initialData={mockActivity}
-      />
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     expect(screen.getByDisplayValue(mockActivity.name)).toBeInTheDocument();
@@ -78,12 +71,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
 
   it('shows info tab by default', () => {
     render(
-      <OrgEntityFormSheet
-        entity="activity"
-        mode="edit"
-        isOpen={true}
-        initialData={mockActivity}
-      />
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     const infoTab = screen.getByRole('tab', { name: /informações/i });
@@ -98,7 +86,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         initialTab="bpm"
-      />
+      />,
     );
 
     const bpmTab = screen.getByRole('tab', { name: /bpm/i });
@@ -113,7 +101,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         initialTab="info"
-      />
+      />,
     );
 
     let infoTab = screen.getByRole('tab', { name: /informações/i });
@@ -127,7 +115,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         initialTab="bpm"
-      />
+      />,
     );
 
     const bpmTab = screen.getByRole('tab', { name: /bpm/i });
@@ -136,12 +124,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
 
   it('displays BPM tab for activity entity', () => {
     render(
-      <OrgEntityFormSheet
-        entity="activity"
-        mode="edit"
-        isOpen={true}
-        initialData={mockActivity}
-      />
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     expect(screen.getByRole('tab', { name: /bpm/i })).toBeInTheDocument();
@@ -155,7 +138,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         initialTab="bpm"
-      />
+      />,
     );
 
     await waitFor(() => {
@@ -171,7 +154,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         initialTab="bpm"
-      />
+      />,
     );
 
     await waitFor(() => {
@@ -187,7 +170,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         initialTab="bpm"
-      />
+      />,
     );
 
     await waitFor(() => {
@@ -203,7 +186,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         initialTab="bpm"
-      />
+      />,
     );
 
     await waitFor(() => {
@@ -220,7 +203,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         initialTab="bpm"
-      />
+      />,
     );
 
     const addInputButton = screen.getAllByRole('button', { name: /adicionar/i })[0];
@@ -242,7 +225,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         initialTab="bpm"
-      />
+      />,
     );
 
     // Get initial input count
@@ -250,9 +233,9 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
     const initialCount = inputFields.length;
 
     // Click trash button for first input
-    const trashButtons = screen.getAllByRole('button', { name: '' }).filter(
-      (btn) => btn.querySelector('[data-lucide="trash-2"]')
-    );
+    const trashButtons = screen
+      .getAllByRole('button', { name: '' })
+      .filter((btn) => btn.querySelector('[data-lucide="trash-2"]'));
     if (trashButtons.length > 0) {
       await user.click(trashButtons[0]);
 
@@ -266,12 +249,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
 
   it('displays existing responsible roles', () => {
     render(
-      <OrgEntityFormSheet
-        entity="activity"
-        mode="edit"
-        isOpen={true}
-        initialData={mockActivity}
-      />
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     expect(screen.getByTestId('responsible-roles-input')).toBeInTheDocument();
@@ -280,12 +258,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
   it('allows editing responsible roles', async () => {
     const user = userEvent.setup();
     render(
-      <OrgEntityFormSheet
-        entity="activity"
-        mode="edit"
-        isOpen={true}
-        initialData={mockActivity}
-      />
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     const rolesInput = screen.getByTestId('roles-input') as HTMLInputElement;
@@ -301,12 +274,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
   it('marks form as dirty when changes are made', async () => {
     const user = userEvent.setup();
     render(
-      <OrgEntityFormSheet
-        entity="activity"
-        mode="edit"
-        isOpen={true}
-        initialData={mockActivity}
-      />
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     // Change a field
@@ -322,12 +290,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
 
   it('disables save button when form is not dirty', () => {
     render(
-      <OrgEntityFormSheet
-        entity="activity"
-        mode="edit"
-        isOpen={true}
-        initialData={mockActivity}
-      />
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     const saveButton = screen.getByRole('button', { name: /salvar/i });
@@ -337,12 +300,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
   it('enables save button when form is dirty', async () => {
     const user = userEvent.setup();
     render(
-      <OrgEntityFormSheet
-        entity="activity"
-        mode="edit"
-        isOpen={true}
-        initialData={mockActivity}
-      />
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     const nameInput = screen.getByPlaceholderText(/nome da atividade/i);
@@ -358,12 +316,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
   it('validates required name field', async () => {
     const user = userEvent.setup();
     render(
-      <OrgEntityFormSheet
-        entity="activity"
-        mode="edit"
-        isOpen={true}
-        initialData={mockActivity}
-      />
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     const nameInput = screen.getByPlaceholderText(/nome da atividade/i);
@@ -388,7 +341,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
         isOpen={true}
         initialData={mockActivity}
         onClose={onClose}
-      />
+      />,
     );
 
     const cancelButton = screen.getByRole('button', { name: /cancelar/i });

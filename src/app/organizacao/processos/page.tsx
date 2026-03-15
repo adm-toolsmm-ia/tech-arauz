@@ -1,11 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { dbProcessToUI, dbRoutineToUI, dbSystemToUI } from '@/lib/transformers/organization';
-import type {
-  DBOrgProcess,
-  DBOrgRoutine,
-  DBOrgSystem,
-} from '@/lib/transformers/organization';
+import type { DBOrgProcess, DBOrgRoutine, DBOrgSystem } from '@/lib/transformers/organization';
 import type { OrgProcess, OrgRoutine, OrgSystem } from '@/types/organization';
 import { ProcessosContent } from './processos-content';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';

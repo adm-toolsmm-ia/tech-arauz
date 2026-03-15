@@ -135,23 +135,22 @@ export function ChatInterface({
   const emptyState = messages.length === 0;
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex h-full flex-col bg-background">
       {/* Messages Display Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-6">
         {emptyState ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center max-w-sm">
-              <div className="mb-4 w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="flex h-full items-center justify-center">
+            <div className="max-w-sm text-center">
+              <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
                 <span className="text-xl">💬</span>
               </div>
-              <h3 className="font-semibold text-foreground mb-2">Start a conversation</h3>
+              <h3 className="mb-2 font-semibold text-foreground">Start a conversation</h3>
               <p className="text-sm text-muted-foreground">
-                You&apos;re chatting with <strong>{agent.name}</strong>. Type your message below to begin.
+                You&apos;re chatting with <strong>{agent.name}</strong>. Type your message below to
+                begin.
               </p>
               {agent.description && (
-                <p className="text-xs text-muted-foreground mt-3 italic">
-                  {agent.description}
-                </p>
+                <p className="mt-3 text-xs italic text-muted-foreground">{agent.description}</p>
               )}
             </div>
           </div>
@@ -161,22 +160,22 @@ export function ChatInterface({
               <div
                 key={message.id}
                 className={cn(
-                  'flex gap-3 animate-in fade-in duration-300',
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                  'flex gap-3 duration-300 animate-in fade-in',
+                  message.role === 'user' ? 'justify-end' : 'justify-start',
                 )}
               >
                 <div
                   className={cn(
-                    'group relative max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg px-4 py-3 rounded-lg',
+                    'group relative max-w-xs rounded-lg px-4 py-3 sm:max-w-sm md:max-w-md lg:max-w-lg',
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-br-none'
-                      : 'bg-muted text-muted-foreground rounded-bl-none border border-border'
+                      : 'rounded-bl-none border border-border bg-muted text-muted-foreground',
                   )}
                 >
-                  <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                  <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
                     {message.content}
                   </p>
-                  <div className="flex items-center justify-between gap-2 mt-2">
+                  <div className="mt-2 flex items-center justify-between gap-2">
                     <time className="text-xs opacity-60">
                       {new Date(message.created_at).toLocaleTimeString([], {
                         hour: '2-digit',
@@ -185,13 +184,13 @@ export function ChatInterface({
                     </time>
                     <button
                       onClick={() => handleCopy(message.content, message.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-black/10 rounded"
+                      className="rounded p-1 opacity-0 transition-opacity hover:bg-black/10 group-hover:opacity-100"
                       aria-label="Copy message"
                     >
                       {copiedId === message.id ? (
-                        <Check className="w-3 h-3" />
+                        <Check className="h-3 w-3" />
                       ) : (
-                        <Copy className="w-3 h-3" />
+                        <Copy className="h-3 w-3" />
                       )}
                     </button>
                   </div>
@@ -200,9 +199,9 @@ export function ChatInterface({
             ))}
 
             {isLoading && (
-              <div className="flex gap-3 justify-start animate-in fade-in">
-                <div className="bg-muted px-4 py-3 rounded-lg rounded-bl-none border border-border flex gap-1">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="flex justify-start gap-3 animate-in fade-in">
+                <div className="flex gap-1 rounded-lg rounded-bl-none border border-border bg-muted px-4 py-3">
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-muted-foreground">Agent is thinking...</span>
                 </div>
               </div>
@@ -214,7 +213,7 @@ export function ChatInterface({
       </div>
 
       {/* Input Area */}
-      <div className="border-t bg-background/95 backdrop-blur-sm p-4 space-y-2">
+      <div className="bg-background/95 space-y-2 border-t p-4 backdrop-blur-sm">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Textarea
             ref={inputRef}
@@ -227,40 +226,35 @@ export function ChatInterface({
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
             disabled={isSending || isLoading || !session}
-            className="flex-1 resize-none min-h-[44px] max-h-[200px]"
+            className="max-h-[200px] min-h-[44px] flex-1 resize-none"
             aria-label="Chat message input"
             rows={1}
           />
           <Button
             type="submit"
             size="lg"
-            disabled={
-              isSending ||
-              isLoading ||
-              !session ||
-              !inputValue.trim()
-            }
+            disabled={isSending || isLoading || !session || !inputValue.trim()}
             aria-label="Send message"
             className="self-end"
           >
             {isSending ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Send className="w-4 h-4" />
+              <Send className="h-4 w-4" />
             )}
             <span className="ml-2 hidden sm:inline">Send</span>
           </Button>
         </form>
 
         {!session && (
-          <p className="text-xs text-muted-foreground px-2">
+          <p className="px-2 text-xs text-muted-foreground">
             👆 Select an agent from the left sidebar to start a new conversation
           </p>
         )}
 
-        <p className="text-xs text-muted-foreground px-2 text-center">
-          Use <kbd className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">Ctrl+Enter</kbd> or{' '}
-          <kbd className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">Cmd+Enter</kbd> to send
+        <p className="px-2 text-center text-xs text-muted-foreground">
+          Use <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">Ctrl+Enter</kbd> or{' '}
+          <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">Cmd+Enter</kbd> to send
         </p>
       </div>
     </div>

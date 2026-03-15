@@ -45,7 +45,10 @@ export function ComparativeChart({
 
     const totalMovements = allData.reduce((sum, d) => sum + d.total_movements, 0);
     const totalDuration = allData.reduce((sum, d) => sum + d.average_duration_days, 0);
-    const totalCompletion = allData.reduce((sum, d) => sum + (d.projects_completed / d.total_movements), 0);
+    const totalCompletion = allData.reduce(
+      (sum, d) => sum + d.projects_completed / d.total_movements,
+      0,
+    );
 
     return {
       movements: Math.round(totalMovements / allData.length),
@@ -129,13 +132,16 @@ export function ComparativeChart({
     const olderAvg = older.reduce((sum, d) => sum + d.person, 0) / older.length;
 
     const movementsChange = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
-    const movementsTrendValue = movementsChange > 5 ? 'up' : movementsChange < -5 ? 'down' : 'neutral';
+    const movementsTrendValue =
+      movementsChange > 5 ? 'up' : movementsChange < -5 ? 'down' : 'neutral';
     const movementsTrend = movementsTrendValue as 'up' | 'down' | 'neutral';
 
     const personCompletion = (person.projects_completed / person.total_movements) * 100;
     const teamCompletion = teamAverages.completion;
-    const completionChange = teamCompletion > 0 ? ((personCompletion - teamCompletion) / teamCompletion) * 100 : 0;
-    const completionTrendValue = completionChange > 5 ? 'up' : completionChange < -5 ? 'down' : 'neutral';
+    const completionChange =
+      teamCompletion > 0 ? ((personCompletion - teamCompletion) / teamCompletion) * 100 : 0;
+    const completionTrendValue =
+      completionChange > 5 ? 'up' : completionChange < -5 ? 'down' : 'neutral';
     const completionTrend = completionTrendValue as 'up' | 'down' | 'neutral';
 
     return {
@@ -148,47 +154,60 @@ export function ComparativeChart({
 
   // Render trend indicator icon
   const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'neutral' }) => {
-    if (trend === 'up') return <TrendingUp className="w-4 h-4 text-green-500" aria-label="Tendência positiva" />;
-    if (trend === 'down') return <TrendingDown className="w-4 h-4 text-red-500" aria-label="Tendência negativa" />;
-    return <Minus className="w-4 h-4 text-gray-500" aria-label="Tendência estável" />;
+    if (trend === 'up')
+      return <TrendingUp className="h-4 w-4 text-green-500" aria-label="Tendência positiva" />;
+    if (trend === 'down')
+      return <TrendingDown className="h-4 w-4 text-red-500" aria-label="Tendência negativa" />;
+    return <Minus className="h-4 w-4 text-gray-500" aria-label="Tendência estável" />;
   };
 
-  const anomalyCount = chartData.filter(d => d.isAnomaly).length;
-  const anomalyPercentage = chartData.length > 0 ? Math.round((anomalyCount / chartData.length) * 100) : 0;
+  const anomalyCount = chartData.filter((d) => d.isAnomaly).length;
+  const anomalyPercentage =
+    chartData.length > 0 ? Math.round((anomalyCount / chartData.length) * 100) : 0;
 
   return (
     <div className="space-y-6">
       {/* Header with Trend Indicators */}
       <div className="grid grid-cols-2 gap-4">
         {/* Movements Trend */}
-        <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950 dark:to-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-          <div className="flex items-center justify-between mb-2">
+        <div className="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 dark:border-blue-800 dark:from-blue-950 dark:to-blue-900/30">
+          <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Movimentações</p>
             <TrendIcon trend={trends.movementsTrend} />
           </div>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{person.total_movements}</p>
-          <p className={`text-xs mt-1 ${trends.movementsChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            {trends.movementsChange >= 0 ? '+' : ''}{trends.movementsChange}% vs time period
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            {person.total_movements}
+          </p>
+          <p
+            className={`mt-1 text-xs ${trends.movementsChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+          >
+            {trends.movementsChange >= 0 ? '+' : ''}
+            {trends.movementsChange}% vs time period
           </p>
         </div>
 
         {/* Completion Trend */}
-        <div className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950 dark:to-emerald-900/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Taxa de Conclusão</p>
+        <div className="rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4 dark:border-emerald-800 dark:from-emerald-950 dark:to-emerald-900/30">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Taxa de Conclusão
+            </p>
             <TrendIcon trend={trends.completionTrend} />
           </div>
           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
             {Math.round((person.projects_completed / person.total_movements) * 100)}%
           </p>
-          <p className={`text-xs mt-1 ${trends.completionChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            {trends.completionChange >= 0 ? '+' : ''}{trends.completionChange}% vs time period
+          <p
+            className={`mt-1 text-xs ${trends.completionChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+          >
+            {trends.completionChange >= 0 ? '+' : ''}
+            {trends.completionChange}% vs time period
           </p>
         </div>
       </div>
 
       {/* Comparative Chart */}
-      <div className="bg-gradient-to-br from-background to-muted/20 rounded-lg p-4 border border-muted">
+      <div className="to-muted/20 rounded-lg border border-muted bg-gradient-to-br from-background p-4">
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
             <defs>
@@ -198,11 +217,7 @@ export function ComparativeChart({
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="day"
-              tick={{ fontSize: 12 }}
-              className="fill-muted-foreground"
-            />
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} className="fill-muted-foreground" />
             <YAxis
               yAxisId="left"
               label={{ value: 'Movimentações', angle: -90, position: 'insideLeft' }}
@@ -220,13 +235,7 @@ export function ComparativeChart({
               formatter={(value) => (typeof value === 'number' ? value.toFixed(1) : value)}
             />
             <Legend wrapperStyle={{ paddingTop: '20px' }} />
-            <Bar
-              yAxisId="left"
-              dataKey="team"
-              fill="#94a3b8"
-              opacity={0.5}
-              name="Média de Time"
-            />
+            <Bar yAxisId="left" dataKey="team" fill="#94a3b8" opacity={0.5} name="Média de Time" />
             <Line
               yAxisId="left"
               type="monotone"
@@ -244,13 +253,14 @@ export function ComparativeChart({
 
       {/* Anomaly Detection Alert */}
       {anomalyCount > 0 && (
-        <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/20">
           <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
+            <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-amber-500" />
             <div>
               <p className="font-medium text-amber-900 dark:text-amber-200">Anomalias Detectadas</p>
-              <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                {anomalyCount} período(s) ({anomalyPercentage}%) abaixo da média de time. Investigação recomendada.
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                {anomalyCount} período(s) ({anomalyPercentage}%) abaixo da média de time.
+                Investigação recomendada.
               </p>
             </div>
           </div>
@@ -259,26 +269,28 @@ export function ComparativeChart({
 
       {/* Performance Summary */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="p-3 bg-muted/50 rounded-lg border border-muted/50">
+        <div className="bg-muted/50 border-muted/50 rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Você vs Time</p>
           <p className="text-lg font-semibold">
             {((person.total_movements / teamAverages.movements) * 100).toFixed(0)}%
           </p>
         </div>
-        <div className="p-3 bg-muted/50 rounded-lg border border-muted/50">
+        <div className="bg-muted/50 border-muted/50 rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Performance Rank</p>
           <p className="text-lg font-semibold">
-            #{allData.filter(d => d.total_movements > person.total_movements).length + 1}/{allData.length}
+            #{allData.filter((d) => d.total_movements > person.total_movements).length + 1}/
+            {allData.length}
           </p>
         </div>
-        <div className="p-3 bg-muted/50 rounded-lg border border-muted/50">
+        <div className="bg-muted/50 border-muted/50 rounded-lg border p-3">
           <p className="text-xs text-muted-foreground">Anomalias</p>
           <p className="text-lg font-semibold">{anomalyPercentage}%</p>
         </div>
       </div>
 
       <p className="text-xs text-muted-foreground">
-        💡 Comparison shows your performance relative to team average. Anomalies highlighted when significantly below team metrics.
+        💡 Comparison shows your performance relative to team average. Anomalies highlighted when
+        significantly below team metrics.
       </p>
     </div>
   );

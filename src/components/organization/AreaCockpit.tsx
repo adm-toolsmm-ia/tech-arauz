@@ -33,8 +33,8 @@ export const AreaCockpit: React.FC<AreaCockpitProps> = ({ area, onEdit }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-            <Building2 className="size-6 text-primary" />
+          <div className="bg-primary/10 flex size-12 items-center justify-center rounded-lg">
+            <Building2 className="text-primary size-6" />
           </div>
           <div>
             <h3 className="font-semibold">{area.name}</h3>

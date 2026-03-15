@@ -47,7 +47,11 @@ function ToolbarButton({
   );
 }
 
-export const ProjectNotesEditor: React.FC<ProjectNotesEditorProps> = ({ projectId, initialContent, onSave }) => {
+export const ProjectNotesEditor: React.FC<ProjectNotesEditorProps> = ({
+  projectId,
+  initialContent,
+  onSave,
+}) => {
   const [isSaving, setIsSaving] = React.useState(false);
 
   const editor = useEditor({
@@ -86,7 +90,7 @@ export const ProjectNotesEditor: React.FC<ProjectNotesEditorProps> = ({ projectI
 
   if (!editor) {
     return (
-      <div className="flex min-h-[200px] items-center justify-center rounded-md border border-dashed bg-muted/30 text-sm text-muted-foreground">
+      <div className="bg-muted/30 flex min-h-[200px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
         Carregando editor…
       </div>
     );
@@ -97,7 +101,7 @@ export const ProjectNotesEditor: React.FC<ProjectNotesEditorProps> = ({ projectI
   return (
     <div className="space-y-4">
       <div
-        className="flex flex-wrap items-center gap-1 rounded-md border bg-muted/30 p-2"
+        className="bg-muted/30 flex flex-wrap items-center gap-1 rounded-md border p-2"
         role="toolbar"
         aria-label="Formatação do texto"
       >
@@ -171,4 +175,4 @@ export const ProjectNotesEditor: React.FC<ProjectNotesEditorProps> = ({ projectI
       </Button>
     </div>
   );
-}
+};

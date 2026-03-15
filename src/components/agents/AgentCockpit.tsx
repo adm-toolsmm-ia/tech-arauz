@@ -271,7 +271,7 @@ export const AgentCockpit: React.FC<AgentCockpitProps> = ({
                 <div className="flex items-center gap-2">
                   <div className="h-2 flex-1 rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-primary transition-all"
+                      className="bg-primary h-full rounded-full transition-all"
                       style={{
                         width: `${(agent.fullConfig.modelTemperature / 2) * 100}%`,
                       }}

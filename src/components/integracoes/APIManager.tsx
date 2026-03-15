@@ -234,7 +234,7 @@ function APIConfigDialog({
           </div>
 
           {/* Read-only info */}
-          <div className="space-y-1 rounded-md bg-muted/50 px-3 py-2">
+          <div className="bg-muted/50 space-y-1 rounded-md px-3 py-2">
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Tipo</span>
               <span className="font-medium">{api.tipo}</span>
@@ -467,7 +467,7 @@ export const APIManager: React.FC<APIManagerProps> = ({ onViewLogs, onSyncComple
                 return (
                   <div
                     key={api.id}
-                    className="rounded-lg border border-border p-4 transition-colors hover:bg-muted/50"
+                    className="hover:bg-muted/50 rounded-lg border border-border p-4 transition-colors"
                   >
                     {/* Header */}
                     <div className="mb-2 flex items-start justify-between gap-2">

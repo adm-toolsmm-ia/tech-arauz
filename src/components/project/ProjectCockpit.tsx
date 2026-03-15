@@ -138,7 +138,7 @@ const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => {
       <p className="text-sm font-medium">{value || '-'}</p>
     </div>
   );
-}
+};
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '-';
@@ -196,7 +196,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           {showAtividadeTab && (
             <TabsTrigger
               value="atividade"
-              className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
             >
               <ClipboardList className="mr-2 size-4" />
               Atividade
@@ -204,21 +204,21 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           )}
           <TabsTrigger
             value="projeto"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <FileText className="mr-2 size-4" />
             Projeto
           </TabsTrigger>
           <TabsTrigger
             value="anotacoes"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <StickyNote className="mr-2 size-4" />
             Anotações
           </TabsTrigger>
           <TabsTrigger
             value="entregas"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <Package className="mr-2 size-4" />
             Entregas
@@ -230,7 +230,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           </TabsTrigger>
           <TabsTrigger
             value="orcamentos"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <DollarSign className="mr-2 size-4" />
             Orçamentos
@@ -240,7 +240,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           </TabsTrigger>
           <TabsTrigger
             value="cronograma"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <Calendar className="mr-2 size-4" />
             Cronograma
@@ -250,7 +250,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           </TabsTrigger>
           <TabsTrigger
             value="historicos"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <History className="mr-2 size-4" />
             Histórico
@@ -260,7 +260,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           </TabsTrigger>
           <TabsTrigger
             value="aprovadores"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <UserCheck className="mr-2 size-4" />
             Aprovadores
@@ -270,7 +270,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           </TabsTrigger>
           <TabsTrigger
             value="acoes"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <ListChecks className="mr-2 size-4" />
             Ações
@@ -282,7 +282,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           <TabsContent value="atividade" className="mt-6 space-y-8">
             <section>
               <div className="mb-4 flex items-center gap-2 border-b pb-2">
-                <ClipboardList className="size-5 text-primary" />
+                <ClipboardList className="text-primary size-5" />
                 <h3 className="text-base font-semibold">Dados da Atividade</h3>
                 {selectedSchedule.atrasado && (
                   <Badge variant="destructive" className="ml-2">
@@ -327,7 +327,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           {/* 1. Informações Gerais */}
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <FileText className="size-5 text-primary" />
+              <FileText className="text-primary size-5" />
               <h3 className="text-base font-semibold">Informações Gerais</h3>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -348,7 +348,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           {/* 3. Participantes */}
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <ListChecks className="size-5 text-primary" />
+              <ListChecks className="text-primary size-5" />
               <h3 className="text-base font-semibold">Participantes</h3>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -362,7 +362,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           {/* 4. Datas e Prazos */}
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <Calendar className="size-5 text-primary" />
+              <Calendar className="text-primary size-5" />
               <h3 className="text-base font-semibold">Datas e Prazos</h3>
             </div>
             <div className="space-y-6">
@@ -394,7 +394,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           {/* 5. Estratégia */}
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <RefreshCw className="size-5 text-primary" />
+              <RefreshCw className="text-primary size-5" />
               <h3 className="text-base font-semibold">Estratégia</h3>
             </div>
 
@@ -409,7 +409,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
           {/* 6. Detalhamento do Projeto (Textos Longos) */}
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <FileText className="size-5 text-primary" />
+              <FileText className="text-primary size-5" />
               <h3 className="text-base font-semibold">Detalhamento do Projeto</h3>
             </div>
 
@@ -417,7 +417,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
               {project.objetivo && (
                 <div className="space-y-2">
                   <p className="text-sm font-semibold">Objetivo</p>
-                  <p className="whitespace-pre-wrap rounded-md border bg-muted/30 p-4 text-sm leading-relaxed text-card-foreground">
+                  <p className="bg-muted/30 whitespace-pre-wrap rounded-md border p-4 text-sm leading-relaxed text-card-foreground">
                     {project.objetivo}
                   </p>
                 </div>
@@ -425,7 +425,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
               {project.escopo && (
                 <div className="space-y-2">
                   <p className="text-sm font-semibold">Escopo</p>
-                  <p className="whitespace-pre-wrap rounded-md border bg-muted/30 p-4 text-sm leading-relaxed text-card-foreground">
+                  <p className="bg-muted/30 whitespace-pre-wrap rounded-md border p-4 text-sm leading-relaxed text-card-foreground">
                     {project.escopo}
                   </p>
                 </div>
@@ -433,7 +433,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
               {project.justificativa && (
                 <div className="space-y-2">
                   <p className="text-sm font-semibold">Justificativa</p>
-                  <p className="whitespace-pre-wrap rounded-md border bg-muted/30 p-4 text-sm leading-relaxed text-card-foreground">
+                  <p className="bg-muted/30 whitespace-pre-wrap rounded-md border p-4 text-sm leading-relaxed text-card-foreground">
                     {project.justificativa}
                   </p>
                 </div>
@@ -442,7 +442,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
                 <div className="space-y-2">
                   <p className="text-sm font-semibold">Última Movimentação</p>
                   <div className="space-y-1">
-                    <p className="whitespace-pre-wrap rounded-md border bg-muted/30 p-4 text-sm leading-relaxed text-card-foreground">
+                    <p className="bg-muted/30 whitespace-pre-wrap rounded-md border p-4 text-sm leading-relaxed text-card-foreground">
                       {project.mensagem_movimentacao}
                     </p>
                     {project.data_movimentacao && (
@@ -497,8 +497,8 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
                       <div className="absolute bottom-0 left-[15px] top-8 w-0.5 bg-border" />
                     )}
                     {/* Timeline dot */}
-                    <div className="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-background bg-primary/10">
-                      <History className="size-3.5 text-primary" />
+                    <div className="bg-primary/10 relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-background">
+                      <History className="text-primary size-3.5" />
                     </div>
                     {/* Content */}
                     <div className="min-w-0 flex-1 space-y-2 rounded-lg border bg-card p-3">
@@ -511,23 +511,23 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
                         </span>
                       </div>
                       {hist.message && hist.message !== '-' && (
-                        <p className="whitespace-pre-wrap rounded-md bg-muted/40 p-3 text-sm leading-relaxed text-card-foreground">
+                        <p className="bg-muted/40 whitespace-pre-wrap rounded-md p-3 text-sm leading-relaxed text-card-foreground">
                           {hist.message}
                         </p>
                       )}
                       {(hist.from !== '-' || hist.to !== '-') && (
                         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                           {hist.from !== '-' && (
-                            <span className="rounded bg-muted/50 px-2 py-0.5">{hist.from}</span>
+                            <span className="bg-muted/50 rounded px-2 py-0.5">{hist.from}</span>
                           )}
                           {hist.from !== '-' && hist.to !== '-' && (
-                            <ArrowRight className="size-3 text-muted-foreground/50" />
+                            <ArrowRight className="text-muted-foreground/50 size-3" />
                           )}
                           {hist.to !== '-' && (
-                            <span className="rounded bg-muted/50 px-2 py-0.5">{hist.to}</span>
+                            <span className="bg-muted/50 rounded px-2 py-0.5">{hist.to}</span>
                           )}
                           {hist.step_from !== '-' && hist.step_to !== '-' && (
-                            <span className="ml-2 text-muted-foreground/60">
+                            <span className="text-muted-foreground/60 ml-2">
                               ({hist.step_from} → {hist.step_to})
                             </span>
                           )}
@@ -672,13 +672,13 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
                       {schedule.item && (
                         <span>
                           Item:{' '}
-                          <span className="font-medium text-foreground/80">{schedule.item}</span>
+                          <span className="text-foreground/80 font-medium">{schedule.item}</span>
                         </span>
                       )}
                       {schedule.setor_responsavel && (
                         <span>
                           Setor:{' '}
-                          <span className="font-medium text-foreground/80">
+                          <span className="text-foreground/80 font-medium">
                             {schedule.setor_responsavel}
                           </span>
                         </span>
@@ -686,7 +686,7 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
                       {schedule.responsavel && (
                         <span>
                           Resp:{' '}
-                          <span className="font-medium text-foreground/80">
+                          <span className="text-foreground/80 font-medium">
                             {schedule.responsavel}
                           </span>
                         </span>
@@ -738,4 +738,4 @@ export const ProjectCockpit: React.FC<ProjectCockpitProps> = ({
       </Tabs>
     </div>
   );
-}
+};

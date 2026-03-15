@@ -97,14 +97,10 @@ function InteractiveWrapper(args: any) {
 
   return (
     <div className="w-96 space-y-4">
-      <ResponsibleRolesInput
-        {...args}
-        value={roles}
-        onChange={setRoles}
-      />
+      <ResponsibleRolesInput {...args} value={roles} onChange={setRoles} />
       <div className="text-sm text-muted-foreground">
         <p>Selected: {roles.length > 0 ? roles.join(', ') : 'None'}</p>
-        <p className="text-xs mt-2">
+        <p className="mt-2 text-xs">
           Try keyboard navigation:
           <br />
           - Arrow Down/Up to navigate
@@ -112,8 +108,7 @@ function InteractiveWrapper(args: any) {
           - Enter to select
           <br />
           - Backspace to remove last
-          <br />
-          - Escape to close dropdown
+          <br />- Escape to close dropdown
         </p>
       </div>
     </div>

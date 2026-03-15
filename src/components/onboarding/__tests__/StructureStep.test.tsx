@@ -24,34 +24,19 @@ describe('StructureStep', () => {
 
   describe('Rendering', () => {
     it('should render structure step form', () => {
-      render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />);
 
       expect(screen.getByText(/Estrutura Organizacional/i)).toBeInTheDocument();
     });
 
     it('should display areas list', () => {
-      render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />);
 
       expect(screen.getByText('Área Jurídica')).toBeInTheDocument();
     });
 
     it('should display nuclei count', () => {
-      render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />);
 
       expect(screen.getByText(/2 núcleos/i)).toBeInTheDocument();
     });
@@ -60,12 +45,7 @@ describe('StructureStep', () => {
   describe('Area Expansion', () => {
     it('should expand area to show details', async () => {
       const user = userEvent.setup();
-      render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />);
 
       const expandButton = screen.getByRole('button', {
         name: /Área: Área Jurídica/i,
@@ -81,12 +61,7 @@ describe('StructureStep', () => {
   describe('Adding Areas', () => {
     it('should add new area', async () => {
       const user = userEvent.setup();
-      render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />);
 
       const addButton = screen.getByRole('button', {
         name: /Adicionar Área/i,
@@ -102,10 +77,7 @@ describe('StructureStep', () => {
     it('should remove area when delete button clicked', async () => {
       const user = userEvent.setup();
       const { rerender } = render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
+        <StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />,
       );
 
       const expandButton = screen.getByRole('button', {
@@ -126,12 +98,7 @@ describe('StructureStep', () => {
   describe('Nuclei Management', () => {
     it('should display nuclei for expanded area', async () => {
       const user = userEvent.setup();
-      render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />);
 
       const expandButton = screen.getByRole('button', {
         name: /Área: Área Jurídica/i,
@@ -144,12 +111,7 @@ describe('StructureStep', () => {
 
     it('should add new nucleus', async () => {
       const user = userEvent.setup();
-      render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />);
 
       const expandButton = screen.getByRole('button', {
         name: /Área: Área Jurídica/i,
@@ -170,13 +132,7 @@ describe('StructureStep', () => {
     it('should display error messages', () => {
       const errors = ['Pelo menos uma área é obrigatória'];
 
-      render(
-        <StructureStep
-          areas={[]}
-          onAreasChange={mockOnAreasChange}
-          errors={errors}
-        />
-      );
+      render(<StructureStep areas={[]} onAreasChange={mockOnAreasChange} errors={errors} />);
 
       expect(screen.getByText(errors[0])).toBeInTheDocument();
     });
@@ -184,12 +140,7 @@ describe('StructureStep', () => {
 
   describe('Empty State', () => {
     it('should handle empty areas array', () => {
-      render(
-        <StructureStep
-          areas={[]}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={[]} onAreasChange={mockOnAreasChange} />);
 
       const addButton = screen.getByRole('button', {
         name: /Adicionar Área/i,
@@ -202,12 +153,7 @@ describe('StructureStep', () => {
   describe('Accessibility', () => {
     it('should have aria-expanded attribute', async () => {
       const user = userEvent.setup();
-      render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />);
 
       const expandButton = screen.getByRole('button', {
         name: /Área: Área Jurídica/i,
@@ -222,12 +168,7 @@ describe('StructureStep', () => {
 
     it('should have proper labels for input fields', async () => {
       const user = userEvent.setup();
-      render(
-        <StructureStep
-          areas={mockAreas}
-          onAreasChange={mockOnAreasChange}
-        />
-      );
+      render(<StructureStep areas={mockAreas} onAreasChange={mockOnAreasChange} />);
 
       const expandButton = screen.getByRole('button', {
         name: /Área: Área Jurídica/i,

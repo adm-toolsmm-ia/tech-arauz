@@ -49,13 +49,7 @@ describe('ProcessSlaList', () => {
 
   describe('Empty State', () => {
     it('should show empty state when no SLAs', () => {
-      render(
-        <ProcessSlaList
-          slas={[]}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={[]} isLoading={false} onEdit={mockOnEdit} />);
 
       expect(screen.getByText(/Nenhum SLA definido/i)).toBeInTheDocument();
     });
@@ -63,13 +57,7 @@ describe('ProcessSlaList', () => {
 
   describe('Loading State', () => {
     it('should show loading spinner when isLoading is true', () => {
-      render(
-        <ProcessSlaList
-          slas={[]}
-          isLoading={true}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={[]} isLoading={true} onEdit={mockOnEdit} />);
 
       expect(screen.getByRole('status')).toBeInTheDocument();
     });
@@ -77,13 +65,7 @@ describe('ProcessSlaList', () => {
 
   describe('SLA Display', () => {
     it('should render list of SLAs', () => {
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       expect(screen.getByText('tempo_conclusão')).toBeInTheDocument();
       expect(screen.getByText('qualidade')).toBeInTheDocument();
@@ -91,39 +73,21 @@ describe('ProcessSlaList', () => {
     });
 
     it('should display metric names correctly', () => {
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       expect(screen.getByText('tempo_conclusão')).toBeInTheDocument();
       expect(screen.getByText('qualidade')).toBeInTheDocument();
     });
 
     it('should display target duration as badge', () => {
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       expect(screen.getByText('5d')).toBeInTheDocument();
       expect(screen.getByText('10d')).toBeInTheDocument();
     });
 
     it('should display warning and critical thresholds', () => {
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       // First SLA
       expect(screen.getByText('Aviso: 75%')).toBeInTheDocument();
@@ -135,13 +99,7 @@ describe('ProcessSlaList', () => {
     });
 
     it('should count SLAs correctly', () => {
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       expect(screen.getByText('SLAs do Processo — 2')).toBeInTheDocument();
     });
@@ -150,13 +108,7 @@ describe('ProcessSlaList', () => {
   describe('Edit Button', () => {
     it('should call onEdit when edit button is clicked', async () => {
       const user = userEvent.setup();
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const editButtons = screen.getAllByLabelText(/Editar SLA/i);
       await user.click(editButtons[0]);
@@ -166,13 +118,7 @@ describe('ProcessSlaList', () => {
 
     it('should pass correct SLA data to onEdit', async () => {
       const user = userEvent.setup();
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const editButtons = screen.getAllByLabelText(/Editar SLA/i);
       await user.click(editButtons[1]);
@@ -181,13 +127,7 @@ describe('ProcessSlaList', () => {
     });
 
     it('should disable edit button while deleting', () => {
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const editButtons = screen.getAllByLabelText(/Editar SLA/i);
       expect(editButtons[0]).not.toBeDisabled();
@@ -197,13 +137,7 @@ describe('ProcessSlaList', () => {
   describe('Delete Button', () => {
     it('should show confirmation dialog when delete button is clicked', async () => {
       const user = userEvent.setup();
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
       await user.click(deleteButtons[0]);
@@ -214,13 +148,7 @@ describe('ProcessSlaList', () => {
 
     it('should display SLA name in confirmation dialog', async () => {
       const user = userEvent.setup();
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
       await user.click(deleteButtons[0]);
@@ -230,13 +158,7 @@ describe('ProcessSlaList', () => {
 
     it('should close confirmation dialog when cancel is clicked', async () => {
       const user = userEvent.setup();
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
       await user.click(deleteButtons[0]);
@@ -263,7 +185,7 @@ describe('ProcessSlaList', () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onDeleteSuccess={mockOnDeleteSuccess}
-        />
+        />,
       );
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
@@ -291,7 +213,7 @@ describe('ProcessSlaList', () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onDeleteSuccess={mockOnDeleteSuccess}
-        />
+        />,
       );
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
@@ -319,7 +241,7 @@ describe('ProcessSlaList', () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onDeleteSuccess={mockOnDeleteSuccess}
-        />
+        />,
       );
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
@@ -337,13 +259,7 @@ describe('ProcessSlaList', () => {
 
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const editButtons = screen.getAllByLabelText(/Editar SLA/i);
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
@@ -353,13 +269,7 @@ describe('ProcessSlaList', () => {
     });
 
     it('should have descriptive button labels', () => {
-      render(
-        <ProcessSlaList
-          slas={mockSlas}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
+      render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const editButtons = screen.getAllByLabelText(/Editar SLA tempo_conclusão/i);
       expect(editButtons.length).toBeGreaterThan(0);

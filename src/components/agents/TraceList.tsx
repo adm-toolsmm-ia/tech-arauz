@@ -74,7 +74,7 @@ export const TraceList: React.FC<TraceListProps> = ({ traces, onTraceClick, clas
           <Card
             key={trace.id}
             className={cn(
-              'cursor-pointer transition-all hover:border-primary/30 hover:shadow-sm',
+              'hover:border-primary/30 cursor-pointer transition-all hover:shadow-sm',
               'animate-fade-in',
             )}
             style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'both' }}
@@ -124,7 +124,7 @@ export const TraceList: React.FC<TraceListProps> = ({ traces, onTraceClick, clas
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-muted-foreground transition-colors hover:text-primary"
+                      className="hover:text-primary text-muted-foreground transition-colors"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>

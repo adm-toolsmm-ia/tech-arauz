@@ -166,7 +166,6 @@ export function RecursosContent({
     [router, searchParams],
   );
 
-
   const currentItems = React.useMemo(() => {
     switch (activeTab) {
       case 'sistemas':
@@ -209,9 +208,7 @@ export function RecursosContent({
             purpose: formData.purpose.trim() || null,
           });
           if (result.success && result.data) {
-            setSystems((prev) =>
-              prev.map((s) => (s.id === editingItem.id ? result.data! : s)),
-            );
+            setSystems((prev) => prev.map((s) => (s.id === editingItem.id ? result.data! : s)));
             setSelectedItem(result.data);
             toast.success(result.message);
           } else {
@@ -224,9 +221,7 @@ export function RecursosContent({
             description: formData.description.trim() || null,
           });
           if (result.success && result.data) {
-            setSuppliers((prev) =>
-              prev.map((s) => (s.id === sup.id ? result.data! : s)),
-            );
+            setSuppliers((prev) => prev.map((s) => (s.id === sup.id ? result.data! : s)));
             setSelectedItem(result.data);
             toast.success(result.message);
           } else {
@@ -239,9 +234,7 @@ export function RecursosContent({
             description: formData.description.trim() || null,
           });
           if (result.success && result.data) {
-            setServices((prev) =>
-              prev.map((s) => (s.id === svc.id ? result.data! : s)),
-            );
+            setServices((prev) => prev.map((s) => (s.id === svc.id ? result.data! : s)));
             setSelectedItem(result.data);
             toast.success(result.message);
           } else {
@@ -256,9 +249,7 @@ export function RecursosContent({
             associated_process_id: formData.associated_process_id || null,
           });
           if (result.success && result.data) {
-            setDocuments((prev) =>
-              prev.map((d) => (d.id === doc.id ? result.data! : d)),
-            );
+            setDocuments((prev) => prev.map((d) => (d.id === doc.id ? result.data! : d)));
             setSelectedItem(result.data);
             toast.success(result.message);
           } else {
@@ -344,7 +335,8 @@ export function RecursosContent({
       description: item.description ?? '',
       purpose: 'purpose' in item ? (item.purpose ?? '') : '',
       type: 'type' in item ? (item.type ?? '') : '',
-      associated_process_id: 'associated_process_id' in item ? (item.associated_process_id ?? '') : '',
+      associated_process_id:
+        'associated_process_id' in item ? (item.associated_process_id ?? '') : '',
     });
     setIsFormOpen(true);
   }, []);
@@ -440,13 +432,7 @@ export function RecursosContent({
     } finally {
       setIsSystemResourceLoading(false);
     }
-  }, [
-    selectedItem,
-    selectedTab,
-    editingSystemResource,
-    systemResourceFormData,
-    router,
-  ]);
+  }, [selectedItem, selectedTab, editingSystemResource, systemResourceFormData, router]);
 
   const handleConfirmDeleteSystemResource = React.useCallback(async () => {
     if (!systemResourceToDelete) return;
@@ -467,10 +453,7 @@ export function RecursosContent({
   const listAnnouncement = `${filterState.filteredData.length} ${activeTab === 'sistemas' ? 'sistemas' : activeTab === 'fornecedores' ? 'fornecedores' : activeTab === 'servicos' ? 'serviços' : 'documentos'} exibidos`;
 
   const hasAny =
-    systems.length > 0 ||
-    suppliers.length > 0 ||
-    services.length > 0 ||
-    documents.length > 0;
+    systems.length > 0 || suppliers.length > 0 || services.length > 0 || documents.length > 0;
 
   const selectItem = React.useCallback(
     (item: RecursosEntity) => {
@@ -480,11 +463,7 @@ export function RecursosContent({
     [activeTab],
   );
 
-  const renderList = (
-    items: RecursosEntity[],
-    icon: React.ElementType,
-    iconBg: string,
-  ) => (
+  const renderList = (items: RecursosEntity[], icon: React.ElementType, iconBg: string) => (
     <Card>
       <CardContent className="divide-y p-0">
         {items.length === 0 ? (
@@ -504,11 +483,9 @@ export function RecursosContent({
                   selectItem(item);
                 }
               }}
-              className="flex cursor-pointer items-center gap-3 p-4 transition-colors hover:bg-muted/50"
+              className="hover:bg-muted/50 flex cursor-pointer items-center gap-3 p-4 transition-colors"
             >
-              <div
-                className={`flex size-10 items-center justify-center rounded-lg ${iconBg}`}
-              >
+              <div className={`flex size-10 items-center justify-center rounded-lg ${iconBg}`}>
                 {React.createElement(icon, { className: 'size-5 text-primary' })}
               </div>
               <div className="min-w-0 flex-1">
@@ -524,11 +501,7 @@ export function RecursosContent({
     </Card>
   );
 
-  const renderCards = (
-    items: RecursosEntity[],
-    icon: React.ElementType,
-    iconBg: string,
-  ) => (
+  const renderCards = (items: RecursosEntity[], icon: React.ElementType, iconBg: string) => (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.length === 0 ? (
         <div className="col-span-full rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
@@ -547,12 +520,10 @@ export function RecursosContent({
                 selectItem(item);
               }
             }}
-            className="cursor-pointer transition-colors hover:bg-muted/50"
+            className="hover:bg-muted/50 cursor-pointer transition-colors"
           >
             <CardContent className="flex flex-col gap-3 p-4">
-              <div
-                className={`flex size-12 items-center justify-center rounded-xl ${iconBg}`}
-              >
+              <div className={`flex size-12 items-center justify-center rounded-xl ${iconBg}`}>
                 {React.createElement(icon, { className: 'size-6 text-primary' })}
               </div>
               <div className="min-w-0">
@@ -568,11 +539,7 @@ export function RecursosContent({
     </div>
   );
 
-  const renderView = (
-    items: RecursosEntity[],
-    icon: React.ElementType,
-    iconBg: string,
-  ) =>
+  const renderView = (items: RecursosEntity[], icon: React.ElementType, iconBg: string) =>
     filterState.viewMode === 'cards'
       ? renderCards(items, icon, iconBg)
       : renderList(items, icon, iconBg);
@@ -723,15 +690,10 @@ export function RecursosContent({
               onViewModeChange={filterState.setViewMode}
             />
 
-            <Tabs
-              value={activeTab}
-              onValueChange={(v) => handleTabChange(v as RecursosTab)}
-            >
+            <Tabs value={activeTab} onValueChange={(v) => handleTabChange(v as RecursosTab)}>
               <TabsList>
                 <TabsTrigger value="sistemas">Sistemas ({systems.length})</TabsTrigger>
-                <TabsTrigger value="fornecedores">
-                  Fornecedores ({suppliers.length})
-                </TabsTrigger>
+                <TabsTrigger value="fornecedores">Fornecedores ({suppliers.length})</TabsTrigger>
                 <TabsTrigger value="servicos">Serviços ({services.length})</TabsTrigger>
                 <TabsTrigger value="documentos">Documentos ({documents.length})</TabsTrigger>
               </TabsList>
@@ -753,10 +715,12 @@ export function RecursosContent({
                         setSelectedTab(null);
                       }
                     }}
-                    title={(selectedItem && selectedTab === 'sistemas' ? selectedItem.name : '') ?? ''}
+                    title={
+                      (selectedItem && selectedTab === 'sistemas' ? selectedItem.name : '') ?? ''
+                    }
                     subtitle={
                       selectedItem && selectedTab === 'sistemas'
-                        ? (selectedItem as OrgSystem).description ?? undefined
+                        ? ((selectedItem as OrgSystem).description ?? undefined)
                         : undefined
                     }
                     width="lg"
@@ -784,13 +748,12 @@ export function RecursosContent({
                       }
                     }}
                     title={
-                      (selectedItem && selectedTab === 'fornecedores'
-                        ? selectedItem.name
-                        : '') ?? ''
+                      (selectedItem && selectedTab === 'fornecedores' ? selectedItem.name : '') ??
+                      ''
                     }
                     subtitle={
                       selectedItem && selectedTab === 'fornecedores'
-                        ? (selectedItem as OrgSupplier).description ?? undefined
+                        ? ((selectedItem as OrgSupplier).description ?? undefined)
                         : undefined
                     }
                     width="lg"
@@ -818,13 +781,11 @@ export function RecursosContent({
                       }
                     }}
                     title={
-                      (selectedItem && selectedTab === 'servicos'
-                        ? selectedItem.name
-                        : '') ?? ''
+                      (selectedItem && selectedTab === 'servicos' ? selectedItem.name : '') ?? ''
                     }
                     subtitle={
                       selectedItem && selectedTab === 'servicos'
-                        ? (selectedItem as OrgService).description ?? undefined
+                        ? ((selectedItem as OrgService).description ?? undefined)
                         : undefined
                     }
                     width="lg"
@@ -852,13 +813,11 @@ export function RecursosContent({
                       }
                     }}
                     title={
-                      (selectedItem && selectedTab === 'documentos'
-                        ? selectedItem.name
-                        : '') ?? ''
+                      (selectedItem && selectedTab === 'documentos' ? selectedItem.name : '') ?? ''
                     }
                     subtitle={
                       selectedItem && selectedTab === 'documentos'
-                        ? (selectedItem as OrgDocument).type ?? undefined
+                        ? ((selectedItem as OrgDocument).type ?? undefined)
                         : undefined
                     }
                     width="lg"
@@ -888,9 +847,7 @@ export function RecursosContent({
               <Input
                 id="recursos-name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, name: e.target.value }))
-                }
+                onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
                 placeholder="Nome"
               />
             </div>
@@ -899,36 +856,30 @@ export function RecursosContent({
               <Textarea
                 id="recursos-description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, description: e.target.value }))
-                }
+                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
                 placeholder="Descrição"
                 rows={3}
               />
             </div>
-            {(activeTab === 'sistemas' || ('purpose' in (editingItem ?? {}))) ? (
+            {activeTab === 'sistemas' || 'purpose' in (editingItem ?? {}) ? (
               <div className="grid gap-2">
                 <Label htmlFor="recursos-purpose">Propósito</Label>
                 <Input
                   id="recursos-purpose"
                   value={formData.purpose}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, purpose: e.target.value }))
-                  }
+                  onChange={(e) => setFormData((p) => ({ ...p, purpose: e.target.value }))}
                   placeholder="Propósito do sistema"
                 />
               </div>
             ) : null}
-            {(activeTab === 'documentos' || ('type' in (editingItem ?? {}))) ? (
+            {activeTab === 'documentos' || 'type' in (editingItem ?? {}) ? (
               <>
                 <div className="grid gap-2">
                   <Label htmlFor="recursos-type">Tipo</Label>
                   <Input
                     id="recursos-type"
                     value={formData.type}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, type: e.target.value }))
-                    }
+                    onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))}
                     placeholder="Tipo do documento"
                   />
                 </div>
@@ -936,9 +887,7 @@ export function RecursosContent({
                   <Label htmlFor="recursos-process">Processo associado</Label>
                   <Select
                     value={formData.associated_process_id}
-                    onValueChange={(v) =>
-                      setFormData((p) => ({ ...p, associated_process_id: v }))
-                    }
+                    onValueChange={(v) => setFormData((p) => ({ ...p, associated_process_id: v }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o processo" />
@@ -967,10 +916,7 @@ export function RecursosContent({
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={!!itemToDelete}
-        onOpenChange={(open) => !open && setItemToDelete(null)}
-      >
+      <Dialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Excluir item</DialogTitle>
@@ -1016,9 +962,7 @@ export function RecursosContent({
               <Input
                 id="system-resource-name"
                 value={systemResourceFormData.name}
-                onChange={(e) =>
-                  setSystemResourceFormData((p) => ({ ...p, name: e.target.value }))
-                }
+                onChange={(e) => setSystemResourceFormData((p) => ({ ...p, name: e.target.value }))}
                 placeholder="Nome do recurso"
               />
             </div>

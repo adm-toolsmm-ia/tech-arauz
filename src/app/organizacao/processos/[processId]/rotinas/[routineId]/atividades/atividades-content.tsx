@@ -109,7 +109,7 @@ function ActivityCockpit({
 
       <section>
         <div className="mb-3 flex items-center gap-2 border-b pb-2">
-          <FileText className="size-5 text-primary" />
+          <FileText className="text-primary size-5" />
           <h4 className="text-sm font-semibold">Documentos vinculados</h4>
         </div>
         {documents.length === 0 && !onLinkDocument ? (
@@ -169,22 +169,20 @@ function ActivityCockpit({
               {documents.map((d) => (
                 <div
                   key={d.id}
-                  className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                  className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3 transition-colors"
                 >
                   <Link
                     href="/organizacao/recursos?tab=documentos"
                     className="min-w-0 flex-1 hover:underline"
                   >
                     <p className="text-sm font-medium">{d.name}</p>
-                    {d.type && (
-                      <p className="text-xs text-muted-foreground">{d.type}</p>
-                    )}
+                    {d.type && <p className="text-xs text-muted-foreground">{d.type}</p>}
                   </Link>
                   {onUnlinkDocument && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="gap-2 text-destructive hover:text-destructive shrink-0"
+                      className="shrink-0 gap-2 text-destructive hover:text-destructive"
                       onClick={() => onUnlinkDocument(d.id, d.name)}
                       title="Desvincular documento"
                       aria-label={`Desvincular ${d.name}`}
@@ -455,11 +453,11 @@ export function AtividadesContent({
                           setSelectedActivity(a);
                         }
                       }}
-                      className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-muted/50"
+                      className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                          <CheckSquare className="size-5 text-primary" />
+                        <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+                          <CheckSquare className="text-primary size-5" />
                         </div>
                         <div>
                           <p className="font-medium">{a.name}</p>
@@ -651,10 +649,7 @@ export function AtividadesContent({
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={!!documentToUnlink}
-        onOpenChange={(open) => !open && setDocumentToUnlink(null)}
-      >
+      <Dialog open={!!documentToUnlink} onOpenChange={(open) => !open && setDocumentToUnlink(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Desvincular documento</DialogTitle>

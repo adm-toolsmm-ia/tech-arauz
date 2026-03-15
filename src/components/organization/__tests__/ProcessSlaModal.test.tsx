@@ -39,12 +39,7 @@ describe('ProcessSlaModal', () => {
   describe('Create Mode', () => {
     it('should render create modal with empty fields', () => {
       render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       expect(screen.getByText('Criar novo SLA')).toBeInTheDocument();
@@ -55,12 +50,7 @@ describe('ProcessSlaModal', () => {
     it('should validate required fields on submit', async () => {
       const user = userEvent.setup();
       render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const submitButton = screen.getByRole('button', { name: /Criar/i });
@@ -74,12 +64,7 @@ describe('ProcessSlaModal', () => {
     it('should validate target duration is positive', async () => {
       const user = userEvent.setup();
       render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
@@ -99,12 +84,7 @@ describe('ProcessSlaModal', () => {
     it('should validate warning threshold is between 0-100', async () => {
       const user = userEvent.setup();
       render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
@@ -119,19 +99,16 @@ describe('ProcessSlaModal', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Threshold de aviso deve estar entre 0 e 100/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Threshold de aviso deve estar entre 0 e 100/i),
+        ).toBeInTheDocument();
       });
     });
 
     it('should validate critical threshold is between 0-100', async () => {
       const user = userEvent.setup();
       render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
@@ -155,12 +132,7 @@ describe('ProcessSlaModal', () => {
     it('should validate warning < critical threshold', async () => {
       const user = userEvent.setup();
       render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
@@ -178,7 +150,9 @@ describe('ProcessSlaModal', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Threshold de aviso deve ser menor que o crítico/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Threshold de aviso deve ser menor que o crítico/i),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -192,7 +166,7 @@ describe('ProcessSlaModal', () => {
           onClose={mockOnClose}
           slaToEdit={mockSlaToEdit}
           mode="edit"
-        />
+        />,
       );
 
       expect(screen.getByText('Editar SLA')).toBeInTheDocument();
@@ -210,7 +184,7 @@ describe('ProcessSlaModal', () => {
           onClose={mockOnClose}
           slaToEdit={mockSlaToEdit}
           mode="edit"
-        />
+        />,
       );
 
       expect(screen.getByRole('button', { name: /Atualizar/i })).toBeInTheDocument();
@@ -218,12 +192,7 @@ describe('ProcessSlaModal', () => {
 
     it('should clear form when closing and reopening in create mode', async () => {
       const { rerender } = render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i) as HTMLInputElement;
@@ -235,19 +204,16 @@ describe('ProcessSlaModal', () => {
           isOpen={false}
           onClose={mockOnClose}
           mode="create"
-        />
+        />,
       );
 
       rerender(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
-      expect((screen.getByPlaceholderText(/Ex: tempo_conclusão/i) as HTMLInputElement).value).toBe('');
+      expect((screen.getByPlaceholderText(/Ex: tempo_conclusão/i) as HTMLInputElement).value).toBe(
+        '',
+      );
     });
   });
 
@@ -255,12 +221,7 @@ describe('ProcessSlaModal', () => {
     it('should disable submit button while loading', async () => {
       const user = userEvent.setup();
       render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
@@ -294,7 +255,7 @@ describe('ProcessSlaModal', () => {
           onClose={mockOnClose}
           onSave={mockOnSave}
           mode="create"
-        />
+        />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
@@ -326,12 +287,7 @@ describe('ProcessSlaModal', () => {
       });
 
       render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
@@ -358,12 +314,7 @@ describe('ProcessSlaModal', () => {
     it('should call onClose when cancel button is clicked', async () => {
       const user = userEvent.setup();
       render(
-        <ProcessSlaModal
-          processId={processId}
-          isOpen={true}
-          onClose={mockOnClose}
-          mode="create"
-        />
+        <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const cancelButton = screen.getByRole('button', { name: /Cancelar/i });

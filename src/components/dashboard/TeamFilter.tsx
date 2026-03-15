@@ -30,14 +30,13 @@ const TEAM_OPTIONS: Array<{ value: TeamFilterType; label: string }> = [
  * Displays team filter options as dropdown. Defaults to "Minha Equipe".
  * Used in: PerformanceFilters molecule → PerformanceTab organism
  */
-export function TeamFilter({
-  value,
-  onChange,
-  disabled = false,
-  id,
-}: TeamFilterProps): ReactNode {
+export function TeamFilter({ value, onChange, disabled = false, id }: TeamFilterProps): ReactNode {
   return (
-    <Select value={value} onValueChange={(val) => onChange(val as TeamFilterType)} disabled={disabled}>
+    <Select
+      value={value}
+      onValueChange={(val) => onChange(val as TeamFilterType)}
+      disabled={disabled}
+    >
       <SelectTrigger id={id} className="w-[200px]">
         <SelectValue placeholder="Selecione equipe" />
       </SelectTrigger>

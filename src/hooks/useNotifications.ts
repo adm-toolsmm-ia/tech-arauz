@@ -11,7 +11,12 @@ import type { Notification, AlertType } from '@/lib/notifications/types';
 export interface UseNotificationsReturn {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (projectId: string, projectName: string, alertType: AlertType, message: string) => void;
+  addNotification: (
+    projectId: string,
+    projectName: string,
+    alertType: AlertType,
+    message: string,
+  ) => void;
   markAsRead: (id: string) => void;
   clearAll: () => void;
   removeNotification: (id: string) => void;

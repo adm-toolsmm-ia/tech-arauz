@@ -324,7 +324,7 @@ export const LogViewer: React.FC<LogViewerProps> = ({ datasetFilter }) => {
         <div
           role={hasDetails ? 'button' : undefined}
           tabIndex={hasDetails ? 0 : undefined}
-          className={`flex items-start gap-2 p-2 ${hasDetails ? 'cursor-pointer hover:bg-muted/50' : ''}`}
+          className={`flex items-start gap-2 p-2 ${hasDetails ? 'hover:bg-muted/50 cursor-pointer' : ''}`}
           onClick={() => hasDetails && toggleRow(log.id)}
           onKeyDown={(e) => {
             if (hasDetails && (e.key === 'Enter' || e.key === ' ')) {
@@ -371,7 +371,7 @@ export const LogViewer: React.FC<LogViewerProps> = ({ datasetFilter }) => {
     return (
       <div
         key={summary.id}
-        className="flex items-center gap-3 border-b border-border/50 p-3 hover:bg-muted/50"
+        className="hover:bg-muted/50 flex items-center gap-3 border-b border-border/50 p-3"
       >
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -673,4 +673,4 @@ export const LogViewer: React.FC<LogViewerProps> = ({ datasetFilter }) => {
       </CardContent>
     </Card>
   );
-}
+};

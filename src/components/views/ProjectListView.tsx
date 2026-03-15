@@ -115,7 +115,7 @@ export function ProjectListView({
           setSortDirection('asc');
         }
       }}
-      className="flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-primary"
+      className="hover:text-primary flex items-center gap-1.5 text-xs font-semibold transition-colors"
     >
       {label}
       {sortBy === column &&
@@ -149,7 +149,7 @@ export function ProjectListView({
       <div className="hidden overflow-hidden rounded-lg border bg-card md:block">
         <div className="max-h-[600px] overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="sticky top-0 border-b bg-muted/50">
+            <thead className="bg-muted/50 sticky top-0 border-b">
               <tr>
                 <th className="w-8 px-3 py-2 text-left"></th>
                 <th className="w-16 min-w-fit px-3 py-2 text-left font-semibold text-muted-foreground">
@@ -182,7 +182,7 @@ export function ProjectListView({
 
                 return (
                   <React.Fragment key={project.id}>
-                    <tr className="transition-colors hover:bg-muted/50">
+                    <tr className="hover:bg-muted/50 transition-colors">
                       <td className="px-3 py-2">
                         <Button
                           variant="ghost"
@@ -201,7 +201,7 @@ export function ProjectListView({
                         #{project.espaider_code}
                       </td>
                       <td
-                        className="cursor-pointer truncate px-3 py-2 font-medium text-foreground/90 transition-colors hover:text-primary"
+                        className="text-foreground/90 hover:text-primary cursor-pointer truncate px-3 py-2 font-medium transition-colors"
                         onClick={() => onSelectProject?.(project.id)}
                         title={project.project_name}
                       >
@@ -217,7 +217,7 @@ export function ProjectListView({
                           {statusLabels[normalizedStatus] || project.status}
                         </Badge>
                       </td>
-                      <td className="truncate px-3 py-2 text-xs text-foreground/80">
+                      <td className="text-foreground/80 truncate px-3 py-2 text-xs">
                         {project.responsible || '-'}
                       </td>
                       <td
@@ -259,7 +259,7 @@ export function ProjectListView({
                             </div>
                             <div>
                               <p className="mb-1 font-semibold text-muted-foreground">Objetivo</p>
-                              <p className="truncate text-foreground/80">
+                              <p className="text-foreground/80 truncate">
                                 {project.objetivo || '-'}
                               </p>
                             </div>
@@ -339,7 +339,7 @@ export function ProjectListView({
                 <div className="mb-2 space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Responsável:</span>
-                    <span className="font-medium text-foreground/80">
+                    <span className="text-foreground/80 font-medium">
                       {project.responsible || '-'}
                     </span>
                   </div>
@@ -384,7 +384,7 @@ export function ProjectListView({
                     {project.objetivo && (
                       <div>
                         <p className="mb-0.5 font-semibold text-muted-foreground">Objetivo</p>
-                        <p className="line-clamp-2 text-foreground/80">{project.objetivo}</p>
+                        <p className="text-foreground/80 line-clamp-2">{project.objetivo}</p>
                       </div>
                     )}
                   </div>

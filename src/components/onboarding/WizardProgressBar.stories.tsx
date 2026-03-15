@@ -50,13 +50,7 @@ export const Step1: Story = {
  */
 export const Step2: Story = {
   args: {
-    steps: [
-      { ...steps[0], completed: true },
-      steps[1],
-      steps[2],
-      steps[3],
-      steps[4],
-    ],
+    steps: [{ ...steps[0], completed: true }, steps[1], steps[2], steps[3], steps[4]],
     currentStep: 2,
   },
 };

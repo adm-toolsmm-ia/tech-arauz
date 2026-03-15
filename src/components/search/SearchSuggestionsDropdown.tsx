@@ -88,15 +88,11 @@ export function SearchSuggestionsDropdown({
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setHighlightedIndex((prev) =>
-            prev < allItems.length - 1 ? prev + 1 : 0,
-          );
+          setHighlightedIndex((prev) => (prev < allItems.length - 1 ? prev + 1 : 0));
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setHighlightedIndex((prev) =>
-            prev > 0 ? prev - 1 : allItems.length - 1,
-          );
+          setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : allItems.length - 1));
           break;
         case 'Enter':
           e.preventDefault();
@@ -129,7 +125,7 @@ export function SearchSuggestionsDropdown({
       ref={dropdownRef}
       id={id}
       className={cn(
-        'absolute top-full left-0 right-0 z-50 mt-1',
+        'absolute left-0 right-0 top-full z-50 mt-1',
         'rounded-md border border-border bg-popover text-popover-foreground shadow-md',
         'w-full',
         className,
@@ -147,9 +143,7 @@ export function SearchSuggestionsDropdown({
         ) : allItems.length === 0 ? (
           // Empty State
           <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-            {query.length === 0
-              ? 'Digite para ver sugestões'
-              : 'Nenhuma sugestão encontrada'}
+            {query.length === 0 ? 'Digite para ver sugestões' : 'Nenhuma sugestão encontrada'}
           </div>
         ) : (
           // Suggestions List
@@ -200,9 +194,7 @@ export function SearchSuggestionsDropdown({
 
                   {/* Badge */}
                   {isRecent && (
-                    <span className="flex-shrink-0 text-xs text-muted-foreground">
-                      recente
-                    </span>
+                    <span className="flex-shrink-0 text-xs text-muted-foreground">recente</span>
                   )}
                 </button>
               );

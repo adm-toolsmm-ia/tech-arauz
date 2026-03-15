@@ -147,4 +147,4 @@ export const ProjectImpactMatrix: React.FC<ProjectImpactMatrixProps> = ({ data }
       </CardContent>
     </Card>
   );
-}
+};

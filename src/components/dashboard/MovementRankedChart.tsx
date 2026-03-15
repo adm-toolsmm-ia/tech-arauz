@@ -57,7 +57,7 @@ export function MovementRankedChart({ data, loading = false }: MovementRankedCha
           <CardTitle>Movimentações por Responsável</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80 flex items-center justify-center bg-muted/20 rounded animate-pulse">
+          <div className="bg-muted/20 flex h-80 animate-pulse items-center justify-center rounded">
             <p className="text-sm text-muted-foreground">Carregando...</p>
           </div>
         </CardContent>
@@ -72,7 +72,7 @@ export function MovementRankedChart({ data, loading = false }: MovementRankedCha
           <CardTitle>Movimentações por Responsável</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80 flex items-center justify-center">
+          <div className="flex h-80 items-center justify-center">
             <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
           </div>
         </CardContent>
@@ -88,10 +88,7 @@ export function MovementRankedChart({ data, loading = false }: MovementRankedCha
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={350}>
-          <BarChart
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 0, bottom: 60 }}
-          >
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
             <XAxis
               dataKey="name"
@@ -135,19 +132,19 @@ export function MovementRankedChart({ data, loading = false }: MovementRankedCha
 
         {/* Summary Stats */}
         <div className="mt-6 grid grid-cols-3 gap-4">
-          <div className="p-3 bg-muted/50 rounded">
+          <div className="bg-muted/50 rounded p-3">
             <p className="text-xs text-muted-foreground">Total</p>
             <p className="text-lg font-semibold">
               {chartData.reduce((sum, d) => sum + d.value, 0)}
             </p>
           </div>
-          <div className="p-3 bg-muted/50 rounded">
+          <div className="bg-muted/50 rounded p-3">
             <p className="text-xs text-muted-foreground">Média</p>
             <p className="text-lg font-semibold">
               {(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length).toFixed(1)}
             </p>
           </div>
-          <div className="p-3 bg-muted/50 rounded">
+          <div className="bg-muted/50 rounded p-3">
             <p className="text-xs text-muted-foreground">Máximo</p>
             <p className="text-lg font-semibold">{Math.max(...chartData.map((d) => d.value))}</p>
           </div>

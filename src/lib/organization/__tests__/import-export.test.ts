@@ -101,9 +101,7 @@ describe('CSV Validation', () => {
   });
 
   it('should parse JSON arrays in CSV fields', () => {
-    const data = [
-      { name: 'Area A', responsible_roles: '["admin", "manager"]' },
-    ];
+    const data = [{ name: 'Area A', responsible_roles: '["admin", "manager"]' }];
     const result = validateCSVData(data, 'area', ['name']);
 
     expect(result.imported).toBe(1);
@@ -111,9 +109,7 @@ describe('CSV Validation', () => {
   });
 
   it('should handle invalid JSON in CSV fields', () => {
-    const data = [
-      { name: 'Area A', responsible_roles: '{invalid json}' },
-    ];
+    const data = [{ name: 'Area A', responsible_roles: '{invalid json}' }];
     const result = validateCSVData(data, 'area', ['name']);
 
     expect(result.imported).toBe(0);
@@ -122,11 +118,7 @@ describe('CSV Validation', () => {
   });
 
   it('should return row numbers correctly', () => {
-    const data = [
-      { name: 'Area A' },
-      { name: 'Area B' },
-      { name: 'Area C' },
-    ];
+    const data = [{ name: 'Area A' }, { name: 'Area B' }, { name: 'Area C' }];
     const result = validateCSVData(data, 'area', ['name', 'objective']);
 
     expect(result.errors[0].row).toBe(2); // First data row (after header)
@@ -135,9 +127,7 @@ describe('CSV Validation', () => {
   });
 
   it('should track column information in errors', () => {
-    const data = [
-      { name: 'Area A', responsible_roles: '[invalid' },
-    ];
+    const data = [{ name: 'Area A', responsible_roles: '[invalid' }];
     const result = validateCSVData(data, 'area', ['name']);
 
     expect(result.errors[0].column).toBe('responsible_roles');

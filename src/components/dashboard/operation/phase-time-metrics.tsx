@@ -23,7 +23,7 @@ export const PhaseTimeMetrics: React.FC<PhaseTimeMetricsProps> = ({ projects }) 
     <Card>
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
-          <Timer className="h-5 w-5 text-primary" />
+          <Timer className="text-primary h-5 w-5" />
           <div>
             <CardTitle className="text-base font-medium">Tempo Médio por Fase</CardTitle>
             <CardDescription>
@@ -42,7 +42,7 @@ export const PhaseTimeMetrics: React.FC<PhaseTimeMetricsProps> = ({ projects }) 
             {data.map((item) => (
               <div
                 key={item.phase}
-                className="relative flex flex-col justify-between overflow-hidden rounded-lg border bg-card p-4 shadow-sm transition-all hover:bg-muted/50"
+                className="hover:bg-muted/50 relative flex flex-col justify-between overflow-hidden rounded-lg border bg-card p-4 shadow-sm transition-all"
               >
                 <div className="mb-2 flex items-center justify-between">
                   <h4
@@ -54,7 +54,7 @@ export const PhaseTimeMetrics: React.FC<PhaseTimeMetricsProps> = ({ projects }) 
                 </div>
                 <div>
                   <div className="flex items-end gap-1">
-                    <span className="text-3xl font-bold tracking-tight text-primary">
+                    <span className="text-primary text-3xl font-bold tracking-tight">
                       {item.avgDays}
                     </span>
                     <span className="mb-1 text-sm font-medium text-muted-foreground">dias</span>
@@ -74,7 +74,7 @@ export const PhaseTimeMetrics: React.FC<PhaseTimeMetricsProps> = ({ projects }) 
       </CardContent>
     </Card>
   );
-}
+};
 
 function buildPhaseMetrics(projects: Array<any>): PhaseMetric[] {
   const phaseStats: Record<string, { totalDays: number; maxDays: number; count: number }> = {};

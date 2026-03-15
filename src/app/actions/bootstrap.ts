@@ -3,11 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import type { User } from '@supabase/supabase-js';
-import type {
-  OrgArea,
-  OrgNucleus,
-  OrgProcess,
-} from '@/types/organization';
+import type { OrgArea, OrgNucleus, OrgProcess } from '@/types/organization';
 import type {
   OrganizationType,
   BootstrapTemplate,
@@ -61,7 +57,7 @@ async function getAuthContext(): Promise<AuthContext> {
  * Story 11.12: Step 2 (Template Selection)
  */
 export async function getBootstrapTemplatesAction(
-  organizationType: OrganizationType
+  organizationType: OrganizationType,
 ): Promise<OrgActionResult<BootstrapTemplate>> {
   try {
     if (!organizationType) {
@@ -115,7 +111,7 @@ export async function listBootstrapTemplatesAction(): Promise<
  */
 export async function validateWizardStepAction(
   step: number,
-  data: Record<string, any>
+  data: Record<string, any>,
 ): Promise<OrgActionResult<{ valid: boolean; errors: string[] }>> {
   try {
     const errors: string[] = [];
@@ -202,7 +198,7 @@ export async function validateWizardStepAction(
  * This is a simplified version - full implementation would bulk-insert areas, nuclei, processes
  */
 export async function createOrgFromWizardAction(
-  wizardData: Record<string, any>
+  wizardData: Record<string, any>,
 ): Promise<OrgActionResult<{ organization_id: string }>> {
   const ctx = await getAuthContext();
   if ('error' in ctx) {
@@ -252,16 +248,14 @@ export async function createOrgFromWizardAction(
 
       // Insert nuclei for this area
       if (areaPayload.nuclei && areaPayload.nuclei.length > 0) {
-        const nucleiPayloads = areaPayload.nuclei.map(nucleus => ({
+        const nucleiPayloads = areaPayload.nuclei.map((nucleus) => ({
           tenant_id: ctx.tenantId,
           area_id: areaData.id,
           name: nucleus.name,
           description: nucleus.description || null,
         }));
 
-        const { error: nucleiError } = await ctx.supabase
-          .from('org_nuclei')
-          .insert(nucleiPayloads);
+        const { error: nucleiError } = await ctx.supabase.from('org_nuclei').insert(nucleiPayloads);
 
         if (nucleiError) {
           throw new Error(`Erro ao criar núcleos para área: ${areaPayload.name}`);

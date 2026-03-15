@@ -9,10 +9,7 @@ interface SuggestionItem {
 }
 
 // In-memory cache for suggestions (TTL: 1 hour)
-const suggestionCache = new Map<
-  string,
-  { data: SuggestionItem[]; timestamp: number }
->();
+const suggestionCache = new Map<string, { data: SuggestionItem[]; timestamp: number }>();
 const CACHE_TTL = 3600000; // 1 hour in ms
 
 // System suggestions (default catalog)
@@ -123,9 +120,10 @@ export async function GET(request: NextRequest) {
 
     // Filter and rank suggestions
     const filtered = systemSuggestions
-      .filter((s) =>
-        s.text.toLowerCase().includes(query) ||
-        query.split(' ').some((part) => s.text.toLowerCase().includes(part)),
+      .filter(
+        (s) =>
+          s.text.toLowerCase().includes(query) ||
+          query.split(' ').some((part) => s.text.toLowerCase().includes(part)),
       )
       .sort((a, b) => {
         // Score: exact match > contains > frequency
@@ -155,9 +153,6 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error('[search/suggestions] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', suggestions: [] },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error', suggestions: [] }, { status: 500 });
   }
 }

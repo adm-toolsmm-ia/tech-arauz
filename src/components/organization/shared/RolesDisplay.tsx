@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface RolesDisplayProps {
   roles?: string[];
@@ -27,7 +23,7 @@ export function RolesDisplay({ roles = [], maxDisplay = 2, className }: RolesDis
   const overflow = roles.slice(maxDisplay);
 
   return (
-    <div className={`flex gap-1 flex-wrap items-center ${className || ''}`}>
+    <div className={`flex flex-wrap items-center gap-1 ${className || ''}`}>
       {displayed.map((role) => (
         <Badge key={role} variant="secondary" className="text-xs">
           {role}
@@ -37,7 +33,7 @@ export function RolesDisplay({ roles = [], maxDisplay = 2, className }: RolesDis
       {overflow.length > 0 && (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Badge variant="outline" className="text-xs cursor-pointer">
+            <Badge variant="outline" className="cursor-pointer text-xs">
               +{overflow.length} more
             </Badge>
           </PopoverTrigger>

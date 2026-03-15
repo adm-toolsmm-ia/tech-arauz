@@ -35,7 +35,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-primary p-4">
+    <main className="bg-primary relative flex min-h-screen items-center justify-center overflow-hidden p-4">
       {/* Background Decoration */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-20 [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
       <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
@@ -55,7 +55,7 @@ export default function LoginPage() {
             </div>
             <div className="flex flex-col items-center">
               <span className="text-3xl font-bold tracking-tight text-white">Tech Arauz</span>
-              <span className="mt-1 text-sm font-medium uppercase tracking-widest text-primary-foreground/60">
+              <span className="text-primary-foreground/60 mt-1 text-sm font-medium uppercase tracking-widest">
                 Portal Corporativo
               </span>
             </div>
@@ -98,7 +98,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="focus:border-primary focus:ring-primary/20 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:ring-2"
                 placeholder="nome@arauz.adv.br"
               />
             </div>
@@ -110,7 +110,7 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="button"
-                  className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                  className="text-primary hover:text-primary/80 text-xs font-medium transition-colors"
                 >
                   Esqueceu a senha?
                 </button>
@@ -121,7 +121,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="focus:border-primary focus:ring-primary/20 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:ring-2"
                 placeholder="••••••••"
               />
             </div>
@@ -129,7 +129,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="hover:bg-accent-hover w-full transform rounded-xl bg-accent px-4 py-3.5 font-bold text-white shadow-lg shadow-accent/20 transition-all hover:shadow-accent/40 focus:ring-4 focus:ring-accent/20 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+              className="hover:bg-accent-hover shadow-accent/20 hover:shadow-accent/40 focus:ring-accent/20 w-full transform rounded-xl bg-accent px-4 py-3.5 font-bold text-white shadow-lg transition-all focus:ring-4 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -163,7 +163,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-10 text-center text-xs font-medium tracking-wide text-primary-foreground/40">
+        <p className="text-primary-foreground/40 mt-10 text-center text-xs font-medium tracking-wide">
           &copy; 2026 Tech Arauz &bull; Araúz & Advogados Associados
         </p>
       </div>

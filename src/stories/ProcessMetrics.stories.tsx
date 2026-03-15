@@ -177,11 +177,7 @@ const mockMetricsHistory: OrgProcessMetrics[] = [
 export const CardOnTrack: StoryObj = {
   render: () => (
     <div className="max-w-md">
-      <ProcessMetricsCard
-        processId="proc-001"
-        sla={mockSla}
-        recentMetrics={mockMetricsOnTrack}
-      />
+      <ProcessMetricsCard processId="proc-001" sla={mockSla} recentMetrics={mockMetricsOnTrack} />
     </div>
   ),
 };
@@ -196,11 +192,7 @@ export const CardOnTrack: StoryObj = {
 export const CardWarning: StoryObj = {
   render: () => (
     <div className="max-w-md">
-      <ProcessMetricsCard
-        processId="proc-001"
-        sla={mockSla}
-        recentMetrics={mockMetricsWarning}
-      />
+      <ProcessMetricsCard processId="proc-001" sla={mockSla} recentMetrics={mockMetricsWarning} />
     </div>
   ),
 };
@@ -215,11 +207,7 @@ export const CardWarning: StoryObj = {
 export const CardCritical: StoryObj = {
   render: () => (
     <div className="max-w-md">
-      <ProcessMetricsCard
-        processId="proc-001"
-        sla={mockSla}
-        recentMetrics={mockMetricsCritical}
-      />
+      <ProcessMetricsCard processId="proc-001" sla={mockSla} recentMetrics={mockMetricsCritical} />
     </div>
   ),
 };
@@ -246,13 +234,9 @@ export const CardEmptyState: StoryObj = {
  */
 export const CardDarkMode: StoryObj = {
   render: () => (
-    <div className="dark bg-slate-950 p-6 rounded-lg">
+    <div className="dark rounded-lg bg-slate-950 p-6">
       <div className="max-w-md">
-        <ProcessMetricsCard
-          processId="proc-001"
-          sla={mockSla}
-          recentMetrics={mockMetricsOnTrack}
-        />
+        <ProcessMetricsCard processId="proc-001" sla={mockSla} recentMetrics={mockMetricsOnTrack} />
       </div>
     </div>
   ),
@@ -267,11 +251,7 @@ export const CardDarkMode: StoryObj = {
 export const CardMobile: StoryObj = {
   render: () => (
     <div className="max-w-md">
-      <ProcessMetricsCard
-        processId="proc-001"
-        sla={mockSla}
-        recentMetrics={mockMetricsOnTrack}
-      />
+      <ProcessMetricsCard processId="proc-001" sla={mockSla} recentMetrics={mockMetricsOnTrack} />
     </div>
   ),
   parameters: {
@@ -283,9 +263,7 @@ export const CardMobile: StoryObj = {
 
 // Component for Week View story
 function HistoryWeekViewComponent() {
-  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
-    'week'
-  );
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('week');
   return (
     <div>
       <ProcessMetricsHistory
@@ -311,9 +289,7 @@ export const HistoryWeekView: StoryObj = {
 
 // Component for Month View story
 function HistoryMonthViewComponent() {
-  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
-    'month'
-  );
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('month');
   return (
     <div>
       <ProcessMetricsHistory
@@ -343,12 +319,7 @@ export const HistoryMonthView: StoryObj = {
  * - Explains when history will be available
  */
 export const HistoryEmptyState: StoryObj = {
-  render: () => (
-    <ProcessMetricsHistory
-      processId="proc-001"
-      metrics={[]}
-    />
-  ),
+  render: () => <ProcessMetricsHistory processId="proc-001" metrics={[]} />,
 };
 
 /**
@@ -359,20 +330,15 @@ export const HistoryEmptyState: StoryObj = {
  */
 export const HistoryDarkMode: StoryObj = {
   render: () => (
-    <div className="dark bg-slate-950 p-6 rounded-lg">
-      <ProcessMetricsHistory
-        processId="proc-001"
-        metrics={mockMetricsHistory}
-      />
+    <div className="dark rounded-lg bg-slate-950 p-6">
+      <ProcessMetricsHistory processId="proc-001" metrics={mockMetricsHistory} />
     </div>
   ),
 };
 
 // Component for Mobile View story
 function HistoryMobileComponent() {
-  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
-    'week'
-  );
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('week');
   return (
     <ProcessMetricsHistory
       processId="proc-001"
@@ -401,16 +367,10 @@ export const HistoryMobile: StoryObj = {
 
 // Component for Dashboard View story
 function DashboardViewComponent() {
-  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>(
-    'month'
-  );
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('month');
   return (
-    <div className="space-y-6 max-w-4xl">
-      <ProcessMetricsCard
-        processId="proc-001"
-        sla={mockSla}
-        recentMetrics={mockMetricsOnTrack}
-      />
+    <div className="max-w-4xl space-y-6">
+      <ProcessMetricsCard processId="proc-001" sla={mockSla} recentMetrics={mockMetricsOnTrack} />
       <ProcessMetricsHistory
         processId="proc-001"
         metrics={mockMetricsHistory}
@@ -463,23 +423,19 @@ export const A11yContrastTest: StoryObj = {
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded bg-green-100 p-4 text-green-900">
           <p className="font-semibold">On Track (Green)</p>
-          <p className="text-xs mt-1">92% compliance</p>
+          <p className="mt-1 text-xs">92% compliance</p>
         </div>
         <div className="rounded bg-yellow-100 p-4 text-yellow-900">
           <p className="font-semibold">Warning (Yellow)</p>
-          <p className="text-xs mt-1">88% compliance</p>
+          <p className="mt-1 text-xs">88% compliance</p>
         </div>
         <div className="rounded bg-red-100 p-4 text-red-900">
           <p className="font-semibold">Critical (Red)</p>
-          <p className="text-xs mt-1">72% compliance</p>
+          <p className="mt-1 text-xs">72% compliance</p>
         </div>
       </div>
 
-      <ProcessMetricsCard
-        processId="proc-001"
-        sla={mockSla}
-        recentMetrics={mockMetricsOnTrack}
-      />
+      <ProcessMetricsCard processId="proc-001" sla={mockSla} recentMetrics={mockMetricsOnTrack} />
     </div>
   ),
 };
@@ -500,9 +456,7 @@ export const ResponsiveBreakpointsTest: StoryObj = {
         { label: 'Desktop (1024px)', width: '1024px' },
       ].map(({ label, width }) => (
         <div key={width}>
-          <p className="mb-2 font-semibold text-slate-600 dark:text-slate-400">
-            {label}
-          </p>
+          <p className="mb-2 font-semibold text-slate-600 dark:text-slate-400">{label}</p>
           <div style={{ width, maxWidth: '100%' }} className="border">
             <ProcessMetricsCard
               processId="proc-001"

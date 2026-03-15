@@ -39,7 +39,7 @@ describe('ActivitySystemsModal', () => {
         isOpen={true}
         onClose={mockOnClose}
         availableSystems={mockSystems}
-      />
+      />,
     );
 
     expect(screen.getByText('Gerenciar Sistemas da Atividade')).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('ActivitySystemsModal', () => {
         isOpen={true}
         onClose={mockOnClose}
         availableSystems={mockSystems}
-      />
+      />,
     );
 
     expect(screen.getByText('Nenhum sistema adicionado ainda.')).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('ActivitySystemsModal', () => {
         isOpen={true}
         onClose={mockOnClose}
         availableSystems={mockSystems}
-      />
+      />,
     );
 
     const dropdownButton = screen.getByRole('button', { name: /Selecione um sistema/i });
@@ -88,7 +88,7 @@ describe('ActivitySystemsModal', () => {
         isOpen={true}
         onClose={mockOnClose}
         availableSystems={mockSystems}
-      />
+      />,
     );
 
     const contextInput = screen.getByPlaceholderText(/Ex: Sincronização/i);
@@ -105,7 +105,7 @@ describe('ActivitySystemsModal', () => {
         isOpen={true}
         onClose={mockOnClose}
         availableSystems={mockSystems}
-      />
+      />,
     );
 
     const cancelButton = screen.getByRole('button', { name: /Cancelar/i });
@@ -123,7 +123,7 @@ describe('ActivitySystemsModal', () => {
         onClose={mockOnClose}
         onSave={mockOnSave}
         availableSystems={mockSystems}
-      />
+      />,
     );
 
     const saveButton = screen.getByRole('button', { name: /Salvar Alterações/i });
@@ -142,7 +142,7 @@ describe('ActivitySystemsModal', () => {
         isOpen={true}
         onClose={mockOnClose}
         availableSystems={mockSystems}
-      />
+      />,
     );
 
     const addButton = screen.getByRole('button', { name: /Adicionar Sistema/i });
@@ -156,7 +156,7 @@ describe('ActivitySystemsModal', () => {
         isOpen={true}
         onClose={mockOnClose}
         availableSystems={mockSystems}
-      />
+      />,
     );
 
     // Check for responsive dialog classes

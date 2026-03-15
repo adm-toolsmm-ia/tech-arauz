@@ -15,12 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Select,
   SelectContent,
@@ -52,7 +47,13 @@ import {
   createNucleusAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
-import type { OrgArea, OrgNucleus, OrgProcess, OrgRoutine, OrgActivity } from '@/types/organization';
+import type {
+  OrgArea,
+  OrgNucleus,
+  OrgProcess,
+  OrgRoutine,
+  OrgActivity,
+} from '@/types/organization';
 import { Building2 } from 'lucide-react';
 
 interface AreasContentProps {
@@ -112,7 +113,8 @@ export function AreasContent({
   const [formData, setFormData] = React.useState<AreaFormData>(DEFAULT_FORM);
 
   const [isNucleusFormOpen, setIsNucleusFormOpen] = React.useState(false);
-  const [nucleusFormData, setNucleusFormData] = React.useState<NucleusFormData>(DEFAULT_NUCLEUS_FORM);
+  const [nucleusFormData, setNucleusFormData] =
+    React.useState<NucleusFormData>(DEFAULT_NUCLEUS_FORM);
   const [isNucleusLoading, setIsNucleusLoading] = React.useState(false);
 
   const {
@@ -468,11 +470,11 @@ export function AreasContent({
                             setSelectedArea(area);
                           }
                         }}
-                        className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-muted/50"
+                        className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                            <Building2 className="size-5 text-primary" />
+                          <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+                            <Building2 className="text-primary size-5" />
                           </div>
                           <div>
                             <p className="font-medium">{area.name}</p>
@@ -567,10 +569,7 @@ export function AreasContent({
             depth={2}
           >
             {selectedProcess && (
-              <ProcessCockpit360
-                process={selectedProcess}
-                onSelectRoutine={setSelectedRoutine}
-              />
+              <ProcessCockpit360 process={selectedProcess} onSelectRoutine={setSelectedRoutine} />
             )}
           </ContextPanel>
 
@@ -604,16 +603,16 @@ export function AreasContent({
             depth={3}
           >
             {selectedRoutine && (
-              <RoutineCockpit360
-                routine={selectedRoutine}
-                onSelectActivity={setSelectedActivity}
-              />
+              <RoutineCockpit360 routine={selectedRoutine} onSelectActivity={setSelectedActivity} />
             )}
           </ContextPanel>
 
           {/* Activity Sheet */}
-          <Sheet open={selectedActivity !== null} onOpenChange={(open) => !open && setSelectedActivity(null)}>
-            <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+          <Sheet
+            open={selectedActivity !== null}
+            onOpenChange={(open) => !open && setSelectedActivity(null)}
+          >
+            <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
               {selectedActivity && (
                 <>
                   <SheetHeader className="mb-6">

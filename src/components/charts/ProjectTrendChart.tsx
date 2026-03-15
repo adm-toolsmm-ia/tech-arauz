@@ -101,7 +101,7 @@ export const ProjectTrendChart: React.FC<ProjectTrendChartProps> = ({ data }) =>
       </CardContent>
     </Card>
   );
-}
+};
 
 // Helper to build trend data from projects
 export function buildTrendData(

@@ -14,10 +14,10 @@ interface InfoFieldProps {
 export function InfoField({ label, value, className }: InfoFieldProps) {
   return (
     <div className={`flex gap-4 ${className || ''}`}>
-      <span className="w-20 font-semibold text-sm text-muted-foreground flex-shrink-0">
+      <span className="w-20 flex-shrink-0 text-sm font-semibold text-muted-foreground">
         {label}
       </span>
-      <span className="text-sm flex-1">{value}</span>
+      <span className="flex-1 text-sm">{value}</span>
     </div>
   );
 }

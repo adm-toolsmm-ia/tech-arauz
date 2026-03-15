@@ -26,19 +26,23 @@ export function OrgEntityCard({
 }: OrgEntityCardProps) {
   return (
     <Card
-      className={`hover:shadow-md transition-shadow cursor-pointer ${className || ''}`}
+      className={`cursor-pointer transition-shadow hover:shadow-md ${className || ''}`}
       onClick={onClick}
     >
-      <CardContent className="p-3 flex justify-between items-start">
+      <CardContent className="flex items-start justify-between p-3">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h4 className="font-semibold text-sm">{title}</h4>
-            {badge && <Badge variant="secondary" className="text-xs">{badge}</Badge>}
+            <h4 className="text-sm font-semibold">{title}</h4>
+            {badge && (
+              <Badge variant="secondary" className="text-xs">
+                {badge}
+              </Badge>
+            )}
           </div>
-          {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+          {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
 
           {meta && (
-            <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
+            <div className="mt-2 flex gap-3 text-xs text-muted-foreground">
               {Object.entries(meta).map(([key, value]) => (
                 <span key={key}>
                   {key}: <strong>{value}</strong>
@@ -48,7 +52,7 @@ export function OrgEntityCard({
           )}
         </div>
 
-        <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
       </CardContent>
     </Card>
   );

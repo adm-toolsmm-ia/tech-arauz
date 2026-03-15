@@ -23,7 +23,9 @@ export async function getChatbotAgents(): Promise<AgentHead[]> {
   // Get agents with is_global_chatbot = true and status = 'published'
   const { data: agents, error } = await supabase
     .from('agents')
-    .select('id, name, slug, status, tags, model_id, current_version, updated_at, owners, usage_type, show_in_shortcut, is_global_chatbot')
+    .select(
+      'id, name, slug, status, tags, model_id, current_version, updated_at, owners, usage_type, show_in_shortcut, is_global_chatbot',
+    )
     .eq('is_global_chatbot', true)
     .eq('status', 'published')
     .order('updated_at', { ascending: false });
@@ -123,7 +125,7 @@ export async function getChatSession(sessionId: string) {
         content,
         created_at
       )
-    `
+    `,
     )
     .eq('id', sessionId)
     .eq('user_id', user.id)
@@ -144,7 +146,7 @@ export async function getChatSession(sessionId: string) {
 export async function addChatMessage(
   sessionId: string,
   role: 'user' | 'assistant',
-  content: string
+  content: string,
 ) {
   const supabase = await createClient();
 
@@ -193,10 +195,7 @@ export async function addChatMessage(
   }
 
   // Update session updated_at
-  await supabase
-    .from('chat_sessions')
-    .update({ updated_at: now })
-    .eq('id', sessionId);
+  await supabase.from('chat_sessions').update({ updated_at: now }).eq('id', sessionId);
 
   return message;
 }

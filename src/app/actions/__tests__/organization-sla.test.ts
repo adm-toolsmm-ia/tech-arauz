@@ -79,13 +79,7 @@ describe('Process SLA Management - Story 13.1', () => {
       return chain;
     });
 
-    const result = await createProcessSlaAction(
-      processId,
-      'tempo_conclusão',
-      5,
-      75,
-      95
-    );
+    const result = await createProcessSlaAction(processId, 'tempo_conclusão', 5, 75, 95);
 
     expect(result.success).toBe(true);
     expect(result.message).toContain('sucesso');

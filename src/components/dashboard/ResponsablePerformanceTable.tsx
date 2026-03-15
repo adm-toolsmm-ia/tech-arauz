@@ -77,9 +77,10 @@ export function ResponsablePerformanceTable({
 
   // Filter data based on advanced filters
   const filteredData = React.useMemo(() => {
-    const teamAvg = data.length > 0
-      ? Math.round(data.reduce((sum, d) => sum + d.total_movements, 0) / data.length)
-      : 0;
+    const teamAvg =
+      data.length > 0
+        ? Math.round(data.reduce((sum, d) => sum + d.total_movements, 0) / data.length)
+        : 0;
 
     return data.filter((person) => {
       // Status filter
@@ -91,9 +92,7 @@ export function ResponsablePerformanceTable({
       // Completion rate filter
       if (filters.completionRange !== 'all') {
         const completionRate = getCompletionRate(person);
-        const [minRate, maxRate] = filters.completionRange
-          .split('-')
-          .map((v) => parseInt(v, 10));
+        const [minRate, maxRate] = filters.completionRange.split('-').map((v) => parseInt(v, 10));
 
         if (completionRate < minRate || completionRate > maxRate) return false;
       }
@@ -180,9 +179,9 @@ export function ResponsablePerformanceTable({
   const SortIndicator = ({ field }: { field: SortField }) => {
     if (sortField !== field) return null;
     return sortDirection === 'asc' ? (
-      <ChevronUp className="w-4 h-4 inline ml-1" aria-label="Ascendente" />
+      <ChevronUp className="ml-1 inline h-4 w-4" aria-label="Ascendente" />
     ) : (
-      <ChevronDown className="w-4 h-4 inline ml-1" aria-label="Descendente" />
+      <ChevronDown className="ml-1 inline h-4 w-4" aria-label="Descendente" />
     );
   };
 
@@ -205,39 +204,46 @@ export function ResponsablePerformanceTable({
           disabled={sortedData.length === 0}
           aria-label="Exportar para CSV"
         >
-          <Download className="w-4 h-4 mr-2" />
+          <Download className="mr-2 h-4 w-4" />
           Exportar CSV
         </Button>
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg overflow-hidden" role="region" aria-label="Tabela de performance">
+      <div
+        className="overflow-hidden rounded-lg border"
+        role="region"
+        aria-label="Tabela de performance"
+      >
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('responsible')}>
+              <TableHead
+                className="cursor-pointer hover:bg-muted"
+                onClick={() => handleSort('responsible')}
+              >
                 Nome <SortIndicator field="responsible" />
               </TableHead>
               <TableHead
-                className="text-right cursor-pointer hover:bg-muted"
+                className="cursor-pointer text-right hover:bg-muted"
                 onClick={() => handleSort('total_movements')}
               >
                 Movimentações <SortIndicator field="total_movements" />
               </TableHead>
               <TableHead
-                className="text-right cursor-pointer hover:bg-muted"
+                className="cursor-pointer text-right hover:bg-muted"
                 onClick={() => handleSort('average_duration_days')}
               >
                 Tempo Médio (dias) <SortIndicator field="average_duration_days" />
               </TableHead>
               <TableHead
-                className="text-right cursor-pointer hover:bg-muted"
+                className="cursor-pointer text-right hover:bg-muted"
                 onClick={() => handleSort('projects_completed')}
               >
                 Concluídos <SortIndicator field="projects_completed" />
               </TableHead>
               <TableHead
-                className="text-right cursor-pointer hover:bg-muted"
+                className="cursor-pointer text-right hover:bg-muted"
                 onClick={() => handleSort('lead_time_average_days')}
               >
                 Lead Time (dias) <SortIndicator field="lead_time_average_days" />
@@ -271,7 +277,7 @@ export function ResponsablePerformanceTable({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-between items-center text-sm">
+        <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">
             Página {currentPage} de {totalPages}
           </span>
@@ -300,7 +306,7 @@ export function ResponsablePerformanceTable({
 
       {/* Empty State */}
       {sortedData.length === 0 && !loading && (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="py-8 text-center text-muted-foreground">
           Nenhum dado de performance disponível
         </div>
       )}

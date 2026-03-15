@@ -26,7 +26,10 @@ export function trackWebVitals(callback?: (metrics: WebVitals) => void) {
   try {
     const lcpObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      const lastEntry = entries[entries.length - 1] as PerformanceEntry & { renderTime?: number; loadTime?: number };
+      const lastEntry = entries[entries.length - 1] as PerformanceEntry & {
+        renderTime?: number;
+        loadTime?: number;
+      };
       if (lastEntry) {
         metrics.LCP = lastEntry.renderTime || lastEntry.loadTime;
         if (callback) callback(metrics);
@@ -40,7 +43,10 @@ export function trackWebVitals(callback?: (metrics: WebVitals) => void) {
   try {
     const clsObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        const layoutEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
+        const layoutEntry = entry as PerformanceEntry & {
+          hadRecentInput?: boolean;
+          value?: number;
+        };
         if (!layoutEntry.hadRecentInput && layoutEntry.value !== undefined) {
           metrics.CLS = (metrics.CLS || 0) + layoutEntry.value;
           if (callback) callback(metrics);

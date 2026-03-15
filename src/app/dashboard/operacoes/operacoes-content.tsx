@@ -2,7 +2,17 @@
 
 import * as React from 'react';
 import { User } from '@supabase/supabase-js';
-import { Activity, Timer, AlertTriangle, ArrowRight, UserCheck, TrendingUp, Clock, Zap, CheckCircle } from 'lucide-react';
+import {
+  Activity,
+  Timer,
+  AlertTriangle,
+  ArrowRight,
+  UserCheck,
+  TrendingUp,
+  Clock,
+  Zap,
+  CheckCircle,
+} from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { ErpReadOnlyBanner } from '@/components/shared/erp-readonly-banner';
 import { KPICard } from '@/components/dashboard/KPICard';
@@ -24,7 +34,12 @@ import { PeriodSelector } from '@/components/dashboard/PeriodSelector';
 import { TeamFilter } from '@/components/dashboard/TeamFilter';
 import { ResponsablePerformanceTable } from '@/components/dashboard/ResponsablePerformanceTable';
 import { usePerformanceData } from '@/hooks/usePerformanceData';
-import { MovementRankedChart, TempoChart, VelocityChart, ActivityHeatmap } from '@/components/dashboard/charts-index';
+import {
+  MovementRankedChart,
+  TempoChart,
+  VelocityChart,
+  ActivityHeatmap,
+} from '@/components/dashboard/charts-index';
 import { isConsideredActive } from '@/lib/domain/project-health';
 import { computeDashboardKpis } from '@/lib/domain/kpi-calculations';
 import { statusLabels } from '@/lib/constants/phase-labels';
@@ -114,7 +129,9 @@ export function OperacoesContent({
   const [activeTab, setActiveTab] = React.useState<string>('fluxo');
 
   // Performance tab filters (with localStorage persistence)
-  const [performancePeriod, setPerformancePeriod] = React.useState<'semanal' | 'mensal' | 'trimestral' | 'semestral' | 'anual'>(() => {
+  const [performancePeriod, setPerformancePeriod] = React.useState<
+    'semanal' | 'mensal' | 'trimestral' | 'semestral' | 'anual'
+  >(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('performancePeriod');
       return (saved as any) || 'mensal';
@@ -122,13 +139,15 @@ export function OperacoesContent({
     return 'mensal';
   });
 
-  const [performanceTeam, setPerformanceTeam] = React.useState<'minha-equipe' | 'todos-envolvidos'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('performanceTeam');
-      return (saved as any) || 'minha-equipe';
-    }
-    return 'minha-equipe';
-  });
+  const [performanceTeam, setPerformanceTeam] = React.useState<'minha-equipe' | 'todos-envolvidos'>(
+    () => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('performanceTeam');
+        return (saved as any) || 'minha-equipe';
+      }
+      return 'minha-equipe';
+    },
+  );
 
   // Persist Performance tab selections to localStorage
   React.useEffect(() => {
@@ -138,7 +157,11 @@ export function OperacoesContent({
   }, [performancePeriod, performanceTeam, activeTab]);
 
   // Fetch performance data
-  const { data: performanceMetrics, summary: performanceSummary, loading: performanceLoading } = usePerformanceData({
+  const {
+    data: performanceMetrics,
+    summary: performanceSummary,
+    loading: performanceLoading,
+  } = usePerformanceData({
     period: performancePeriod,
     team_scope: performanceTeam,
   });
@@ -165,8 +188,8 @@ export function OperacoesContent({
         <ErpReadOnlyBanner variant="page" />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="px-6 pt-4 bg-transparent border-b border-border">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col">
+        <TabsList className="border-b border-border bg-transparent px-6 pt-4">
           <TabsTrigger value="fluxo" className="px-4">
             Fluxo
           </TabsTrigger>
@@ -177,120 +200,122 @@ export function OperacoesContent({
 
         <TabsContent value="fluxo" className="flex-1">
           <div className="flex-1 space-y-6 p-6">
-        {/* KPIs Row */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <SkeletonKPI key={i} />)
-          ) : (
-            <>
-              <KPICard
-                title="Projetos no Funil"
-                value={totalActive}
-                icon={Activity}
-                subtitle="Ativos na esteira"
-              />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <KPICard
-                        title="Aprovação Pendente"
-                        value={inApprovalCount}
-                        icon={UserCheck}
-                        subtitle="Aguardando aprovadores"
-                        className={inApprovalCount > 0 ? 'border-amber-500/30' : undefined}
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Projetos com status contendo &quot;aprov&quot;</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <KPICard
-                        title="Sinal de sobrecarga"
-                        value={wipSummary.overloadedCount}
-                        icon={AlertTriangle}
-                        subtitle="Pessoas c/ +3 projetos ativos"
-                        className={
-                          wipSummary.overloadedCount > 0 ? 'border-destructive/30' : undefined
-                        }
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Heurística: pessoas com mais de 3 projetos ativos simultâneos</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <KPICard
-                title="Lead Time Médio"
-                value={kpis.avgLeadTimeDays > 0 ? `${kpis.avgLeadTimeDays}d` : '—'}
-                icon={Timer}
-                subtitle={
-                  kpis.avgLeadTimeDays > 0
-                    ? 'Dias do início ao encerramento'
-                    : 'Sem projetos concluídos'
-                }
-              />
-            </>
-          )}
-        </div>
+            {/* KPIs Row */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {isLoading ? (
+                Array.from({ length: 4 }).map((_, i) => <SkeletonKPI key={i} />)
+              ) : (
+                <>
+                  <KPICard
+                    title="Projetos no Funil"
+                    value={totalActive}
+                    icon={Activity}
+                    subtitle="Ativos na esteira"
+                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <KPICard
+                            title="Aprovação Pendente"
+                            value={inApprovalCount}
+                            icon={UserCheck}
+                            subtitle="Aguardando aprovadores"
+                            className={inApprovalCount > 0 ? 'border-amber-500/30' : undefined}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Projetos com status contendo &quot;aprov&quot;</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <KPICard
+                            title="Sinal de sobrecarga"
+                            value={wipSummary.overloadedCount}
+                            icon={AlertTriangle}
+                            subtitle="Pessoas c/ +3 projetos ativos"
+                            className={
+                              wipSummary.overloadedCount > 0 ? 'border-destructive/30' : undefined
+                            }
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Heurística: pessoas com mais de 3 projetos ativos simultâneos</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <KPICard
+                    title="Lead Time Médio"
+                    value={kpis.avgLeadTimeDays > 0 ? `${kpis.avgLeadTimeDays}d` : '—'}
+                    icon={Timer}
+                    subtitle={
+                      kpis.avgLeadTimeDays > 0
+                        ? 'Dias do início ao encerramento'
+                        : 'Sem projetos concluídos'
+                    }
+                  />
+                </>
+              )}
+            </div>
 
-        {/* View principal: lista de projetos ativos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Projetos no Funil</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {activeStatusFilter
-                ? `Filtrado por: ${statusLabels[activeStatusFilter] ?? activeStatusFilter}`
-                : 'Clique em uma barra do Pipeline para filtrar'}
-            </p>
-          </CardHeader>
-          <CardContent>
-            {displayedProjects.length === 0 ? (
-              <EmptyState
-                title={activeStatusFilter ? 'Nenhum projeto neste status' : 'Nenhum projeto ativo'}
-                description={
-                  activeStatusFilter
-                    ? 'Tente outro filtro ou limpe o filtro.'
-                    : 'Não há projetos em execução no momento.'
-                }
-                icon={Activity}
-                className="py-12"
-              />
-            ) : (
-              <ProjectListView
-                projects={displayedProjects as any[]}
-                onSelectProject={(id) => {
-                  const p = projects.find((x) => x.id === id);
-                  if (p) setSelectedProject(p);
-                }}
-              />
+            {/* View principal: lista de projetos ativos */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Projetos no Funil</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {activeStatusFilter
+                    ? `Filtrado por: ${statusLabels[activeStatusFilter] ?? activeStatusFilter}`
+                    : 'Clique em uma barra do Pipeline para filtrar'}
+                </p>
+              </CardHeader>
+              <CardContent>
+                {displayedProjects.length === 0 ? (
+                  <EmptyState
+                    title={
+                      activeStatusFilter ? 'Nenhum projeto neste status' : 'Nenhum projeto ativo'
+                    }
+                    description={
+                      activeStatusFilter
+                        ? 'Tente outro filtro ou limpe o filtro.'
+                        : 'Não há projetos em execução no momento.'
+                    }
+                    icon={Activity}
+                    className="py-12"
+                  />
+                ) : (
+                  <ProjectListView
+                    projects={displayedProjects as any[]}
+                    onSelectProject={(id) => {
+                      const p = projects.find((x) => x.id === id);
+                      if (p) setSelectedProject(p);
+                    }}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Charts */}
+            {chartProjects.length > 0 && (
+              <>
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <ProjectPipelineChart
+                    data={pipelineData}
+                    activeStatus={activeStatusFilter}
+                    onBarClick={handlePipelineBarClick}
+                  />
+                  <HistoryMovementsChart projects={projects as any[]} />
+                </div>
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <HistoryVolumeChart projects={projects as any[]} />
+                  <HistoryTransitionsChart projects={projects as any[]} />
+                </div>
+              </>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Charts */}
-        {chartProjects.length > 0 && (
-          <>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <ProjectPipelineChart
-                data={pipelineData}
-                activeStatus={activeStatusFilter}
-                onBarClick={handlePipelineBarClick}
-              />
-              <HistoryMovementsChart projects={projects as any[]} />
-            </div>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <HistoryVolumeChart projects={projects as any[]} />
-              <HistoryTransitionsChart projects={projects as any[]} />
-            </div>
-          </>
-        )}
-        </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="performance" className="flex-1">
@@ -302,11 +327,14 @@ export function OperacoesContent({
               </CardHeader>
               <CardContent className="space-y-4">
                 <fieldset className="space-y-2">
-                  <legend className="text-sm font-medium mb-2 block">Período</legend>
+                  <legend className="mb-2 block text-sm font-medium">Período</legend>
                   <PeriodSelector value={performancePeriod} onChange={setPerformancePeriod} />
                 </fieldset>
                 <div>
-                  <Label htmlFor="performance-team-filter" className="text-sm font-medium mb-2 block">
+                  <Label
+                    htmlFor="performance-team-filter"
+                    className="mb-2 block text-sm font-medium"
+                  >
                     Equipe
                   </Label>
                   <TeamFilter
@@ -383,7 +411,10 @@ export function OperacoesContent({
                 <CardTitle>Desempenho por Responsável</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsablePerformanceTable data={performanceMetrics || []} loading={performanceLoading} />
+                <ResponsablePerformanceTable
+                  data={performanceMetrics || []}
+                  loading={performanceLoading}
+                />
               </CardContent>
             </Card>
           </div>

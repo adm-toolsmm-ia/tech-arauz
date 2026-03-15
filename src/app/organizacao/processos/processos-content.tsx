@@ -288,11 +288,11 @@ export function ProcessosContent({
                           setSelectedProcess(proc);
                         }
                       }}
-                      className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-muted/50"
+                      className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                          <GitBranch className="size-5 text-primary" />
+                        <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+                          <GitBranch className="text-primary size-5" />
                         </div>
                         <div>
                           <p className="font-medium">{proc.name}</p>
@@ -347,9 +347,7 @@ export function ProcessosContent({
               onEdit={() => handleOpenEdit(selectedProcess)}
               onDelete={() => setProcessToDelete(selectedProcess)}
               onSelectRoutine={setSelectedRoutine}
-              onLinkSystem={(systemId) =>
-                handleLinkProcessSystem(selectedProcess.id, systemId)
-              }
+              onLinkSystem={(systemId) => handleLinkProcessSystem(selectedProcess.id, systemId)}
               onUnlinkSystem={(systemId, systemName) =>
                 setProcessSystemToUnlink({
                   processId: selectedProcess.id,
@@ -382,11 +380,7 @@ export function ProcessosContent({
           }
           depth={2}
         >
-          {selectedRoutine && (
-            <RoutineCockpit360
-              routine={selectedRoutine}
-            />
-          )}
+          {selectedRoutine && <RoutineCockpit360 routine={selectedRoutine} />}
         </ContextPanel>
       </div>
 

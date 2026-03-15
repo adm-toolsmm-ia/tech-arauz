@@ -103,14 +103,14 @@ const DefaultCardContent: React.FC<DefaultCardContentProps> = ({ item }) => {
   return (
     <div className="space-y-1.5">
       <div className="flex items-start justify-between gap-2">
-        <span className="line-clamp-2 text-sm font-semibold leading-tight text-foreground/90">
+        <span className="text-foreground/90 line-clamp-2 text-sm font-semibold leading-tight">
           {item.title}
         </span>
       </div>
 
       <div className="flex flex-col gap-1">
         {item.subtitle && (
-          <p className="w-fit rounded bg-muted/30 px-1 font-mono text-[11px] text-muted-foreground">
+          <p className="bg-muted/30 w-fit rounded px-1 font-mono text-[11px] text-muted-foreground">
             {item.subtitle}
           </p>
         )}
@@ -144,7 +144,7 @@ const DefaultCardContent: React.FC<DefaultCardContentProps> = ({ item }) => {
               {lastMessage}
             </p>
             {lastDate && (
-              <p className="mt-0.5 text-[10px] text-muted-foreground/60">
+              <p className="text-muted-foreground/60 mt-0.5 text-[10px]">
                 {formatRelativeDate(lastDate)}
               </p>
             )}
@@ -180,12 +180,12 @@ function DraggableCard({
       ref={setNodeRef}
       className={cn(
         'group relative rounded-lg border border-border/40 bg-card shadow-sm transition-all duration-200',
-        'hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md',
+        'hover:border-primary/20 hover:-translate-y-0.5 hover:shadow-md',
         readOnly ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         !readOnly && 'touch-none',
         isDragging && 'scale-95 opacity-40 shadow-none grayscale',
-        isSelected && 'border-primary/30 ring-2 ring-primary ring-offset-1',
+        isSelected && 'border-primary/30 ring-primary ring-2 ring-offset-1',
       )}
       {...listeners}
       {...attributes}
@@ -204,7 +204,7 @@ function DraggableCard({
       </div>
 
       {/* Hover decoration */}
-      <div className="absolute inset-x-0 bottom-0 h-0.5 rounded-b-lg bg-primary/0 transition-colors group-hover:bg-primary/10" />
+      <div className="bg-primary/0 group-hover:bg-primary/10 absolute inset-x-0 bottom-0 h-0.5 rounded-b-lg transition-colors" />
     </div>
   );
 }
@@ -218,7 +218,7 @@ function DragOverlayCard({
   renderItemContent?: (item: KanbanItem) => React.ReactNode;
 }) {
   return (
-    <div className="w-72 rotate-2 cursor-grabbing rounded-lg border border-primary/30 bg-card p-3 shadow-xl ring-2 ring-primary/10">
+    <div className="border-primary/30 ring-primary/10 w-72 rotate-2 cursor-grabbing rounded-lg border bg-card p-3 shadow-xl ring-2">
       {renderItemContent ? renderItemContent(item) : <DefaultCardContent item={item} />}
     </div>
   );
@@ -254,18 +254,18 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex h-full flex-col rounded-xl border border-transparent bg-muted/20 transition-all duration-200',
+        'bg-muted/20 flex h-full flex-col rounded-xl border border-transparent transition-all duration-200',
         !readOnly && isOver && cn('scale-[1.01] border-dashed', dropStateClass),
       )}
     >
       {/* Header */}
       <div
         className={cn(
-          'flex items-center justify-between rounded-t-xl border-t-2 bg-background/50 p-3 backdrop-blur-sm',
+          'bg-background/50 flex items-center justify-between rounded-t-xl border-t-2 p-3 backdrop-blur-sm',
           colorBorderClass,
         )}
       >
-        <h3 className="text-sm font-semibold tracking-tight text-foreground/80">{column.title}</h3>
+        <h3 className="text-foreground/80 text-sm font-semibold tracking-tight">{column.title}</h3>
         <div className="flex items-center gap-1">
           {column.wipLimit != null && items.length > column.wipLimit && (
             <span className="text-amber-500" title={`Limite WIP: ${column.wipLimit}`}>
@@ -294,12 +294,12 @@ function DroppableColumn({
             {items.length === 0 ? (
               <div
                 className={cn(
-                  'flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted/40 px-4 py-12 text-center transition-colors',
+                  'border-muted/40 flex flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-12 text-center transition-colors',
                   isOver ? 'border-primary/30 bg-primary/5' : 'bg-transparent',
                 )}
               >
                 {isOver ? (
-                  <span className="animate-pulse text-sm font-medium text-primary">
+                  <span className="text-primary animate-pulse text-sm font-medium">
                     Solte para mover
                   </span>
                 ) : (
@@ -410,7 +410,7 @@ export function KanbanBoard({
 
   if (columns.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-muted bg-muted/10 p-8 text-muted-foreground">
+      <div className="bg-muted/10 flex h-64 items-center justify-center rounded-xl border border-dashed border-muted p-8 text-muted-foreground">
         {emptyMessage}
       </div>
     );

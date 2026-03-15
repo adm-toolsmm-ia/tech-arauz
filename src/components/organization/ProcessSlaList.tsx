@@ -104,8 +104,8 @@ export function ProcessSlaList({
             {slas.map((sla) => (
               <div key={sla.id} className="flex items-start gap-4 rounded-md border p-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <p className="font-semibold text-sm">{sla.metric_name}</p>
+                  <div className="mb-2 flex items-center gap-2">
+                    <p className="text-sm font-semibold">{sla.metric_name}</p>
                     <Badge variant="outline" className="text-xs">
                       {sla.target_duration_days}d
                     </Badge>
@@ -113,12 +113,12 @@ export function ProcessSlaList({
 
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <div>
-                      <span className="text-yellow-600 dark:text-yellow-400 font-medium">
+                      <span className="font-medium text-yellow-600 dark:text-yellow-400">
                         Aviso: {sla.warning_threshold_pct}%
                       </span>
                     </div>
                     <div>
-                      <span className="text-red-600 dark:text-red-400 font-medium">
+                      <span className="font-medium text-red-600 dark:text-red-400">
                         Crítico: {sla.critical_threshold_pct}%
                       </span>
                     </div>
@@ -151,18 +151,23 @@ export function ProcessSlaList({
         </CardContent>
       </Card>
 
-      <AlertDialog open={!!slaToDelete} onOpenChange={(open) => {
-        if (!open) setSlaToDelete(null);
-      }}>
+      <AlertDialog
+        open={!!slaToDelete}
+        onOpenChange={(open) => {
+          if (!open) setSlaToDelete(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Deletar SLA?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja deletar o SLA &quot;{slaToDelete?.metric_name}&quot;? Esta ação não pode
-              ser desfeita.
+              Tem certeza que deseja deletar o SLA &quot;{slaToDelete?.metric_name}&quot;? Esta ação
+              não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogCancel disabled={isDeleting} onClick={() => setSlaToDelete(null)}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting} onClick={() => setSlaToDelete(null)}>
+            Cancelar
+          </AlertDialogCancel>
           <AlertDialogAction onClick={handleDeleteConfirm} disabled={isDeleting}>
             {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Deletar

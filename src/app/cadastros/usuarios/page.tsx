@@ -8,7 +8,7 @@ export default async function UsuariosPage() {
   return (
     <div className="flex h-full flex-col bg-background">
       {error ? (
-        <div className="m-6 flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
+        <div className="border-destructive/50 bg-destructive/10 m-6 flex items-start gap-3 rounded-lg border p-4 text-destructive">
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
             <h3 className="mb-1 font-semibold">Acesso restrito</h3>

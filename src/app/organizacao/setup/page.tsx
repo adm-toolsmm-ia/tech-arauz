@@ -27,11 +27,9 @@ export default async function OrganizacaoSetupPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
-        <OrgSetupWizard
-          onComplete={handleComplete}
-        />
+    <main className="to-muted/30 min-h-screen bg-gradient-to-br from-background via-background px-4 py-8">
+      <div className="mx-auto max-w-3xl">
+        <OrgSetupWizard onComplete={handleComplete} />
       </div>
     </main>
   );

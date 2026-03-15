@@ -144,20 +144,12 @@ export const BOOTSTRAP_TEMPLATES: Record<OrganizationType, BootstrapTemplate> = 
       {
         name: 'Financeiro',
         description: 'Área financeira',
-        nuclei: [
-          { name: 'Contabilidade' },
-          { name: 'Controladoria' },
-          { name: 'Tesouraria' },
-        ],
+        nuclei: [{ name: 'Contabilidade' }, { name: 'Controladoria' }, { name: 'Tesouraria' }],
       },
       {
         name: 'Operações',
         description: 'Área de operações',
-        nuclei: [
-          { name: 'Produção' },
-          { name: 'Logística' },
-          { name: 'Qualidade' },
-        ],
+        nuclei: [{ name: 'Produção' }, { name: 'Logística' }, { name: 'Qualidade' }],
       },
       {
         name: 'Comercial',
@@ -194,9 +186,7 @@ export const BOOTSTRAP_TEMPLATES: Record<OrganizationType, BootstrapTemplate> = 
       {
         name: 'Área 1',
         description: 'Editar para adicionar sua primeira área',
-        nuclei: [
-          { name: 'Núcleo 1' },
-        ],
+        nuclei: [{ name: 'Núcleo 1' }],
       },
     ],
   },
@@ -213,7 +203,7 @@ export function getBootstrapTemplate(orgType: OrganizationType): BootstrapTempla
  * List all available templates
  */
 export function listBootstrapTemplates(): Array<Omit<BootstrapTemplate, 'areas' | 'processes'>> {
-  return Object.values(BOOTSTRAP_TEMPLATES).map(template => ({
+  return Object.values(BOOTSTRAP_TEMPLATES).map((template) => ({
     id: template.id,
     name: template.name,
     description: template.description,

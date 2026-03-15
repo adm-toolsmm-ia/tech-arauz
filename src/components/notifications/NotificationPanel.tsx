@@ -102,7 +102,7 @@ function NotificationItem({
           <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{notification.message}</p>
 
           {/* Timestamp */}
-          <p className="mt-1 text-xs text-muted-foreground/60">
+          <p className="text-muted-foreground/60 mt-1 text-xs">
             {formatTimeAgo(notification.createdAt)}
           </p>
         </div>
@@ -167,7 +167,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ onClose })
             variant="ghost"
             size="sm"
             onClick={clearAll}
-            className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="hover:bg-destructive/10 w-full gap-2 text-destructive hover:text-destructive"
             aria-label="Limpar todas as notificações"
           >
             <Trash2 className="h-4 w-4" />

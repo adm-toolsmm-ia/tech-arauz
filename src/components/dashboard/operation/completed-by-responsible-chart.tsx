@@ -40,7 +40,9 @@ function CustomTooltip({
   );
 }
 
-export const CompletedByResponsibleChart: React.FC<CompletedByResponsibleChartProps> = ({ projects }) => {
+export const CompletedByResponsibleChart: React.FC<CompletedByResponsibleChartProps> = ({
+  projects,
+}) => {
   const data = buildData(projects);
 
   return (
@@ -98,7 +100,7 @@ export const CompletedByResponsibleChart: React.FC<CompletedByResponsibleChartPr
       </CardContent>
     </Card>
   );
-}
+};
 
 function buildData(projects: Array<any>): CompletedByResponsibleData[] {
   const counts: Record<string, number> = {};

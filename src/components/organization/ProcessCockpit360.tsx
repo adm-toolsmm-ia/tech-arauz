@@ -3,7 +3,17 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { GitBranch, FileText, ClipboardList, Users, Monitor, Plus, Unlink, BarChart3, Target } from 'lucide-react';
+import {
+  GitBranch,
+  FileText,
+  ClipboardList,
+  Users,
+  Monitor,
+  Plus,
+  Unlink,
+  BarChart3,
+  Target,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -117,21 +127,21 @@ export function ProcessCockpit360({
         <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
           <TabsTrigger
             value="principal"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <FileText className="mr-2 size-4" />
             Principal
           </TabsTrigger>
           <TabsTrigger
             value="detalhes"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <ClipboardList className="mr-2 size-4" />
             Detalhes
           </TabsTrigger>
           <TabsTrigger
             value="rotinas"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <ClipboardList className="mr-2 size-4" />
             Rotinas
@@ -141,7 +151,7 @@ export function ProcessCockpit360({
           </TabsTrigger>
           <TabsTrigger
             value="sistemas"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <Monitor className="mr-2 size-4" />
             Sistemas
@@ -151,14 +161,14 @@ export function ProcessCockpit360({
           </TabsTrigger>
           <TabsTrigger
             value="metricas"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <BarChart3 className="mr-2 size-4" />
             Métricas
           </TabsTrigger>
           <TabsTrigger
             value="slas"
-            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
           >
             <Target className="mr-2 size-4" />
             SLAs
@@ -191,7 +201,7 @@ export function ProcessCockpit360({
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <FileText className="size-5 text-primary" />
+              <FileText className="text-primary size-5" />
               <h3 className="text-base font-semibold">Informações</h3>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -202,7 +212,7 @@ export function ProcessCockpit360({
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <Users className="size-5 text-primary" />
+              <Users className="text-primary size-5" />
               <h3 className="text-base font-semibold">Roles responsáveis</h3>
             </div>
             <p className="text-sm">{rolesDisplay}</p>
@@ -220,11 +230,7 @@ export function ProcessCockpit360({
 
         <TabsContent value="detalhes" className="mt-6 space-y-6">
           <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowEditProcess(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowEditProcess(true)}>
               Editar
             </Button>
           </div>
@@ -328,7 +334,7 @@ export function ProcessCockpit360({
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="sm" className="gap-2 shrink-0" asChild>
+                  <Button variant="outline" size="sm" className="shrink-0 gap-2" asChild>
                     <Link href="/organizacao/recursos?tab=sistemas">
                       <Plus className="h-4 w-4" />
                       Ver Recursos
@@ -345,7 +351,7 @@ export function ProcessCockpit360({
                 {systems.map((s) => (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                    className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-colors"
                   >
                     <Link
                       href={`/organizacao/recursos?tab=sistemas`}
@@ -362,7 +368,7 @@ export function ProcessCockpit360({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="gap-2 text-destructive hover:text-destructive shrink-0"
+                        className="shrink-0 gap-2 text-destructive hover:text-destructive"
                         onClick={() => onUnlinkSystem(s.id, s.name)}
                         title="Desvincular sistema"
                         aria-label={`Desvincular ${s.name}`}
@@ -382,12 +388,16 @@ export function ProcessCockpit360({
         <TabsContent value="metricas" className="mt-6 space-y-6">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <label htmlFor="metricsTimeframeSelect" className="text-sm font-medium">Período:</label>
+              <label htmlFor="metricsTimeframeSelect" className="text-sm font-medium">
+                Período:
+              </label>
               <select
                 id="metricsTimeframeSelect"
                 value={metricsTimeframe}
-                onChange={(e) => setMetricsTimeframe(e.target.value as 'week' | 'month' | 'quarter')}
-                className="border rounded-md px-3 py-2 text-sm"
+                onChange={(e) =>
+                  setMetricsTimeframe(e.target.value as 'week' | 'month' | 'quarter')
+                }
+                className="rounded-md border px-3 py-2 text-sm"
               >
                 <option value="week">Semanal</option>
                 <option value="month">Mensal</option>

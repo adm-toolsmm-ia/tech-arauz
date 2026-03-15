@@ -31,7 +31,7 @@ export function AgentTypeCard({
       tabIndex={0}
       className={cn(
         'relative flex cursor-pointer flex-col rounded-lg border transition-colors',
-        'p-4 hover:bg-muted/50',
+        'hover:bg-muted/50 p-4',
         isSelected && 'border-primary bg-primary/5',
       )}
       onClick={() => onSelect?.(agentType)}

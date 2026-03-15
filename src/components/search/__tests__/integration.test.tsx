@@ -42,10 +42,7 @@ describe('Search Suggestions - Integration Tests', () => {
       }),
     ) as any;
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -83,10 +80,7 @@ describe('Search Suggestions - Integration Tests', () => {
       }),
     ) as any;
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
     await userEvent.type(input, 'selected');
@@ -126,10 +120,7 @@ describe('Search Suggestions - Integration Tests', () => {
       ]),
     );
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -157,10 +148,7 @@ describe('Search Suggestions - Integration Tests', () => {
       ]),
     );
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -209,10 +197,7 @@ describe('Search Suggestions - Integration Tests', () => {
       }),
     ) as any;
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -254,10 +239,7 @@ describe('Search Suggestions - Integration Tests', () => {
         }),
     ) as any;
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 
@@ -274,10 +256,7 @@ describe('Search Suggestions - Integration Tests', () => {
   it('should be mobile responsive with proper touch targets', () => {
     const onSearch = vi.fn();
 
-    render(
-      <GlobalSearchMobileOptimized onSearch={onSearch} />,
-      { wrapper: Wrapper },
-    );
+    render(<GlobalSearchMobileOptimized onSearch={onSearch} />, { wrapper: Wrapper });
 
     const input = screen.getByTestId('global-search-input-mobile');
 

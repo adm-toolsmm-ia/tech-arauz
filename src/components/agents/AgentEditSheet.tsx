@@ -533,7 +533,7 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex justify-end gap-3 border-t bg-muted/50 px-6 py-4">
+          <div className="bg-muted/50 flex justify-end gap-3 border-t px-6 py-4">
             <Button variant="outline" onClick={onClose} disabled={isSaving}>
               Cancelar
             </Button>

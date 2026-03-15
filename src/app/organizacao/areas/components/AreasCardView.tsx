@@ -28,10 +28,10 @@ export function AreasCardView({ areas, onAreaClick }: AreasCardViewProps) {
           }}
           className="cursor-pointer transition-shadow hover:shadow-md"
         >
-          <CardContent className="p-4 space-y-3">
+          <CardContent className="space-y-3 p-4">
             <div className="flex items-start gap-3">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Building2 className="size-6 text-primary" />
+              <div className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-lg">
+                <Building2 className="text-primary size-6" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{area.name}</p>
@@ -44,7 +44,7 @@ export function AreasCardView({ areas, onAreaClick }: AreasCardViewProps) {
             </div>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Network className="size-4 text-primary" />
+              <Network className="text-primary size-4" />
               <span>{area.nuclei_count ?? 0} núcleo(s)</span>
             </div>
 

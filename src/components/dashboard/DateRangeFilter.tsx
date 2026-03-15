@@ -41,10 +41,10 @@ export function DateRangeFilter({
 }: DateRangeFilterProps) {
   const [showCustom, setShowCustom] = useState(value.type === 'custom');
   const [customStart, setCustomStart] = useState<string>(
-    value.startDate ? formatDateForInput(value.startDate) : ''
+    value.startDate ? formatDateForInput(value.startDate) : '',
   );
   const [customEnd, setCustomEnd] = useState<string>(
-    value.endDate ? formatDateForInput(value.endDate) : ''
+    value.endDate ? formatDateForInput(value.endDate) : '',
   );
   const [error, setError] = useState<string>('');
 
@@ -83,7 +83,7 @@ export function DateRangeFilter({
       }
       return true;
     },
-    [disabledDates]
+    [disabledDates],
   );
 
   // Valida o custom range
@@ -124,7 +124,7 @@ export function DateRangeFilter({
       setShowCustom(false);
       setError('');
     },
-    [onChange, getPredefinedRange]
+    [onChange, getPredefinedRange],
   );
 
   // Handler para aplicar custom range
@@ -181,8 +181,8 @@ export function DateRangeFilter({
     <Card className="bg-muted/30 border-muted">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Calendar className="h-4 w-4" />
             Período: {getRangeLabel}
           </CardTitle>
           {value.type === 'custom' && (
@@ -193,7 +193,7 @@ export function DateRangeFilter({
               className="h-6 w-6 p-0"
               title="Editar período customizado"
             >
-              <Calendar className="w-4 h-4" />
+              <Calendar className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -244,7 +244,7 @@ export function DateRangeFilter({
             onClick={() => setShowCustom(true)}
             className="w-full text-xs"
           >
-            <Calendar className="w-3 h-3 mr-1" />
+            <Calendar className="mr-1 h-3 w-3" />
             Período Customizado
           </Button>
         )}
@@ -293,18 +293,14 @@ export function DateRangeFilter({
 
             {/* Error message */}
             {error && (
-              <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 p-2 rounded">
+              <div className="rounded bg-red-50 p-2 text-xs text-red-600 dark:bg-red-950/20 dark:text-red-400">
                 {error}
               </div>
             )}
 
             {/* Action buttons */}
             <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={handleApplyCustom}
-                className="flex-1 text-xs"
-              >
+              <Button size="sm" onClick={handleApplyCustom} className="flex-1 text-xs">
                 Aplicar
               </Button>
               <Button
@@ -313,7 +309,7 @@ export function DateRangeFilter({
                 onClick={handleCancelCustom}
                 className="flex-1 text-xs"
               >
-                <X className="w-3 h-3 mr-1" />
+                <X className="mr-1 h-3 w-3" />
                 Cancelar
               </Button>
             </div>

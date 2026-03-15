@@ -21,7 +21,7 @@ export const ModelsKanbanCard: React.FC<ModelsKanbanCardProps> = ({ model, provi
 
   return (
     <div className="space-y-1.5">
-      <span className="line-clamp-2 text-sm font-semibold leading-tight text-foreground/90">
+      <span className="text-foreground/90 line-clamp-2 text-sm font-semibold leading-tight">
         {model.name}
       </span>
       {model.description && (

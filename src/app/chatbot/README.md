@@ -29,18 +29,21 @@ src/app/chatbot/
 ### Components
 
 #### 1. **ChatbotContent** (Orchestrator)
+
 - Manages overall chat state
 - Handles agent selection
 - Coordinates between AgentSelector and ChatInterface
 - **Location:** `components/chatbot-content.tsx`
 
 #### 2. **AgentSelector** (Selection Component)
+
 - Fetches available global chatbot agents
 - Filters: `is_global_chatbot = true` AND `status = 'published'`
 - Creates new session on agent selection
 - **Location:** `components/agent-selector.tsx`
 
 #### 3. **ChatInterface** (Chat Component)
+
 - Displays chat messages with timestamps
 - User input with Ctrl+Enter to send
 - Copy-to-clipboard functionality
@@ -49,6 +52,7 @@ src/app/chatbot/
 - **Location:** `components/chat-interface.tsx`
 
 #### 4. **useChat Hook** (State Management)
+
 - Session creation/fetching
 - Message management
 - Error handling
@@ -64,6 +68,7 @@ Located in `src/app/chatbot/actions.ts`:
 - **`addChatMessage(sessionId, role, content)`** — Add message to session
 
 All actions include:
+
 - Authentication validation
 - Tenant isolation via RLS
 - Error handling
@@ -73,16 +78,19 @@ All actions include:
 Created via migration `064_chatbot_sessions.sql`:
 
 **chat_sessions table:**
+
 ```sql
 id, agent_id, tenant_id, user_id, title, created_at, updated_at
 ```
 
 **chat_messages table:**
+
 ```sql
 id, session_id, role, content, metadata, created_at
 ```
 
 **RLS Policies:**
+
 - Users can only see/edit their own sessions
 - Tenant isolation enforced automatically
 - Cascade deletes for data cleanup
@@ -244,14 +252,17 @@ supabase migration up 064
 ### Common Issues
 
 **Issue:** Agent list is empty
+
 - **Check:** Are there published agents with `is_global_chatbot = true`?
 - **Solution:** Create agents in admin panel and publish them
 
 **Issue:** Session creation fails
+
 - **Check:** Is user authenticated?
 - **Solution:** Verify auth status and tenant assignment
 
 **Issue:** Messages not persisting
+
 - **Check:** Is migration 064 applied?
 - **Solution:** Run `supabase migration up 064`
 

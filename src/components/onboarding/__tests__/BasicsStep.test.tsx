@@ -18,12 +18,7 @@ describe('BasicsStep', () => {
 
   describe('Rendering', () => {
     it('should render basics step form', () => {
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          {...mockHandlers}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" {...mockHandlers} />);
 
       expect(screen.getByText(/Informações Básicas/i)).toBeInTheDocument();
       expect(screen.getByText(/Tipo de Organização/i)).toBeInTheDocument();
@@ -38,7 +33,7 @@ describe('BasicsStep', () => {
           size=""
           description=""
           {...mockHandlers}
-        />
+        />,
       );
 
       expect(screen.getByLabelText(/Tipo de organização/i)).toBeInTheDocument();
@@ -49,18 +44,9 @@ describe('BasicsStep', () => {
     });
 
     it('should display error messages when provided', () => {
-      const errors = [
-        'Tipo de organização é obrigatório',
-        'Nome é obrigatório',
-      ];
+      const errors = ['Tipo de organização é obrigatório', 'Nome é obrigatório'];
 
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          {...mockHandlers}
-          errors={errors}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" {...mockHandlers} errors={errors} />);
 
       errors.forEach((error) => {
         expect(screen.getByText(error)).toBeInTheDocument();
@@ -71,12 +57,7 @@ describe('BasicsStep', () => {
   describe('Organization Type Selection', () => {
     it('should call handler when organization type changes', async () => {
       const user = userEvent.setup();
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          {...mockHandlers}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" {...mockHandlers} />);
 
       const selectTrigger = screen.getByLabelText(/Tipo de organização/i);
       await user.click(selectTrigger);
@@ -91,12 +72,7 @@ describe('BasicsStep', () => {
 
     it('should display all organization type options', async () => {
       const user = userEvent.setup();
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          {...mockHandlers}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" {...mockHandlers} />);
 
       const selectTrigger = screen.getByLabelText(/Tipo de organização/i);
       await user.click(selectTrigger);
@@ -111,13 +87,7 @@ describe('BasicsStep', () => {
   describe('Text Input Fields', () => {
     it('should update organization name on input', async () => {
       const user = userEvent.setup();
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          organizationName=""
-          {...mockHandlers}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" organizationName="" {...mockHandlers} />);
 
       const input = screen.getByLabelText(/Nome da organização/i);
       await user.type(input, 'Arauz Advogados');
@@ -127,19 +97,13 @@ describe('BasicsStep', () => {
 
     it('should update description on textarea change', async () => {
       const user = userEvent.setup();
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          description=""
-          {...mockHandlers}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" description="" {...mockHandlers} />);
 
       const textarea = screen.getByLabelText(/Descrição/i);
       await user.type(textarea, 'Escritório especializado em direito civil');
 
       expect(mockHandlers.onDescriptionChange).toHaveBeenCalledWith(
-        'Escritório especializado em direito civil'
+        'Escritório especializado em direito civil',
       );
     });
   });
@@ -147,13 +111,7 @@ describe('BasicsStep', () => {
   describe('Dropdown Selections', () => {
     it('should update industry when selected', async () => {
       const user = userEvent.setup();
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          industry=""
-          {...mockHandlers}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" industry="" {...mockHandlers} />);
 
       const selectTrigger = screen.getByLabelText(/Setor/i);
       await user.click(selectTrigger);
@@ -166,13 +124,7 @@ describe('BasicsStep', () => {
 
     it('should update size when selected', async () => {
       const user = userEvent.setup();
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          size=""
-          {...mockHandlers}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" size="" {...mockHandlers} />);
 
       const selectTrigger = screen.getByLabelText(/Tamanho da organização/i);
       await user.click(selectTrigger);
@@ -194,7 +146,7 @@ describe('BasicsStep', () => {
           size="201-500"
           description="A tech consulting company"
           {...mockHandlers}
-        />
+        />,
       );
 
       // Values should be displayed in inputs
@@ -205,12 +157,7 @@ describe('BasicsStep', () => {
 
   describe('Accessibility', () => {
     it('should have proper label associations', () => {
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          {...mockHandlers}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" {...mockHandlers} />);
 
       const nameInput = screen.getByLabelText(/Nome da organização/i);
       expect(nameInput).toHaveAttribute('aria-label', expect.stringContaining('Nome'));
@@ -219,10 +166,7 @@ describe('BasicsStep', () => {
     it('should be keyboard navigable', async () => {
       const user = userEvent.setup();
       const { container } = render(
-        <BasicsStep
-          organizationType="legal_office"
-          {...mockHandlers}
-        />
+        <BasicsStep organizationType="legal_office" {...mockHandlers} />,
       );
 
       const inputs = container.querySelectorAll('input, textarea, select');
@@ -243,13 +187,7 @@ describe('BasicsStep', () => {
         'Setor é obrigatório',
       ];
 
-      render(
-        <BasicsStep
-          organizationType="legal_office"
-          {...mockHandlers}
-          errors={errors}
-        />
-      );
+      render(<BasicsStep organizationType="legal_office" {...mockHandlers} errors={errors} />);
 
       errors.forEach((error) => {
         expect(screen.getByText(error)).toBeInTheDocument();
@@ -258,22 +196,12 @@ describe('BasicsStep', () => {
 
     it('should clear errors when no errors provided', () => {
       const { rerender } = render(
-        <BasicsStep
-          organizationType="legal_office"
-          {...mockHandlers}
-          errors={['Error 1']}
-        />
+        <BasicsStep organizationType="legal_office" {...mockHandlers} errors={['Error 1']} />,
       );
 
       expect(screen.getByText('Error 1')).toBeInTheDocument();
 
-      rerender(
-        <BasicsStep
-          organizationType="legal_office"
-          {...mockHandlers}
-          errors={[]}
-        />
-      );
+      rerender(<BasicsStep organizationType="legal_office" {...mockHandlers} errors={[]} />);
 
       expect(screen.queryByText('Error 1')).not.toBeInTheDocument();
     });

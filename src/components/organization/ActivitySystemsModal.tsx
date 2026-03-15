@@ -14,7 +14,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { X, Loader2 } from 'lucide-react';
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import type { OrgSystem } from '@/types/organization';
 
 interface ActivitySystem {
@@ -96,14 +102,21 @@ export function ActivitySystemsModal({
 
       // Call addActivitySystemAction with server action
       const { addActivitySystemAction } = await import('@/app/actions/organization');
-      const result = await addActivitySystemAction(activityId, selectedSystemId, usageContext || undefined);
+      const result = await addActivitySystemAction(
+        activityId,
+        selectedSystemId,
+        usageContext || undefined,
+      );
 
       if (result.success) {
-        setCurrentSystems([...currentSystems, {
-          system_id: selectedSystemId,
-          system_name: system.name,
-          usage_context: usageContext,
-        }]);
+        setCurrentSystems([
+          ...currentSystems,
+          {
+            system_id: selectedSystemId,
+            system_name: system.name,
+            usage_context: usageContext,
+          },
+        ]);
         setSelectedSystemId('');
         setUsageContext('');
       } else {
@@ -150,7 +163,7 @@ export function ActivitySystemsModal({
 
   const selectedSystem = availableSystems.find((s) => s.id === selectedSystemId);
   const availableSystemsForAdd = availableSystems.filter(
-    (s) => !currentSystems.some((cs) => cs.system_id === s.id)
+    (s) => !currentSystems.some((cs) => cs.system_id === s.id),
   );
 
   return (
@@ -181,9 +194,9 @@ export function ActivitySystemsModal({
                     className="flex items-center justify-between rounded-md border p-3"
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{system.system_name}</p>
+                      <p className="text-sm font-medium">{system.system_name}</p>
                       {system.usage_context && (
-                        <p className="text-xs text-muted-foreground mt-1">{system.usage_context}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{system.usage_context}</p>
                       )}
                     </div>
                     <Button
@@ -213,13 +226,13 @@ export function ActivitySystemsModal({
               <div className="relative">
                 <button
                   onClick={() => setIsOpen_dropdown(!isOpen_dropdown)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {selectedSystem ? selectedSystem.name : 'Selecione um sistema...'}
                 </button>
 
                 {isOpen_dropdown && availableSystemsForAdd.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-md border border-input bg-popover shadow-md max-h-60 overflow-y-auto">
+                  <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-md border border-input bg-popover shadow-md">
                     <Command>
                       <CommandList>
                         <CommandEmpty>Nenhum sistema disponível.</CommandEmpty>
@@ -234,7 +247,7 @@ export function ActivitySystemsModal({
                               }}
                               className="cursor-pointer"
                             >
-                              <div className="flex flex-col gap-0.5 flex-1">
+                              <div className="flex flex-1 flex-col gap-0.5">
                                 <span className="font-medium">{system.name}</span>
                                 {system.description && (
                                   <span className="text-xs text-muted-foreground">

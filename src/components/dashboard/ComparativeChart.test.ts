@@ -100,7 +100,7 @@ describe('ComparativeChart Component', () => {
 
   it('should calculate person rank in team', () => {
     const allData = [...mockTeamData, mockPerson];
-    const rank = allData.filter(d => d.total_movements > mockPerson.total_movements).length + 1;
+    const rank = allData.filter((d) => d.total_movements > mockPerson.total_movements).length + 1;
 
     expect(rank).toBeGreaterThan(0);
     expect(rank).toBeLessThanOrEqual(allData.length);

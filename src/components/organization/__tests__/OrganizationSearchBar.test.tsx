@@ -42,16 +42,12 @@ describe('OrganizationSearchBar', () => {
 
   it('should render search input with placeholder', () => {
     render(<OrganizationSearchBar />);
-    const input = screen.getByPlaceholderText(
-      'Buscar áreas, processos, atividades...'
-    );
+    const input = screen.getByPlaceholderText('Buscar áreas, processos, atividades...');
     expect(input).toBeInTheDocument();
   });
 
   it('should render custom placeholder when provided', () => {
-    render(
-      <OrganizationSearchBar placeholder="Custom placeholder" />
-    );
+    render(<OrganizationSearchBar placeholder="Custom placeholder" />);
     const input = screen.getByPlaceholderText('Custom placeholder');
     expect(input).toBeInTheDocument();
   });
@@ -81,7 +77,7 @@ describe('OrganizationSearchBar', () => {
       () => {
         expect(mockSearchAction).toHaveBeenCalled();
       },
-      { timeout: 1000 }
+      { timeout: 1000 },
     );
   });
 
@@ -100,9 +96,7 @@ describe('OrganizationSearchBar', () => {
     await user.type(input, 'Recuperação');
 
     await waitFor(() => {
-      expect(
-        screen.getByText('Recuperação de Crédito')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Recuperação de Crédito')).toBeInTheDocument();
     });
   });
 
@@ -123,9 +117,7 @@ describe('OrganizationSearchBar', () => {
     await user.type(input, 'Recuperação');
 
     await waitFor(() => {
-      expect(
-        screen.getByText('Recuperação de Crédito')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Recuperação de Crédito')).toBeInTheDocument();
     });
 
     const resultButton = screen.getByText('Recuperação de Crédito');
@@ -149,9 +141,7 @@ describe('OrganizationSearchBar', () => {
     await user.type(input, 'Inexistente');
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Nenhum resultado encontrado/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Nenhum resultado encontrado/i)).toBeInTheDocument();
     });
   });
 
@@ -192,11 +182,9 @@ describe('OrganizationSearchBar', () => {
 
     await waitFor(
       () => {
-        expect(
-          screen.getByText('Recuperação de Crédito')
-        ).toBeInTheDocument();
+        expect(screen.getByText('Recuperação de Crédito')).toBeInTheDocument();
       },
-      { timeout: 3000 }
+      { timeout: 3000 },
     );
 
     // Press ArrowDown
@@ -221,18 +209,14 @@ describe('OrganizationSearchBar', () => {
     await user.type(input, 'Recuperação');
 
     await waitFor(() => {
-      expect(
-        screen.getByText('Recuperação de Crédito')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Recuperação de Crédito')).toBeInTheDocument();
     });
 
     // Close with Escape
     fireEvent.keyDown(input, { key: 'Escape' });
 
     await waitFor(() => {
-      expect(
-        screen.queryByText('Recuperação de Crédito')
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText('Recuperação de Crédito')).not.toBeInTheDocument();
     });
   });
 
@@ -253,9 +237,7 @@ describe('OrganizationSearchBar', () => {
     await user.type(input, 'Recuperação');
 
     await waitFor(() => {
-      expect(
-        screen.getByText('Recuperação de Crédito')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Recuperação de Crédito')).toBeInTheDocument();
     });
 
     const result = screen.getByText('Recuperação de Crédito');

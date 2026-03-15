@@ -282,7 +282,7 @@ export function ModelCockpit({ model, provider, onEdit }: ModelCockpitProps) {
                 href={model.docs_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-primary underline"
+                className="text-primary inline-flex items-center gap-2 text-sm underline"
               >
                 <ExternalLink className="size-4" />
                 Ver documentação

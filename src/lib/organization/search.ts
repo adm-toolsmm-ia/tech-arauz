@@ -64,7 +64,7 @@ function levenshteinDistance(a: string, b: string): number {
       matrix[j][i] = Math.min(
         matrix[j][i - 1] + 1, // deletion
         matrix[j - 1][i] + 1, // insertion
-        matrix[j - 1][i - 1] + indicator // substitution
+        matrix[j - 1][i - 1] + indicator, // substitution
       );
     }
   }
@@ -111,7 +111,7 @@ export function rankSearchMatch(
   name: string,
   description?: string | null,
   objective?: string | null,
-  documentation?: string | null
+  documentation?: string | null,
 ): number {
   const nameScore = calculateSimilarity(query, name);
   if (nameScore >= 100) return 100; // Exact match on name
@@ -119,21 +119,15 @@ export function rankSearchMatch(
   if (nameScore >= 60) return 70; // Partial/fuzzy match on name
 
   // Check description
-  const descScore = description
-    ? calculateSimilarity(query, description)
-    : 0;
+  const descScore = description ? calculateSimilarity(query, description) : 0;
   if (descScore >= 60) return 50; // Found in description
 
   // Check objective
-  const objScore = objective
-    ? calculateSimilarity(query, objective)
-    : 0;
+  const objScore = objective ? calculateSimilarity(query, objective) : 0;
   if (objScore >= 60) return 40; // Found in objective
 
   // Check documentation
-  const docScore = documentation
-    ? calculateSimilarity(query, documentation)
-    : 0;
+  const docScore = documentation ? calculateSimilarity(query, documentation) : 0;
   if (docScore >= 60) return 25; // Found in documentation
 
   return 0; // No match
@@ -142,16 +136,11 @@ export function rankSearchMatch(
 /**
  * Apply filters to search results
  */
-export function applyFilters(
-  results: SearchResult[],
-  filters: SearchFilters
-): SearchResult[] {
+export function applyFilters(results: SearchResult[], filters: SearchFilters): SearchResult[] {
   return results.filter((result) => {
     // Filter by entity type
     if (filters.entityType) {
-      const types = Array.isArray(filters.entityType)
-        ? filters.entityType
-        : [filters.entityType];
+      const types = Array.isArray(filters.entityType) ? filters.entityType : [filters.entityType];
       if (!types.includes(result.type)) return false;
     }
 
@@ -165,7 +154,7 @@ export function applyFilters(
 export function paginateResults(
   results: SearchResult[],
   page: number = 0,
-  pageSize: number = 20
+  pageSize: number = 20,
 ): {
   results: SearchResult[];
   total: number;

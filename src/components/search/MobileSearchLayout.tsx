@@ -70,7 +70,7 @@ export function MobileSearchLayout({
           )}
 
           {/* Search Input */}
-          <div className="flex-1 min-w-0">{children}</div>
+          <div className="min-w-0 flex-1">{children}</div>
         </div>
       </div>
 
@@ -91,11 +91,11 @@ export function MobileSearchLayout({
           <div
             id="mobile-filters"
             className={cn(
-              'fixed left-0 top-0 bottom-0 z-50 md:hidden',
+              'fixed bottom-0 left-0 top-0 z-50 md:hidden',
               'w-[80%] max-w-sm',
-              'bg-background border-r border-border',
+              'border-r border-border bg-background',
               'overflow-y-auto',
-              'animate-in slide-in-from-left-full duration-300',
+              'duration-300 animate-in slide-in-from-left-full',
               'supports-[animation]:animate-in supports-[animation]:slide-in-from-left-full',
             )}
           >

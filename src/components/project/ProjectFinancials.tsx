@@ -137,4 +137,4 @@ export const ProjectFinancials: React.FC<ProjectFinancialsProps> = ({ projectId 
       </p>
     </div>
   );
-}
+};

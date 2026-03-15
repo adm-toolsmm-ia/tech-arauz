@@ -126,7 +126,7 @@ export function SplitView({
 
         {/* Content - bg-white garante fundo branco sólido (padrão cards 360º) */}
         <ScrollArea className="flex-1 overflow-hidden bg-white">
-          <div className="p-6 bg-white">{children}</div>
+          <div className="bg-white p-6">{children}</div>
         </ScrollArea>
       </div>
     </>

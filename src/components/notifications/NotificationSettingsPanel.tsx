@@ -135,7 +135,7 @@ export function NotificationSettingsPanel({
     <div className={cn('space-y-6 p-4', className)}>
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Bell className="h-5 w-5 text-primary" />
+        <Bell className="text-primary h-5 w-5" />
         <h2 className="text-lg font-semibold">Configurações de Notificações</h2>
       </div>
 
@@ -151,28 +151,28 @@ export function NotificationSettingsPanel({
             )}
           >
             {/* Content */}
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <label
                   htmlFor={`notification-${category.id}`}
-                  className="text-sm font-medium cursor-pointer hover:text-primary transition-colors"
+                  className="hover:text-primary cursor-pointer text-sm font-medium transition-colors"
                 >
                   {category.name}
                 </label>
                 {category.enabled && (
-                  <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 px-2 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800 dark:bg-green-900 dark:text-green-100">
                     <Check className="h-3 w-3" />
                     Ativo
                   </span>
                 )}
                 {!category.enabled && (
-                  <span className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 px-2 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-800 dark:bg-gray-800 dark:text-gray-100">
                     <X className="h-3 w-3" />
                     Desativo
                   </span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">{category.description}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{category.description}</p>
             </div>
 
             {/* Toggle Switch */}
@@ -190,17 +190,17 @@ export function NotificationSettingsPanel({
 
       {/* Save Status */}
       {hasChanges && (
-        <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
+        <div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
           <span className="text-sm text-blue-900 dark:text-blue-100">
             Você tem alterações não salvas
           </span>
           <button
             onClick={handleSave}
             className={cn(
-              'px-3 py-1 rounded text-sm font-medium',
+              'rounded px-3 py-1 text-sm font-medium',
               'bg-primary text-primary-foreground hover:bg-primary/90',
               'transition-colors duration-150',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              'focus-visible:ring-primary focus:outline-none focus-visible:ring-2',
             )}
           >
             Salvar
@@ -209,7 +209,7 @@ export function NotificationSettingsPanel({
       )}
 
       {/* Info */}
-      <p className="text-xs text-muted-foreground text-center">
+      <p className="text-center text-xs text-muted-foreground">
         As suas preferências de notificações serão sincronizadas em todos os seus dispositivos
       </p>
     </div>

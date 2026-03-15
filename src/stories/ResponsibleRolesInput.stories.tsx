@@ -55,18 +55,12 @@ function InteractiveWrapper({
 
   return (
     <div className="w-full max-w-md space-y-4">
-      <ResponsibleRolesInput
-        value={value}
-        onChange={setValue}
-        disabled={disabled}
-      />
+      <ResponsibleRolesInput value={value} onChange={setValue} disabled={disabled} />
       <div className="rounded bg-slate-100 p-3 dark:bg-slate-900">
         <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
           Selected Roles (JSON):
         </p>
-        <pre className="mt-2 text-xs overflow-auto max-h-24">
-          {JSON.stringify(value, null, 2)}
-        </pre>
+        <pre className="mt-2 max-h-24 overflow-auto text-xs">{JSON.stringify(value, null, 2)}</pre>
       </div>
     </div>
   );
@@ -91,9 +85,7 @@ export const Default: Story = {
  * - Good for editing existing assignments
  */
 export const WithSelectedRoles: Story = {
-  render: () => (
-    <InteractiveWrapper defaultValue={['diretor', 'gerente', 'especialista']} />
-  ),
+  render: () => <InteractiveWrapper defaultValue={['diretor', 'gerente', 'especialista']} />,
 };
 
 /**
@@ -106,10 +98,7 @@ export const WithSelectedRoles: Story = {
  */
 export const Disabled: Story = {
   render: () => (
-    <InteractiveWrapper
-      defaultValue={['gerente', 'analista_senior']}
-      disabled={true}
-    />
+    <InteractiveWrapper defaultValue={['gerente', 'analista_senior']} disabled={true} />
   ),
 };
 
@@ -122,7 +111,7 @@ export const Disabled: Story = {
  */
 export const DarkMode: Story = {
   render: () => (
-    <div className="bg-slate-950 p-8 rounded-lg">
+    <div className="rounded-lg bg-slate-950 p-8">
       <div className="max-w-md">
         <InteractiveWrapper />
       </div>
@@ -179,10 +168,8 @@ export const TabletViewport: Story = {
  */
 export const DesktopViewport: Story = {
   render: () => (
-    <div className="w-full max-w-2xl mx-auto">
-      <InteractiveWrapper
-        defaultValue={['analista_junior', 'operacional', 'administrativo']}
-      />
+    <div className="mx-auto w-full max-w-2xl">
+      <InteractiveWrapper defaultValue={['analista_junior', 'operacional', 'administrativo']} />
     </div>
   ),
   parameters: {
@@ -220,9 +207,7 @@ export const A11yKeyboardNavigation: Story = {
       </div>
 
       <div className="rounded bg-blue-50 p-4 dark:bg-blue-950">
-        <h4 className="mb-3 font-semibold text-blue-900 dark:text-blue-100">
-          Keyboard Shortcuts:
-        </h4>
+        <h4 className="mb-3 font-semibold text-blue-900 dark:text-blue-100">Keyboard Shortcuts:</h4>
         <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
           <li>
             <strong>ArrowDown</strong> - Open dropdown / move to next option
@@ -278,10 +263,7 @@ export const AllRolesShowcase: Story = {
 
         <div className="grid gap-4 sm:grid-cols-3">
           {['management', 'specialist', 'operational'].map((category) => (
-            <div
-              key={category}
-              className="rounded border p-3 dark:border-slate-700"
-            >
+            <div key={category} className="rounded border p-3 dark:border-slate-700">
               <h4 className="mb-2 font-semibold capitalize text-slate-700 dark:text-slate-300">
                 {category === 'management' && 'Management (Gestão)'}
                 {category === 'specialist' && 'Specialist (Especialistas)'}
@@ -291,12 +273,9 @@ export const AllRolesShowcase: Story = {
                 {allRoles
                   .filter((r) => r.category === category)
                   .map((role) => (
-                    <li
-                      key={role.value}
-                      className="text-slate-600 dark:text-slate-400"
-                    >
+                    <li key={role.value} className="text-slate-600 dark:text-slate-400">
                       {role.label}
-                      <span className="text-xs text-slate-500 dark:text-slate-500 ml-1">
+                      <span className="ml-1 text-xs text-slate-500 dark:text-slate-500">
                         ({role.description})
                       </span>
                     </li>
@@ -320,10 +299,10 @@ export const AllRolesShowcase: Story = {
 export const SearchAndFilter: Story = {
   render: () => (
     <div className="space-y-4">
-      <div className="rounded bg-green-50 p-3 dark:bg-green-950 text-sm">
+      <div className="rounded bg-green-50 p-3 text-sm dark:bg-green-950">
         <p className="text-green-900 dark:text-green-100">
-          💡 Try typing in the input field to filter roles. Try typing &quot;ger&quot;
-          to find &quot;Gerente&quot;
+          💡 Try typing in the input field to filter roles. Try typing &quot;ger&quot; to find
+          &quot;Gerente&quot;
         </p>
       </div>
       <InteractiveWrapper defaultValue={['diretor']} />

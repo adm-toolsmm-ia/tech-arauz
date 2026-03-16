@@ -677,62 +677,328 @@ The agent framework is **designed to evolve**:
 
 ---
 
-## 11. AI Context Embeddings & Knowledge Retrieval (Story 11.11)
+## 11. AI Context Engineering (EPIC 11 — Organizational Enrichment)
 
-### 11.1 Semantic Search with pgvector
+**Status:** ✅ **COMPLETE** (Phase 2 — Story 11.14, Production Ready v0.2.4)
 
-Tech Arauz integrates **OpenAI embeddings** with PostgreSQL **pgvector** for semantic knowledge retrieval:
+Tech Arauz integrates **AI context embeddings** with PostgreSQL **pgvector** for semantic knowledge retrieval, role context injection, and metrics-driven agent decisions. This section documents the complete AI context engineering pattern used by AIOX agents.
+
+### 11.1 Architecture Overview
+
+**Three-Layer AI Context System:**
+
+```
+Layer 1: Data Collection
+├─ org_process_metrics (real-time metrics)
+├─ org_process_slas (compliance targets)
+├─ org_role_definitions (role metadata)
+└─ org_activity_templates (reusable patterns)
+  ↓
+Layer 2: Context Transformation
+├─ Role Context Injection
+├─ Metrics Transformer
+└─ Knowledge Base Retrieval (pgvector)
+  ↓
+Layer 3: Agent Decision-Making
+├─ Process Analysis & Recommendations
+├─ Capacity Planning
+└─ Activity Planning with Role Assignment
+```
+
+**Data Freshness Requirements:**
+- Metrics: < 1 hour old (auto-refresh if older)
+- Role context: < 1 day old
+- Knowledge base: updated on-demand
+- SLA thresholds: < 1 hour old
+
+---
+
+### 11.2 Role Context Injection
+
+**Purpose:** Enrich agent prompts with structured role metadata to improve assignment decisions.
+
+**Data Sources:**
+
+| Table | Fields | Use |
+|-------|--------|-----|
+| `org_role_definitions` | role_id, role_name, category, level | Role taxonomy |
+| `org_activities` | responsible_roles (JSONB) | Role assignments |
+| `org_processes` | responsible_roles (JSONB) | Process coverage |
+| `org_process_metrics` | avg_duration_days, compliance_pct | Performance baseline |
+| `org_role_permissions` | scope, conditions | Authorization rules |
+
+**Example 1: Retrieve Role Context**
+
+```typescript
+// Server action: getRoleContextAction()
+export async function getRoleContextAction(
+  tenant_id: string,
+  role_id: string
+): Promise<RoleContext> {
+  const supabase = await createClient();
+
+  // Query all activities assigned to role
+  const { data: activities } = await supabase
+    .from('org_activities')
+    .select('id, name, complexity, priority, responsible_roles')
+    .contains('responsible_roles', [role_id])
+    .eq('tenant_id', tenant_id);
+
+  // Query all processes with this role
+  const { data: processes } = await supabase
+    .from('org_processes')
+    .select('id, name, responsible_roles')
+    .contains('responsible_roles', [role_id])
+    .eq('tenant_id', tenant_id);
+
+  // Get performance metrics
+  const { data: metrics } = await supabase
+    .from('org_process_metrics')
+    .select('*')
+    .eq('tenant_id', tenant_id)
+    .order('period_end', { ascending: false })
+    .limit(30);
+
+  // Get role definition
+  const { data: roleDef } = await supabase
+    .from('org_role_definitions')
+    .select('*')
+    .eq('role_id', role_id)
+    .single();
+
+  return {
+    role_id,
+    role_name: roleDef?.role_name,
+    category: roleDef?.category,
+    activities_count: activities?.length || 0,
+    processes_count: processes?.length || 0,
+    avg_performance: calculateAvgPerformance(metrics),
+    escalation_path: getEscalationPath(role_id),
+    available_capacity: calculateCapacity(activities)
+  };
+}
+```
+
+**Example 2: Format Role Context for Prompt Injection**
+
+```typescript
+// Format as natural language for AI agent
+function formatRoleContextForPrompt(roleContext: RoleContext): string {
+  return `
+# Role Context: ${roleContext.role_name}
+
+**Scope:** ${roleContext.category} role | Hierarchy Level: ${roleContext.level}
+
+**Responsibilities:**
+- Assigned to ${roleContext.activities_count} activities across ${roleContext.processes_count} processes
+- Average performance on metrics: ${(roleContext.avg_performance * 100).toFixed(1)}%
+- Current capacity: ${roleContext.available_capacity}% utilized
+
+**Escalation Chain:** ${roleContext.escalation_path.join(' → ')}
+
+**Permissions:**
+${roleContext.permissions.map(p => `- ${p.action} on ${p.resource_type}`).join('\n')}
+`;
+}
+```
+
+**Example 3: Inject into Agent Planning Prompt**
+
+```typescript
+// When planning an activity assignment
+const roleContext = await getRoleContextAction(tenant_id, role_id);
+const contextString = formatRoleContextForPrompt(roleContext);
+
+const systemPrompt = `
+You are an organizational activity planner. Recommend the best person for this task.
+
+${contextString}
+
+Consider their expertise, current workload, and quality history.
+`;
+
+// Use with Claude API for activity recommendations
+const recommendation = await anthropic.messages.create({
+  model: 'claude-3-5-sonnet-20241022',
+  max_tokens: 512,
+  system: systemPrompt,
+  messages: [{
+    role: 'user',
+    content: 'Who should handle the legal review for this new contract?'
+  }]
+});
+```
+
+---
+
+### 11.3 Process Metrics Transformer
+
+**Purpose:** Convert raw metrics into agent-friendly natural language for process analysis.
+
+**Available Metrics (from `org_process_metrics`):**
+
+| Metric | Type | Range | Meaning |
+|--------|------|-------|---------|
+| `avg_duration_days` | Decimal | 0-1000 | Average process duration |
+| `compliance_pct` | Decimal | 0-100 | % of cases meeting SLA |
+| `instances_count` | Integer | 0-N | Cases in period |
+| `period_start` / `period_end` | Date | - | Reporting period |
+
+**Example 1: Query Process Metrics**
+
+```typescript
+// Get metrics for last 30 days
+export async function getProcessMetricsAction(
+  tenant_id: string,
+  process_id: string,
+  days: number = 30
+): Promise<ProcessMetricsContext> {
+  const supabase = await createClient();
+
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  const { data: metrics } = await supabase
+    .from('org_process_metrics')
+    .select('*')
+    .eq('tenant_id', tenant_id)
+    .eq('process_id', process_id)
+    .gte('period_start', startDate.toISOString().split('T')[0])
+    .order('period_start', { ascending: true });
+
+  // Calculate trends
+  const trend = calculateTrend(metrics || []);
+  const forecast = forecastMetrics(metrics || []);
+
+  return {
+    process_id,
+    current_metrics: metrics?.[metrics.length - 1],
+    historical_avg: calculateAverage(metrics),
+    trend,
+    forecast,
+    anomalies: detectAnomalies(metrics)
+  };
+}
+```
+
+**Example 2: Transform Metrics to Prompt Context**
+
+```typescript
+// Convert metrics to natural language narrative
+function transformMetricsForPrompt(metrics: ProcessMetricsContext): string {
+  const curr = metrics.current_metrics;
+  const avg = metrics.historical_avg;
+
+  return `
+# Process Performance Context
+
+**Current Performance (Latest Period):**
+- Average Duration: ${curr?.avg_duration_days?.toFixed(1)} days
+- SLA Compliance: ${curr?.compliance_pct?.toFixed(1)}%
+- Cases Processed: ${curr?.instances_count}
+
+**30-Day Trend:**
+- Duration: ${metrics.trend.duration > 0 ? '📈 Increasing (slower)' : '📉 Decreasing (faster)'}
+- Compliance: ${metrics.trend.compliance > 0 ? '📈 Improving' : '📉 Declining'}
+- Volume: ${metrics.trend.volume > 0 ? '📈 Growing' : '📉 Decreasing'}
+
+**Baseline Comparison:**
+- Avg Duration: ${avg?.avg_duration_days?.toFixed(1)} days vs current ${curr?.avg_duration_days?.toFixed(1)}
+- Target: 30 days | ${curr && curr.avg_duration_days > 30 ? '⚠️ ABOVE' : '✓ WITHIN'} SLA
+
+**Anomalies:** ${metrics.anomalies.length > 0 ? '⚠️ Detected' : '✓ None'}
+${metrics.anomalies.map(a => `- ${a.description}`).join('\n')}
+`;
+}
+```
+
+**Example 3: Use Metrics in Analysis Prompt**
+
+```typescript
+// AI agent analyzes bottlenecks with metric context
+const metricsContext = await getProcessMetricsAction(tenant_id, process_id, 30);
+const metricsNarrative = transformMetricsForPrompt(metricsContext);
+
+const analysisPrompt = `
+${metricsNarrative}
+
+# Task: Identify Top 3 Bottlenecks
+
+Analyze the above metrics and recommend:
+1. Root cause of each bottleneck (with metric evidence)
+2. Specific action to fix (with implementation effort)
+3. Expected impact on SLA compliance (quantified)
+4. Risk of recommendation (schedule, quality, cost)
+
+Format as JSON:
+{
+  "bottlenecks": [
+    {
+      "name": "string",
+      "impact_pct": number,
+      "root_cause": "string",
+      "recommendation": "string",
+      "effort": "low|medium|high",
+      "expected_improvement_pct": number
+    }
+  ]
+}
+`;
+
+const analysis = await anthropic.messages.create({
+  model: 'claude-3-5-sonnet-20241022',
+  max_tokens: 1024,
+  messages: [{ role: 'user', content: analysisPrompt }]
+});
+```
+
+---
+
+### 11.4 Knowledge Base Retrieval (pgvector Semantic Search)
+
+**Purpose:** Retrieve contextually relevant best practices, templates, and case studies for agent decision-making.
 
 **Architecture:**
+
 ```
-Query (natural language)
+Natural Language Query
   ↓
-Generate embedding (OpenAI API)
+Generate Embedding (OpenAI API — dimension 1536)
   ↓
-Vector similarity search (pgvector IVFFlat index)
+Cosine Similarity Search (pgvector IVFFlat index)
   ↓
-Retrieve top-K similar entries (similarity_score > 0.5)
+Filter by threshold (default: 0.5)
   ↓
-Return ranked knowledge entries
+Rank by similarity score
+  ↓
+Return top-K entries
 ```
 
 **Performance:**
-- Embedding generation: ~500ms (cached)
-- Vector similarity search: 30-100ms
-- Full retrieval pipeline: < 1 second
+- Embedding generation: ~500ms (client-side, cached)
+- Vector similarity search: 30-100ms (database)
+- Full pipeline: < 1 second
 
-### 11.2 Knowledge Entry Types
-
-| Type | Purpose | Example |
-|------|---------|---------|
-| **process** | Process definitions & workflows | "Credit Recovery Initial Filing Process" |
-| **best_practice** | Operational guidance | "How to efficiently interview clients" |
-| **case_study** | Historical examples | "Case #123: Successful settlement in 45 days" |
-| **template** | Reusable activity patterns | "Activity template: Legal document review" |
-| **role_guide** | Role-specific documentation | "Paralegal responsibilities in judicial recovery" |
-
-### 11.3 Server Action: Semantic Search
-
-**From:** `src/app/actions/organization.ts`
+**Example 1: Semantic Search Query**
 
 ```typescript
 export async function semanticSearchKnowledgeAction(
+  tenant_id: string,
   query: string,
-  limit: number = 10,
+  limit: number = 5,
   threshold: number = 0.5
 ): Promise<KnowledgeEntry[]> {
-  const supabase = await createClient();
-
-  // 1. Generate embedding for query using OpenAI
+  // 1. Generate embedding using OpenAI
   const queryEmbedding = await generateEmbedding(query);
 
-  // 2. Search using pgvector similarity (cosine distance)
-  const results = await supabase.rpc(
+  // 2. Vector similarity search via Supabase RPC
+  const { data: results } = await supabase.rpc(
     'match_knowledge_entries',
     {
       query_embedding: queryEmbedding,
       match_threshold: threshold,
-      match_count: limit
+      match_count: limit,
+      tenant_id
     }
   );
 
@@ -740,124 +1006,261 @@ export async function semanticSearchKnowledgeAction(
 }
 ```
 
-**Usage Pattern 1: Process Bottleneck Detection**
+**Example 2: Real-World Query Patterns**
 
 ```typescript
-// AI agent analyzes process metrics to find inefficiencies
-const bottlenecks = await semanticSearchKnowledgeAction(
-  'credit recovery process optimization techniques',
-  3
+// Pattern 1: Process Bottleneck Resolution
+const bottleneckGuidance = await semanticSearchKnowledgeAction(
+  tenant_id,
+  'how to optimize credit recovery process timeline',
+  3,
+  0.6  // Higher confidence threshold
 );
+// Returns: Best practices matching the optimization query
 
-// Returns top 3 knowledge entries with highest semantic similarity
-// Example: ["Best practice: Parallel document processing", "Case study: 30-day achievement", ...]
-```
-
-**Usage Pattern 2: Role-Specific Guidance**
-
-```typescript
-// AI assists paralegal with task
-const guidance = await semanticSearchKnowledgeAction(
-  'paralegal document preparation checklist',
+// Pattern 2: Role-Specific Training
+const roleGuide = await semanticSearchKnowledgeAction(
+  tenant_id,
+  'paralegal responsibilities in contract review process',
   5
 );
+// Returns: Role guides, templates, case studies
 
-// Agent uses entries to provide step-by-step instructions
+// Pattern 3: Activity Template Discovery
+const templates = await semanticSearchKnowledgeAction(
+  tenant_id,
+  'document preparation activity template',
+  2
+);
+// Returns: Reusable activity templates
 ```
 
-### 11.4 AI Context Injection Pattern
+**Knowledge Entry Types:**
 
-**Build high-quality context for agent decisions:**
+| Type | Use Case | Example |
+|------|----------|---------|
+| `process` | Understand workflow | "Credit Recovery Initial Filing Process Definition" |
+| `best_practice` | Operational guidance | "Efficient paralegal document prep using templates" |
+| `case_study` | Learn from examples | "Case #456: Achieved 30-day target with parallel review" |
+| `template` | Reuse patterns | "Activity template: Legal document review (4h)" |
+| `role_guide` | Onboarding | "Paralegal handbook: Initial filing responsibilities" |
+
+---
+
+### 11.5 Agent Personas Updated for EPIC 11 (AI Context)
+
+Each AIOX agent now receives **AI context enrichment** for improved decision-making:
+
+**@dev (Dex) — Implementation Expert**
+- Context: Role assignments, activity templates, process metrics
+- Use: Validate implementation against process SLA, use templates for consistency
+- Example: When implementing activity, check `org_process_slas` to understand time constraints
+
+**@architect (Aria) — Design Authority**
+- Context: Process architecture, role hierarchies, integration patterns
+- Use: Design systems that respect role responsibilities and escalation paths
+- Example: Design decision on approval flow considers `org_role_permissions`
+
+**@qa (Quinn) — Quality Validator**
+- Context: Process SLA targets, quality baselines, role performance history
+- Use: Set QA gates based on role capability and process metrics
+- Example: QA acceptance criteria includes SLA compliance checks
+
+**@pm (Morgan) — Product Manager**
+- Context: Process metrics, capacity trends, SLA forecasts
+- Use: Make roadmap decisions based on process bottlenecks and capacity
+- Example: Recommend automation if `org_process_metrics` show compliance < 80%
+
+**@data-engineer (Dara) — Database Specialist**
+- Context: Schema relationships, role permissions, metrics tracking
+- Use: Design queries and RLS policies respecting role hierarchy
+- Example: Implement RLS policies on `org_activities` based on `org_role_permissions`
+
+---
+
+### 11.6 Prompt Engineering Best Practices
+
+**Pattern 1: Process Optimization Analysis**
+
+```
+You are a business process consultant analyzing this process:
+
+# Process Metrics (Last 30 Days)
+${processMetricsContext}
+
+# Involved Roles
+${roleContexts.map(r => `- ${r.role_name}: ${r.activities_count} activities, ${r.avg_performance}% avg performance`).join('\n')}
+
+# Relevant Knowledge Base
+${knowledgeEntries.map(k => `- [${k.type}] ${k.title}`).join('\n')}
+
+# Task
+Identify 3 specific, actionable improvements to increase SLA compliance by 20%.
+
+Requirements:
+1. Each recommendation must have metric evidence
+2. Include implementation effort (days)
+3. Reference knowledge base entries
+4. Consider role capacity constraints
+5. Output as JSON for integration
+```
+
+**Pattern 2: Role Assignment Decision**
+
+```
+You are planning activities for process: ${processName}
+
+# Available Roles
+${roleContexts.map(r => `
+- ${r.role_name} (${r.category})
+  - Capacity: ${r.available_capacity}%
+  - Performance: ${r.avg_performance}%
+  - Expertise: ${r.activities_count} similar activities
+  - Escalation: ${r.escalation_path.join(' → ')}
+`).join('\n')}
+
+# Activity to Assign
+- Name: ${activityName}
+- Complexity: ${complexity}
+- Estimated Duration: ${duration} hours
+- Quality Target: ${qualityTarget}%
+- SLA: ${slaHours} hours
+
+# Relevant Templates
+${templates.map(t => `- ${t.name} (${t.complexity})`).join('\n')}
+
+# Task
+Recommend the best role assignment with rationale.
+
+Consider:
+1. Role expertise and performance history
+2. Current capacity and workload
+3. Escalation paths if assignment fails
+4. Training needs if role is new
+```
+
+---
+
+### 11.7 Real-World Example: Credit Recovery Optimization
+
+**Scenario:** AI agent analyzes why credit recovery cases take 45 days vs. 30-day SLA target.
+
+**Step 1: Gather Context**
 
 ```typescript
-async function buildHighQualityContext(entityId: string): Promise<AIContext> {
-  // Check data freshness (< 1 hour old)
-  const lastUpdate = await getLastUpdate(entityId);
-  if (Date.now() - lastUpdate > 3600000) {
-    await refreshMetrics(entityId);
-  }
+// Metrics context
+const metrics = await getProcessMetricsAction(
+  tenant_id,
+  creditRecoveryProcessId,
+  30  // Last 30 days
+);
 
-  // Gather context from multiple sources
-  const context = {
-    entity: await getEntity(entityId),
-    metrics: await getMetrics(entityId),
-    roles: await getInvolvedRoles(entityId),
-    knowledge: await searchRelevantKnowledge(entityId),
-    historical: await getHistoricalPatterns(entityId)
-  };
+// Role context
+const lawyerContext = await getRoleContextAction(tenant_id, 'advogado_senior');
+const paralegalContext = await getRoleContextAction(tenant_id, 'paralegal');
 
-  // Filter to relevant items only (< 4K tokens for optimal LLM performance)
-  return pruneContextToSize(context, 4000);
+// Knowledge base
+const optimizationGuides = await semanticSearchKnowledgeAction(
+  tenant_id,
+  'credit recovery timeline optimization techniques',
+  3
+);
+```
+
+**Step 2: AI Analysis with Enriched Context**
+
+```typescript
+const analysisPrompt = `
+Process Performance:
+${transformMetricsForPrompt(metrics)}
+
+Role Context:
+${formatRoleContextForPrompt(lawyerContext)}
+${formatRoleContextForPrompt(paralegalContext)}
+
+Relevant Knowledge Base:
+${optimizationGuides.map(g => `- ${g.title}`).join('\n')}
+
+Task: Why are cases taking 45 days instead of 30? Recommend 3 improvements.
+`;
+
+const analysis = await anthropic.messages.create({
+  model: 'claude-3-5-sonnet-20241022',
+  max_tokens: 1024,
+  messages: [{ role: 'user', content: analysisPrompt }]
+});
+```
+
+**Step 3: Expected Output**
+
+```
+## Bottleneck Analysis: Credit Recovery
+
+### Bottleneck 1: Document Preparation (8h actual vs 4h SLA)
+- **Evidence**: Metrics show avg_duration 8h, baseline 4h
+- **Root Cause**: New paralegals not using templates
+- **Recommendation**: Mandatory paralegal-prep-template usage
+- **Impact**: Save 4 hours = 10% overall reduction
+- **Effort**: 2 days (template training)
+
+### Bottleneck 2: Legal Review Queue (6h wait)
+- **Evidence**: Lawyer capacity at 95%, bottleneck
+- **Root Cause**: advogado_senior overloaded
+- **Recommendation**: Cross-train paralegal_senior for basic review
+- **Impact**: Save 6 hours = 15% overall reduction
+- **Effort**: 5 days (training) + ongoing supervision
+
+### Combined Impact
+- Current: 45 days (150% of SLA)
+- With improvements: 30 days (100% of SLA) ✓
+```
+
+---
+
+### 11.8 Integration with Agent System (AIOX)
+
+**How agents activate AI context:**
+
+```bash
+# @architect activates with AI context enrichment
+@architect *design-process {
+  process_id: "process-123",
+  enrich_with: ["metrics", "role_context", "knowledge_base"]
+}
+
+# @dev implements with template guidance
+@dev *implement-activity {
+  activity_id: "activity-456",
+  template_guidance: true,
+  validate_against_sla: true
+}
+
+# @qa validates with role-based criteria
+@qa *qa-gate {
+  story_id: "11.14",
+  check_sla_compliance: true,
+  validate_role_assignments: true
 }
 ```
 
-### 11.5 Sample AI Prompt with Embeddings
+**Handoff Between Agents (with AI Context):**
 
-**Process Optimization Scenario:**
-
-```
-You are a business process optimization consultant analyzing Tech Arauz processes.
-
-# Process Context
-${processMetrics}
-
-# Organization Context
-${organizationStructure}
-
-# Role Context (Process Owner)
-${roleContext}
-
-# Relevant Knowledge Base (from semantic search)
-${relevantKnowledge.map(k => `
-- [${k.type}] ${k.title}
-  ${k.content.substring(0, 200)}...
-`).join('\n')}
-
-Task: Identify the top 3 bottlenecks in this process with recommendations.
-
-Your analysis should:
-1. Identify bottlenecks with quantitative evidence
-2. Reference relevant knowledge base entries
-3. Calculate potential impact of removing each bottleneck
-4. Suggest specific, actionable improvements
-5. Prioritize by ROI (impact / effort)
-```
-
-### 11.6 Real-World Example: Credit Recovery Optimization
-
-**Scenario:** AI agent analyzes why credit recovery cases take 45 days (actual) vs 30 days (SLA target).
-
-**Knowledge retrieval:**
-```typescript
-const knowledge = await semanticSearchKnowledgeAction(
-  'credit recovery timeline optimization',
-  5
-);
-// Returns:
-// 1. "Best practice: Document checklist for initial filing" (similarity: 0.89)
-// 2. "Case study: 30-day case completion" (similarity: 0.87)
-// 3. "Template: Paralegal document preparation" (similarity: 0.84)
-```
-
-**AI Analysis using injected knowledge:**
-```
-## Bottleneck Analysis: Credit Recovery Initial Filing
-
-### Bottleneck 1: Document Preparation (8 hours actual vs 4 hours benchmark)
-- **Evidence**: From knowledge base best practice
-- **Root Cause**: New paralegals not using checklist template
-- **Recommendation**: Mandatory template usage + training
-- **Expected Impact**: -4 hours = 10% faster completion
-
-### Bottleneck 2: Legal Review Queue (6 hours wait time)
-- **Evidence**: Historical case data from knowledge base
-- **Root Cause**: Single lawyer bottleneck
-- **Recommendation**: Cross-train paralegal_senior or hire/promote
-- **Expected Impact**: -6 hours = 15% faster completion
-
-### Projected Impact
-- Implementing all 3 recommendations: 30-day SLA achievable ✓
-- Priority: Bottleneck 1 (high ROI, low effort)
+```yaml
+handoff:
+  from_agent: architect
+  to_agent: dev
+  story_context:
+    story_id: '11.14'
+    task: 'Implement activity assignment logic'
+  ai_context:
+    metrics_context: org_process_metrics
+    role_definitions: org_role_definitions
+    templates: org_activity_templates
+    sla_targets: org_process_slas
+  decisions:
+    - 'Use role context injection for assignment quality'
+    - 'Validate implementations against process SLA'
+    - 'Reference templates for consistency'
 ```
 
 ---

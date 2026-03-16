@@ -14,33 +14,134 @@
 - React: 18.3.0
 - TypeScript: 5.5.0
 - Tailwind: 3.4.0
-- Supabase: 2.45.0
-- TanStack Query: 5.50.0
+- Supabase: 2.45.0+ (see Supabase Stack below)
+- TanStack Query: 5.50.0+
+- Zod: 3.23.0
+- Zustand: 4.5.0
 
 **Total:** 60+ dependencies
 
 **Production Bundle Size:** ~185KB (gzipped)
 
----
-
-## Update Strategy
-
-- **Patch (0.0.x):** Auto-apply (security fixes)
-- **Minor (0.x.0):** Review, apply if no breaking changes
-- **Major (x.0.0):** Flag to @architect, only if necessary
+**Last Audit:** 2026-03-16 (0 vulnerabilities, all critical fixes applied)
 
 ---
 
-## Security Scanning
+## Dependency Update Strategy
+
+### Update Classification
+
+| Type | Example | Policy | Latency |
+|------|---------|--------|---------|
+| **Security Patch** | 1.2.3 → 1.2.4 (critical CVE fix) | Apply within 24h | URGENT |
+| **Security Patch** | 1.2.3 → 1.2.5 (high CVE fix) | Apply within 3 days | HIGH |
+| **Minor Update** | 1.2.3 → 1.3.0 (new features, no breaking) | Review & apply within 1 sprint | NORMAL |
+| **Patch Update** | 1.2.3 → 1.2.6 (bug fix) | Apply within 1 week | LOW |
+| **Major Update** | 1.2.3 → 2.0.0 (breaking changes) | Escalate to @architect, defer 1-2 releases | DEFERRED |
+
+### Update Procedure
 
 ```bash
-npm audit
-# → Shows vulnerabilities
-# → Fix: npm audit fix
+# 1. Check outdated packages
+npm outdated
 
-# Pre-commit hook runs npm audit
-# Fails if critical vulnerabilities found
+# 2. Run security audit
+npm audit
+# If vulnerabilities: npm audit fix
+
+# 3. Update specific package (minor/patch)
+npm update package-name
+
+# 4. For major updates: create new feature branch
+git checkout -b deps/package-name-vX
+npm install package-name@latest
+npm run lint ; npm run typecheck ; npm run test
+# If all pass: submit PR for review
+# If failing: revert update, escalate to @architect
 ```
+
+### Dependency Lock File
+
+**Current Lock:** `package-lock.json` (present, committed)
+
+**Policy:**
+- Regenerate on `npm install` after package.json changes
+- Commit lock file to ensure reproducible builds
+- Never manually edit lock file
+- If corrupted: `rm package-lock.json && npm install`
+
+---
+
+## Vulnerability Management
+
+### npm audit Workflow
+
+**Check current status:**
+```bash
+npm audit
+```
+
+**Expected output (v0.2.4):**
+```
+0 vulnerabilities found
+```
+
+**If vulnerabilities found:**
+
+| Severity | Action | Timeline |
+|----------|--------|----------|
+| **CRITICAL** | 🔴 Apply fix immediately, block deployment | < 4 hours |
+| **HIGH** | 🟠 Apply fix within 1 business day | < 24 hours |
+| **MODERATE** | 🟡 Apply fix within 3 business days | < 72 hours |
+| **LOW** | 🔵 Log and track, schedule for next sprint | < 2 weeks |
+
+**Automatic Fix Attempt:**
+```bash
+npm audit fix
+```
+
+**Manual Fix Process (if npm audit fix fails):**
+1. Identify vulnerable package: `npm audit` shows in report
+2. Check if update available: `npm outdated package-name`
+3. Update: `npm install package-name@latest`
+4. Test: `npm run lint ; npm run typecheck ; npm run test`
+5. If test pass: commit
+6. If test fail: research alternative package or escalate to @architect
+
+**Transitive Vulnerabilities (dependencies of dependencies):**
+- npm audit reports all transitive vulnerabilities
+- Try `npm audit fix --force` (caution: may introduce breaking changes)
+- Or update parent dependency: `npm update package-name`
+
+### CI/CD Security Integration
+
+**GitHub Actions Hook (`.github/workflows/ci.yml`):**
+```yaml
+- name: Audit Dependencies
+  run: npm audit --production
+  # Fails if critical/high vulnerabilities in production deps
+```
+
+**Pre-commit Hook:**
+```bash
+npm audit --audit-level=moderate
+# Blocks commit if moderate+ vulnerabilities present
+```
+
+### Dependency License Compliance
+
+**Policy:** Only MIT, Apache-2.0, ISC licenses allowed.
+
+**Check licenses:**
+```bash
+npm ls --production | grep -E "LGPL|GPL|Proprietary"
+# Should return: (empty)
+```
+
+**If GPL/LGPL dependency detected:**
+- Flag to @architect for approval
+- Document in `LICENSES.md` if approved
+- Otherwise: find alternative package or build custom solution
 
 ---
 
@@ -57,44 +158,133 @@ npm audit
 
 **Status:** 🟢 COMPLETE (v0.2.4 production ready)
 
-### pgvector + Vector Search
+### pgvector + Vector Search (Story 11.11)
 
-**Purpose:** Semantic search on knowledge base via embeddings (Story 11.11)
+**Status:** 🟢 READY FOR IMPLEMENTATION (v0.2.4)
 
-**Database Extensions (Server-side):**
+**Purpose:** Semantic search on knowledge base via embeddings
+
+**Architecture:**
+- **Server-side:** PostgreSQL with pgvector extension (v0.5.0+)
+- **Client-side:** Supabase RPC + optional OpenAI client
+- **Embedding model:** OpenAI `text-embedding-3-small`
+- **Dimension:** 1536 (standard for OpenAI embeddings)
+- **Index type:** IVFFlat with cosine distance metric
+- **Storage:** `org_knowledge_entries.embedding` column (vector type)
+- **Batch tracking:** `embedding_batch_log` table (audit trail)
+
+**Database Extensions (Server-side in Migration 071):**
 ```sql
--- Enabled in Migration 071
+-- Enabled in Supabase PostgreSQL
 CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Verification
+SELECT extname, extversion FROM pg_extension WHERE extname = 'vector';
+-- Expected: (vector, 0.5.0 or higher)
 ```
 
-**Dimension Configuration:**
-- **Embedding Model:** OpenAI `text-embedding-3-small`
-- **Dimension:** 1536 (standard for OpenAI)
-- **Index Type:** IVFFlat with `vector_cosine_ops`
-- **Lists:** 100 (optimal for 100k+ rows)
-- **Similarity Metric:** Cosine distance
+**Configuration Details:**
 
-**Client Library:**
-- No additional NPM package needed (Supabase `@supabase/supabase-js` v2.45.0 already supports vector queries via RPC)
-- Vector operations handled via PostgreSQL RPC functions
+| Property | Value | Notes |
+|----------|-------|-------|
+| Extension | pgvector v0.5.0+ | Supabase maintains latest |
+| Embedding dimension | 1536 | OpenAI text-embedding-3-small standard |
+| Index type | IVFFlat | Approximate nearest neighbor for speed |
+| Index metric | vector_cosine_ops | Cosine distance (normalized) |
+| Lists parameter | 100 | Optimal for 100k-1M rows |
+| Probes (query-time) | 10 (default) | Tune for recall vs. speed tradeoff |
 
-**Example Query (Server Action):**
+**Client Libraries (Current & Future):**
+
+```json
+// Currently: Vector queries via Supabase RPC only
+{
+  "@supabase/supabase-js": "^2.45.0"  // Supports vector RPC calls
+}
+
+// Future (Story 11.11 Phase 2): If server-side embedding generation
+{
+  "openai": "^4.52.0"  // Not yet added (add when needed)
+}
+```
+
+**Why No Client pgvector Library:**
+- pgvector is PostgreSQL extension (server-side only)
+- Vector operations via Supabase RPC functions (type-safe, no client library)
+- OpenAI embeddings generated server-side (next/server functions, not bundled)
+- Semantic search RPC: `search_knowledge_semantic(query_embedding, k)`
+
+**Example Usage (Server Action):**
 ```typescript
-// Step 1: Generate embedding via OpenAI API
-const embedding = await generateEmbedding(queryText);
+// lib/actions/semantic-search.ts
+'use server';
 
-// Step 2: Call semantic search RPC
-const { data } = await supabase.rpc('search_knowledge_semantic', {
-  query_embedding: embedding,
-  tenant_id_param: tenantId,
-  k: 10
-});
+import { createClient } from '@/lib/supabase/server';
+
+export async function semanticSearchAction(
+  query: string,
+  options?: { limit?: number; minSimilarity?: number }
+) {
+  const supabase = createClient();
+
+  // Step 1: Generate embedding (server-side via external API or model)
+  const queryEmbedding = await generateEmbedding(query);
+  // → Call OpenAI API (if Story 11.11 Phase 2 approved)
+  // → Or use open-source model (e.g., sentence-transformers via API)
+
+  // Step 2: Call semantic search RPC
+  const { data, error } = await supabase.rpc('search_knowledge_semantic', {
+    query_embedding: queryEmbedding,
+    k: options?.limit ?? 10,
+    min_similarity: options?.minSimilarity ?? 0.5
+  });
+
+  if (error) throw new Error(`Search failed: ${error.message}`);
+  return data;
+}
 ```
 
-**Cost Optimization:**
-- OpenAI `text-embedding-3-small`: $0.02 per 1M tokens
-- Embeddings generated incrementally (Story 11.11 research phase)
-- Batch job tracking table: `embedding_batch_log`
+**Cost Breakdown (OpenAI embeddings):**
+- **Model:** text-embedding-3-small
+- **Price:** $0.02 per 1M tokens
+- **Example:** 10K knowledge entries × avg 200 tokens = 2M tokens = $0.04 initial embedding
+- **Monthly incremental:** ~100 new entries × 200 tokens = 20K tokens ≈ $0.0004
+
+**Future: If Story 11.11 Phase 2 adds OpenAI**
+
+Add to package.json (decision pending):
+```json
+{
+  "openai": "^4.52.0"  // ~185KB uncompressed, server-side only
+}
+```
+
+Install when approved:
+```bash
+npm install openai
+```
+
+Create API key in Vercel:
+```bash
+OPENAI_API_KEY=sk-...
+```
+
+Server action example:
+```typescript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+async function generateEmbedding(text: string): Promise<number[]> {
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text
+  });
+  return response.data[0].embedding;
+}
+```
 
 ### Performance Tuning
 
@@ -139,38 +329,90 @@ LIMIT k;
 - ✅ Comprehensive column documentation
 - ✅ Idempotent schema changes (`IF NOT EXISTS`)
 
-### Library Versions (Verified)
+### Library Versions (Verified v0.2.4)
 
-**Supabase Stack:**
+**From package.json (verified 2026-03-16):**
+
+**Core Framework:**
 ```json
 {
-  "@supabase/supabase-js": "^2.45.0",    // Supports vector RPC
-  "@supabase/ssr": "^0.5.0"               // Server-side auth
+  "next": "^14.2.0",                      // Latest 14.x
+  "react": "^18.3.0",                     // Latest 18.x
+  "react-dom": "^18.3.0"
 }
 ```
 
-**UI Component Library:**
+**Database & State:**
 ```json
 {
-  "@radix-ui/react-*": "^1.x.x",         // Base components
-  "shadcn/ui": "[custom]",                // Assembled in src/components/ui/
-  "tailwindcss": "^3.4.0"                 // Styling
+  "@supabase/supabase-js": "^2.45.0",    // v2.95.3 installed (latest 2.x)
+  "@supabase/ssr": "^0.5.0",              // v0.5.2 installed (latest 0.5.x)
+  "@tanstack/react-query": "^5.50.0",     // v5.90.20 installed (latest 5.x)
+  "zustand": "^4.5.0"                     // Lightweight state store
 }
 ```
 
-**State Management:**
+**UI & Styling:**
 ```json
 {
-  "zustand": "^4.5.0",                    // Lightweight store
-  "@tanstack/react-query": "^5.50.0"      // Server state sync
+  "@radix-ui/react-*": "^1.x.x",         // All core components v1.1.x - v2.2.x
+  "shadcn/ui": "[custom assembly]",      // Components in src/components/ui/
+  "tailwindcss": "^3.4.0",                // CSS framework
+  "tailwind-merge": "^2.6.1",             // Merge Tailwind classes safely
+  "class-variance-authority": "^0.7.1"    // Variant builder
 }
 ```
 
-**Type Safety:**
+**Type Safety & Validation:**
 ```json
 {
   "typescript": "^5.5.0",                 // Strict mode enabled
-  "zod": "^3.23.0"                        // Runtime validation
+  "zod": "^3.23.0",                       // Runtime schema validation
+  "@types/node": "^20.0.0",
+  "@types/react": "^18.3.0",
+  "@types/react-dom": "^18.3.0"
+}
+```
+
+**Editor & Rich Text:**
+```json
+{
+  "@tiptap/react": "^3.19.0",             // Rich text editor
+  "@tiptap/starter-kit": "^3.19.0",       // Editor extensions
+  "@tiptap/extension-link": "^3.19.0",
+  "@tiptap/extension-placeholder": "^3.19.0",
+  "react-markdown": "^10.1.0"              // Markdown rendering
+}
+```
+
+**UI Components & Interactions:**
+```json
+{
+  "cmdk": "^1.1.1",                       // Command palette
+  "lucide-react": "^0.400.0",             // Icon library
+  "recharts": "^2.12.0",                  // Charts & metrics
+  "gantt-task-react": "^0.3.9",           // Gantt visualization
+  "sonner": "^1.5.0"                      // Toast notifications
+}
+```
+
+**Form & Drag-and-Drop:**
+```json
+{
+  "react-hook-form": "^7.71.2",           // Form state management
+  "@hookform/resolvers": "^5.2.2",        // Validation resolvers
+  "@dnd-kit/core": "^6.3.1",              // Drag-and-drop
+  "@dnd-kit/sortable": "^10.0.0",
+  "@dnd-kit/utilities": "^3.2.2"
+}
+```
+
+**Analytics & Monitoring:**
+```json
+{
+  "@vercel/analytics": "^1.6.1",          // Performance tracking
+  "@vercel/speed-insights": "^1.3.1",     // Speed monitoring
+  "next-themes": "^0.3.0"                 // Dark mode support
 }
 ```
 

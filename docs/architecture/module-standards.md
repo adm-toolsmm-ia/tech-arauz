@@ -1,9 +1,14 @@
 # Module Engineering Standards — Padrão de Referência
 
-**Data:** 2026-03-16 (v0.2.4 EPIC 11 Update)
+**Data:** 2026-03-16 (v0.2.4 EPIC 11 Final Update)
 **Status:** Normativo (v0.2.4+)
-**Baseline único:** Módulo `projetos` (`src/app/projetos/`)
-**New Patterns:** Server Actions (§15), Cockpit360 (§16), Responsible Roles (§17)
+**Baseline:** Módulo `projetos` (`src/app/projetos/`) | EPIC 11: `src/app/organizacao/atividades/`
+**New Patterns (Sections 15-19):**
+- §15: Server Actions (42 actions, updateActivityResponsibleRolesAction pattern)
+- §16: Cockpit360 (5-tab structure with ActivityCockpit360 real example)
+- §17: Responsible Roles (9 roles, ResponsibleRolesInput component, JSONB storage)
+- §18: EPIC 11 Module Pattern (hierarchical organization structure)
+- §19: AI Agent Policy (comprehensive checklist + instructions)
 
 ---
 
@@ -360,113 +365,173 @@ All data mutations MUST use Server Actions (Next.js 13.4+) for:
 - Optimistic updates (React 19+)
 - Audit trail support
 
-### 15.1 Server Action Template
+### 15.1 Server Action Template (Real EPIC 11 Example)
+
+**Location:** `src/app/actions/organization.ts` (42 total actions)
+
+**Pattern: Auth Context + Tenant Isolation + Revalidation**
 
 ```typescript
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { z } from 'zod';
+import type { User } from '@supabase/supabase-js';
+import type { OrgActivity } from '@/types/organization';
 
-interface ActionResult<T> {
+export interface OrgActionResult<T = unknown> {
   success: boolean;
+  message: string;  // User-facing message (PT-BR)
   data?: T;
-  error?: string;
 }
 
-const updateActivitySchema = z.object({
-  id: z.string().uuid(),
-  responsible_roles: z.array(z.string()),
-});
+type AuthContextError = { error: string };
+type AuthContextSuccess = {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  user: User;
+  tenantId: string;
+};
+type AuthContext = AuthContextError | AuthContextSuccess;
 
-export async function updateActivityResponsibleRolesAction(
-  input: z.infer<typeof updateActivitySchema>
-): Promise<ActionResult<OrgActivity>> {
-  try {
-    // 1. Auth context (automatic from Supabase server client)
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+// --- Reusable Auth Helper ---
+async function getAuthContext(): Promise<AuthContext> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      throw new UnauthorizedError('Not authenticated');
-    }
-
-    // 2. Validate input
-    const validated = updateActivitySchema.parse(input);
-
-    // 3. Tenant isolation (critical for RLS)
-    const tenantId = user.user_metadata.tenant_id;
-
-    // 4. Mutation
-    const { data, error } = await supabase
-      .from('org_activities')
-      .update({ responsible_roles: validated.responsible_roles })
-      .eq('id', validated.id)
-      .eq('tenant_id', tenantId)  // Tenant isolation
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // 5. Audit logging (optional but recommended)
-    await logAuditEvent({
-      action: 'update_responsible_roles',
-      entity_id: validated.id,
-      changes: { responsible_roles: validated.responsible_roles },
-    });
-
-    // 6. Revalidation (Next.js cache)
-    revalidatePath('/organizacao');
-
-    return { success: true, data };
-  } catch (error) {
-    console.error('updateActivityResponsibleRolesAction:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+  if (authError || !user) {
+    return { error: 'Usuário não autenticado. Faça login novamente.' };
   }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile?.tenant_id) {
+    return { error: 'Perfil não encontrado. Contate o administrador.' };
+  }
+
+  return { supabase, user, tenantId: profile.tenant_id as string };
+}
+
+// --- Update Responsible Roles (EPIC 11 Story 11.7) ---
+export async function updateActivityResponsibleRolesAction(
+  activityId: string,
+  roles: string[],
+): Promise<OrgActionResult<OrgActivity>> {
+  // 1. Auth context (automatic from Supabase server client)
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  // 2. Mutation with tenant isolation
+  const { data, error } = await ctx.supabase
+    .from('org_activities')
+    .update({
+      responsible_roles: roles,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', activityId)
+    .eq('tenant_id', ctx.tenantId)  // Critical for RLS
+    .select()
+    .single();
+
+  if (error)
+    return { success: false, message: `Erro ao atualizar funções responsáveis: ${error.message}` };
+
+  // 3. Revalidation (Next.js cache invalidation)
+  revalidatePath('/organizacao');
+
+  return { success: true, message: 'Funções responsáveis atualizadas!', data: data as OrgActivity };
+}
+
+// --- Add Single Role (EPIC 11 Story 11.7) ---
+export async function addActivityResponsibleRoleAction(
+  activityId: string,
+  role: string,
+): Promise<OrgActionResult<OrgActivity>> {
+  const ctx = await getAuthContext();
+  if ('error' in ctx) return { success: false, message: ctx.error };
+
+  // Fetch current roles first (prevent duplicates)
+  const { data: activity, error: fetchError } = await ctx.supabase
+    .from('org_activities')
+    .select('responsible_roles')
+    .eq('id', activityId)
+    .eq('tenant_id', ctx.tenantId)
+    .single();
+
+  if (fetchError) return { success: false, message: 'Atividade não encontrada' };
+
+  const currentRoles = activity?.responsible_roles || [];
+  if (currentRoles.includes(role)) {
+    return { success: false, message: 'Função já adicionada' };
+  }
+
+  const newRoles = [...currentRoles, role];
+  return updateActivityResponsibleRolesAction(activityId, newRoles);
 }
 ```
 
-### 15.2 Client-Side Usage
+### 15.2 Client-Side Usage (ResponsibleRolesInput Integration)
+
+**Pattern: Async Server Action Call + Toast Feedback**
 
 ```typescript
 'use client';
 
 import { updateActivityResponsibleRolesAction } from '@/app/actions/organization';
-import { useAction } from 'next-safe-action/hooks';
+import { ResponsibleRolesInput } from '@/components/organization/ResponsibleRolesInput';
+import { toast } from 'sonner';
 
-export function ActivityForm() {
-  const { execute, isPending } = useAction(updateActivityResponsibleRolesAction);
+export function ActivityCockpit360({ activity, onUpdate }: Props) {
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const onSubmit = async (values: FormValues) => {
-    const result = await execute({
-      id: activity.id,
-      responsible_roles: values.responsible_roles,
-    });
+  const handleRolesChange = async (newRoles: string[]) => {
+    setIsUpdating(true);
+    try {
+      const result = await updateActivityResponsibleRolesAction(activity.id, newRoles);
 
-    if (result.success) {
-      toast.success('Atividade atualizada');
-    } else {
-      toast.error(result.error);
+      if (result.success && result.data) {
+        toast.success(result.message);
+        onUpdate(result.data);  // Update local state
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Erro ao atualizar funções');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  return <form onSubmit={onSubmit}>...</form>;
+  return (
+    <div className="space-y-4">
+      <ResponsibleRolesInput
+        value={activity.responsible_roles || []}
+        onChange={handleRolesChange}
+        disabled={isUpdating}
+      />
+    </div>
+  );
 }
 ```
 
-### 15.3 Key Rules
+### 15.3 Key Rules (EPIC 11 Compliance)
 
-1. **Location:** `src/app/actions/` (one file per domain)
-2. **Naming:** `{action}{Entity}Action` (e.g., `updateActivityAction`)
-3. **Auth:** Always use `getSupabaseAuth()` for context
-4. **Validation:** Always use Zod schema
-5. **Tenant Isolation:** Always `.eq('tenant_id', tenantId)` in queries
-6. **Error Handling:** Wrap in try/catch, return ActionResult
-7. **Revalidation:** Call `revalidatePath()` for affected routes
-8. **Tests:** Unit test with mocked Supabase client
+1. **Location:** `src/app/actions/` (42+ actions in organization.ts, partitioned by entity)
+2. **Naming:** `{verb}{Entity}Action` (e.g., `updateActivityResponsibleRolesAction`, `createAreaAction`)
+3. **Auth Context:** Always use `getAuthContext()` helper — returns `AuthContext` union (error | {supabase, user, tenantId})
+4. **Result Interface:** Always return `OrgActionResult<T>` with `{ success, message, data? }` (message is PT-BR user-facing)
+5. **Tenant Isolation:** Always `.eq('tenant_id', ctx.tenantId)` in all queries (RLS enforcement)
+6. **Error Handling:** Check auth context first, return `{ success: false, message: ... }`
+7. **Revalidation:** Call `revalidatePath('/organizacao')` or affected routes (Next.js ISR)
+8. **JSONB Handling:** Server actions pass JSONB fields as-is (arrays, objects) — Supabase handles serialization
+9. **Tests:** Unit tests at `src/app/actions/__tests__/` (see organization-responsible-roles.test.ts)
+10. **Idempotency:** Add/remove operations check for duplicates before mutating
 
 ---
 
@@ -476,98 +541,189 @@ export function ActivityForm() {
 
 Cockpit360 is a side panel component for displaying and editing entity details. Standard in all organizational modules (Areas, Nuclei, Processes, Activities, etc.).
 
-### 16.1 Cockpit360 Structure
+### 16.1 Cockpit360 Structure (EPIC 11 Real Implementation)
+
+**Location:** `src/components/organization/ActivityCockpit360.tsx` (168 lines)
+
+**Pattern: Tabs + Info/BPM/Docs/Documentation/Systems sections**
 
 ```typescript
-// src/components/organization/ActivityCockpit360.tsx
+'use client';
+
+import React, { useState } from 'react';
+import { FileText, AlertCircle, Users, BarChart3, Monitor } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import {
+  InfoField,
+  RolesDisplay,
+  DocumentationAccordion,
+} from '@/components/organization/shared';
+import { ActivitySystemsModal } from './ActivitySystemsModal';
+import { OrgEntityFormSheet } from './OrgEntityFormSheet';
+import type { OrgActivity, OrgRoutine } from '@/types/organization';
+
 interface ActivityCockpit360Props {
   activity: OrgActivity;
-  onUpdate: (updated: OrgActivity) => void;
-  isLoading?: boolean;
+  routine?: OrgRoutine;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export function ActivityCockpit360({ activity, onUpdate, isLoading }: ActivityCockpit360Props) {
-  const [editingField, setEditingField] = useState<string | null>(null);
+const complexityColors: Record<string, string> = {
+  low: 'bg-green-600 text-white',
+  medium: 'bg-yellow-600 text-black',
+  high: 'bg-red-600 text-white',
+};
+
+const priorityColors: Record<string, string> = {
+  low: 'bg-slate-500 text-white',
+  normal: 'bg-blue-600 text-white',
+  high: 'bg-orange-600 text-white',
+};
+
+export function ActivityCockpit360({
+  activity,
+  routine,
+  onEdit,
+  onDelete,
+}: ActivityCockpit360Props) {
+  const [showSystemsModal, setShowSystemsModal] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formTab, setFormTab] = useState('info');
 
   return (
-    <div className="space-y-6 p-6 border-l bg-card">
-      {/* Header */}
-      <div>
-        <h2 className="text-xl font-semibold">{activity.name}</h2>
-        <p className="text-sm text-muted-foreground">{activity.objective}</p>
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue="details" className="w-full">
-        <TabsList>
-          <TabsTrigger value="details">Detalhes</TabsTrigger>
-          <TabsTrigger value="roles">Funções</TabsTrigger>
-          <TabsTrigger value="systems">Sistemas</TabsTrigger>
-          <TabsTrigger value="history">Histórico</TabsTrigger>
+    <div className="space-y-6">
+      <Tabs defaultValue="info" className="w-full">
+        {/* Tab List with Icons */}
+        <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
+          <TabsTrigger
+            value="info"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <FileText className="mr-2 size-4" />
+            Informações
+          </TabsTrigger>
+          <TabsTrigger
+            value="bpm"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <BarChart3 className="mr-2 size-4" />
+            BPM
+          </TabsTrigger>
+          <TabsTrigger
+            value="docs"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <AlertCircle className="mr-2 size-4" />
+            Documentos
+          </TabsTrigger>
+          <TabsTrigger
+            value="sistemas"
+            className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+          >
+            <Monitor className="mr-2 size-4" />
+            Sistemas
+          </TabsTrigger>
         </TabsList>
 
-        {/* Tab: Details */}
-        <TabsContent value="details" className="space-y-4">
-          <CockpitField label="Complexidade" value={activity.complexity} />
-          <CockpitField label="Prioridade" value={activity.priority} />
-          <CockpitField label="Tempo Médio" value={`${activity.average_execution_time} min`} />
+        {/* Tab: Info */}
+        <TabsContent value="info" className="mt-6 space-y-8">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => {
+              setFormTab('info');
+              setIsFormOpen(true);
+            }}>
+              Editar
+            </Button>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <InfoField label="Nome" value={activity.name} />
+            <InfoField label="Objetivo" value={activity.objective} />
+            <Badge className={complexityColors[activity.complexity || 'medium']}>
+              {activity.complexity}
+            </Badge>
+            <Badge className={priorityColors[activity.priority || 'normal']}>
+              {activity.priority}
+            </Badge>
+          </div>
         </TabsContent>
 
-        {/* Tab: Responsible Roles */}
-        <TabsContent value="roles" className="space-y-4">
-          {editingField === 'responsible_roles' ? (
-            <ResponsibleRolesInput
-              value={activity.responsible_roles || []}
-              onChange={(roles) => {
-                onUpdate({ ...activity, responsible_roles: roles });
-                setEditingField(null);
-              }}
-            />
-          ) : (
-            <CockpitField
-              label="Funções Responsáveis"
-              value={activity.responsible_roles?.join(', ') || 'Nenhuma'}
-              onEdit={() => setEditingField('responsible_roles')}
-            />
-          )}
+        {/* Tab: BPM (Responsible Roles + Metrics) */}
+        <TabsContent value="bpm" className="mt-6 space-y-6">
+          <RolesDisplay
+            title="Funções Responsáveis"
+            roles={activity.responsible_roles || []}
+            onEdit={() => {
+              setFormTab('bpm');
+              setIsFormOpen(true);
+            }}
+          />
         </TabsContent>
 
         {/* Tab: Systems */}
-        <TabsContent value="systems" className="space-y-4">
-          {activity.systems?.map(system => (
-            <div key={system.id} className="p-3 border rounded-md">
-              <p className="font-medium">{system.name}</p>
-              <p className="text-sm text-muted-foreground">{system.description}</p>
-            </div>
-          ))}
-          {(!activity.systems || activity.systems.length === 0) && (
-            <p className="text-sm text-muted-foreground">Nenhum sistema associado</p>
-          )}
+        <TabsContent value="sistemas" className="mt-6 space-y-4">
+          <Button onClick={() => setShowSystemsModal(true)}>
+            Gerenciar Sistemas
+          </Button>
+          {/* System list */}
         </TabsContent>
       </Tabs>
+
+      {/* Form Sheet for editing */}
+      <OrgEntityFormSheet
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        entity={activity}
+        entityType="activity"
+        tab={formTab}
+      />
+
+      {/* Systems Modal */}
+      {showSystemsModal && (
+        <ActivitySystemsModal
+          activityId={activity.id}
+          onClose={() => setShowSystemsModal(false)}
+        />
+      )}
     </div>
   );
 }
 ```
 
-### 16.2 Tab Structure
+### 16.2 Tab Structure (EPIC 11 Real Tabs)
 
-Every Cockpit360 MUST include these tabs:
+Real implementation in ActivityCockpit360 (src/components/organization/ActivityCockpit360.tsx):
 
-| Tab | Content | Editable | Source |
-|-----|---------|----------|--------|
-| **Detalhes** | Name, description, objective, status | Yes | Entity fields |
-| **Funções** | Responsible roles (EPIC 11.6) | Yes | `responsible_roles` JSONB |
-| **Relacionamentos** | Parent/child, linked entities | Yes | Foreign keys |
-| **Sistemas** | Integrated systems (EPIC 11.2) | Yes | Junction table |
-| **Métricas** | SLAs, process metrics (EPIC 11.3) | No | Read-only |
-| **Histórico** | Audit trail, changes | No | Read-only |
+| Tab | Icon | Content | Editable | Story |
+|-----|------|---------|----------|-------|
+| **Informações** | FileText | Name, objective, complexity, priority, description | Yes | 11.10-11.11 |
+| **BPM** | BarChart3 | Responsible roles, execution time, SLA (EPIC 11.6-11.8) | Yes | 11.8 |
+| **Documentos** | AlertCircle | Input/output documentation, validations | Yes | 11.13 |
+| **Documentação** | FileText | Related documents, guides, procedures | No | 11.13 |
+| **Sistemas** | Monitor | Associated systems (ActivitySystemsModal), junction table | Yes | 11.2 |
 
-### 16.3 ResponsibleRolesInput Integration
+**Key Pattern:**
+- Icon + label in TabsTrigger
+- `rounded-none border-b-2 border-transparent` styling
+- `data-[state=active]:border-primary data-[state=active]:bg-transparent`
+- Content wrapped in `TabsContent` with `mt-6 space-y-{4-8}`
+
+### 16.3 ResponsibleRolesInput Integration (EPIC 11 Component)
+
+**Location:** `src/components/organization/ResponsibleRolesInput.tsx` (200 lines)
+
+**Features:**
+- Tag-based role display with remove button (X icon)
+- Autocomplete dropdown (Command + CommandList)
+- Full keyboard navigation (ArrowUp/Down, Enter, Escape, Backspace)
+- WCAG AA accessibility (ARIA labels, roles, focus management)
+- Responsive design (mobile-friendly)
+
+**Usage in Forms:**
 
 ```typescript
-// Pattern: Any cockpit360 with responsible_roles MUST use this component
-
 import { ResponsibleRolesInput } from '@/components/organization/ResponsibleRolesInput';
 
 <FormField
@@ -584,13 +740,33 @@ import { ResponsibleRolesInput } from '@/components/organization/ResponsibleRole
         />
       </FormControl>
       <FormDescription>
-        Selecione as funções responsáveis pela execução desta atividade
+        Selecione as funções responsáveis pela execução (Ctrl+A para adicionar all)
       </FormDescription>
       <FormMessage />
     </FormItem>
   )}
 />
 ```
+
+**Real Example from ActivityCockpit360:**
+
+```typescript
+<RolesDisplay
+  title="Funções Responsáveis"
+  roles={activity.responsible_roles || []}
+  onEdit={() => {
+    setFormTab('bpm');
+    setIsFormOpen(true);  // Opens OrgEntityFormSheet with ResponsibleRolesInput
+  }}
+/>
+```
+
+**Keyboard Shortcuts:**
+- `ArrowDown` → open dropdown, move down
+- `ArrowUp` → move up in dropdown
+- `Enter` → select highlighted role
+- `Escape` → close dropdown
+- `Backspace` (with empty input) → remove last selected role
 
 ---
 
@@ -600,123 +776,389 @@ import { ResponsibleRolesInput } from '@/components/organization/ResponsibleRole
 
 Responsible roles are string arrays (JSONB in DB) stored on organizational entities to track who is responsible for executing, approving, or overseeing each entity.
 
-### 17.1 Role Definition
+### 17.1 Role Definition (EPIC 11 Story 11.6)
+
+**Location:** `src/lib/organization/role-definitions.ts` (100 lines)
+
+**Interface & Real Data:**
 
 ```typescript
-// src/lib/organization/role-definitions.ts
-
 export interface RoleDefinition {
-  value: string;              // Internal ID (e.g., 'advogado')
-  label: string;              // Display name (e.g., 'Advogado')
-  description?: string;       // Tooltip text
+  value: string;              // Internal ID (e.g., 'diretor')
+  label: string;              // Display name (e.g., 'Diretor')
+  description?: string;       // Tooltip (e.g., 'Direção/Diretoria')
   category: 'management' | 'specialist' | 'operational' | 'external';
 }
 
+/**
+ * ORGANIZATION_ROLES — 9 default roles
+ * Aligned with Migration 069 org_role_definitions seed
+ * Used in ResponsibleRolesInput autocomplete + RLS policies (ADR-005)
+ */
 export const ORGANIZATION_ROLES: RoleDefinition[] = [
-  // Management (Gestão)
-  { value: 'diretor', label: 'Diretor', category: 'management' },
-  { value: 'gerente', label: 'Gerente', category: 'management' },
-  { value: 'coordenador', label: 'Coordenador', category: 'management' },
+  // Management (Gestão) — 3 roles
+  { value: 'diretor', label: 'Diretor', description: 'Direção/Diretoria', category: 'management' },
+  { value: 'gerente', label: 'Gerente', description: 'Gerência de área', category: 'management' },
+  { value: 'coordenador', label: 'Coordenador', description: 'Coordenação de núcleo/processo', category: 'management' },
 
-  // Specialist (Especialistas)
-  { value: 'especialista', label: 'Especialista', category: 'specialist' },
-  { value: 'analista_senior', label: 'Analista Sênior', category: 'specialist' },
-  { value: 'analista_junior', label: 'Analista Júnior', category: 'specialist' },
+  // Specialist (Especialistas) — 3 roles
+  { value: 'especialista', label: 'Especialista', description: 'Especialista técnico', category: 'specialist' },
+  { value: 'analista_senior', label: 'Analista Sênior', description: 'Analista com senioridade', category: 'specialist' },
+  { value: 'analista_junior', label: 'Analista Júnior', description: 'Analista em treinamento', category: 'specialist' },
 
-  // Operational (Operacional)
-  { value: 'operacional', label: 'Operacional', category: 'operational' },
-  { value: 'administrativo', label: 'Administrativo', category: 'operational' },
-  { value: 'supervisor', label: 'Supervisor', category: 'operational' },
+  // Operational (Operacional) — 3 roles
+  { value: 'operacional', label: 'Operacional', description: 'Executor operacional', category: 'operational' },
+  { value: 'administrativo', label: 'Administrativo', description: 'Apoio administrativo', category: 'operational' },
+  { value: 'supervisor', label: 'Supervisor', description: 'Supervisão operacional', category: 'operational' },
 ];
+
+// Helper functions
+export function getRolesByCategory(category: RoleDefinition['category']): RoleDefinition[] {
+  return ORGANIZATION_ROLES.filter((r) => r.category === category);
+}
+
+export function getAllRoles(): RoleDefinition[] {
+  return ORGANIZATION_ROLES;
+}
+
+export function getRoleLabel(value: string): string | undefined {
+  return ORGANIZATION_ROLES.find((r) => r.value === value)?.label;
+}
+
+export function getRoleDefinition(value: string): RoleDefinition | undefined {
+  return ORGANIZATION_ROLES.find((r) => r.value === value);
+}
 ```
 
-### 17.2 Database Schema
+### 17.2 Database Schema (Migrations 065-070)
+
+**Pattern: JSONB array column + GIN index (EPIC 11 Phase 1)**
 
 ```sql
--- All organizational entities follow this pattern
-ALTER TABLE org_activities ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
-ALTER TABLE org_routines ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
-ALTER TABLE org_processes ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
-ALTER TABLE org_nuclei ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+-- Migration 065: Add responsible_roles to all org entities
 ALTER TABLE org_areas ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_nuclei ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_processes ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_routines ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_activities ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_suppliers ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_services ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
+ALTER TABLE org_documents ADD COLUMN responsible_roles JSONB DEFAULT '[]' NOT NULL;
 
--- GIN index for array queries
+-- GIN indexes for efficient querying
+CREATE INDEX idx_org_areas_responsible_roles_gin ON org_areas USING GIN(responsible_roles);
 CREATE INDEX idx_org_activities_responsible_roles_gin ON org_activities USING GIN(responsible_roles);
+CREATE INDEX idx_org_processes_responsible_roles_gin ON org_processes USING GIN(responsible_roles);
+
+-- Example query: Find all activities assigned to a role
+SELECT * FROM org_activities
+WHERE tenant_id = $1
+  AND responsible_roles @> '"analista_senior"'::jsonb;
+
+-- Example query: Find activities with multiple roles
+SELECT * FROM org_activities
+WHERE tenant_id = $1
+  AND responsible_roles @> '["gerente", "diretor"]'::jsonb;
 ```
 
-### 17.3 Usage Examples
+**Storage Format:**
+```json
+{
+  "id": "uuid",
+  "name": "Legal Review",
+  "responsible_roles": ["advogado", "gerente", "diretor"]
+}
+```
 
-**Single Role:**
+### 17.3 Usage Examples (Real EPIC 11 Patterns)
+
+**Single Role Assignment:**
 
 ```typescript
-const activity = {
-  name: 'Legal Review',
+// Activity with single responsible role
+const activity: OrgActivity = {
+  id: '...',
+  name: 'Parecer Jurídico',
+  objective: 'Emitir parecer legal',
   responsible_roles: ['advogado'],  // Single role
+  tenant_id: '...',
+  // ... other fields
 };
+
+// Via server action
+await updateActivityResponsibleRolesAction(activityId, ['advogado']);
 ```
 
 **Multiple Roles (Shared Responsibility):**
 
 ```typescript
-const process = {
-  name: 'Contract Approval',
-  responsible_roles: ['advogado', 'gerente_comercial', 'cfo'],  // Multiple roles
+// Process with multiple responsible roles
+const process: OrgProcess = {
+  id: '...',
+  name: 'Aprovação de Contratos',
+  responsible_roles: ['advogado', 'gerente', 'diretor'],  // Multiple roles
+  tenant_id: '...',
 };
+
+// Via ResponsibleRolesInput component
+<ResponsibleRolesInput
+  value={['advogado', 'gerente']}
+  onChange={(roles) => {
+    // roles = ['advogado', 'gerente', 'diretor']
+    updateActivityResponsibleRolesAction(activityId, roles);
+  }}
+/>
 ```
 
-**Hierarchical Assignment:**
+**Hierarchical Pattern (Organizational Levels):**
 
 ```typescript
-// Area: Strategic oversight
-const area = {
-  name: 'Legal Department',
-  responsible_roles: ['diretor_juridico'],  // Strategic role
+// AREA: Strategic/management level
+const area: OrgArea = {
+  name: 'Jurídico',
+  responsible_roles: ['diretor'],  // Strategic oversight
 };
 
-// Nucleus: Operational management
-const nucleus = {
-  name: 'Contracts Nucleus',
-  responsible_roles: ['gerente_nucleo'],  // Operational role
+// NUCLEUS: Operational management
+const nucleus: OrgNucleus = {
+  name: 'Núcleo de Contratos',
+  responsible_roles: ['gerente'],  // Operational management
+  area_id: area.id,
 };
 
-// Process: Execution
-const process = {
-  name: 'Contract Processing',
-  responsible_roles: ['analista_senior'],  // Execution role
+// PROCESS: Process-level responsibility
+const process: OrgProcess = {
+  name: 'Processamento de Contratos',
+  responsible_roles: ['analista_senior', 'analista_junior'],  // Execution + support
+  nucleus_id: nucleus.id,
+};
+
+// ACTIVITY: Specific task assignment
+const activity: OrgActivity = {
+  name: 'Revisar Contrato',
+  responsible_roles: ['analista_senior'],  // Primary executor
+  routine_id: '...',
 };
 ```
 
-### 17.4 RBAC Integration
+### 17.4 RBAC Integration (ADR-005: Organization Architecture)
 
-Responsible roles can be used for Row-Level Security:
+**Pattern: RLS policies enforce tenant isolation + optional role-based filtering**
 
 ```sql
--- RLS Policy: User can view activities assigned to their roles
+-- RLS Policy 1: Tenant Isolation (mandatory on all 16 tables)
+-- User can only see data from their tenant
+CREATE POLICY "tenant_isolation_org_activities" ON org_activities
+  FOR SELECT USING (
+    tenant_id = (
+      SELECT tenant_id FROM profiles WHERE id = auth.uid()
+    )
+  );
+
+-- RLS Policy 2: Optional Role-Based Access (future enhancement)
+-- User can view activities assigned to one of their organizational roles
 CREATE POLICY "role_based_activity_view" ON org_activities
   FOR SELECT USING (
-    responsible_roles @> auth.jwt()->'user_metadata'->>'roles'::jsonb
+    tenant_id = (SELECT tenant_id FROM profiles WHERE id = auth.uid())
+    AND (
+      responsible_roles @> (
+        SELECT jsonb_agg(DISTINCT role_value)
+        FROM user_role_assignments
+        WHERE user_id = auth.uid()
+      )
+    )
   );
+```
+
+**Current Implementation (v0.2.4):**
+- ADR-001: `tenant_id = get_user_tenant_id()` on all 16 tables (enforced)
+- Responsible roles stored in JSONB but primarily for UI/business logic
+- RLS policies currently tenant-only (role-based access can be added in future epics)
+
+**Future Enhancement (v0.3+):**
+- Implement `user_role_assignments` table (link users to organizational roles)
+- Enable role-based RLS policies for fine-grained access control
+
+---
+
+## 18. EPIC 11 Module Pattern (Organizational Hierarchies)
+
+**Status:** Normativo (EPIC 11 Phase 3-4)
+
+The organizational module (`src/app/organizacao/`) implements a hierarchical pattern with multiple sub-modules. Each follows the standard architecture but adds EPIC 11-specific features.
+
+### 18.1 Hierarchical Structure
+
+```
+src/app/organizacao/
+├── page.tsx                          # Main dashboard with navigation
+├── empresa/                          # Organization overview
+│   ├── page.tsx                      # Server: auth + fetch org context
+│   ├── empresa-content.tsx           # Client: orchestrator
+│   └── components/
+│       ├── EmpresaKPIBar.tsx         # KPIs: areas, nuclei, processes count
+│       ├── EmpresaKanbanView.tsx     # Kanban: hierarchical view
+│       └── EmpresaListView.tsx       # List: organizational structure
+│
+├── areas/                            # Top-level organizational units
+│   ├── page.tsx
+│   ├── areas-content.tsx
+│   └── components/
+│       ├── AreasKPIBar.tsx
+│       ├── AreasKanbanView.tsx
+│       └── AreasFilters.tsx
+│
+├── nucleos/                          # Sub-units within areas
+│   ├── page.tsx
+│   ├── nucleos-content.tsx
+│   └── components/
+│
+├── processos/                        # Processes within nuclei
+│   ├── page.tsx
+│   ├── processos-content.tsx
+│   └── components/
+│
+├── atividades/                       # Activities (leaf level)
+│   ├── page.tsx
+│   ├── atividades-content.tsx
+│   └── components/
+│
+└── recursos/                         # Cross-cutting resources
+    ├── sistemas/                     # Systems (IT infrastructure)
+    ├── servicos/                     # Services
+    ├── documentos/                   # Documentation
+    └── fornecedores/                 # Suppliers
+```
+
+### 18.2 Data Flow Pattern
+
+```
+page.tsx (Server)
+  → Fetch org_areas + hierarchical data
+  → Apply tenant_id filter (RLS)
+  → Transform DB → UI schema
+  → <*Content data={uiData} />
+
+*Content.tsx (Client)
+  → use*Filters(data)
+  → State: filters, viewMode, selectedItem
+  → Render: KPIs → Filters → View (Kanban/List) → SplitView → Cockpit360
+
+Cockpit360 Component
+  → Tabs: Informações → BPM → Documentos → Sistemas
+  → ResponsibleRolesInput for role management
+  → Server actions: updateActivityResponsibleRolesAction, etc.
+```
+
+### 18.3 EPIC 11 Features per Module
+
+| Module | Cockpit360 | Responsible Roles | Systems | SLAs | Templates |
+|--------|-----------|------------------|---------|------|-----------|
+| **Areas** | AreaCockpit360 | Yes (diretor, gerente) | Yes | Optional | No |
+| **Nuclei** | NucleusCockpit360 | Yes (gerente, coordenador) | Yes | Optional | No |
+| **Processes** | ProcessCockpit360 | Yes (coordenador, especialista) | Yes | Yes (SLAs) | Yes (versioning) |
+| **Routines** | RoutineCockpit360 | Yes (analista) | Yes | Optional | Yes |
+| **Activities** | ActivityCockpit360 | Yes (analista_senior) | Yes | Yes (metrics) | Yes |
+
+### 18.4 Real Example: Activities Module
+
+```typescript
+// src/app/organizacao/atividades/page.tsx
+const supabase = await createClient();
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) redirect('/login');
+
+const { data: activities } = await supabase
+  .from('org_activities')
+  .select(`
+    *,
+    routine:org_routines(id, name),
+    activity_systems:activity_system_relationships(
+      id,
+      system:org_systems(id, name, description)
+    )
+  `)
+  .eq('tenant_id', tenantId)
+  .order('created_at', { ascending: false });
+
+const uiActivities = (activities || []).map(dbActivityToUI);
+
+return <ErrorBoundary><ActivitiesContent activities={uiActivities} /></ErrorBoundary>;
 ```
 
 ---
 
-## 18. Política para Agentes AI
+## 19. Política para Agentes AI
 
 Este documento é **normativo** para:
 
 - Nova tabela
 - Novo módulo/página
 - Refactor de módulo existente
+- Contribuições ao módulo organizações (EPIC 11+)
 
-**Instruções para agentes:**
+**Instruções para Agentes @dev, @architect, @ux-design-expert:**
 
-1. Consulte `src/app/projetos/` como referência canônica antes de implementar
-2. Siga a estrutura de arquivos da seção 3
-3. Respeite o contrato do hook (seção 8) e o filter registry (seção 9)
-4. Evite todos os anti-padrões da seção 12
-5. Rode os quality gates antes de push (seção 13); consulte [build-deploy-gates.md](./build-deploy-gates.md)
-6. Para server actions (seção 15): sempre valide com Zod, sempre faça tenant isolation, sempre revalidate paths
-7. Para cockpit360 (seção 16): inclua abas Details, Roles, Relationships, Systems, Metrics, History
-8. Para responsible_roles (seção 17): use ResponsibleRolesInput component, sempre salve via server action
-9. Ao criar filtros ou selects customizados, garantir associação label-controle; consultar build-deploy-gates.md seção 3.4 em caso de erro label-has-associated-control
-10. Exceções devem ser documentadas na story com justificativa técnica
+### Antes de Implementar
+
+1. **Referência Canônica:**
+   - Para módulos simples (projetos, etc): Use `src/app/projetos/` como baseline
+   - Para módulos EPIC 11 (organizações): Use `src/app/organizacao/atividades/` como baseline
+
+2. **Estrutura de Arquivos:** Siga a seção 3 (obrigatória)
+
+3. **Contrato do Hook:** Respeite seção 8 (obrigatória); não invente novos contratos
+
+### Durante Implementação
+
+4. **Server Actions (Seção 15):**
+   - Sempre use `getAuthContext()` helper pattern
+   - Sempre faça `tenant_id` isolation (`.eq('tenant_id', ctx.tenantId)`)
+   - Sempre revalidate paths (`revalidatePath('/organizacao')`)
+   - Retorne `OrgActionResult<T>` com mensagens em PT-BR
+   - Coloque em `src/app/actions/organization.ts` (particionado por entidade)
+
+5. **Cockpit360 (Seção 16):**
+   - Inclua **todos** os tabs reais da tabela 16.2
+   - Use `TabsList` com `rounded-none border-b` styling
+   - Use `ResponsibleRolesInput` se houver `responsible_roles` JSONB
+   - Use `OrgEntityFormSheet` para edição
+
+6. **Responsible Roles (Seção 17):**
+   - Sempre use `ResponsibleRolesInput` component (não invente alternativas)
+   - Sempre salve via server action (updateActivityResponsibleRolesAction pattern)
+   - Sempre use `getAllRoles()` para pobular dropdown
+   - Sempre inclua `getRoleLabel()` para display
+
+7. **EPIC 11 Módulos (Seção 18):**
+   - Para novo módulo de organização: replique `atividades/` estrutura
+   - Inclua hierarchical data (parent relationships)
+   - Implemente Cockpit360 com responsible_roles tab
+
+8. **Filtros & Selects (Seção 12):**
+   - Garantir associação label-controle (`htmlFor` + `id`)
+   - Consultar [build-deploy-gates.md](./build-deploy-gates.md) seção 3.4 para label-has-associated-control
+   - Usar filter registry pattern (seção 9)
+
+9. **Quality Gates (Seção 13):**
+   - Rodar **antes de push**: `npm run lint ; npm run typecheck ; npm run test ; npm run format:check`
+   - Se falhar localmente, falhará no Vercel
+   - Nunca fazer push com erros
+
+10. **Exceções:**
+   - Toda exceção deve ser documentada na story com justificativa técnica
+   - Exceções aprovadas por @po + @architect
+   - Documentar em "Implementation Notes" da story
+
+### Checklist de Review
+
+- [ ] Estrutura de arquivos segue seção 3
+- [ ] Hook retorna contrato completo da seção 8
+- [ ] Server actions usam `getAuthContext()` + tenant isolation
+- [ ] Cockpit360 inclui todos os tabs relevantes
+- [ ] ResponsibleRolesInput usado (não alternativas inventadas)
+- [ ] Filtros com label-controle associados
+- [ ] Quality gates passando localmente
+- [ ] Código traceable (ZERO invenção)
+- [ ] Documentação atualizada
+- [ ] Tests com coverage ≥85%

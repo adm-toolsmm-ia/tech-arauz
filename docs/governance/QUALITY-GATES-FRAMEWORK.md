@@ -432,6 +432,354 @@ Annual Cost = (4 quarters * $0.10) + (12 months * $0.01) = ~$0.52
 
 ---
 
-**Authored by:** Quinn (@qa) Phase 3 - pgvector quality gates extension
+---
+
+## EPIC 11.5 Extension: Activity Templates & Process Versioning Quality Gates
+
+**Applies to:** Stories 11.5 (Activity Templates & Process Versioning)
+**Scope:** Template validation, variant management, audit trail integrity
+**Testing Reference:** `src/app/actions/__tests__/organization-systems-metrics.test.ts`
+**Schema Reference:** Migration 070 + ORGANIZATION-SCHEMA.md
+
+---
+
+### 7. Activity Templates Validation
+
+#### Gate: Template Structure & Reusability
+
+**What it tests:** Activity template definition completeness and structure validation
+
+**Test Cases (from migration 070 + AI-CONTEXT-ENGINEERING):**
+
+```typescript
+// Activity Template Structure Validation
+✅ Template basic fields:
+   - name: VARCHAR (255) — required
+   - description: TEXT — optional
+   - complexity: ENUM (low, medium, high) — default 'medium'
+   - priority: ENUM (low, normal, high) — default 'normal'
+   - nucleus_id: UUID (nullable) — optional organizational context
+
+✅ Template JSON fields (JSONB):
+   - inputs: Array<OrgInputOutput> — expected inputs/data
+   - outputs: Array<OrgInputOutput> — expected outputs/deliverables
+   - risks: Array<string> — known risks
+   - impacts: Array<string> — organizational impacts
+   - documentation: Object keyed {procedures, instructions, best_practices, common_errors}
+
+✅ Validation patterns:
+   - Name length: 1-255 characters (enforced by VARCHAR)
+   - Complexity enumeration: Must match 'low' | 'medium' | 'high'
+   - Priority enumeration: Must match 'low' | 'normal' | 'high'
+   - JSONB fields: Valid JSON structure
+```
+
+**Quality Criteria:**
+- [ ] Template name: Non-empty, ≤255 characters
+- [ ] Complexity field: One of {low, medium, high}
+- [ ] Priority field: One of {low, normal, high}
+- [ ] Inputs array: Valid JSON array of objects (each with name, type, description)
+- [ ] Outputs array: Valid JSON array of objects
+- [ ] Risks array: Array of strings (optional, default [])
+- [ ] Impacts array: Array of strings (optional, default [])
+- [ ] Documentation object: Valid JSONB with optional keys
+- [ ] Tenant isolation: tenant_id present on all templates
+
+**Success Metrics:**
+- Template creation: <1s latency
+- Template reuse count: Tracked per template (usage analytics)
+- Variant creation: <500ms (from template base)
+- Storage: ~1-2KB per template (including documentation)
+
+**Monitoring:**
+```sql
+-- Check template usage (if tracking implemented)
+SELECT
+  id,
+  name,
+  COUNT(*) as usage_count,
+  created_at
+FROM public.org_activity_templates
+WHERE tenant_id = $1
+GROUP BY id, name, created_at
+ORDER BY usage_count DESC;
+
+-- Validate JSONB structure integrity
+SELECT
+  id,
+  name,
+  jsonb_typeof(inputs) as inputs_type,
+  jsonb_typeof(outputs) as outputs_type,
+  jsonb_array_length(risks) as risk_count,
+  jsonb_array_length(impacts) as impact_count
+FROM public.org_activity_templates
+WHERE tenant_id = $1;
+```
+
+---
+
+### 8. Process Versioning & Audit Trail
+
+#### Gate: Version Integrity & Rollback Capability
+
+**What it tests:** Process version immutability, snapshot validity, and audit completeness
+
+**Test Cases (from migration 070 spec):**
+
+```typescript
+// Process Version Validation
+✅ Version sequence validation:
+   - version_number: INTEGER, sequential per process (1, 2, 3, ...)
+   - UNIQUE constraint: (tenant_id, process_id, version_number)
+   - No gaps in sequence (idempotent, append-only)
+
+✅ Snapshot integrity:
+   - process_snapshot: JSONB NOT NULL — complete process state
+   - Contains all process fields at version time (for rollback)
+   - Valid JSON structure (parseable)
+
+✅ Audit trail completeness:
+   - changed_by: UUID → profiles(id) — who made the change
+   - created_at: TIMESTAMPTZ — immutable timestamp (no updated_at)
+   - change_summary: TEXT — human-readable description
+
+✅ Immutability enforcement:
+   - created_at only (no UPDATE triggers)
+   - Append-only pattern (no DELETE without explicit approval)
+   - RLS enforced: tenant_id isolation
+```
+
+**Quality Criteria:**
+- [ ] Version numbers: Sequential per process (no gaps)
+- [ ] UNIQUE constraint: (tenant_id, process_id, version_number)
+- [ ] Snapshot: Valid, parseable JSON with all process fields
+- [ ] Change tracking: changed_by populated (nullable OK for system changes)
+- [ ] Change summary: Non-empty description of what changed
+- [ ] Immutability: No UPDATE operations on org_process_versions
+- [ ] Timestamps: created_at only, no updated_at
+- [ ] Foreign key: process_id → org_processes(id) ON DELETE CASCADE
+- [ ] RLS verified: Only tenant's versions accessible
+
+**Success Metrics:**
+- Version creation: <100ms latency
+- Snapshot parsing: Always valid JSON (pre-validation before insert)
+- Rollback feasibility: All fields needed for restore in snapshot
+- Storage: ~5-10KB per version (depends on process complexity)
+- Query latency: Fetch latest version <50ms (via index)
+
+**Monitoring & Validation:**
+```sql
+-- Check version sequence integrity
+SELECT
+  process_id,
+  COUNT(*) as version_count,
+  MAX(version_number) as max_version,
+  CASE WHEN COUNT(*) = MAX(version_number) THEN 'OK' ELSE 'GAP' END as sequence_status
+FROM public.org_process_versions
+WHERE tenant_id = $1
+GROUP BY process_id;
+
+-- Validate snapshot JSON integrity
+SELECT
+  id,
+  process_id,
+  version_number,
+  jsonb_typeof(process_snapshot) as snapshot_type,
+  CASE WHEN jsonb_typeof(process_snapshot) = 'object' THEN 'VALID' ELSE 'INVALID' END as validation
+FROM public.org_process_versions
+WHERE tenant_id = $1
+ORDER BY process_id, version_number DESC;
+
+-- Audit trail completeness
+SELECT
+  id,
+  process_id,
+  version_number,
+  changed_by IS NOT NULL as has_audit_user,
+  change_summary IS NOT NULL as has_summary,
+  LENGTH(change_summary) as summary_length,
+  created_at
+FROM public.org_process_versions
+WHERE tenant_id = $1
+ORDER BY process_id, version_number DESC;
+
+-- Rollback candidate verification
+SELECT
+  pv.id,
+  pv.process_id,
+  pv.version_number,
+  pv.change_summary,
+  pv.created_at,
+  -- Verify all required process fields present in snapshot
+  (pv.process_snapshot ? 'name') as has_name,
+  (pv.process_snapshot ? 'description') as has_description,
+  (pv.process_snapshot ? 'objective') as has_objective,
+  (pv.process_snapshot ? 'responsible_roles') as has_roles
+FROM public.org_process_versions pv
+WHERE pv.tenant_id = $1
+ORDER BY pv.process_id, pv.version_number DESC;
+```
+
+---
+
+### 9. Process Metrics Aggregation Quality
+
+#### Gate: Metrics Calculation Accuracy & Compliance Tracking
+
+**What it tests:** SLA compliance calculations, metrics aggregation, and historical tracking
+
+**Test Cases (from organization-systems-metrics.test.ts):**
+
+```typescript
+// From src/app/actions/__tests__/organization-systems-metrics.test.ts
+describe('getProcessMetricsAction', () => {
+  ✅ Retrieve metrics for process in date range
+     - period_start: TIMESTAMPTZ (RFC 3339 format)
+     - period_end: TIMESTAMPTZ (RFC 3339 format)
+     - Returns all metrics between dates (inclusive)
+
+  ✅ Metrics fields validation:
+     - metric_name: 'completion_time', 'quality', 'cycle_time', etc.
+     - avg_duration_days: DECIMAL — average completion time
+     - compliance_pct: DECIMAL (0-100) — % of instances meeting SLA
+     - instances_count: INTEGER — total process instances in period
+     - period_start, period_end: Date range for metric aggregation
+
+  ✅ Aggregation correctness:
+     - compliance_pct = (on_time_instances / total_instances) * 100
+     - avg_duration_days = SUM(completion_time_days) / instance_count
+     - Handles NULL values: Treat as missing data (exclude from avg)
+     - Rounding: compliance_pct to nearest integer, avg_duration_days to 2 decimals
+
+  ✅ RLS tenant isolation:
+     - Only returns metrics for user's tenant
+     - Tenant filter: WHERE tenant_id = auth.jwt()->>'tenant_id'
+     - Date range filters: >=period_start AND <=period_end
+})
+
+describe('getProcessSLAsAction', () => {
+  ✅ Retrieve SLA definitions per process
+     - id: UUID
+     - process_id: UUID (FK)
+     - name: VARCHAR (255) — SLA name
+     - target_cycle_time_hours: INTEGER
+     - target_quality_percentage: INTEGER (0-100)
+     - warning_threshold_pct: INTEGER (e.g., 80%)
+     - critical_threshold_pct: INTEGER (e.g., 95%)
+
+  ✅ Alert thresholds:
+     - Warning: If compliance < warning_threshold_pct
+     - Critical: If compliance < critical_threshold_pct
+     - Used for dashboard alerts and notifications
+})
+```
+
+**Quality Criteria:**
+- [ ] Date range filters: Both period_start AND period_end applied
+- [ ] Compliance calculation: (on_time / total) * 100, value ∈ [0, 100]
+- [ ] Average duration: SUM(durations) / COUNT, excludes NULLs
+- [ ] Instance count: Accurate count of process executions in period
+- [ ] SLA fields: target_cycle_time_hours, target_quality_percentage present
+- [ ] Alert thresholds: warning_threshold_pct, critical_threshold_pct valid
+- [ ] RLS enforced: tenant_id filter applied in all queries
+- [ ] Empty periods: Handle gracefully (return empty array, not error)
+- [ ] NULL handling: Missing metrics not included in calculations
+
+**Success Metrics:**
+- Metric query latency: p95 <150ms (with index on process_id, metric_date)
+- Compliance calculation accuracy: ±0.1% (rounding tolerance)
+- SLA threshold alerts: Accurate (>95% precision in test data)
+- Date range filtering: Boundary conditions verified (inclusive)
+- Data completeness: No missing calculations for valid period
+
+**Validation Queries:**
+```sql
+-- Check metrics aggregation correctness
+SELECT
+  id,
+  process_id,
+  metric_date,
+  metric_name,
+  total_cases,
+  completed_cases,
+  ROUND((completed_cases::float / total_cases * 100)::numeric, 1) as calculated_compliance,
+  on_time_percentage as actual_compliance,
+  ABS(ROUND((completed_cases::float / total_cases * 100)::numeric, 1) - on_time_percentage) as variance
+FROM public.org_process_metrics
+WHERE tenant_id = $1
+  AND ABS(ROUND((completed_cases::float / total_cases * 100)::numeric, 1) - on_time_percentage) > 0.5
+ORDER BY variance DESC;
+
+-- Monitor SLA alert thresholds
+SELECT
+  sla.id,
+  sla.name,
+  sla.target_cycle_time_hours,
+  sla.target_quality_percentage,
+  m.metric_date,
+  m.on_time_percentage,
+  CASE
+    WHEN m.on_time_percentage < sla.critical_threshold_pct THEN 'CRITICAL'
+    WHEN m.on_time_percentage < sla.warning_threshold_pct THEN 'WARNING'
+    ELSE 'OK'
+  END as alert_status
+FROM public.org_process_slas sla
+LEFT JOIN public.org_process_metrics m
+  ON m.process_id = sla.process_id
+WHERE sla.tenant_id = $1
+ORDER BY alert_status DESC, m.metric_date DESC;
+
+-- Verify date range filtering works correctly
+SELECT
+  COUNT(*) as metric_count,
+  MIN(metric_date) as earliest,
+  MAX(metric_date) as latest
+FROM public.org_process_metrics
+WHERE tenant_id = $1
+  AND metric_date >= $2::DATE
+  AND metric_date <= $3::DATE;
+```
+
+---
+
+### 10. Complete Quality Gate Checklist: EPIC 11.5 (Activity Templates & Process Versioning)
+
+#### Pre-Implementation
+- [ ] Migration 070 reviewed ✅ (org_activity_templates, org_process_versions tables)
+- [ ] ORGANIZATION-SCHEMA.md updated ✅ (all new tables documented)
+- [ ] Test patterns reviewed ✅ (organization-systems-metrics.test.ts)
+- [ ] RLS architecture verified ✅ (ADR-001 compliance on all new tables)
+
+#### Pre-Push
+- [ ] Migration SQL valid (templates + versions schema)
+- [ ] TypeScript types compiled (no strict errors)
+- [ ] Unit tests pass: 90%+ coverage
+  - [ ] Activity template CRUD tests (create, read, update, delete)
+  - [ ] Template variant generation tests (if implemented)
+  - [ ] Process version sequence validation tests
+  - [ ] Version snapshot JSON validation tests
+  - [ ] Metrics aggregation calculation tests (4-5 cases)
+- [ ] Lint & prettier: zero errors
+- [ ] RLS policies: Verified on org_activity_templates, org_process_versions
+
+#### Pre-PR
+- [ ] CodeRabbit: no critical issues
+- [ ] npm audit: no vulnerabilities
+- [ ] Build size unchanged (<500KB main)
+- [ ] Migration tested on local database
+- [ ] Template reusability metrics (if tracked) working
+
+#### Pre-Deploy
+- [ ] Migration tested on staging
+- [ ] RLS policies verified (tenant isolation on all 3 tables)
+- [ ] Audit trail immutability confirmed (no UPDATE on versions)
+- [ ] Metrics aggregation accuracy tested (sample data verification)
+- [ ] Performance verified: Template queries <500ms, metrics <150ms
+- [ ] Rollback plan documented
+- [ ] Monitoring queries configured in dashboard
+
+---
+
+**Authored by:** Quinn (@qa) Phase 4 - EPIC 11.5 quality gates extension (Activity Templates & Process Versioning)
 **Framework:** AIOX 10/10 (Constitution-driven QA)
 **Document Status:** Integrated into v0.2.4 release

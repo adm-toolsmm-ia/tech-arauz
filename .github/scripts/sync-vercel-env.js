@@ -158,6 +158,7 @@ async function syncEnvVar(envVar) {
     const body = {
       key,
       value,
+      type: 'encrypted',
       target: [type],
     };
 

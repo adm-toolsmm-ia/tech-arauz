@@ -157,24 +157,43 @@ function calculateDelay(attempt: number, config: EspaiderConfig): number {
 
 function buildUrl(config: EspaiderConfig, params: ExportarDadosParams): string {
   // URL correta: baseUrl já inclui o caminho até WCFExportaDados.svc
+  // NOTA: Para POST, Token vai no body JSON, não na URL
   const url = new URL(`${config.baseUrl}/ExportaDados`);
-  url.searchParams.set('Token', config.token);
+
+  // Apenas Identificador vai na URL para POST (o resto vai no body)
+  // Para GET de interfaces filhas, a URL inteira já vem pronta em ListaURLFilhos
+
+  return url.toString();
+}
+
+/**
+ * Constrói o body JSON para requisições POST
+ * Token deve estar no JSON body, não na URL
+ */
+function buildPostBody(
+  config: EspaiderConfig,
+  params: ExportarDadosParams,
+): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    Token: config.token,
+    Identificador: params.identificador,
+    NumPagina: params.numPagina ?? 1,
+    QuantRegistrosPorPagina: params.quantRegistrosPorPagina ?? 100,
+  };
 
   // Key é opcional — só envia se fornecido e não vazio
   if (config.key) {
-    url.searchParams.set('Key', config.key);
+    body.Key = config.key;
   }
-
-  url.searchParams.set('Identificador', params.identificador);
 
   // Adiciona filtros (BlocoFiltros) se existirem
   if (params.filtros) {
     for (const [key, value] of Object.entries(params.filtros)) {
-      url.searchParams.set(key, value);
+      body[key] = value;
     }
   }
 
-  return url.toString();
+  return body;
 }
 
 // =============================================================================
@@ -183,12 +202,18 @@ function buildUrl(config: EspaiderConfig, params: ExportarDadosParams): string {
 
 /**
  * Executa uma requisição individual com retry
+ * @param url - URL base para requisição
+ * @param method - POST (para requisições iniciais) ou GET (para paginação/filhos)
+ * @param config - Configuração Espaider
+ * @param requestId - ID único para correlação de logs
+ * @param body - Body JSON (apenas para POST)
  */
 async function executeWithRetry(
   url: string,
   method: 'POST' | 'GET',
   config: EspaiderConfig,
   requestId: string,
+  body?: Record<string, unknown>,
 ): Promise<ExportarDadosResponse> {
   let attempt = 0;
   let lastError: EspaiderError | null = null;
@@ -201,11 +226,18 @@ async function executeWithRetry(
       const timeoutId = setTimeout(() => controller.abort(), config.timeout);
 
       try {
-        const response = await fetch(url, {
+        const fetchOptions: RequestInit = {
           method,
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
-        });
+        };
+
+        // Adicionar body apenas para POST
+        if (method === 'POST' && body) {
+          fetchOptions.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(url, fetchOptions);
 
         clearTimeout(timeoutId);
 
@@ -320,12 +352,12 @@ export async function exportarDados(
 
   // 1) POST inicial
   const url = buildUrl(config, params);
+  const postBody = buildPostBody(config, params);
   const maskedToken = maskToken(config.token);
-  const maskedUrl = url.replace(config.token, maskedToken);
-  log('INFO', `POST ${maskedUrl}`, { requestId });
+  log('INFO', `POST ${url} com Token=${maskedToken}`, { requestId });
 
   const allRegistros: ExportarDadosResponse['ListaRegistros'] = [];
-  const firstPage = await executeWithRetry(url, 'POST', config, requestId);
+  const firstPage = await executeWithRetry(url, 'POST', config, requestId, postBody);
   allRegistros.push(...firstPage.ListaRegistros);
 
   // 2) Paginação via GET (URLPaginacao)

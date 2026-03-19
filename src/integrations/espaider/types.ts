@@ -31,6 +31,10 @@ export interface ExportarDadosParams {
   baseUrl?: string;
   /** Token de autenticação (opcional — usa env se não fornecido) */
   token?: string;
+  /** Número da página (padrão: 1) */
+  numPagina?: number;
+  /** Quantidade de registros por página (padrão: 100) */
+  quantRegistrosPorPagina?: number;
   /** Filtros opcionais para a consulta (BlocoFiltros) */
   filtros?: Record<string, string>;
 }

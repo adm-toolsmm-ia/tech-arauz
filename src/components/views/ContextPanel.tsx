@@ -68,7 +68,7 @@ export function ContextPanel({
       aria-labelledby="context-panel-title"
       aria-describedby={subtitle ? 'context-panel-subtitle' : undefined}
       className={cn(
-        'dialog-light-theme animate-slide-in-right fixed inset-y-0 right-0 flex w-full flex-col border-l border-border bg-white shadow-2xl transition-all',
+        'animate-slide-in-right fixed inset-y-0 right-0 flex w-full flex-col border-l border-border bg-background shadow-2xl transition-all',
         `z-[${50 + depth * 10}]`,
         'max-w-xl',
         className,

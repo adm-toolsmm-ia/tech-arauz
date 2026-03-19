@@ -61,7 +61,7 @@ const SheetContent = React.forwardRef<
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
-      className={cn('dialog-light-theme', sheetVariants({ side }), className)}
+      className={cn(sheetVariants({ side }), className)}
       {...props}
     >
       {children}

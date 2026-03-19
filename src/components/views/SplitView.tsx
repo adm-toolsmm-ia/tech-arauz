@@ -81,14 +81,14 @@ export function SplitView({
         aria-hidden="true"
       />
 
-      {/* Panel - dialog-light-theme garante fundo claro e legibilidade (padrão AIOX 10/10) */}
+      {/* Panel - bg-background respeita dark mode automaticamente */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="split-view-title"
         aria-describedby={subtitle ? 'split-view-subtitle' : undefined}
         className={cn(
-          'dialog-light-theme animate-slide-in-right fixed inset-y-0 right-0 flex w-full flex-col border-l border-border bg-white shadow-lg',
+          'animate-slide-in-right fixed inset-y-0 right-0 flex w-full flex-col border-l border-border bg-background shadow-lg',
           widthClasses[width],
           className,
         )}
@@ -124,9 +124,9 @@ export function SplitView({
           </Button>
         </div>
 
-        {/* Content - bg-white garante fundo branco sólido (padrão cards 360º) */}
-        <ScrollArea className="flex-1 overflow-hidden bg-white">
-          <div className="bg-white p-6">{children}</div>
+        {/* Content - respeita dark mode */}
+        <ScrollArea className="flex-1 overflow-hidden bg-background">
+          <div className="bg-background p-6">{children}</div>
         </ScrollArea>
       </div>
     </>

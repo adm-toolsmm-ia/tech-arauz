@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
@@ -19,10 +18,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setError(error.message);
@@ -35,42 +31,111 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="bg-primary relative flex min-h-screen items-center justify-center overflow-hidden p-4">
-      {/* Background Decoration */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-20 [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-      <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+    <main className="flex min-h-screen">
+      {/* ─── Painel Esquerdo — Hero Brand ─── */}
+      <div className="relative hidden overflow-hidden lg:flex lg:w-1/2 xl:w-[55%]">
+        {/* Fundo verde petróleo sólido */}
+        <div className="absolute inset-0 bg-[hsl(164,85%,15%)]" />
 
-      <div className="relative z-10 w-full max-w-sm">
-        {/* Logo/Header */}
-        <div className="mb-10 text-center">
-          <Link href="/" className="group inline-flex flex-col items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-2xl backdrop-blur-md transition-all duration-300 group-hover:scale-105 group-hover:bg-white/15">
-              <Image
-                src="/assets/logo-arauz-2026.png"
-                alt="Tech Arauz Logo"
-                width={64}
-                height={64}
-                className="object-contain p-2"
-              />
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-3xl font-bold tracking-tight text-white">Tech Arauz</span>
-              <span className="text-primary-foreground/60 mt-1 text-sm font-medium uppercase tracking-widest">
-                Portal Corporativo
-              </span>
-            </div>
-          </Link>
-        </div>
+        {/* Pattern hero (símbolo A) como decoração de fundo */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: "url('/pattern-hero.png')",
+            opacity: 0.18,
+            mixBlendMode: 'luminosity',
+          }}
+        />
 
-        {/* Card */}
-        <div className="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xl">
-          <div className="mb-8 text-center">
-            <h2 className="text-xl font-bold text-gray-900">Bem-vindo de volta</h2>
-            <p className="mt-2 text-sm text-gray-500">Informe suas credenciais para acessar.</p>
+        {/* Gradiente diagonal para profundidade */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(164,85%,11%)] via-transparent to-[hsl(164,85%,20%)] opacity-70" />
+
+        {/* Linha de acento laranja no topo */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[hsl(19,89%,54%)]" />
+
+        {/* Conteúdo do painel hero */}
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white">
+          {/* Logo grande com respiro */}
+          <div>
+            <Image
+              src="/logo-dark.png"
+              alt="Araúz Advogados"
+              width={220}
+              height={80}
+              className="object-contain"
+              priority
+            />
           </div>
 
+          {/* Texto hero central */}
+          <div className="space-y-6">
+            <div className="h-0.5 w-12 bg-[hsl(19,89%,54%)]" />
+            <h1 className="text-4xl font-bold leading-tight tracking-tight xl:text-5xl">
+              Portal de Gestão
+              <br />
+              <span className="text-[hsl(19,89%,60%)]">Corporativo</span>
+            </h1>
+            <p className="max-w-sm text-base leading-relaxed text-white/60">
+              Plataforma centralizada de acompanhamento jurídico, projetos e
+              indicadores estratégicos.
+            </p>
+          </div>
+
+          {/* Slogan rodapé */}
+          <div className="space-y-3">
+            <Image
+              src="/slogan-white.png"
+              alt="Araúz — Dentro da Lei"
+              width={180}
+              height={40}
+              className="object-contain opacity-50"
+            />
+            <p className="text-xs text-white/30">
+              © 2026 Tech Arauz • Araúz &amp; Advogados Associados
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Painel Direito — Formulário ─── */}
+      <div className="flex flex-1 flex-col items-center justify-center bg-white px-6 py-12 lg:px-16">
+        <div className="w-full max-w-md">
+
+          {/* Logo visível no mobile (oculta no desktop, painel esquerdo faz isso) */}
+          <div className="mb-10 flex flex-col items-center lg:hidden">
+            <Image
+              src="/logo-color.png"
+              alt="Araúz Advogados"
+              width={180}
+              height={65}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Logo colorida no topo do form (desktop) */}
+          <div className="mb-10 hidden lg:block">
+            <Image
+              src="/logo-color.png"
+              alt="Araúz Advogados"
+              width={200}
+              height={72}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Cabeçalho do form */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Bem-vindo de volta</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Informe suas credenciais para acessar o portal.
+            </p>
+          </div>
+
+          {/* Erro */}
           {error && (
-            <div className="animate-slide-in-right mb-6 flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
+            <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 flex-shrink-0"
@@ -87,7 +152,8 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-5">
+            {/* Email */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
                 Email Corporativo
@@ -98,11 +164,12 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="focus:border-primary focus:ring-primary/20 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:ring-2"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-[hsl(164,85%,15%)] focus:ring-2 focus:ring-[hsl(164,85%,15%)]/20"
                 placeholder="nome@arauz.adv.br"
               />
             </div>
 
+            {/* Senha */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
@@ -110,7 +177,7 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="button"
-                  className="text-primary hover:text-primary/80 text-xs font-medium transition-colors"
+                  className="text-xs font-medium text-[hsl(164,85%,15%)] transition-colors hover:text-[hsl(164,65%,25%)]"
                 >
                   Esqueceu a senha?
                 </button>
@@ -121,15 +188,16 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="focus:border-primary focus:ring-primary/20 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:ring-2"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-[hsl(164,85%,15%)] focus:ring-2 focus:ring-[hsl(164,85%,15%)]/20"
                 placeholder="••••••••"
               />
             </div>
 
+            {/* Botão submit */}
             <button
               type="submit"
               disabled={loading}
-              className="hover:bg-accent-hover shadow-accent/20 hover:shadow-accent/40 focus:ring-accent/20 w-full transform rounded-xl bg-accent px-4 py-3.5 font-bold text-white shadow-lg transition-all focus:ring-4 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full transform rounded-xl bg-[hsl(19,89%,54%)] px-4 py-3.5 font-bold text-white shadow-lg shadow-[hsl(19,89%,54%)]/25 transition-all hover:bg-[hsl(19,89%,60%)] hover:shadow-[hsl(19,89%,54%)]/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -146,12 +214,12 @@ export default function LoginPage() {
                       r="10"
                       stroke="currentColor"
                       strokeWidth="4"
-                    ></circle>
+                    />
                     <path
                       className="opacity-75"
                       fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                    />
                   </svg>
                   Autenticando...
                 </span>
@@ -160,12 +228,12 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-        </div>
 
-        {/* Footer */}
-        <p className="text-primary-foreground/40 mt-10 text-center text-xs font-medium tracking-wide">
-          &copy; 2026 Tech Arauz &bull; Araúz & Advogados Associados
-        </p>
+          {/* Rodapé mobile */}
+          <p className="mt-10 text-center text-xs text-gray-400 lg:hidden">
+            © 2026 Tech Arauz • Araúz &amp; Advogados Associados
+          </p>
+        </div>
       </div>
     </main>
   );

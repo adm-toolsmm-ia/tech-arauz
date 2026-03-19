@@ -14,11 +14,11 @@
     --accent-hover: 19 89% 60%;
     --accent-foreground: 0 0% 100%;
 
-    /* Backgrounds - Neutros */
-    --background: 0 0% 98%;
-    --foreground: 220 13% 18%;
+    /* Backgrounds - Off-white quentinho (identidade Araúz) */
+    --background: 150 20% 97%;
+    --foreground: 220 15% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 220 13% 18%;
+    --card-foreground: 220 15% 14%;
 
     /* Popover */
     --popover: 0 0% 100%;
@@ -101,30 +101,30 @@
   }
 
   .dark {
-    --background: 220 13% 10%;
-    --foreground: 0 0% 95%;
-    --card: 220 13% 12%;
-    --card-foreground: 0 0% 95%;
+    --background: 222 20% 11%;
+    --foreground: 0 0% 93%;
+    --card: 222 18% 17%;
+    --card-foreground: 0 0% 93%;
 
-    --popover: 220 13% 12%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 222 18% 17%;
+    --popover-foreground: 0 0% 93%;
 
-    --primary: 167 55% 25%;
+    --primary: 164 55% 40%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 13% 18%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 222 15% 22%;
+    --secondary-foreground: 0 0% 93%;
 
-    --accent: 14 100% 60%;
-    --accent-hover: 20 100% 63%;
+    --accent: 19 89% 54%;
+    --accent-hover: 19 89% 60%;
     --accent-foreground: 0 0% 100%;
 
-    --muted: 220 13% 18%;
-    --muted-foreground: 220 9% 60%;
+    --muted: 222 15% 22%;
+    --muted-foreground: 220 9% 65%;
 
-    --border: 220 13% 20%;
-    --input: 220 13% 20%;
-    --ring: 167 69% 18%;
+    --border: 222 15% 25%;
+    --input: 222 15% 25%;
+    --ring: 164 55% 40%;
 
     --destructive: 0 63% 45%;
     --destructive-foreground: 0 0% 100%;
@@ -187,25 +187,7 @@
     z-index: 0;
   }
 
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-image: url('/pattern.png');
-    background-size: 300px;
-    background-repeat: repeat;
-    opacity: 0.05;
-    z-index: -1;
-    pointer-events: none;
-  }
-  
-  html.dark body::before {
-    opacity: 0.03;
-    filter: invert(1);
-  }
+  /* Pattern removido do fundo global — mantido apenas na página de login */
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {

@@ -95,15 +95,8 @@ export function ProcessosContent({
   const [isLoading, setIsLoading] = React.useState(false);
   const [formData, setFormData] = React.useState<ProcessFormData>(DEFAULT_FORM);
 
-  const {
-    filters,
-    search,
-    filteredData,
-    updateFilter,
-    setSearch,
-    resetAllFilters,
-    registry,
-  } = useProcessosFilters(processes, areaMap, nucleusMap, routinesByProcessId);
+  const { filters, search, filteredData, updateFilter, setSearch, resetAllFilters, registry } =
+    useProcessosFilters(processes, areaMap, nucleusMap, routinesByProcessId);
 
   React.useEffect(() => {
     setProcesses(initialProcesses);
@@ -362,76 +355,78 @@ export function ProcessosContent({
             )}
           </div>
 
-        <SplitView
-          isOpen={!!selectedProcess}
-          onClose={() => {
-            setSelectedProcess(null);
-            setSelectedRoutine(null);
-          }}
-          title={selectedProcess?.name ?? ''}
-          subtitle={
-            selectedProcess
-              ? [
-                  selectedProcess.area_id && areaMap[selectedProcess.area_id],
-                  selectedProcess.nucleus_id && nucleusMap[selectedProcess.nucleus_id],
-                ]
-                  .filter(Boolean)
-                  .join(' / ')
-              : undefined
-          }
-          width="lg"
-          contextDepth={selectedRoutine ? 1 : 0}
-        >
-          {selectedProcess && (
-            <ProcessCockpit360
-              process={selectedProcess}
-              areaName={selectedProcess.area_id ? areaMap[selectedProcess.area_id] : undefined}
-              nucleusName={
-                selectedProcess.nucleus_id ? nucleusMap[selectedProcess.nucleus_id] : undefined
-              }
-              routines={routinesByProcessId[selectedProcess.id] ?? []}
-              systems={systemsByProcessId[selectedProcess.id] ?? []}
-              allSystems={systems}
-              onEdit={() => handleOpenEdit(selectedProcess)}
-              onDelete={() => setProcessToDelete(selectedProcess)}
-              onSelectRoutine={setSelectedRoutine}
-              onLinkSystem={(systemId) => handleLinkProcessSystem(selectedProcess.id, systemId)}
-              onUnlinkSystem={(systemId, systemName) =>
-                setProcessSystemToUnlink({
-                  processId: selectedProcess.id,
-                  systemId,
-                  systemName,
-                })
-              }
-            />
-          )}
-        </SplitView>
+          <SplitView
+            isOpen={!!selectedProcess}
+            onClose={() => {
+              setSelectedProcess(null);
+              setSelectedRoutine(null);
+            }}
+            title={selectedProcess?.name ?? ''}
+            subtitle={
+              selectedProcess
+                ? [
+                    selectedProcess.area_id && areaMap[selectedProcess.area_id],
+                    selectedProcess.nucleus_id && nucleusMap[selectedProcess.nucleus_id],
+                  ]
+                    .filter(Boolean)
+                    .join(' / ')
+                : undefined
+            }
+            width="lg"
+            contextDepth={selectedRoutine ? 1 : 0}
+          >
+            {selectedProcess && (
+              <ProcessCockpit360
+                process={selectedProcess}
+                areaName={selectedProcess.area_id ? areaMap[selectedProcess.area_id] : undefined}
+                nucleusName={
+                  selectedProcess.nucleus_id ? nucleusMap[selectedProcess.nucleus_id] : undefined
+                }
+                routines={routinesByProcessId[selectedProcess.id] ?? []}
+                systems={systemsByProcessId[selectedProcess.id] ?? []}
+                allSystems={systems}
+                onEdit={() => handleOpenEdit(selectedProcess)}
+                onDelete={() => setProcessToDelete(selectedProcess)}
+                onSelectRoutine={setSelectedRoutine}
+                onLinkSystem={(systemId) => handleLinkProcessSystem(selectedProcess.id, systemId)}
+                onUnlinkSystem={(systemId, systemName) =>
+                  setProcessSystemToUnlink({
+                    processId: selectedProcess.id,
+                    systemId,
+                    systemName,
+                  })
+                }
+              />
+            )}
+          </SplitView>
 
-        <ContextPanel
-          isOpen={!!selectedRoutine}
-          onClose={() => setSelectedRoutine(null)}
-          title={selectedRoutine?.name ?? ''}
-          subtitle={selectedRoutine?.objective ?? undefined}
-          breadcrumb={
-            selectedProcess && selectedRoutine
-              ? [
-                  {
-                    label: selectedProcess.name,
-                    onClick: () => setSelectedRoutine(null),
-                  },
-                  {
-                    label: selectedRoutine.name,
-                    isCurrent: true,
-                  },
-                ]
-              : undefined
-          }
-          depth={2}
-        >
-          {selectedRoutine && <RoutineCockpit360 routine={selectedRoutine} />}
-        </ContextPanel>
-        </div>{/* end flex gap-6 */}
-      </div>{/* end flex-1 space-y-6 */}
+          <ContextPanel
+            isOpen={!!selectedRoutine}
+            onClose={() => setSelectedRoutine(null)}
+            title={selectedRoutine?.name ?? ''}
+            subtitle={selectedRoutine?.objective ?? undefined}
+            breadcrumb={
+              selectedProcess && selectedRoutine
+                ? [
+                    {
+                      label: selectedProcess.name,
+                      onClick: () => setSelectedRoutine(null),
+                    },
+                    {
+                      label: selectedRoutine.name,
+                      isCurrent: true,
+                    },
+                  ]
+                : undefined
+            }
+            depth={2}
+          >
+            {selectedRoutine && <RoutineCockpit360 routine={selectedRoutine} />}
+          </ContextPanel>
+        </div>
+        {/* end flex gap-6 */}
+      </div>
+      {/* end flex-1 space-y-6 */}
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>

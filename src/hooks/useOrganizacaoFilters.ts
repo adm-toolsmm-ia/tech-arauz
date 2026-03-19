@@ -90,8 +90,8 @@ export function useProcessosFilters(
 
   const processesWithComputed = processes.map((p) => ({
     ...p,
-    area_name: p.area_id ? areaMap[p.area_id] ?? '' : '',
-    nucleus_name: p.nucleus_id ? nucleusMap[p.nucleus_id] ?? '' : '',
+    area_name: p.area_id ? (areaMap[p.area_id] ?? '') : '',
+    nucleus_name: p.nucleus_id ? (nucleusMap[p.nucleus_id] ?? '') : '',
     com_rotinas: (routinesByProcessId[p.id] ?? []).length > 0 ? 'true' : 'false',
   }));
 

@@ -167,7 +167,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <h4 className="text-foreground cursor-help text-sm font-semibold leading-normal dark:text-[hsl(0,0%,98%)]">
+                <h4 className="cursor-help text-sm font-semibold leading-normal text-foreground dark:text-[hsl(0,0%,98%)]">
                   {project.project_name}
                 </h4>
               </TooltipTrigger>
@@ -213,7 +213,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
             <TextWithTooltip
               text={project.responsible}
               maxLength={40}
-              className="text-foreground dark:text-[hsl(0,0%,90%)] leading-snug"
+              className="leading-snug text-foreground dark:text-[hsl(0,0%,90%)]"
             />
           </div>
 
@@ -242,7 +242,9 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
                   'text-xs font-semibold',
                   isProjectOverdue && 'text-red-600 dark:text-red-400',
                   !isProjectOverdue && isDeadlineNear && 'text-amber-600 dark:text-amber-400',
-                  !isProjectOverdue && !isDeadlineNear && 'text-foreground dark:text-[hsl(0,0%,92%)]',
+                  !isProjectOverdue &&
+                    !isDeadlineNear &&
+                    'text-foreground dark:text-[hsl(0,0%,92%)]',
                 )}
               >
                 {formatDateBR(project.end_date)}
@@ -256,7 +258,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
               <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <div className="flex-1">
                 <span className="text-[9px] text-muted-foreground">Próximo:</span>
-                <span className="text-foreground dark:text-[hsl(0,0%,88%)] block text-xs">
+                <span className="block text-xs text-foreground dark:text-[hsl(0,0%,88%)]">
                   {formatDateBR(nextDeadline)}
                 </span>
               </div>

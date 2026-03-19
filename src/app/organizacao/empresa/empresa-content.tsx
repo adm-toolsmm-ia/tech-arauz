@@ -681,12 +681,7 @@ export function EmpresaContent({
             <FileText className="h-4 w-4" />
             Novo Documento
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-            onClick={() => setIsEditOpen(true)}
-          >
+          <Button variant="ghost" size="sm" className="gap-2" onClick={() => setIsEditOpen(true)}>
             <Pencil className="h-4 w-4" />
             Editar
           </Button>

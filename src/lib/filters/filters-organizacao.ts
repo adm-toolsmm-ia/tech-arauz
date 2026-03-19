@@ -121,9 +121,13 @@ export const filterRegistryProcessos: FilterRegistry = {
   moduleId: 'organizacao-processos',
   filters: filterDefinitionsProcessos,
   searchable: true,
-  viewModes: [
-    { id: 'list', label: 'Lista', icon: List, default: true },
-  ],
+  viewModes: [{ id: 'list', label: 'Lista', icon: List, default: true }],
 };
 
-export const searchFieldsProcessos = ['name', 'description', 'objective', 'area_name', 'nucleus_name'];
+export const searchFieldsProcessos = [
+  'name',
+  'description',
+  'objective',
+  'area_name',
+  'nucleus_name',
+];

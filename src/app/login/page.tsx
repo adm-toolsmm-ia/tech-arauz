@@ -52,7 +52,7 @@ export default function LoginPage() {
 
         {/* Linha de acento laranja no topo — aumentada para h-2 com glow */}
         <div
-          className="absolute top-0 left-0 right-0 h-2 bg-[hsl(19,89%,54%)]"
+          className="absolute left-0 right-0 top-0 h-2 bg-[hsl(19,89%,54%)]"
           style={{
             boxShadow: '0 2px 12px rgba(255,107,53,0.3)',
           }}
@@ -81,8 +81,8 @@ export default function LoginPage() {
               <span className="text-[hsl(19,89%,60%)]">Corporativo</span>
             </h1>
             <p className="max-w-sm text-base leading-relaxed text-white/60">
-              Plataforma centralizada de acompanhamento jurídico, projetos e
-              indicadores estratégicos.
+              Plataforma centralizada de acompanhamento jurídico, projetos e indicadores
+              estratégicos.
             </p>
           </div>
 
@@ -105,11 +105,8 @@ export default function LoginPage() {
       {/* ─── Painel Direito — Formulário ─── */}
       <div className="relative flex flex-1 flex-col items-center justify-center bg-gradient-to-b from-[hsl(164,85%,97%)] to-white px-6 py-12 lg:px-16">
         {/* Stripe de acento laranja na borda esquerda */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[hsl(19,89%,54%)] to-[hsl(164,85%,15%)]"
-        />
+        <div className="absolute bottom-0 left-0 top-0 w-0.5 bg-gradient-to-b from-[hsl(19,89%,54%)] to-[hsl(164,85%,15%)]" />
         <div className="w-full max-w-md">
-
           {/* Logo visível no mobile (oculta no desktop, painel esquerdo faz isso) */}
           <div className="mb-10 flex flex-col items-center lg:hidden">
             <Image

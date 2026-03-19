@@ -56,7 +56,7 @@ export function ModelCard({
       }}
     >
       <div className="space-y-1.5">
-        <span className="text-foreground/90 line-clamp-2 text-sm font-semibold leading-tight">
+        <span className="text-foreground dark:text-[hsl(0,0%,97%)] line-clamp-2 text-sm font-semibold leading-tight">
           {model.name}
         </span>
         {model.description && (

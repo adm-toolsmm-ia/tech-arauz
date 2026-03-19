@@ -37,28 +37,33 @@ export default function LoginPage() {
         {/* Fundo verde petróleo sólido */}
         <div className="absolute inset-0 bg-[hsl(164,85%,15%)]" />
 
-        {/* Pattern hero (símbolo A) como decoração de fundo */}
+        {/* Pattern hero (símbolo A) como decoração de fundo — aumentado para 0.32 para visibilidade */}
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: "url('/pattern-hero.png')",
-            opacity: 0.18,
-            mixBlendMode: 'luminosity',
+            opacity: 0.32,
+            mixBlendMode: 'screen',
           }}
         />
 
         {/* Gradiente diagonal para profundidade */}
         <div className="absolute inset-0 bg-gradient-to-br from-[hsl(164,85%,11%)] via-transparent to-[hsl(164,85%,20%)] opacity-70" />
 
-        {/* Linha de acento laranja no topo */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-[hsl(19,89%,54%)]" />
+        {/* Linha de acento laranja no topo — aumentada para h-2 com glow */}
+        <div
+          className="absolute top-0 left-0 right-0 h-2 bg-[hsl(19,89%,54%)]"
+          style={{
+            boxShadow: '0 2px 12px rgba(255,107,53,0.3)',
+          }}
+        />
 
         {/* Conteúdo do painel hero */}
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
-          {/* Logo grande com respiro */}
+          {/* Logo grande com respiro — mostra laranja + verde */}
           <div>
             <Image
-              src="/logo-dark.png"
+              src="/logo-color.png"
               alt="Araúz Advogados"
               width={220}
               height={80}
@@ -98,7 +103,11 @@ export default function LoginPage() {
       </div>
 
       {/* ─── Painel Direito — Formulário ─── */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-white px-6 py-12 lg:px-16">
+      <div className="relative flex flex-1 flex-col items-center justify-center bg-gradient-to-b from-[hsl(164,85%,97%)] to-white px-6 py-12 lg:px-16">
+        {/* Stripe de acento laranja na borda esquerda */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[hsl(19,89%,54%)] to-[hsl(164,85%,15%)]"
+        />
         <div className="w-full max-w-md">
 
           {/* Logo visível no mobile (oculta no desktop, painel esquerdo faz isso) */}
@@ -164,7 +173,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-[hsl(164,85%,15%)] focus:ring-2 focus:ring-[hsl(164,85%,15%)]/20"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-[hsl(19,89%,54%)] focus:ring-2 focus:ring-[hsl(19,89%,54%)]/20"
                 placeholder="nome@arauz.adv.br"
               />
             </div>
@@ -188,7 +197,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-[hsl(164,85%,15%)] focus:ring-2 focus:ring-[hsl(164,85%,15%)]/20"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 outline-none transition-all placeholder:text-gray-400 hover:bg-white focus:border-[hsl(19,89%,54%)] focus:ring-2 focus:ring-[hsl(19,89%,54%)]/20"
                 placeholder="••••••••"
               />
             </div>

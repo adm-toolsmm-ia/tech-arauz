@@ -102,7 +102,8 @@
 
   .dark {
     --background: 222 20% 11%;
-    --foreground: 0 0% 93%;
+    --foreground: 0 0% 96%;
+    /* Increased from 93% to 96% for WCAG AA contrast in cards */
     --card: 222 18% 17%;
     --card-foreground: 0 0% 93%;
 

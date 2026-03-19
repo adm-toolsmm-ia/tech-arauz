@@ -167,7 +167,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <h4 className="text-foreground/90 cursor-help text-sm font-semibold leading-normal">
+                <h4 className="text-foreground cursor-help text-sm font-semibold leading-normal dark:text-[hsl(0,0%,98%)]">
                   {project.project_name}
                 </h4>
               </TooltipTrigger>
@@ -197,7 +197,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
               </Badge>
             )}
             {isDeadlineNear && (
-              <Badge className="h-5 border-0 bg-amber-100 px-1.5 text-[9px] text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+              <Badge className="h-5 border-0 bg-amber-100 px-1.5 text-[9px] text-amber-800 dark:bg-amber-900/50 dark:text-amber-100">
                 <Clock className="mr-0.5 h-3 w-3" />
                 Prazo crítico
               </Badge>
@@ -213,7 +213,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
             <TextWithTooltip
               text={project.responsible}
               maxLength={40}
-              className="text-foreground/85 leading-snug"
+              className="text-foreground dark:text-[hsl(0,0%,90%)] leading-snug"
             />
           </div>
 
@@ -242,7 +242,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
                   'text-xs font-semibold',
                   isProjectOverdue && 'text-red-600 dark:text-red-400',
                   !isProjectOverdue && isDeadlineNear && 'text-amber-600 dark:text-amber-400',
-                  !isProjectOverdue && !isDeadlineNear && 'text-foreground/90',
+                  !isProjectOverdue && !isDeadlineNear && 'text-foreground dark:text-[hsl(0,0%,92%)]',
                 )}
               >
                 {formatDateBR(project.end_date)}
@@ -256,7 +256,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
               <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <div className="flex-1">
                 <span className="text-[9px] text-muted-foreground">Próximo:</span>
-                <span className="text-foreground/80 block text-xs">
+                <span className="text-foreground dark:text-[hsl(0,0%,88%)] block text-xs">
                   {formatDateBR(nextDeadline)}
                 </span>
               </div>
@@ -268,7 +268,7 @@ export const ProjectKanbanCard: React.FC<ProjectKanbanCardProps> = ({ project, p
             <div className="flex items-start justify-between gap-1.5 text-xs">
               <div className="flex flex-1 items-start gap-1.5">
                 <GitBranch className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                <span className="text-foreground/85">
+                <span className="text-foreground dark:text-[hsl(0,0%,90%)]">
                   {resolvePhaseLabel(faseSlug, project.fase_atual) || '-'}
                 </span>
               </div>

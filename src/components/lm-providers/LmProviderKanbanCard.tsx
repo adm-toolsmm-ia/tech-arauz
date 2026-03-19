@@ -12,7 +12,7 @@ interface LmProviderKanbanCardProps {
 export const LmProviderKanbanCard: React.FC<LmProviderKanbanCardProps> = ({ provider }) => {
   return (
     <div className="space-y-1.5">
-      <span className="text-foreground/90 line-clamp-2 text-sm font-semibold leading-tight">
+      <span className="text-foreground dark:text-[hsl(0,0%,97%)] line-clamp-2 text-sm font-semibold leading-tight">
         {provider.icon_emoji || '🤖'} {provider.name}
       </span>
       {provider.description && (

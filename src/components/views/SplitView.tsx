@@ -81,14 +81,14 @@ export function SplitView({
         aria-hidden="true"
       />
 
-      {/* Panel - bg-background respeita dark mode automaticamente */}
+      {/* Panel - fundo branco em light mode, cinza escuro em dark mode */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="split-view-title"
         aria-describedby={subtitle ? 'split-view-subtitle' : undefined}
         className={cn(
-          'animate-slide-in-right fixed inset-y-0 right-0 flex w-full flex-col border-l border-border bg-card shadow-lg',
+          'animate-slide-in-right fixed inset-y-0 right-0 flex w-full flex-col border-l border-border bg-white dark:bg-card shadow-lg',
           widthClasses[width],
           className,
         )}
@@ -124,9 +124,9 @@ export function SplitView({
           </Button>
         </div>
 
-        {/* Content - respeita dark mode */}
-        <ScrollArea className="flex-1 overflow-hidden bg-card">
-          <div className="bg-card p-6">{children}</div>
+        {/* Content - fundo branco em light mode, cinza escuro em dark mode */}
+        <ScrollArea className="flex-1 overflow-hidden bg-white dark:bg-card">
+          <div className="bg-white dark:bg-card p-6">{children}</div>
         </ScrollArea>
       </div>
     </>

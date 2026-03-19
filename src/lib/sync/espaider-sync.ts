@@ -28,6 +28,7 @@ import {
   mapearOrcamento,
   mapearAprovador,
   mapearTempoPermanencia,
+  mapearHoraLancada,
   mapearRegistros,
 } from '@/integrations/espaider/mapper';
 
@@ -845,6 +846,12 @@ function descricaoToDataset(descricao: string | null | undefined): EspaiderDatas
     noAccents.includes('tempospermancencia') // Erro de digitação na API do Espaider
   )
     return 'TempoPermanencia';
+  if (
+    noAccents.includes('hora') ||
+    noAccents.includes('horaslancadas') ||
+    noAccents.includes('hours')
+  )
+    return 'HorasLancadas';
   return null;
 }
 
@@ -956,6 +963,8 @@ export async function executeSyncAll(
             logs,
             registros,
           );
+        } else if (dataset === 'HorasLancadas') {
+          childResult = await syncHorasLancadasFromRegistros(supabase, tenantId, logs, registros);
         } else {
           childResult = await syncApproversFromRegistros(supabase, tenantId, logs, registros);
         }
@@ -2056,6 +2065,221 @@ async function syncTempoPermanenciaFromRegistros(
 
   return {
     dataset: 'TempoPermanencia',
+    total: created + updated + errors,
+    created,
+    updated,
+    errors,
+    durationMs: Date.now() - start,
+  };
+}
+
+/**
+ * Sync horas lançadas from pre-fetched registros (via ListaURLFilhos).
+ * API: BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS
+ * Triple-lookup: by espaider_id, pasta_consultivo_id (numeric), or pasta_consultivo (text)
+ */
+async function syncHorasLancadasFromRegistros(
+  supabase: SupabaseClient,
+  tenantId: string,
+  logs: SyncLogEntry[],
+  registros: import('@/integrations/espaider/types').RegistroEspaider[],
+): Promise<DatasetSyncResult> {
+  const start = Date.now();
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  try {
+    logs.push(
+      createLog(
+        'info',
+        'HorasLancadas',
+        `Processando ${registros.length} registros brutos da API`,
+      ),
+    );
+
+    // Diagnóstico: campos disponíveis no primeiro registro
+    if (registros.length > 0 && registros[0].ListaCampos) {
+      const camposDisponiveis = registros[0].ListaCampos.map((c) => c.Identificador);
+      logs.push(
+        createLog(
+          'info',
+          'HorasLancadas',
+          `Campos disponíveis: ${camposDisponiveis.join(', ')}`,
+          { campos: camposDisponiveis },
+        ),
+      );
+    }
+
+    const mapped = mapearRegistros(registros, mapearHoraLancada);
+    logs.push(createLog('info', 'HorasLancadas', `${mapped.length} registros mapeados`));
+
+    if (mapped.length === 0) {
+      logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro mapeado'));
+      return {
+        dataset: 'HorasLancadas',
+        total: 0,
+        created: 0,
+        updated: 0,
+        errors: 0,
+        durationMs: Date.now() - start,
+      };
+    }
+
+    // Amostra
+    const s = mapped[0];
+    logs.push(
+      createLog(
+        'info',
+        'HorasLancadas',
+        `Amostra: espaider_id=${s.id_espaider}, projeto_pai=${s.projeto_id_espaider}, profissional=${s.profissional || '(vazio)'}`,
+        {
+          sample: {
+            id: s.id_espaider,
+            pai: s.projeto_id_espaider,
+            profissional: s.profissional,
+            horas: s.horas,
+            data: s.data_lancamento,
+          },
+        },
+      ),
+    );
+
+    // Fetch project map with cache — needed for triple-lookup
+    const { data: allProjects } = await supabase
+      .from('projects')
+      .select('id, espaider_id, pasta_consultivo_id, pasta_consultivo')
+      .eq('tenant_id', tenantId);
+
+    const projectMap = new Map<number, string>();
+    const pastaIdMap = new Map<number, string>();
+    const pastaTextMap = new Map<string, string>();
+
+    if (allProjects) {
+      for (const proj of allProjects) {
+        if (proj.espaider_id) projectMap.set(proj.espaider_id, proj.id);
+        if (proj.pasta_consultivo_id) pastaIdMap.set(proj.pasta_consultivo_id, proj.id);
+        if (proj.pasta_consultivo) {
+          const normalized = proj.pasta_consultivo.toLowerCase().trim();
+          pastaTextMap.set(normalized, proj.id);
+        }
+      }
+    }
+
+    const { data: existing } = await supabase
+      .from('project_horas_lancadas')
+      .select('espaider_id')
+      .eq('tenant_id', tenantId);
+    const existingIds = new Set(
+      (existing || []).map((r: { espaider_id: number }) => r.espaider_id),
+    );
+
+    const rows = mapped
+      .filter((r) => {
+        // Triple-lookup: try espaider_id, then pasta_consultivo_id, then pasta_consultivo text
+        const projectId =
+          projectMap.get(r.projeto_id_espaider) ||
+          (r.pasta_consultivo_id ? pastaIdMap.get(r.pasta_consultivo_id) : undefined) ||
+          (r.pasta_consultivo_texto
+            ? pastaTextMap.get(r.pasta_consultivo_texto.toLowerCase().trim())
+            : undefined);
+        return !!projectId;
+      })
+      .map((r) => {
+        // Resolve project_id using triple-lookup
+        const projectId =
+          projectMap.get(r.projeto_id_espaider) ||
+          (r.pasta_consultivo_id ? pastaIdMap.get(r.pasta_consultivo_id) : undefined) ||
+          (r.pasta_consultivo_texto
+            ? pastaTextMap.get(r.pasta_consultivo_texto.toLowerCase().trim())
+            : undefined);
+
+        return {
+          tenant_id: tenantId,
+          espaider_id: r.id_espaider,
+          project_id: projectId!,
+          solicitacao_id: r.solicitacao_id || null,
+          pasta_consultivo_id: r.pasta_consultivo_id || null,
+          profissional: r.profissional || null,
+          horas: r.horas ?? null,
+          data_lancamento: r.data_lancamento
+            ? r.data_lancamento.toISOString().split('T')[0]
+            : null,
+          tipo_lancamento: r.tipo_lancamento || null,
+          espaider_raw: r.espaider_raw || null,
+        };
+      });
+
+    const orphans = mapped.length - rows.length;
+    if (orphans > 0) {
+      const orphanIds = mapped
+        .filter((r) => {
+          const projectId =
+            projectMap.get(r.projeto_id_espaider) ||
+            (r.pasta_consultivo_id ? pastaIdMap.get(r.pasta_consultivo_id) : undefined) ||
+            (r.pasta_consultivo_texto
+              ? pastaTextMap.get(r.pasta_consultivo_texto.toLowerCase().trim())
+              : undefined);
+          return !projectId;
+        })
+        .map((r) => `proj=${r.projeto_id_espaider},pasta_id=${r.pasta_consultivo_id}`)
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .slice(0, 5);
+      logs.push(
+        createLog(
+          'warn',
+          'HorasLancadas',
+          `${orphans} ignorados (projeto pai não encontrado via triple-lookup). Referências: ${orphanIds.join('; ')}`,
+          { orphanCount: orphans, orphanRefs: orphanIds },
+        ),
+      );
+    }
+
+    logs.push(
+      createLog('info', 'HorasLancadas', `${rows.length} registros prontos para upsert`),
+    );
+
+    if (rows.length > 0) {
+      const { error } = await supabase
+        .from('project_horas_lancadas')
+        .upsert(rows, { onConflict: 'tenant_id,espaider_id' });
+      if (error) {
+        logs.push(
+          createLog('error', 'HorasLancadas', `Erro no upsert: ${error.message}`, {
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+          }),
+        );
+        errors = rows.length;
+      } else {
+        for (const row of rows) {
+          if (existingIds.has(row.espaider_id)) updated++;
+          else created++;
+        }
+        logs.push(
+          createLog(
+            'success',
+            'HorasLancadas',
+            `Upsert concluído: ${created} novos, ${updated} atualizados`,
+          ),
+        );
+      }
+    } else {
+      logs.push(createLog('warn', 'HorasLancadas', 'Nenhum registro a inserir após filtros'));
+    }
+  } catch (err) {
+    const msg = getErrorMessage(err, 'Erro desconhecido');
+    logs.push(
+      createLog('error', 'HorasLancadas', `Falha no processamento: ${msg}`, {
+        stack: err instanceof Error ? err.stack?.substring(0, 500) : undefined,
+      }),
+    );
+    errors++;
+  }
+
+  return {
+    dataset: 'HorasLancadas',
     total: created + updated + errors,
     created,
     updated,

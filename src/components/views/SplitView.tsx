@@ -88,7 +88,7 @@ export function SplitView({
         aria-labelledby="split-view-title"
         aria-describedby={subtitle ? 'split-view-subtitle' : undefined}
         className={cn(
-          'animate-slide-in-right fixed inset-y-0 right-0 flex w-full flex-col border-l border-border bg-background shadow-lg',
+          'animate-slide-in-right fixed inset-y-0 right-0 flex w-full flex-col border-l border-border bg-card shadow-lg',
           widthClasses[width],
           className,
         )}
@@ -125,8 +125,8 @@ export function SplitView({
         </div>
 
         {/* Content - respeita dark mode */}
-        <ScrollArea className="flex-1 overflow-hidden bg-background">
-          <div className="bg-background p-6">{children}</div>
+        <ScrollArea className="flex-1 overflow-hidden bg-card">
+          <div className="bg-card p-6">{children}</div>
         </ScrollArea>
       </div>
     </>

@@ -1,8 +1,9 @@
 name: Sync Env Vars to Vercel & Deploy
 
 on:
-  push:
-    branches: ["main"]
+  # DISABLED: Use Vercel's native GitHub integration instead (avoid duplicate deploys)
+  # push:
+  #   branches: ["main"]
   workflow_dispatch:
 
 jobs:

@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   Building,
   Building2,
@@ -11,7 +10,6 @@ import {
   LayoutGrid,
   Plus,
   GitBranch,
-  ArrowRight,
   Monitor,
   Truck,
   Wrench,
@@ -621,10 +619,78 @@ export function EmpresaContent({
           />
           <OrgBreadcrumb items={[{ label: 'Empresa' }]} />
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsEditOpen(true)}>
-          <Pencil className="h-4 w-4" />
-          Editar
-        </Button>
+        <div className="flex items-center gap-2 pr-6">
+          <Button
+            className="gap-2"
+            size="sm"
+            onClick={() => {
+              setAreaFormData(DEFAULT_AREA_FORM);
+              setIsAreaFormOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Nova Área
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => {
+              setNucleusFormData(DEFAULT_NUCLEUS_FORM);
+              setIsNucleusFormOpen(true);
+            }}
+            disabled={areas.length === 0}
+            title={areas.length === 0 ? 'Cadastre ao menos uma área antes' : undefined}
+          >
+            <GitBranch className="h-4 w-4" />
+            Novo Núcleo
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => openResourceCreate('system')}
+          >
+            <Monitor className="h-4 w-4" />
+            Novo Sistema
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => openResourceCreate('supplier')}
+          >
+            <Truck className="h-4 w-4" />
+            Novo Fornecedor
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => openResourceCreate('service')}
+          >
+            <Wrench className="h-4 w-4" />
+            Novo Serviço
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => openResourceCreate('document')}
+          >
+            <FileText className="h-4 w-4" />
+            Novo Documento
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+            onClick={() => setIsEditOpen(true)}
+          >
+            <Pencil className="h-4 w-4" />
+            Editar
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 space-y-6 p-6">
@@ -642,133 +708,37 @@ export function EmpresaContent({
           </CardHeader>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Cadastros vinculados</CardTitle>
-            <CardDescription>
-              Cadastre áreas, núcleos e recursos diretamente pela empresa.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                Hierarquia operacional:
-              </span>
-              <Button
-                className="gap-2"
-                onClick={() => {
-                  setAreaFormData(DEFAULT_AREA_FORM);
-                  setIsAreaFormOpen(true);
-                }}
-              >
-                <Plus className="h-4 w-4" />
-                Nova Área
-              </Button>
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => {
-                  setNucleusFormData(DEFAULT_NUCLEUS_FORM);
-                  setIsNucleusFormOpen(true);
-                }}
-                disabled={areas.length === 0}
-                title={areas.length === 0 ? 'Cadastre ao menos uma área antes' : undefined}
-              >
-                <GitBranch className="h-4 w-4" />
-                Novo Núcleo
-              </Button>
-              <Button variant="ghost" size="sm" asChild className="gap-2">
-                <Link href="/organizacao/areas">
-                  Ver Áreas
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" asChild className="gap-2">
-                <Link href="/organizacao/nucleos">
-                  Ver Núcleos
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">Recursos:</span>
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => openResourceCreate('system')}
-              >
-                <Monitor className="h-4 w-4" />
-                Novo Sistema
-              </Button>
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => openResourceCreate('supplier')}
-              >
-                <Truck className="h-4 w-4" />
-                Novo Fornecedor
-              </Button>
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => openResourceCreate('service')}
-              >
-                <Wrench className="h-4 w-4" />
-                Novo Serviço
-              </Button>
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => openResourceCreate('document')}
-              >
-                <FileText className="h-4 w-4" />
-                Novo Documento
-              </Button>
-              <Button variant="ghost" size="sm" asChild className="gap-2">
-                <Link href="/organizacao/recursos">
-                  Ver Recursos
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <EmpresaKPIBar counts={counts} />
 
-        {totalVinculos > 0 && (
-          <>
-            <EmpresaKPIBar counts={counts} />
-
-            <div className="space-y-3">
-              <div className="flex justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <FilterBar
-                    moduleId="organizacao-empresa"
-                    filters={EMPRESA_VIEW_REGISTRY}
-                    onFiltersChange={() => {}}
-                    onSearchChange={setSearch}
-                    onViewModeChange={(m) => setViewMode(m as 'list' | 'kanban')}
-                    initialFilters={{}}
-                    initialSearch={search}
-                    initialViewMode={viewMode}
-                    currentFilters={{}}
-                    currentSearch={search}
-                    currentViewMode={viewMode}
-                    onUpdateFilter={() => {}}
-                    onResetFilters={() => setSearch('')}
-                  />
-                </div>
-                <div className="shrink-0">
-                  <ViewModeBar
-                    moduleId="organizacao-empresa"
-                    registry={EMPRESA_VIEW_REGISTRY}
-                    activeViewMode={viewMode}
-                    onViewModeChange={(mode) => setViewMode(mode as 'list' | 'kanban')}
-                  />
-                </div>
-              </div>
+        <div className="space-y-3">
+          <div className="flex justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <FilterBar
+                moduleId="organizacao-empresa"
+                filters={EMPRESA_VIEW_REGISTRY}
+                onFiltersChange={() => {}}
+                onSearchChange={setSearch}
+                onViewModeChange={(m) => setViewMode(m as 'list' | 'kanban')}
+                initialFilters={{}}
+                initialSearch={search}
+                initialViewMode={viewMode}
+                currentFilters={{}}
+                currentSearch={search}
+                currentViewMode={viewMode}
+                onUpdateFilter={() => {}}
+                onResetFilters={() => setSearch('')}
+              />
             </div>
-          </>
-        )}
+            <div className="shrink-0">
+              <ViewModeBar
+                moduleId="organizacao-empresa"
+                registry={EMPRESA_VIEW_REGISTRY}
+                activeViewMode={viewMode}
+                onViewModeChange={(mode) => setViewMode(mode as 'list' | 'kanban')}
+              />
+            </div>
+          </div>
+        </div>
 
         <div>
           <h2 className="mb-4 text-lg font-semibold">Visão 360º — Vínculos</h2>

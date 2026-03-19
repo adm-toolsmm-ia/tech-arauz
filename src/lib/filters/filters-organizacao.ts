@@ -86,3 +86,44 @@ export const filterRegistryNucleos: FilterRegistry = {
 };
 
 export const searchFieldsNucleos = ['name', 'description', 'objective', 'area_name'];
+
+/**
+ * Filter Definitions para Processos
+ */
+export const filterDefinitionsProcessos: FilterDefinition[] = [
+  {
+    id: 'area_id',
+    label: 'Área',
+    type: 'select',
+    options: [], // Dinâmico - populado via useProcessosFilters
+    quickFilter: true,
+    icon: Building2,
+    description: 'Filtrar por área',
+  },
+  {
+    id: 'com_rotinas',
+    label: 'Com Rotinas',
+    type: 'select',
+    options: [
+      { value: 'true', label: 'Sim' },
+      { value: 'false', label: 'Não' },
+    ],
+    quickFilter: true,
+    icon: Layers,
+    description: 'Processos com rotinas vinculadas',
+  },
+];
+
+/**
+ * Filter Registry para Processos
+ */
+export const filterRegistryProcessos: FilterRegistry = {
+  moduleId: 'organizacao-processos',
+  filters: filterDefinitionsProcessos,
+  searchable: true,
+  viewModes: [
+    { id: 'list', label: 'Lista', icon: List, default: true },
+  ],
+};
+
+export const searchFieldsProcessos = ['name', 'description', 'objective', 'area_name', 'nucleus_name'];

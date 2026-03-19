@@ -69,7 +69,7 @@ export function AppSidebar() {
             >
               <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <Image
-                  src="/assets/logo-arauz-2026.png"
+                  src="/logo-light.png"
                   alt="Tech Arauz"
                   width={32}
                   height={32}

@@ -4,14 +4,14 @@
 
 @layer base {
   :root {
-    /* Araúz Primary - Verde Petróleo */
-    --primary: 167 69% 18%;
-    --primary-light: 167 55% 25%;
+    /* Araúz Primary - Verde Petróleo Exato do Logo */
+    --primary: 164 85% 15%;
+    --primary-light: 164 65% 25%;
     --primary-foreground: 0 0% 100%;
 
-    /* Araúz Accent - Laranja Vibrante */
-    --accent: 14 100% 60%;
-    --accent-hover: 20 100% 63%;
+    /* Araúz Accent - Laranja Vibrante Exato do Logo */
+    --accent: 19 89% 54%;
+    --accent-hover: 19 89% 60%;
     --accent-foreground: 0 0% 100%;
 
     /* Backgrounds - Neutros */
@@ -183,6 +183,28 @@
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
+    position: relative;
+    z-index: 0;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('/pattern.png');
+    background-size: 300px;
+    background-repeat: repeat;
+    opacity: 0.05;
+    z-index: -1;
+    pointer-events: none;
+  }
+  
+  html.dark body::before {
+    opacity: 0.03;
+    filter: invert(1);
   }
 
   /* Custom scrollbar */

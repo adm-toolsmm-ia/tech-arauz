@@ -27,9 +27,11 @@ import {
 } from '@/components/ui/select';
 import { SplitView } from '@/components/views/SplitView';
 import { ContextPanel } from '@/components/views/ContextPanel';
+import { FilterBar } from '@/components/filters/FilterBar';
 import { ProcessCockpit360 } from '@/components/organization/ProcessCockpit360';
 import { RoutineCockpit360 } from '@/components/organization/RoutineCockpit360';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useProcessosFilters } from '@/hooks/useOrganizacaoFilters';
 import {
   createProcessAction,
   updateProcessAction,
@@ -92,6 +94,16 @@ export function ProcessosContent({
   } | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [formData, setFormData] = React.useState<ProcessFormData>(DEFAULT_FORM);
+
+  const {
+    filters,
+    search,
+    filteredData,
+    updateFilter,
+    setSearch,
+    resetAllFilters,
+    registry,
+  } = useProcessosFilters(processes, areaMap, nucleusMap, routinesByProcessId);
 
   React.useEffect(() => {
     setProcesses(initialProcesses);
@@ -259,60 +271,96 @@ export function ProcessosContent({
         </Button>
       </div>
 
-      <div className="flex gap-6 p-6">
-        <div className="min-w-0 flex-1">
-          {processes.length === 0 ? (
-            <EmptyState
-              icon={GitBranch}
-              title="Nenhum processo cadastrado"
-              description="Crie processos para mapear os fluxos operacionais da empresa."
-              actionLabel="Novo Processo"
-              onAction={() => {
-                resetForm();
-                setIsFormOpen(true);
-              }}
-            />
-          ) : (
-            <Card>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {processes.map((proc) => (
-                    <div
-                      key={proc.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setSelectedProcess(proc)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          setSelectedProcess(proc);
-                        }
-                      }}
-                      className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
-                          <GitBranch className="text-primary size-5" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{proc.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {[
-                              proc.area_id && areaMap[proc.area_id],
-                              proc.nucleus_id && nucleusMap[proc.nucleus_id],
-                            ]
-                              .filter(Boolean)
-                              .join(' / ') || 'Sem área/núcleo'}
-                          </p>
+      <div className="flex-1 space-y-6 p-6">
+        <p className="sr-only" role="status" aria-live="polite">
+          {`Lista com ${filteredData.length} processo(s).`}
+        </p>
+
+        <FilterBar
+          moduleId="organizacao-processos"
+          filters={registry}
+          onFiltersChange={(newFilters) => {
+            Object.entries(newFilters).forEach(([key, value]) => {
+              if (filters[key] !== value) updateFilter(key, value);
+            });
+          }}
+          onSearchChange={setSearch}
+          onViewModeChange={() => {}}
+          initialFilters={filters}
+          initialSearch={search}
+          initialViewMode="list"
+          currentFilters={filters}
+          currentSearch={search}
+          currentViewMode="list"
+          onUpdateFilter={updateFilter}
+          onResetFilters={() => {
+            resetAllFilters();
+            setSearch('');
+          }}
+        />
+
+        <div className="flex gap-6">
+          <div className="min-w-0 flex-1">
+            {filteredData.length === 0 ? (
+              <EmptyState
+                icon={GitBranch}
+                title={processes.length === 0 ? 'Nenhum processo cadastrado' : 'Nenhum resultado'}
+                description={
+                  processes.length === 0
+                    ? 'Crie processos para mapear os fluxos operacionais da empresa.'
+                    : 'Ajuste os filtros ou busque por outro termo.'
+                }
+                actionLabel={processes.length === 0 ? 'Novo Processo' : undefined}
+                onAction={
+                  processes.length === 0
+                    ? () => {
+                        resetForm();
+                        setIsFormOpen(true);
+                      }
+                    : undefined
+                }
+              />
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <div className="divide-y">
+                    {filteredData.map((proc) => (
+                      <div
+                        key={proc.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedProcess(proc)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedProcess(proc);
+                          }
+                        }}
+                        className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+                            <GitBranch className="text-primary size-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{proc.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {[
+                                proc.area_id && areaMap[proc.area_id],
+                                proc.nucleus_id && nucleusMap[proc.nucleus_id],
+                              ]
+                                .filter(Boolean)
+                                .join(' / ') || 'Sem área/núcleo'}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
         <SplitView
           isOpen={!!selectedProcess}
@@ -382,7 +430,8 @@ export function ProcessosContent({
         >
           {selectedRoutine && <RoutineCockpit360 routine={selectedRoutine} />}
         </ContextPanel>
-      </div>
+        </div>{/* end flex gap-6 */}
+      </div>{/* end flex-1 space-y-6 */}
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>

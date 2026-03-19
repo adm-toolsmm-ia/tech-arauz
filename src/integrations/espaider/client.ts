@@ -4,6 +4,7 @@
  * @see ADR-002: Auth Espaider
  */
 
+import { z } from 'zod';
 import type {
   ExportarDadosParams,
   ExportarDadosResponse,
@@ -14,6 +15,7 @@ import type {
   EspaiderDataset,
 } from './types';
 import { loadConfig, maskToken, generateRequestId } from './config';
+import { ExportarDadosResponseSchema } from './schemas';
 
 // =============================================================================
 // Circuit Breaker State
@@ -267,21 +269,33 @@ async function executeWithRetry(
           throw createError('INVALID_RESPONSE', 'Invalid JSON response', requestId);
         }
 
+        // Validate response against schema
+        let validatedData: ExportarDadosResponse;
+        try {
+          validatedData = ExportarDadosResponseSchema.parse(data);
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            const fieldErrors = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('; ');
+            throw createError(
+              'INVALID_RESPONSE',
+              `API contract violation: ${fieldErrors}`,
+              requestId,
+            );
+          }
+          throw error;
+        }
+
         // Verifica Situacao do Espaider
-        if (data.Situacao === 'E') {
+        if (validatedData.Situacao === 'E') {
           throw createError(
             'INVALID_RESPONSE',
-            `Espaider error: ${data.MensagemRetorno || 'Erro desconhecido'}`,
+            `Espaider error: ${validatedData.MensagemRetorno || 'Erro desconhecido'}`,
             requestId,
           );
         }
 
-        if (!Array.isArray(data.ListaRegistros)) {
-          data.ListaRegistros = [];
-        }
-
         recordSuccess();
-        return data as ExportarDadosResponse;
+        return validatedData;
       } finally {
         clearTimeout(timeoutId);
       }

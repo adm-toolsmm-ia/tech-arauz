@@ -387,6 +387,75 @@ Potential EPIC 12+ areas for future development:
 
 ---
 
+## 📋 EPIC 15: Espaider Integration Modernization 🚀
+
+**Timeline:** 5 weeks (Phase A-F, starting 2026-03-24)
+**Team:** Dex (@dev) + Dara (@data-engineer) + Uma (@ux-design-expert) + Aria (@architect) + Quinn (@qa)
+**Effort:** 19 developer-days (76 hours total)
+**Status:** ⏳ **READY FOR PLANNING** (Brownfield Discovery complete, all approvals obtained)
+
+### Vision
+
+Modernize Espaider API integration from custom pre-AIOX architecture to AIOX 10/10 standard. Improve type safety (Zod validation), observability (structured logging with correlation IDs), and modularity (repository pattern). Enable future enhancements (dataset recovery, feature flags, multi-instance resilience).
+
+### Stories (15 total)
+
+| Phase | # | Story | Owner | Effort | Priority | Status | File |
+|-------|---|-------|-------|--------|----------|--------|------|
+| **A** | 15.1 | Zod Schemas — API Validation | Dex | 1-2d | 🔴 CRITICAL | ⏳ READY | [15.1-zod-schemas-api-validation.story.md](./15.1-zod-schemas-api-validation.story.md) |
+| | 15.2 | Validation Layer — HTTP Client | Dex | 1-2d | 🔴 CRITICAL | ⏳ READY | [15.2-validation-layer-http-client.story.md](./15.2-validation-layer-http-client.story.md) |
+| | 15.3 | Contract Tests — API Specification | Quinn | 1-2d | 🔴 CRITICAL | ⏳ READY | [15.3-contract-tests-api-specification.story.md](./15.3-contract-tests-api-specification.story.md) |
+| **B** | 15.4 | IRepository Interface — DDD | Aria | 1-2d | 🔴 CRITICAL | ⏳ READY | [15.4-irepository-interface-ddd.story.md](./15.4-irepository-interface-ddd.story.md) |
+| | 15.5 | Project Repository — Implementation | Dara | 2-3d | 🔴 CRITICAL | ⏳ READY | [15.5-project-repository-implementation.story.md](./15.5-project-repository-implementation.story.md) |
+| | 15.6 | Refactor espaider-sync — Orchestrator | Dex | 3-4d | 🔴 CRITICAL | ⏳ READY | [15.6-refactor-espaider-sync-orchestrator.story.md](./15.6-refactor-espaider-sync-orchestrator.story.md) |
+| **C** | 15.7 | Structured Logger — Correlation IDs | Dex | 2-3d | 🔴 CRITICAL | ⏳ READY | [15.7-structured-logger-correlation-ids.story.md](./15.7-structured-logger-correlation-ids.story.md) |
+| | 15.8 | Consolidate Logging — Single Source | Dara | 1-2d | 🟠 HIGH | ⏳ READY | [15.8-consolidate-logging-single-source.story.md](./15.8-consolidate-logging-single-source.story.md) |
+| **D** | 15.9 | Split Mappers — Per-Entity Files | Dex | 1-2d | 🟠 HIGH | ⏳ READY | [15.9-split-mappers-per-entity.story.md](./15.9-split-mappers-per-entity.story.md) |
+| | 15.10 | Error Classification — HTTP vs Data | Aria | 1-2d | 🟠 HIGH | ⏳ READY | [15.10-error-classification-http-vs-data.story.md](./15.10-error-classification-http-vs-data.story.md) |
+| **E** | 15.11 | Reintegrate TempoPermanencia | Dara | 1-2d | 🟠 HIGH | ⏳ READY | [15.11-reintegrate-tempo-permanencia-dataset.story.md](./15.11-reintegrate-tempo-permanencia-dataset.story.md) |
+| | 15.12 | Reintegrate HorasLancadas | Dara | 1-2d | 🟠 HIGH | ⏳ READY | [15.12-reintegrate-horas-lancadas-dataset.story.md](./15.12-reintegrate-horas-lancadas-dataset.story.md) |
+| | 15.13 | Feature Flag UI — Dataset Control | Uma | 1-2d | 🟠 HIGH | ⏳ READY | [15.13-feature-flag-ui-dataset-control.story.md](./15.13-feature-flag-ui-dataset-control.story.md) |
+| **F** | 15.14 | Circuit Breaker Persistence — Redis | Dex | 1-2d | 🟡 MEDIUM | ⏳ READY | [15.14-circuit-breaker-persistence-redis.story.md](./15.14-circuit-breaker-persistence-redis.story.md) |
+| | 15.15 | Exponential Backoff Jitter | Dex | 1-2d | 🟡 MEDIUM | ⏳ READY | [15.15-exponential-backoff-jitter.story.md](./15.15-exponential-backoff-jitter.story.md) |
+
+### Key Improvements
+
+**Before → After:**
+
+| Métrica | Antes | Depois | Delta |
+|---------|-------|--------|-------|
+| **Type Safety** | 0% (sem validação) | 95%+ (Zod) | ↑95% |
+| **Observabilidade** | 2 tables (confuso) | 1 source + Correlation IDs | ↑40% |
+| **Modularidade** | 2013 LOC monolítica | <600 LOC + 7 repositories | ↑70% |
+| **Test Coverage** | 55% | 88%+ | ↑33% |
+| **Tech Debt Score** | 5.8/10 | 8.0/10 | ↑2.2 pts |
+| **Datasets Ativos** | 7 (2 desabilitados) | 9 (todos) | ↑28% |
+
+### Success Criteria
+
+- ✅ Type safety: 95%+ code paths validated with Zod
+- ✅ Observability: 100% of sync operations tracked with correlation IDs
+- ✅ Modularity: Repository pattern implemented; <500 LOC per module
+- ✅ Performance: <100ms p95 upsert latency
+- ✅ Test coverage: 90%+ unit + integration
+- ✅ Backward compatibility: Zero breaking changes
+- ✅ Deployment: Safe rollback procedure documented
+
+### Dependencies
+
+✅ **Depends on:**
+- Brownfield Discovery complete (Phases 1-8)
+
+⏳ **Blocks:**
+- Potential EPIC 16+ (advanced analytics, external integrations)
+
+### Full Documentation
+
+📖 **[ESPAIDER-TECHNICAL-DEBT-EXECUTIVE-REPORT.md](../ESPAIDER-TECHNICAL-DEBT-EXECUTIVE-REPORT.md)** — Executive overview
+📖 **[ESPAIDER-TECHNICAL-DEBT-ASSESSMENT.md](../architecture/ESPAIDER-TECHNICAL-DEBT-ASSESSMENT.md)** — Detailed analysis (Phases 1-8)
+
+---
+
 ## 📚 Document Organization
 
 ```

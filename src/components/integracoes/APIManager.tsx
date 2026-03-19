@@ -81,7 +81,6 @@ const DATASET_MAP: Record<string, string> = {
   entregas: 'Entregas',
   cronogramas: 'Cronogramas',
   requisitos: 'Requisitos',
-  horas_lancadas: 'HorasLancadas',
 };
 
 // =============================================================================

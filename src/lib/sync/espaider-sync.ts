@@ -232,6 +232,112 @@ export interface SyncAllResult {
 }
 
 // =============================================================================
+// Generic sync helper — reduces boilerplate for all 7 dataset sync functions
+// @see Story 15.6 - Refactor espaider-sync orchestrator (Wave 3)
+// =============================================================================
+
+/**
+ * Generic dataset sync template
+ * Handles: fetch → map → upsert → log for any dataset
+ * Reduces ~300+ LOC of duplicated sync logic
+ */
+async function syncDataset<T>(
+  supabase: SupabaseClient,
+  tenantId: string,
+  logs: SyncLogEntry[],
+  config: {
+    dataset: EspaiderDataset;
+    identificador: string;
+    tableName: string;
+    conflictKey: string;
+    mapper: (records: any[]) => T[];
+    buildRows: (mapped: T[], existingIds?: Set<number>) => Record<string, any>[];
+    apiConfig?: EspaiderApiRow;
+  },
+): Promise<DatasetSyncResult> {
+  const start = Date.now();
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  try {
+    logs.push(createLog('info', config.dataset, `Buscando dados (${config.identificador})...`));
+
+    const response = await exportarDados({
+      identificador: config.identificador,
+      baseUrl: config.apiConfig?.base_url,
+      token: config.apiConfig?.token,
+    });
+
+    const registros = response.ListaRegistros || [];
+    logs.push(createLog('info', config.dataset, `${registros.length} registros recebidos`));
+
+    if (registros.length === 0) {
+      logs.push(createLog('warn', config.dataset, 'Nenhum registro — pulando upsert'));
+      return {
+        dataset: config.dataset,
+        total: 0,
+        created: 0,
+        updated: 0,
+        errors: 0,
+        durationMs: Date.now() - start,
+      };
+    }
+
+    const mapped = config.mapper(registros);
+    logs.push(createLog('info', config.dataset, `${mapped.length} registros mapeados`));
+
+    const { data: existing } = await supabase
+      .from(config.tableName)
+      .select('espaider_id')
+      .eq('tenant_id', tenantId);
+
+    const existingIds = new Set((existing || []).map((r: any) => r.espaider_id));
+    const rows = config.buildRows(mapped, existingIds);
+
+    if (rows.length === 0) {
+      logs.push(createLog('warn', config.dataset, 'Nenhum registro a inserir após filtros'));
+      return {
+        dataset: config.dataset,
+        total: 0,
+        created: 0,
+        updated: 0,
+        errors: 0,
+        durationMs: Date.now() - start,
+      };
+    }
+
+    const { error } = await supabase.from(config.tableName).upsert(rows, {
+      onConflict: config.conflictKey,
+    });
+
+    if (error) {
+      logs.push(createLog('error', config.dataset, `Erro no upsert: ${error.message}`));
+      errors = rows.length;
+    } else {
+      for (const row of rows) {
+        if (existingIds.has(row.espaider_id)) updated++;
+        else created++;
+      }
+      logs.push(createLog('success', config.dataset, `Upsert: ${created} novos, ${updated} atualizados`));
+    }
+  } catch (err) {
+    const msg = getErrorMessage(err, 'Falha de conexão/acesso');
+    logs.push(createLog('error', config.dataset, `Falha: ${msg}`));
+    errors++;
+  }
+
+  return {
+    dataset: config.dataset,
+    total: created + updated + errors,
+    created,
+    updated,
+    errors,
+    durationMs: Date.now() - start,
+  };
+}
+
+// =============================================================================
 // Individual dataset sync functions
 // =============================================================================
 

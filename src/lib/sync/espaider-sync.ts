@@ -28,7 +28,6 @@ import {
   mapearOrcamento,
   mapearAprovador,
   mapearTempoPermanencia,
-  mapearHoraLancada,
   mapearRegistros,
 } from '@/integrations/espaider/mapper';
 
@@ -846,8 +845,6 @@ function descricaoToDataset(descricao: string | null | undefined): EspaiderDatas
     noAccents.includes('tempospermancencia') // Erro de digitação na API do Espaider
   )
     return 'TempoPermanencia';
-  if (noAccents.includes('horaslancadas') || noAccents.includes('horas_lancadas'))
-    return 'HorasLancadas';
   return null;
 }
 
@@ -1898,11 +1895,11 @@ async function syncApproversFromRegistros(
 }
 
 // =============================================================================
-// Novos datasets: TempoPermanencia + HorasLancadas
+// Child datasets via ListaURLFilhos
 // =============================================================================
 
 /**
- * [REFATORADO] Sync tempo de permanência from pre-fetched registros (via ListaURLFilhos).
+ * Sync tempo de permanência from pre-fetched registros (via ListaURLFilhos).
  * API: BI_SOLICITACOES_PROJETOSESPAIDER_TEMPOSPERMANENCIA
  * Padrão: idêntico ao syncApproversFromRegistros
  */

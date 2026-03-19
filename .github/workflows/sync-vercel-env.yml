@@ -1,0 +1,43 @@
+name: Sync Env Vars to Vercel & Deploy
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/sync-vercel-env.yml"
+      - "package.json"
+      - "next.config.js"
+  workflow_dispatch:
+
+jobs:
+  sync-and-deploy:
+    name: Sync Environment Variables & Deploy to Vercel
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Sync Supabase Vars to Vercel
+        run: node .github/scripts/sync-vercel-env.js
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Deploy to Vercel
+        run: vercel deploy --prod
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

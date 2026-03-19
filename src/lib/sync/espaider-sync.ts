@@ -890,16 +890,27 @@ export async function executeSyncAll(
     const identificador = apiConfig?.identificador || 'BI_SOLICITACOES_PROJETOSESPAIDER';
     logs.push(createLog('info', 'Geral', 'Buscando interfaces filhas via ListaURLFilhos...'));
 
-    const response = await exportarDados({
-      identificador,
-      baseUrl: apiConfig?.base_url,
-      token: apiConfig?.token,
-    });
+    let response: any;
+    try {
+      response = await exportarDados({
+        identificador,
+        baseUrl: apiConfig?.base_url,
+        token: apiConfig?.token,
+      });
+    } catch (apiErr) {
+      const apiMsg = getErrorMessage(apiErr, 'Erro desconhecido na chamada à API');
+      const detailedMsg = `Falha ao buscar ListaURLFilhos: Token pode estar inválido/expirado. Detalhes: ${apiMsg}`;
+      logs.push(createLog('error', 'Geral', detailedMsg, {
+        errorType: apiErr instanceof Error ? apiErr.name : 'Unknown',
+        tokenStatus: 'verify_in_espaider',
+      }));
+      throw new Error(detailedMsg);
+    }
 
     const urlFilhos = response.ListaURLFilhos || [];
     logs.push(
       createLog('info', 'Geral', `${urlFilhos.length} interfaces filhas encontradas`, {
-        interfaces: urlFilhos.map((u) => ({
+        interfaces: urlFilhos.map((u: any) => ({
           identificador: u.Identificador,
           descricao: u.Descricao,
           datasetDetectado:
@@ -1006,11 +1017,11 @@ export async function executeSyncAll(
   // Aggregate
   const totalCreated = results.reduce((s, r) => s + r.created, 0);
   const totalUpdated = results.reduce((s, r) => s + r.updated, 0);
-  const totalErrors = results.reduce((s, r) => s + r.errors, 0);
+  let totalErrors = results.reduce((s, r) => s + r.errors, 0);
   const durationMs = Date.now() - overallStart;
 
   const success = totalErrors === 0;
-  const message = success
+  let message = success
     ? `Sincronização concluída: ${totalCreated} novos, ${totalUpdated} atualizados em ${(durationMs / 1000).toFixed(1)}s`
     : `Sincronização parcial: ${totalCreated} novos, ${totalUpdated} atualizados, ${totalErrors} erros em ${(durationMs / 1000).toFixed(1)}s`;
 
@@ -1026,9 +1037,25 @@ export async function executeSyncAll(
   // Persist detailed logs for history (LogViewer) — always, even on partial failure
   try {
     const globalRequestId = generateRequestId();
-    await persistLogEntries(supabase, tenantId, globalRequestId, logs);
+    const persistResult = await persistLogEntries(supabase, tenantId, globalRequestId, logs);
+    console.log(
+      `[executeSyncAll] ✅ Logs persistidos com sucesso: ${persistResult.persistedCount}/${logs.length} registros em integration_log_entries`,
+    );
   } catch (logPersistErr) {
-    console.error('[sync] Failed to persist log entries:', logPersistErr);
+    // CRITICAL FIX #2: Log persistence failure is NOW VISIBLE in response
+    const persistErrMsg = logPersistErr instanceof Error ? logPersistErr.message : String(logPersistErr);
+    console.error('[executeSyncAll] ❌ Erro CRÍTICO ao persistir logs:', persistErrMsg);
+    // Add error log entry for visibility
+    logs.push(
+      createLog(
+        'error',
+        'Geral',
+        `Falha ao persistir histórico de sincronização em integration_log_entries: ${persistErrMsg}. Sincronização completada, mas logs podem não estar disponíveis em "Histórico de Sincronizações".`,
+        { errorType: 'PersistenceFailure', context: 'LogPersistence' },
+      ),
+    );
+    totalErrors++;
+    message = `Sincronização parcial: ${totalCreated} novos, ${totalUpdated} atualizados, ${totalErrors} erros em ${(durationMs / 1000).toFixed(1)}s (⚠️ Logs não persistidos)`;
   }
 
   return {
@@ -1384,14 +1411,17 @@ async function logSyncResult(
 /**
  * Persist detailed log entries to integration_log_entries table.
  * Called after sync completion to save full audit trail for the LogViewer.
+ * NOW WITH VALIDATION: Confirms that logs were actually inserted and throws on error.
  */
 async function persistLogEntries(
   supabase: SupabaseClient,
   tenantId: string,
   requestId: string,
   logs: SyncLogEntry[],
-): Promise<void> {
-  if (logs.length === 0) return;
+): Promise<{ success: boolean; persistedCount: number }> {
+  if (logs.length === 0) {
+    return { success: true, persistedCount: 0 };
+  }
 
   try {
     const rows = logs.map((log) => ({
@@ -1406,17 +1436,49 @@ async function persistLogEntries(
 
     // Batch insert in chunks of 100 to avoid large payloads
     const BATCH_SIZE = 100;
+    let totalPersisted = 0;
+
     for (let i = 0; i < rows.length; i += BATCH_SIZE) {
       const batch = rows.slice(i, i + BATCH_SIZE);
-      const { error } = await supabase.from('integration_log_entries').insert(batch);
+      const { error, count } = await supabase
+        .from('integration_log_entries')
+        .insert(batch);
 
+      // CRITICAL FIX #2: Validate insert success
       if (error) {
-        console.error('[sync] failed to persist log entries batch:', error);
+        const failMsg = `[persistLogEntries] Falha ao salvar batch de ${batch.length} logs em integration_log_entries: ${error.message}`;
+        console.error(failMsg);
+        throw new Error(failMsg);
       }
+
+      if (!count || count === 0) {
+        const zeroMsg = `[persistLogEntries] Nenhum log foi inserido na batch (esperado: ${batch.length}). Insert silencioso retornou count=0.`;
+        console.error(zeroMsg);
+        throw new Error(zeroMsg);
+      }
+
+      totalPersisted += count;
+      console.log(
+        `[persistLogEntries] ✅ Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${count} logs persistidos`,
+      );
     }
+
+    if (totalPersisted === 0) {
+      const totalMsg = `[persistLogEntries] Aviso: ${logs.length} logs mapeados, mas nenhum foi persistido!`;
+      console.warn(totalMsg);
+      throw new Error(totalMsg);
+    }
+
+    console.log(
+      `[persistLogEntries] ✅ Sucesso total: ${totalPersisted}/${logs.length} logs persistidos em integration_log_entries`,
+    );
+    return { success: true, persistedCount: totalPersisted };
   } catch (err) {
-    // Never let logging break the sync flow
-    console.error('[sync] failed to persist log entries:', err);
+    // CRITICAL FIX #2: DON'T silence this error!
+    const errMsg = err instanceof Error ? err.message : String(err);
+    const fullMsg = `[persistLogEntries] Erro crítico ao persistir logs de sincronização: ${errMsg}`;
+    console.error(fullMsg);
+    throw new Error(fullMsg);
   }
 }
 

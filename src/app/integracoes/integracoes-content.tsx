@@ -4,6 +4,7 @@ import * as React from 'react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { APIManager } from '@/components/integracoes/APIManager';
 import { LogViewer } from '@/components/integracoes/LogViewer';
+import { DatasetFeatureFlagsPanel } from '@/components/integrations/DatasetFeatureFlagsPanel';
 
 // =============================================================================
 // Types
@@ -45,6 +46,11 @@ export function IntegracoesContent({ userRole }: IntegracoesContentProps) {
       <div className="flex-1 space-y-6 p-6">
         {/* API Manager */}
         <APIManager onViewLogs={handleViewLogs} onSyncComplete={handleSyncComplete} />
+
+        {/* Dataset Feature Flags — visible for admin only */}
+        {isAdmin && (
+          <DatasetFeatureFlagsPanel />
+        )}
 
         {/* Log Viewer — visible for admin and user roles (API enforces auth) */}
         {['admin', 'user'].includes(userRole) && (

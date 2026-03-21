@@ -8,7 +8,7 @@
 
 ### Passo 1: Copie seu JWT Token
 
-1. Abra https://arauz-tech.vercel.app no browser
+1. Abra https://tech-arauz.vercel.app no browser
 2. Faça login com sua conta admin
 3. Pressione **F12** (abre Developer Tools)
 4. Vá para a aba **"Storage"** ou **"Application"**
@@ -57,16 +57,16 @@ O script vai testar **4 APIs** e mostrar:
 ║  Story 17.1: Graph Data API + Schema                  ║
 ╚════════════════════════════════════════════════════════╝
 
-URL testada: https://arauz-tech.vercel.app
+URL testada: https://tech-arauz.vercel.app
 
 [Passo 1] API de Grafo
-  URL: https://arauz-tech.vercel.app/api/knowledge/graph
+  URL: https://tech-arauz.vercel.app/api/knowledge/graph
   ✅ Resposta válida (JSON)
   ✅ PASSOU
   📊 Nós encontrados: 45
 
 [Passo 2] API de Documentos
-  URL: https://arauz-tech.vercel.app/api/knowledge/documents?limit=5
+  URL: https://tech-arauz.vercel.app/api/knowledge/documents?limit=5
   ✅ Resposta válida (JSON)
   ✅ PASSOU
   📄 Documentos encontrados: 4
@@ -78,7 +78,7 @@ URL testada: https://arauz-tech.vercel.app
   🎯 Success: true
 
 [Passo 4] Documentos Relacionados
-  URL: https://arauz-tech.vercel.app/api/knowledge/documents/abc-123-def/related
+  URL: https://tech-arauz.vercel.app/api/knowledge/documents/abc-123-def/related
   ✅ Resposta válida (JSON)
   ✅ PASSOU
 
@@ -113,7 +113,7 @@ URL testada: https://arauz-tech.vercel.app
 | Erro | Solução |
 |------|---------|
 | `401 Unauthorized` | Token expirado → Copie novo token do browser (F12) |
-| `404 Not Found` | URL errada → Verifique se URL é `arauz-tech.vercel.app` |
+| `404 Not Found` | URL errada → Verifique se URL é `tech-arauz.vercel.app` |
 | `Invalid JSON response` | API offline → Aguarde alguns minutos, tente novamente |
 | `Connection refused` | Vercel offline → Acesse vercel.com para verificar status |
 

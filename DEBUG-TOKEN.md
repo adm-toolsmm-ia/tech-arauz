@@ -8,12 +8,12 @@ Vamos procurar em **todos os lugares possíveis:**
 
 ## 🔍 Opção 1: Local Storage (Tente Novamente)
 
-1. Abra https://arauz-tech.vercel.app
+1. Abra https://tech-arauz.vercel.app
 2. Faça login: `gabriel_cristofolini@arauz.com.br`
 3. Pressione **F12** (Developer Tools)
 4. Vá para **"Application"** (não "Storage")
 5. Clique em **"Local Storage"**
-6. Clique em **"https://arauz-tech.vercel.app"**
+6. Clique em **"https://tech-arauz.vercel.app"**
 7. Procure por:
    - `auth`
    - `session`
@@ -44,7 +44,7 @@ Ainda em Developer Tools:
 
 1. F12 → Application
 2. Clique em **"Cookies"**
-3. Clique em **"https://arauz-tech.vercel.app"**
+3. Clique em **"https://tech-arauz.vercel.app"**
 4. Procure por:
    - `supabase-auth-token`
    - `sb-*` (começa com sb)

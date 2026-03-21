@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # URL do projeto
-VERCEL_URL="https://arauz-tech.vercel.app"
+VERCEL_URL="https://tech-arauz.vercel.app"
 
 # Validar argumentos
 if [ -z "$1" ]; then
@@ -23,7 +23,7 @@ if [ -z "$1" ]; then
   echo "  bash validate-17.1.sh 'seu-jwt-token-aqui'"
   echo ""
   echo "Para obter seu JWT token:"
-  echo "  1. Abra https://arauz-tech.vercel.app"
+  echo "  1. Abra https://tech-arauz.vercel.app"
   echo "  2. Faça login"
   echo "  3. Pressione F12 (Developer Tools)"
   echo "  4. Vá para 'Storage' ou 'Application'"

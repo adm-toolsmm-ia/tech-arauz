@@ -11,7 +11,7 @@ Criei um endpoint que **gera seu token automaticamente**:
 ### Passo 1: Abra no Browser
 
 ```
-https://arauz-tech.vercel.app/api/test-token
+https://tech-arauz.vercel.app/api/test-token
 ```
 
 **Pronto! Ele vai retornar:**
@@ -22,7 +22,7 @@ https://arauz-tech.vercel.app/api/test-token
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": "gabriel_cristofolini@arauz.com.br",
   "expiresIn": 3600,
-  "usage": "curl -H 'Authorization: Bearer eyJ...' https://arauz-tech.vercel.app/api/knowledge/documents"
+  "usage": "curl -H 'Authorization: Bearer eyJ...' https://tech-arauz.vercel.app/api/knowledge/documents"
 }
 ```
 
@@ -73,7 +73,7 @@ bash validate-17.1.sh 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 
 **Agora é super simples! 🎉**
 
-1. Abra: https://arauz-tech.vercel.app/api/test-token
+1. Abra: https://tech-arauz.vercel.app/api/test-token
 2. Copie o token
 3. Execute: `bash validate-17.1.sh 'token'`
 

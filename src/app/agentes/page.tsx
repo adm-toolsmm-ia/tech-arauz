@@ -37,7 +37,7 @@ export default async function AgentsPage() {
     console.error('Error fetching project_skills:', skillsError);
   }
 
-  // Fetch LM providers for CreateAgentDialog (provedores e modelos do banco)
+  // Fetch LM providers for CreateAgentSheet (provedores e modelos do banco)
   const { data: providers } = await supabase
     .from('lm_providers')
     .select('*')

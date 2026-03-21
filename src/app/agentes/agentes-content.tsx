@@ -4,7 +4,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
-import { CreateAgentDialog } from '@/components/agents/CreateAgentDialog';
+import { CreateAgentSheet } from '@/components/agents/CreateAgentSheet';
 import { AgentCockpit } from '@/components/agents/AgentCockpit';
 import { AgentEditSheet } from '@/components/agents/AgentEditSheet';
 import { SplitView } from '@/components/views/SplitView';
@@ -140,11 +140,11 @@ export function AgentsContent({
             title="Agentes, squads e skills"
             subtitle="Agentes e squads: modelos e orquestração. Skills: contexto para gestão de projetos e TI."
           />
-          <CreateAgentDialog providers={providers} onSuccess={() => router.refresh()} />
+          <CreateAgentSheet providers={providers} onSuccess={() => router.refresh()} />
         </div>
       ) : (
         <div className="flex justify-end">
-          <CreateAgentDialog providers={providers} onSuccess={() => router.refresh()} />
+          <CreateAgentSheet providers={providers} onSuccess={() => router.refresh()} />
         </div>
       )}
 

@@ -18,6 +18,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
@@ -34,6 +35,8 @@ import type {
 import { dbProjectSkillToUI, dbSkillDocumentToUI } from '@/lib/transformers/skill';
 import type { DBProjectSkill, UISkillDocument } from '@/types/skills';
 import { SkillSupabaseService } from '@/services/agents/skillSupabaseService';
+
+const SELECT_IN_SHEET_Z = 'z-[100]';
 import {
   validateProjectSkill360,
   validateSkillDocumentAttach,
@@ -425,12 +428,15 @@ function SkillFormSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col gap-0 overflow-hidden sm:max-w-xl">
-        <SheetHeader className="border-b px-6 py-4">
+      <SheetContent className="flex h-full max-h-screen w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <SheetHeader className="space-y-1 border-b px-6 py-4 text-left">
           <SheetTitle>{mode === 'create' ? 'Nova skill' : 'Editar skill'}</SheetTitle>
+          <SheetDescription>
+            Catálogo por tenant; instruções e anexos visíveis só para o seu escritório (RLS).
+          </SheetDescription>
         </SheetHeader>
-        <ScrollArea className="flex-1 px-6 py-4">
-          <div className="space-y-4 pb-8">
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="space-y-4 px-6 py-4 pb-8">
             <div>
               <Label>Nome *</Label>
               <Input
@@ -479,7 +485,7 @@ function SkillFormSheet({
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className={SELECT_IN_SHEET_Z} position="popper" sideOffset={4}>
                     {CATEGORIES.map((c) => (
                       <SelectItem key={c.value} value={c.value}>
                         {c.label}
@@ -494,7 +500,7 @@ function SkillFormSheet({
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className={SELECT_IN_SHEET_Z} position="popper" sideOffset={4}>
                     {SKILL_TYPES.map((c) => (
                       <SelectItem key={c.value} value={c.value}>
                         {c.label}
@@ -510,7 +516,7 @@ function SkillFormSheet({
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={SELECT_IN_SHEET_Z} position="popper" sideOffset={4}>
                   <SelectItem value="draft">Rascunho</SelectItem>
                   <SelectItem value="published">Publicado</SelectItem>
                   <SelectItem value="archived">Arquivado</SelectItem>
@@ -602,7 +608,7 @@ function SkillFormSheet({
             )}
           </div>
         </ScrollArea>
-        <div className="flex justify-end gap-2 border-t px-6 py-4">
+        <div className="flex shrink-0 justify-end gap-3 border-t bg-card px-6 py-4">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Fechar
           </Button>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClientFromToken, extractBearerToken } from '@/lib/supabase/server-with-token';
 import type { APIError } from '@/types/knowledge-graph';
 
 interface ViewResponse {
@@ -17,8 +17,19 @@ export async function POST(
   { params }: { params: { id: string } }
 ): Promise<NextResponse<ViewResponse | APIError>> {
   try {
-    // Auth check
-    const supabase = await createClient();
+    // Extract JWT token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    const token = extractBearerToken(authHeader || '');
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Missing or invalid Authorization header', statusCode: 401, timestamp: new Date().toISOString() },
+        { status: 401 }
+      );
+    }
+
+    // Auth check with token
+    const supabase = createClientFromToken(token);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {

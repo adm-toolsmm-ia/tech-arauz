@@ -78,7 +78,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<KnowledgeD
     // Apply search filter (full-text search)
     if (filters.search) {
       query = query.textSearch('search_vector', filters.search, {
-        type: 'plainto',
+        type: 'plain',
         config: 'portuguese',
       });
     }

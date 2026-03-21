@@ -41,6 +41,17 @@ export const filterDefinitionsAgentes: FilterDefinition[] = [
     quickFilter: true,
     description: 'Filtrar por tipo de uso (Chatbot ou Workflow)',
   },
+  {
+    id: 'entityKind',
+    label: 'Entidade',
+    type: 'select',
+    options: [
+      { value: 'agent', label: '🤖 Agente' },
+      { value: 'squad', label: '👥 Squad' },
+    ],
+    quickFilter: true,
+    description: 'Agente individual ou squad (equipe)',
+  },
 ];
 
 export const filterRegistryAgentes: FilterRegistry = {

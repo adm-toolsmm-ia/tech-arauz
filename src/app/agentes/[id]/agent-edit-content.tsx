@@ -28,6 +28,7 @@ import { AgentMetrics360 } from '@/components/agents/AgentMetrics360';
 import { ChatContent } from './chat/chat-content';
 import type { AgentType, LmModel, LmProvider } from '@/types/agents';
 import type { UIAgent } from '@/lib/transformers/agent';
+import { validateAgentEntity360 } from '@/lib/validation/epic16-agentes-skills';
 
 interface AgentEditContentProps {
   initialAgent: UIAgent;
@@ -43,6 +44,7 @@ export function AgentEditContent({ initialAgent, providers = [] }: AgentEditCont
   const [activeTab, setActiveTab] = useState('basic');
   const [agentTypes, setAgentTypes] = useState<AgentType[]>([]);
   const [modelsByProvider, setModelsByProvider] = useState<Record<string, LmModel[]>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [agent, setAgent] = useState({
     name: initialAgent.name,
@@ -105,9 +107,32 @@ export function AgentEditContent({ initialAgent, providers = [] }: AgentEditCont
   const handleChange = (field: string, value: unknown) => {
     setAgent((prev) => ({ ...prev, [field]: value }));
     setIsDirty(true);
+    setFieldErrors({});
   };
 
   const handleSave = async () => {
+    const maxTok = Number.isFinite(agent.modelMaxTokens) ? agent.modelMaxTokens : 0;
+    const validation = validateAgentEntity360({
+      name: agent.name,
+      slug: agent.slug,
+      description: agent.description,
+      entityKind: initialAgent.entityKind ?? 'agent',
+      status: agent.status,
+      modelTemperature: agent.modelTemperature,
+      modelMaxTokens: maxTok,
+      outputSchemaText: agent.outputSchema,
+      squadMemberIds: [],
+      eligibleMemberAgentIds: [],
+      requirePublishedSquadHasMembers: false,
+    });
+
+    if (!validation.ok) {
+      setFieldErrors(validation.fieldErrors);
+      toast.error(Object.values(validation.fieldErrors)[0] ?? 'Corrija os campos destacados.');
+      return;
+    }
+
+    setFieldErrors({});
     setIsSaving(true);
     try {
       const selectedType = agentTypes.find((t) => t.id === agent.agentTypeId);
@@ -137,7 +162,7 @@ export function AgentEditContent({ initialAgent, providers = [] }: AgentEditCont
         model_temperature: agent.modelTemperature,
         model_max_tokens: agent.modelMaxTokens,
         requirements: agent.requirements.split('\n').filter(Boolean),
-        output_schema: JSON.parse(agent.outputSchema || '{}'),
+        output_schema: validation.outputSchema ?? {},
       };
 
       await AgentSupabaseService.updateAgent(
@@ -266,14 +291,24 @@ export function AgentEditContent({ initialAgent, providers = [] }: AgentEditCont
                   <Input
                     value={agent.name}
                     onChange={(e) => handleChange('name', e.target.value)}
+                    className={fieldErrors.name ? 'border-destructive' : ''}
+                    aria-invalid={!!fieldErrors.name}
                   />
+                  {fieldErrors.name && (
+                    <p className="mt-1 text-xs text-destructive">{fieldErrors.name}</p>
+                  )}
                 </div>
                 <div>
                   <Label>Slug</Label>
                   <Input
                     value={agent.slug}
                     onChange={(e) => handleChange('slug', e.target.value)}
+                    className={fieldErrors.slug ? 'border-destructive' : ''}
+                    aria-invalid={!!fieldErrors.slug}
                   />
+                  {fieldErrors.slug && (
+                    <p className="mt-1 text-xs text-destructive">{fieldErrors.slug}</p>
+                  )}
                 </div>
               </div>
 
@@ -535,8 +570,12 @@ export function AgentEditContent({ initialAgent, providers = [] }: AgentEditCont
                   onChange={(e) => handleChange('outputSchema', e.target.value)}
                   placeholder='{"type": "object", "properties": {...}}'
                   rows={4}
-                  className="font-mono text-sm"
+                  className={`font-mono text-sm ${fieldErrors.outputSchema ? 'border-destructive' : ''}`}
+                  aria-invalid={!!fieldErrors.outputSchema}
                 />
+                {fieldErrors.outputSchema && (
+                  <p className="mt-1 text-xs text-destructive">{fieldErrors.outputSchema}</p>
+                )}
               </div>
 
               <div className="flex items-center gap-2">

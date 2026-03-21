@@ -66,6 +66,9 @@ function AgentKanbanCard({ agent }: { agent: UIAgent }) {
         <p className="line-clamp-2 text-[11px] text-muted-foreground">{agent.description}</p>
       )}
       <div className="flex flex-wrap gap-1">
+        <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+          {agent.entityKind === 'squad' ? '👥 SQ' : '🤖 AG'}
+        </Badge>
         <Badge
           variant={agent.usageType === 'chatbot' ? 'default' : 'secondary'}
           className="px-1.5 py-0 text-[10px]"

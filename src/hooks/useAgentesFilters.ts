@@ -27,7 +27,22 @@ export function useAgentesFilters(agents: UIAgent[]) {
     );
     const uniqueUsageTypes = Array.from(usageTypesSet);
 
+    const entityKinds = new Set(agents.map((a) => a.entityKind || 'agent'));
+
     return filterDefinitionsAgentes.map((def) => {
+      if (def.id === 'entityKind') {
+        const allOpts = [
+          { value: 'agent', label: '🤖 Agente' },
+          { value: 'squad', label: '👥 Squad' },
+        ];
+        return {
+          ...def,
+          options:
+            entityKinds.size === 0
+              ? allOpts
+              : allOpts.filter((opt) => entityKinds.has(opt.value as 'agent' | 'squad')),
+        };
+      }
       if (def.id === 'agentType') {
         return {
           ...def,
@@ -59,7 +74,7 @@ export function useAgentesFilters(agents: UIAgent[]) {
 
   const filteredData = applyFilters(agents, filterState.filters, {
     search: filterState.search,
-    searchFields: searchFieldsAgentes,
+    searchFields: [...searchFieldsAgentes, 'entityKind'],
     matchMode: 'partial',
     caseSensitive: false,
   });

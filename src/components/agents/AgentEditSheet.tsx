@@ -25,11 +25,16 @@ import { dbAgentToUI, type DBAgent } from '@/lib/transformers/agent';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import { AgentTypesService } from '@/services/agents/agentTypesService';
 import { LmModelsService } from '@/services/agents/lmModelsService';
+import { SquadMemberSupabaseService } from '@/services/agents/squadMemberSupabaseService';
+import { Checkbox } from '@/components/ui/checkbox';
+import { validateAgentEntity360 } from '@/lib/validation/epic16-agentes-skills';
 
 interface AgentEditSheetProps {
   agent: UIAgent | null;
   isOpen: boolean;
   providers: LmProvider[];
+  /** Lista completa para compor squads (apenas entityKind agent são elegíveis) */
+  allAgents?: UIAgent[];
   onClose: () => void;
   onSaved: (updatedAgent: UIAgent) => void;
 }
@@ -44,6 +49,7 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
   agent,
   isOpen,
   providers,
+  allAgents = [],
   onClose,
   onSaved,
 }) => {
@@ -52,12 +58,15 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
   const [activeTab, setActiveTab] = useState('basic');
   const [agentTypes, setAgentTypes] = useState<AgentType[]>([]);
   const [modelsByProvider, setModelsByProvider] = useState<Record<string, LmModel[]>>({});
+  const [squadMemberIds, setSquadMemberIds] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
     description: '',
     status: 'draft' as 'draft' | 'published' | 'deprecated',
+    entityKind: 'agent' as 'agent' | 'squad',
     agentTypeId: '',
     usageType: 'chatbot' as 'chatbot' | 'workflow',
     showInShortcut: false,
@@ -85,6 +94,7 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
         slug: agent.slug,
         description: agent.description,
         status: agent.status,
+        entityKind: agent.entityKind || 'agent',
         agentTypeId: agent.agentTypeId || '',
         usageType: agent.usageType || 'chatbot',
         showInShortcut: agent.showInShortcut ?? false,
@@ -105,6 +115,18 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
         outputSchema: JSON.stringify(agent.fullConfig.outputSchema || {}, null, 2),
       });
       setIsDirty(false);
+      setFieldErrors({});
+    }
+  }, [agent, isOpen]);
+
+  useEffect(() => {
+    if (!agent || !isOpen) return;
+    if (agent.entityKind === 'squad') {
+      void SquadMemberSupabaseService.listMemberIds(agent.id)
+        .then(setSquadMemberIds)
+        .catch(() => setSquadMemberIds([]));
+    } else {
+      setSquadMemberIds([]);
     }
   }, [agent, isOpen]);
 
@@ -145,11 +167,38 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
   const handleChange = (field: string, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setIsDirty(true);
+    setFieldErrors({});
   };
 
   const handleSave = async () => {
     if (!agent) return;
 
+    const eligibleMemberAgentIds = allAgents
+      .filter((a) => a.entityKind === 'agent' && a.id !== agent.id)
+      .map((a) => a.id);
+
+    const validation = validateAgentEntity360({
+      name: formData.name,
+      slug: formData.slug,
+      description: formData.description,
+      entityKind: formData.entityKind,
+      status: formData.status,
+      modelTemperature: formData.modelTemperature,
+      modelMaxTokens: formData.modelMaxTokens,
+      outputSchemaText: formData.outputSchema,
+      squadMemberIds,
+      eligibleMemberAgentIds,
+    });
+
+    if (!validation.ok) {
+      setFieldErrors(validation.fieldErrors);
+      const msg =
+        Object.values(validation.fieldErrors)[0] ?? 'Corrija os campos destacados antes de salvar.';
+      toast.error(msg);
+      return;
+    }
+
+    setFieldErrors({});
     setIsSaving(true);
     try {
       const instructionsArr = formData.promptInstructions
@@ -161,11 +210,13 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
         slug: formData.slug,
         description: formData.description,
         status: formData.status,
+        entity_kind: formData.entityKind,
         agent_type_id: formData.agentTypeId || null,
         agent_type: agentTypes.find((t) => t.id === formData.agentTypeId)?.slug || 'custom',
-        usage_type: formData.usageType,
-        show_in_shortcut: formData.showInShortcut,
-        is_global_chatbot: formData.isGlobalChatbot,
+        usage_type:
+          formData.entityKind === 'squad' ? 'workflow' : formData.usageType,
+        show_in_shortcut: formData.entityKind === 'squad' ? false : formData.showInShortcut,
+        is_global_chatbot: formData.entityKind === 'squad' ? false : formData.isGlobalChatbot,
         tags: formData.tags,
         owners: formData.owners,
         persona: formData.persona,
@@ -180,13 +231,20 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
           .split('\n')
           .map((s) => s.trim())
           .filter(Boolean),
-        output_schema: JSON.parse(formData.outputSchema || '{}'),
+        output_schema: validation.outputSchema ?? {},
       };
 
       const updated = await AgentSupabaseService.updateAgent(
         agent.id,
         updates as unknown as Parameters<typeof AgentSupabaseService.updateAgent>[1],
       );
+
+      if (formData.entityKind === 'squad') {
+        await SquadMemberSupabaseService.replaceMembers(agent.id, squadMemberIds);
+      } else {
+        await SquadMemberSupabaseService.replaceMembers(agent.id, []);
+      }
+
       const uiAgent = dbAgentToUI(updated as unknown as DBAgent);
       toast.success('✅ Agente atualizado com sucesso!');
       setIsDirty(false);
@@ -204,6 +262,10 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
   const selectedType = agentTypes.find((t) => t.id === formData.agentTypeId);
   const selectedProvider = providers.find((p) => p.slug === formData.modelProvider);
   const selectedModels = selectedProvider ? (modelsByProvider[selectedProvider.id] ?? []) : [];
+
+  const eligibleSquadMembers = allAgents.filter(
+    (a) => a.entityKind === 'agent' && a.id !== agent.id,
+  );
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -257,7 +319,12 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
                   <Input
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
+                    className={fieldErrors.name ? 'border-destructive' : ''}
+                    aria-invalid={!!fieldErrors.name}
                   />
+                  {fieldErrors.name && (
+                    <p className="mt-1 text-xs text-destructive">{fieldErrors.name}</p>
+                  )}
                 </div>
 
                 <div>
@@ -265,7 +332,12 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
                   <Input
                     value={formData.slug}
                     onChange={(e) => handleChange('slug', e.target.value)}
+                    className={fieldErrors.slug ? 'border-destructive' : ''}
+                    aria-invalid={!!fieldErrors.slug}
                   />
+                  {fieldErrors.slug && (
+                    <p className="mt-1 text-xs text-destructive">{fieldErrors.slug}</p>
+                  )}
                 </div>
 
                 <div>
@@ -318,11 +390,42 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
                   </div>
                 </div>
 
+                <div>
+                  <Label>Entidade</Label>
+                  <Select
+                    value={formData.entityKind}
+                    onValueChange={(v) => {
+                      const k = v as 'agent' | 'squad';
+                      setFormData((prev) => ({
+                        ...prev,
+                        entityKind: k,
+                        usageType: k === 'squad' ? 'workflow' : prev.usageType,
+                        showInShortcut: k === 'squad' ? false : prev.showInShortcut,
+                        isGlobalChatbot: k === 'squad' ? false : prev.isGlobalChatbot,
+                      }));
+                      setIsDirty(true);
+                      setFieldErrors({});
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="agent">Agente</SelectItem>
+                      <SelectItem value="squad">Squad</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Squad agrupa agentes; não utiliza chat de teste nesta tela.
+                  </p>
+                </div>
+
                 <div className="space-y-3">
                   <Label>Tipo de Uso</Label>
                   <Select
                     value={formData.usageType}
                     onValueChange={(v) => handleChange('usageType', v as 'chatbot' | 'workflow')}
+                    disabled={formData.entityKind === 'squad'}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -334,7 +437,7 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
                   </Select>
                 </div>
 
-                {formData.usageType === 'chatbot' && (
+                {formData.entityKind === 'agent' && formData.usageType === 'chatbot' && (
                   <div className="space-y-3 rounded-lg border p-4">
                     <div className="flex items-center justify-between">
                       <Label>Exibir no atalho</Label>
@@ -350,6 +453,46 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
                         onCheckedChange={(c) => handleChange('isGlobalChatbot', c)}
                       />
                     </div>
+                  </div>
+                )}
+
+                {formData.entityKind === 'squad' && (
+                  <div className="space-y-3 rounded-lg border p-4">
+                    <Label>Membros do squad</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Selecione agentes individuais que fazem parte deste squad.
+                    </p>
+                    {fieldErrors.squadMembers && (
+                      <p className="text-xs text-destructive">{fieldErrors.squadMembers}</p>
+                    )}
+                    {eligibleSquadMembers.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        Nenhum outro agente disponível. Crie agentes primeiro.
+                      </p>
+                    ) : (
+                      <div className="max-h-52 space-y-2 overflow-y-auto pr-1">
+                        {eligibleSquadMembers.map((a) => (
+                          <label
+                            key={a.id}
+                            className="flex cursor-pointer items-center gap-2 text-sm"
+                          >
+                            <Checkbox
+                              checked={squadMemberIds.includes(a.id)}
+                              onCheckedChange={(c) => {
+                                setIsDirty(true);
+                                setFieldErrors({});
+                                setSquadMemberIds((prev) =>
+                                  c === true
+                                    ? [...prev, a.id]
+                                    : prev.filter((id) => id !== a.id),
+                                );
+                              }}
+                            />
+                            <span>{a.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -525,8 +668,12 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
                     onChange={(e) => handleChange('outputSchema', e.target.value)}
                     placeholder='{"type": "object"}'
                     rows={5}
-                    className="font-mono text-sm"
+                    className={`font-mono text-sm ${fieldErrors.outputSchema ? 'border-destructive' : ''}`}
+                    aria-invalid={!!fieldErrors.outputSchema}
                   />
+                  {fieldErrors.outputSchema && (
+                    <p className="mt-1 text-xs text-destructive">{fieldErrors.outputSchema}</p>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>

@@ -197,6 +197,8 @@ export interface AgentConfig {
   usage_type?: 'chatbot' | 'workflow'; // Classify as chatbot (conversational) or workflow (default: 'chatbot')
   show_in_shortcut?: boolean; // Display in chatbot selector (only for chatbots)
   is_global_chatbot?: boolean; // Mark as global floating chatbot (only one per tenant)
+  /** Agente individual ou squad (migration 073) */
+  entity_kind?: 'agent' | 'squad';
 
   // Persona & Prompt
   persona?: string;
@@ -341,6 +343,8 @@ export interface AgentDiff {
 export interface CreateAgentRequest {
   name: string;
   slug: string;
+  /** agent (executor) ou squad (equipe) — padrão agent */
+  entity_kind?: 'agent' | 'squad';
   description?: string;
   agent_type?: string;
   agent_type_id?: string;

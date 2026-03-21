@@ -17,6 +17,7 @@ import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { Bot, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
+import { SquadMemberSupabaseService } from '@/services/agents/squadMemberSupabaseService';
 import type { UIAgent } from '@/lib/transformers/agent';
 import type { LmProvider } from '@/types/agents';
 import { computeAgentKpis } from '@/lib/domain/agent-rules';
@@ -35,22 +36,38 @@ interface AgentsContentProps {
   agents: UIAgent[];
   providers?: LmProvider[];
   agentTypes?: any[];
+  /** Quando embutido na aba do módulo, omitir cabeçalho principal duplicado */
+  layout?: 'page' | 'tab';
 }
 
 export function AgentsContent({
   agents: initialAgents,
   providers = [],
   agentTypes = [],
+  layout = 'page',
 }: AgentsContentProps) {
   const router = useRouter();
   const [agents, setAgents] = useState(initialAgents);
   const [selectedAgent, setSelectedAgent] = useState<UIAgent | null>(null);
   const [editingAgent, setEditingAgent] = useState<UIAgent | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [squadMemberAgents, setSquadMemberAgents] = useState<UIAgent[]>([]);
 
   useEffect(() => {
     setAgents(initialAgents);
   }, [initialAgents]);
+
+  useEffect(() => {
+    if (!selectedAgent || selectedAgent.entityKind !== 'squad') {
+      setSquadMemberAgents([]);
+      return;
+    }
+    void SquadMemberSupabaseService.listMemberIds(selectedAgent.id)
+      .then((ids) => {
+        setSquadMemberAgents(agents.filter((a) => ids.includes(a.id)));
+      })
+      .catch(() => setSquadMemberAgents([]));
+  }, [selectedAgent, agents]);
 
   const {
     filters,
@@ -112,16 +129,24 @@ export function AgentsContent({
     setEditingAgent(null);
   };
 
+  const outerClass = layout === 'page' ? 'space-y-6 p-6' : 'space-y-6';
+
   return (
-    <div className="space-y-6 p-6">
+    <div className={outerClass}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <DashboardHeader
-          title="Gestão 360° de Agentes AI"
-          subtitle="Crie, configure, monitore e gerencie seus agentes"
-        />
-        <CreateAgentDialog providers={providers} onSuccess={() => router.refresh()} />
-      </div>
+      {layout === 'page' ? (
+        <div className="flex items-center justify-between">
+          <DashboardHeader
+            title="Agentes, squads e skills"
+            subtitle="Agentes e squads: modelos e orquestração. Skills: contexto para gestão de projetos e TI."
+          />
+          <CreateAgentDialog providers={providers} onSuccess={() => router.refresh()} />
+        </div>
+      ) : (
+        <div className="flex justify-end">
+          <CreateAgentDialog providers={providers} onSuccess={() => router.refresh()} />
+        </div>
+      )}
 
       {/* KPIs */}
       {agents.length > 0 && (
@@ -232,6 +257,9 @@ export function AgentsContent({
                     <p className="text-sm text-muted-foreground">{agent.description}</p>
                   </div>
                   <div className="flex flex-wrap items-center justify-end gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {agent.entityKind === 'squad' ? '👥 Squad' : '🤖 Agente'}
+                    </Badge>
                     <Badge
                       variant={agent.usageType === 'chatbot' ? 'default' : 'secondary'}
                       className="text-xs"
@@ -272,6 +300,7 @@ export function AgentsContent({
             agent={selectedAgent}
             providers={providers}
             agentTypes={agentTypes}
+            squadMemberAgents={squadMemberAgents}
             onEdit={() => setEditingAgent(selectedAgent)}
           />
         )}
@@ -282,6 +311,7 @@ export function AgentsContent({
         agent={editingAgent}
         isOpen={!!editingAgent}
         providers={providers}
+        allAgents={agents}
         onClose={() => setEditingAgent(null)}
         onSaved={handleAgentSaved}
       />

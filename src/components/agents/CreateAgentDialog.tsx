@@ -28,6 +28,7 @@ import { AgentSupabaseService } from '@/services/agents/agentSupabaseService';
 import { AgentTypesService } from '@/services/agents/agentTypesService';
 import { LmModelsService } from '@/services/agents/lmModelsService';
 import type { CreateAgentRequest, AgentType, LmProvider, LmModel } from '@/types/agents';
+import { validateCreateAgentOrSquad360 } from '@/lib/validation/epic16-agentes-skills';
 
 interface CreateAgentDialogProps {
   providers?: LmProvider[];
@@ -56,6 +57,7 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
   } = {
     name: '',
     slug: '',
+    entity_kind: 'agent',
     description: '',
     agent_type: 'custom',
     agent_type_id: undefined,
@@ -132,19 +134,16 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
     }
   }, [formData.model_provider, formData.model_id, modelsByProvider, providers]);
 
-  // Validate form
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name?.trim()) newErrors.name = 'Nome é obrigatório';
-    if (!formData.slug?.trim()) newErrors.slug = 'Slug é obrigatório';
-    if ((formData.model_temperature ?? 0) < 0 || (formData.model_temperature ?? 0) > 2)
-      newErrors.model_temperature = 'Temperatura deve estar entre 0 e 2';
-    if ((formData.model_max_tokens ?? 0) < 1 || (formData.model_max_tokens ?? 0) > 4000)
-      newErrors.model_max_tokens = 'Max tokens deve estar entre 1 e 4000';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const result = validateCreateAgentOrSquad360({
+      name: formData.name ?? '',
+      slug: formData.slug ?? '',
+      entity_kind: formData.entity_kind ?? 'agent',
+      model_temperature: formData.model_temperature ?? 0,
+      model_max_tokens: formData.model_max_tokens ?? 0,
+    });
+    setErrors(result.fieldErrors);
+    return result.ok;
   };
 
   // Handle submit
@@ -159,7 +158,11 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
     setIsLoading(true);
     try {
       await AgentSupabaseService.createAgent(formData);
-      toast.success(`✅ Agente "${formData.name}" criado com sucesso!`);
+      toast.success(
+        formData.entity_kind === 'squad'
+          ? `✅ Squad "${formData.name}" criado! Adicione membros na edição.`
+          : `✅ Agente "${formData.name}" criado com sucesso!`,
+      );
       setOpen(false);
       setFormData(initialFormData);
       router.refresh();
@@ -174,6 +177,7 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
 
   // Auto-generate slug from name
   const handleNameChange = (value: string) => {
+    setErrors({});
     setFormData((prev) => ({
       ...prev,
       name: value,
@@ -188,14 +192,15 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <Button onClick={() => setOpen(true)} className="gap-2">
         <Plus className="h-4 w-4" />
-        Novo Agente
+        Novo agente ou squad
       </Button>
 
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>✨ Criar Novo Agente AI</DialogTitle>
+          <DialogTitle>✨ Novo agente ou squad</DialogTitle>
           <DialogDescription>
-            Preencha os detalhes do agente. Todos os campos podem ser editados depois.
+            Agente: executor com modelo e prompt. Squad: agrupa agentes (sem chat direto). Tudo editável
+            depois.
           </DialogDescription>
         </DialogHeader>
 
@@ -241,7 +246,14 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
                   id="slug"
                   placeholder="auto-gerado"
                   value={formData.slug}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                  onChange={(e) => {
+                    setErrors((e0) => {
+                      const next = { ...e0 };
+                      delete next.slug;
+                      return next;
+                    });
+                    setFormData((prev) => ({ ...prev, slug: e.target.value }));
+                  }}
                   disabled={isLoading || externalLoading}
                   className={errors.slug ? 'border-red-500' : ''}
                 />
@@ -260,6 +272,34 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
                   disabled={isLoading || externalLoading}
                   rows={3}
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="entity-kind">Tipo de registro</Label>
+                <Select
+                  value={formData.entity_kind ?? 'agent'}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      entity_kind: value as 'agent' | 'squad',
+                      usage_type: value === 'squad' ? 'workflow' : prev.usage_type,
+                      show_in_shortcut: value === 'squad' ? false : prev.show_in_shortcut,
+                      is_global_chatbot: value === 'squad' ? false : prev.is_global_chatbot,
+                    }))
+                  }
+                  disabled={isLoading || externalLoading}
+                >
+                  <SelectTrigger id="entity-kind">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="agent">Agente (executor)</SelectItem>
+                    <SelectItem value="squad">Squad (equipe de agentes)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Squads agrupam agentes na edição; não aparecem para chat de teste.
+                </p>
               </div>
 
               <div>
@@ -452,15 +492,23 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
                   max="2"
                   step="0.1"
                   value={formData.model_temperature}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    setErrors((e0) => {
+                      const next = { ...e0 };
+                      delete next.model_temperature;
+                      return next;
+                    });
                     setFormData((prev) => ({
                       ...prev,
                       model_temperature: parseFloat(e.target.value),
-                    }))
-                  }
+                    }));
+                  }}
                   disabled={isLoading || externalLoading}
                   className="w-full"
                 />
+                {errors.model_temperature && (
+                  <p className="mt-1 text-xs text-red-500">{errors.model_temperature}</p>
+                )}
               </div>
 
               <div>
@@ -472,15 +520,23 @@ export const CreateAgentDialog: React.FC<CreateAgentDialogProps> = ({
                   max="4000"
                   step="100"
                   value={formData.model_max_tokens}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    setErrors((e0) => {
+                      const next = { ...e0 };
+                      delete next.model_max_tokens;
+                      return next;
+                    });
                     setFormData((prev) => ({
                       ...prev,
-                      model_max_tokens: parseInt(e.target.value),
-                    }))
-                  }
+                      model_max_tokens: parseInt(e.target.value, 10),
+                    }));
+                  }}
                   disabled={isLoading || externalLoading}
                   className="w-full"
                 />
+                {errors.model_max_tokens && (
+                  <p className="mt-1 text-xs text-red-500">{errors.model_max_tokens}</p>
+                )}
               </div>
             </TabsContent>
 

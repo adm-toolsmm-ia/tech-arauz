@@ -57,12 +57,16 @@ export default async function ChatPage({ params, searchParams }: ChatPageProps) 
   // Fetch agent data
   const { data: agent, error: agentError } = await supabase
     .from('agents')
-    .select('id, name, slug, status')
+    .select('id, name, slug, status, entity_kind')
     .eq('id', params.id)
     .single();
 
   if (agentError || !agent) {
     notFound();
+  }
+
+  if ((agent as { entity_kind?: string }).entity_kind === 'squad') {
+    redirect('/agentes');
   }
 
   // Check if agent is published

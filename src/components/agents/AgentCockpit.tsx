@@ -16,6 +16,8 @@ interface AgentCockpitProps {
   agent: UIAgent;
   agentTypes?: AgentType[];
   providers?: LmProvider[];
+  /** Membros resolvidos (apenas para entityKind squad) */
+  squadMemberAgents?: UIAgent[];
   onEdit?: () => void;
 }
 
@@ -53,6 +55,7 @@ export const AgentCockpit: React.FC<AgentCockpitProps> = ({
   agent,
   agentTypes = [],
   providers = [],
+  squadMemberAgents = [],
   onEdit,
 }) => {
   const selectedType = useMemo(
@@ -84,9 +87,12 @@ export const AgentCockpit: React.FC<AgentCockpitProps> = ({
               {selectedType.icon_emoji} {selectedType.name}
             </Badge>
           )}
+          <Badge variant="secondary" className="text-xs">
+            {agent.entityKind === 'squad' ? '👥 Squad' : '🤖 Agente'}
+          </Badge>
         </div>
         <div className="flex gap-2">
-          {agent.status === 'published' && (
+          {agent.status === 'published' && agent.entityKind === 'agent' && (
             <Link href={`/agentes/${agent.id}/chat`}>
               <Button variant="default" size="sm" className="gap-2">
                 <MessageCircle className="size-4" />
@@ -129,7 +135,19 @@ export const AgentCockpit: React.FC<AgentCockpitProps> = ({
                 label="Tipo de Uso"
                 value={agent.usageType === 'chatbot' ? '🗨️ Chatbot' : '⚙️ Workflow'}
               />
-              {agent.usageType === 'chatbot' && (
+              {agent.entityKind === 'squad' && squadMemberAgents.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Membros do squad</p>
+                  <div className="flex flex-wrap gap-1">
+                    {squadMemberAgents.map((m) => (
+                      <Badge key={m.id} variant="outline" className="text-xs">
+                        {m.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {agent.entityKind === 'agent' && agent.usageType === 'chatbot' && (
                 <>
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Exibir no Atalho Global</p>

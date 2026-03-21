@@ -30,6 +30,8 @@ export interface DBAgent {
   model_endpoint_overrides: Record<string, unknown> | null;
   agent_type: string | null;
   agent_type_id: string | null;
+  /** agent | squad (migration 073) */
+  entity_kind?: string | null;
   // Story 7.8: Classification fields
   usage_type?: 'chatbot' | 'workflow';
   show_in_shortcut?: boolean;
@@ -60,6 +62,7 @@ export interface UIAgent {
   modelId: string;
   agentType: string;
   agentTypeId: string | null;
+  entityKind: 'agent' | 'squad';
   // Story 7.8: Classification fields
   usageType?: 'chatbot' | 'workflow';
   showInShortcut?: boolean;
@@ -114,6 +117,7 @@ export function dbAgentToUI(dbAgent: DBAgent): UIAgent {
     modelId: dbAgent.model_id,
     agentType: dbAgent.agent_type || 'custom',
     agentTypeId: dbAgent.agent_type_id,
+    entityKind: dbAgent.entity_kind === 'squad' ? 'squad' : 'agent',
     // Story 7.8: Classification fields
     usageType: dbAgent.usage_type || 'chatbot',
     showInShortcut: dbAgent.show_in_shortcut || false,

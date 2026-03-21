@@ -338,7 +338,7 @@ describe('Integration Token Encryption', () => {
 - **Constitution Article III:** Story-Driven Development
 - **ADR-001:** RLS Strategy (tenant isolation)
 - **Security Patterns:** `docs/SECURITY-PATTERNS.md` (Token Security L3)
-- **Espaider Integration:** `docs/ESPAIDER-INTEGRATION.md` (Token resolution flow)
+- **Espaider Integration:** `docs/architecture/ESPAIDER-INTEGRATION.md` (Token resolution flow)
 - **Code:** `src/lib/security/integration-token.ts` (63 LOC)
 
 ---
@@ -388,7 +388,7 @@ SELECT id, nome FROM espaider_apis WHERE token LIKE 'enc:v1:%';
 - Token fallback is part of broader sync resilience (Circuit Breaker pattern)
 - Encryption transparent to application layer
 - Security layer abstracted in `integration-token.ts` module
-- Sync flow documented in `docs/ESPAIDER-INTEGRATION.md`
+- Sync flow documented in `docs/architecture/ESPAIDER-INTEGRATION.md`
 
 ---
 

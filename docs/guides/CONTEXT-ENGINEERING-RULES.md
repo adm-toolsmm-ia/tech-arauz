@@ -84,7 +84,7 @@
 **Principle:** All AI agents must reference **ONLY** PROJECT-CURRENT-STATE.md for understanding what's deployed vs. what's to-do.
 
 **Process:**
-1. ✅ Create PROJECT-CURRENT-STATE.md at project root
+1. ✅ Create PROJECT-CURRENT-STATE.md at docs/reference/ (single source)
 2. ✅ Update when ANY EPIC status changes
 3. ✅ Keep timestamp of last update (shows freshness)
 4. ✅ Link from CLAUDE.md memory system
@@ -136,7 +136,7 @@ git commit -m "fix"
 **Structure:**
 ```
 docs/stories/
-├── PROJECT-CURRENT-STATE.md ← Single source of truth
+├── reference/PROJECT-CURRENT-STATE.md ← Single source of truth
 ├── EPIC-INDEX.md ← Index only (links to active + deprecated)
 ├── (active EPIC files only)
 └── _deprecated/stories/

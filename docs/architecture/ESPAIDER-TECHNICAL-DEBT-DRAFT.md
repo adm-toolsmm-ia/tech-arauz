@@ -5,7 +5,7 @@
 **Date:** 2026-03-19
 **Status:** DRAFT for Phase 5-6 Review
 **References:**
-- Phase 1: `docs/ESPAIDER-INTEGRATION.md` (System Architecture)
+- Phase 1: `docs/architecture/ESPAIDER-INTEGRATION.md` (System Architecture)
 - Phase 2: `docs/architecture/ESPAIDER-DATABASE-SCHEMA.md` (Database Analysis)
 - Phase 3: `docs/architecture/ESPAIDER-FRONTEND-SPEC.md` (Frontend Assessment)
 

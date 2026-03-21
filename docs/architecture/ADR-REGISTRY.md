@@ -708,6 +708,32 @@ colors: {
 
 ---
 
+## ADR-015: Agentes, Squads e Skills de Projeto — Modelo de Contexto
+
+**Decision:** Usar `agents.entity_kind` (`agent` | `squad`) com junção `agent_squad_members`; skills de projeto em `project_skills` + anexos `skill_documents`; vínculo futuro projeto↔skill via tabela de junção dedicada.
+
+**Status:** Aceito (2026-03-21)
+
+**Rationale:**
+
+- **Separação executor vs contexto:** Skills não pertencem ao mesmo agregado que o executor LLM; evoluem e reutilizam sem misturar prompts de agente com catálogo de playbooks.
+- **Squads na tabela `agents`:** Reaproveita RLS, UX e padrões já existentes; discriminação explícita por `entity_kind`.
+- **Documentos filhos:** `skill_documents` permite anexar textos extraídos ou colados sem inflar uma única coluna blob.
+
+**Consequences:**
+
+- **Positivo:** Modelo normalizado, extensível com `context_metadata` JSON e slugs únicos por tenant.
+- **Atenção:** Queries e UI devem sempre filtrar `entity_kind`; validação de membros do squad na aplicação até eventual trigger.
+
+**Alternatives Considered:**
+
+- Skills embutidas em `agents` — rejeitado (acoplamento).
+- Squad como entidade totalmente separada de `agents` — rejeitado (duplicação de governança).
+
+**Implementation:** `docs/architecture/ADR-015-agentes-skills-squads-context-model.md`, migration `073_agent_entity_kind_skills_squads.sql`.
+
+---
+
 ## Decision Evolution Process
 
 As the project grows, ADRs may be:

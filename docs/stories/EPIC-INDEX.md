@@ -517,6 +517,17 @@ docs/prd/
 
 ---
 
+## EPIC 16: Agentes, Skills e governança AI (gestão de projetos)
+
+**Status:** Ativo (documentação + backlog pós-PRD)  
+**Início:** 2026-03-21  
+
+**Documentos:** [epic-16-agentes-skills-ai-governance.md](./epic-16-agentes-skills-ai-governance.md) · [Story 16.1](./16.1-aiox-documentation-baseline-agentes-skills.story.md) · [Backlog 16.x](./STORY-BACKLOG-16-agentes-skills-post-prd.md)
+
+**Produto:** [Brief](../product/agentes-skills-squads-context-brief.md) · [PRD](../prd/PRD-AGENTES-SKILLS-SQUADS-BROWNFIELD.md) · [ADR-015](../architecture/ADR-015-agentes-skills-squads-context-model.md)
+
+---
+
 *AIOX Brownfield Discovery — FASE 10: Complete Implementation Planning*
 *Created: 2026-03-07*
 *Status: Ready for Story Creation & Execution*

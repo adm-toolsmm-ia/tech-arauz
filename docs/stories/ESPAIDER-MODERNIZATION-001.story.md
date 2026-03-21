@@ -270,7 +270,7 @@ when API contract changes. Zero breaking changes to existing code.
 ## References
 
 - **Zod Docs:** https://zod.dev
-- **API Contract:** `docs/ESPAIDER-INTEGRATION.md#api-endpoints`
+- **API Contract:** `docs/architecture/ESPAIDER-INTEGRATION.md#api-endpoints`
 - **Next Story:** ESPAIDER-MODERNIZATION-002 (use schemas in handlers)
 - **Technical Debt Assessment:** Section 8.2 (Type Safety improvements)
 

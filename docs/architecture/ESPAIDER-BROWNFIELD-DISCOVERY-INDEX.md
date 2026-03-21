@@ -14,7 +14,7 @@ These three documents form the foundation of the discovery process:
 
 | Phase | Document | Purpose | Key Findings |
 |-------|----------|---------|--------------|
-| **1** | `docs/ESPAIDER-INTEGRATION.md` | System Architecture Analysis | Token resolution chain, sync orchestration, circuit breaker, logging |
+| **1** | `docs/architecture/ESPAIDER-INTEGRATION.md` | System Architecture Analysis | Token resolution chain, sync orchestration, circuit breaker, logging |
 | **2** | `docs/architecture/ESPAIDER-DATABASE-SCHEMA.md` | Database Schema Analysis | 11 tables, RLS compliance 95% (fixed Mig. 072), performance baseline |
 | **3** | `docs/architecture/ESPAIDER-FRONTEND-SPEC.md` | Frontend Impact Assessment | 4 user workflows, 5 pain points identified, 102-hour modernization needed |
 

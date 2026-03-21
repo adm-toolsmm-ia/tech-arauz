@@ -1,51 +1,98 @@
 # Tech Arauz Documentation — AIOX 10/10
 
-**Version:** 0.2.3+ (Production Live)
+**Version:** 0.2.4+ (Production Live)
 **Framework:** Synkra AIOX v1.0.0
-**Last Updated:** 2026-03-15
+**Last Updated:** 2026-03-21
 **Status:** ✅ Organized & Current
 
 ---
 
-## 📚 Documentation Structure
+## 🧭 Composer Documentation Pack
 
-This directory contains **authoritative documentation** for Tech Arauz following AIOX 10/10 standards (code-to-doc verified, no invented content).
+Para gerar ou atualizar documentação com **zero invenção** e engenharia de contexto 10/10:
+
+- **[engineering/COMPOSER-DOCUMENTATION-PACK.md](engineering/COMPOSER-DOCUMENTATION-PACK.md)** — Global Contract, prompts por artefacto, checklist anti-alucinação
+- **[engineering/DOCUMENTATION-SOURCES.md](engineering/DOCUMENTATION-SOURCES.md)** — Matriz doc → fontes obrigatórias + ordem de leitura
+
+Use estes documentos como entrada para sessões Composer antes de produzir qualquer artefacto.
+
+---
+
+## 📚 Estrutura de Documentação (Padrão AIOX)
+
+Documentação organizada em pastas por domínio para engenharia de contexto AI.
 
 ### 📐 Architecture & Design (`architecture/`)
 
-Technical decisions, system design, and ADRs:
+Decisões técnicas, design de sistema, integrações:
 
-- **ADR-001: RLS Strategy** — Row-level security, tenant isolation, helper functions
-- **ADR-002: Token Fallback Chain** — AES-256-GCM encryption, token resolution
-- **ADR-004: Feature Folders** — Feature-based structure, shared vs. specific code
-- **SECURITY-PATTERNS.md** — 4-layer security, RBAC, authentication, error handling
-- **ESPAIDER-INTEGRATION.md** — Espaider BI sync, circuit breaker, UPSERT idempotency
-- **DATA-FLOW-DIAGRAMS.md** — Read/Write/Sync flows with timing, error paths
+- **ADR Registry** — [architecture/ADR-REGISTRY.md](architecture/ADR-REGISTRY.md)
+- **ARCHITECTURE-OVERVIEW** — [architecture/ARCHITECTURE-OVERVIEW.md](architecture/ARCHITECTURE-OVERVIEW.md)
+- **Module Standards** — [architecture/module-standards.md](architecture/module-standards.md)
+- **ESPAIDER-INTEGRATION** — [architecture/ESPAIDER-INTEGRATION.md](architecture/ESPAIDER-INTEGRATION.md)
+- **DATA-FLOW-DIAGRAMS** — [architecture/DATA-FLOW-DIAGRAMS.md](architecture/DATA-FLOW-DIAGRAMS.md)
+- **SECURITY-PATTERNS** — [architecture/SECURITY-PATTERNS.md](architecture/SECURITY-PATTERNS.md)
+- **Build & Deploy Gates** — [architecture/build-deploy-gates.md](architecture/build-deploy-gates.md)
 
-### 📖 Guides & How-To (`guides/`)
+### 📋 ADRs (`adr/`)
 
-Development guides, setup instructions, and learning resources:
+Architectural Decision Records:
 
-- **DEVELOPMENT-SETUP.md** — Local development environment, npm scripts, troubleshooting
-- **TESTING-STRATEGY.md** — Testing pyramid, Vitest/Jest-axe/Cypress, 92% coverage
-- **CONTEXT-ENGINEERING-RULES.md** — AIOX framework rules, agent authority, gates
+- **ADR-001: RLS Strategy** — [adr/ADR-001-RLS-STRATEGY.md](adr/ADR-001-RLS-STRATEGY.md)
+- **ADR-002: Token Fallback Chain** — [adr/ADR-002-TOKEN-FALLBACK-CHAIN.md](adr/ADR-002-TOKEN-FALLBACK-CHAIN.md)
+- **ADR-004: Feature Folders** — [adr/ADR-004-FEATURE-FOLDERS.md](adr/ADR-004-FEATURE-FOLDERS.md)
+- **ADR-005: Organization Architecture** — [adr/ADR-005-organization-architecture.md](adr/ADR-005-organization-architecture.md)
 
-### 🔍 Reference & API (`reference/`)
+### 📖 Guides (`guides/`)
 
-API documentation, technical reference, and implementation guides:
+Setup, testes, regras de contexto:
 
-- **API-DOCUMENTATION.md** — 21 endpoints, proxy patterns, auth flow, error handling
-- **SERVER-ACTIONS-GUIDE.md** — 10+ server actions, auth patterns, form state
-- **STATE-MANAGEMENT.md** — React Query, Zustand, form state layers (3-layer architecture)
-- **COMPONENTS-CATALOG.md** — UI components, layout, common patterns
-- **DATABASE-SCHEMA.md** — Database schema, RLS policies, migrations
+- **DEVELOPMENT-SETUP** — [guides/DEVELOPMENT-SETUP.md](guides/DEVELOPMENT-SETUP.md)
+- **TESTING-STRATEGY** — [guides/TESTING-STRATEGY.md](guides/TESTING-STRATEGY.md)
+- **CONTEXT-ENGINEERING-RULES** — [guides/CONTEXT-ENGINEERING-RULES.md](guides/CONTEXT-ENGINEERING-RULES.md)
+- **INTEGRATION-GUIDE** — [guides/INTEGRATION-GUIDE.md](guides/INTEGRATION-GUIDE.md)
+- **TROUBLESHOOTING-FAQ** — [guides/v0.2.4-TROUBLESHOOTING-FAQ.md](guides/v0.2.4-TROUBLESHOOTING-FAQ.md)
+- **AI-CONTEXT-ENGINEERING** — [guides/AI-CONTEXT-ENGINEERING.md](guides/AI-CONTEXT-ENGINEERING.md)
+- **BOOTSTRAP-CUSTOMIZATION** — [guides/BOOTSTRAP-CUSTOMIZATION.md](guides/BOOTSTRAP-CUSTOMIZATION.md)
+
+### 🔍 Reference (`reference/`)
+
+Referência técnica, versões, API, estado:
+
+- **PROJECT-CURRENT-STATE** — [reference/PROJECT-CURRENT-STATE.md](reference/PROJECT-CURRENT-STATE.md) — Fonte única para decisões (deployed vs to-do)
+- **VERSION-SNAPSHOT** — [reference/VERSION-SNAPSHOT.md](reference/VERSION-SNAPSHOT.md) — Versões e config atual
+- **API-DOCUMENTATION** — [reference/API-DOCUMENTATION.md](reference/API-DOCUMENTATION.md)
+- **SERVER-ACTIONS-GUIDE** — [reference/SERVER-ACTIONS-GUIDE.md](reference/SERVER-ACTIONS-GUIDE.md)
+- **STATE-MANAGEMENT** — [reference/STATE-MANAGEMENT.md](reference/STATE-MANAGEMENT.md)
+- **COMPONENTS-CATALOG** — [reference/COMPONENTS-CATALOG.md](reference/COMPONENTS-CATALOG.md)
+- **DATABASE-SCHEMA** — [reference/DATABASE-SCHEMA.md](reference/DATABASE-SCHEMA.md)
+- **TECH-STACK** — [framework/TECH-STACK.md](framework/TECH-STACK.md)
+- **v0.2.4 API/Schema refs** — [reference/v0.2.4-*](reference/)
+
+### 📋 PRD & Product (`prd/`)
+
+Requisitos e capacidades atuais:
+
+- **PRD-BROWFIELD-CAPABILITIES** — [prd/PRD-BROWFIELD-CAPABILITIES.md](prd/PRD-BROWFIELD-CAPABILITIES.md) — Mapa de capacidades por rota
+- **EPIC-11-COMPLETE-FEATURE-GUIDE** — [prd/v0.2.4-EPIC-11-COMPLETE-FEATURE-GUIDE.md](prd/v0.2.4-EPIC-11-COMPLETE-FEATURE-GUIDE.md)
+- **technical-debt-assessment** — [prd/technical-debt-assessment.md](prd/technical-debt-assessment.md)
+
+### 🔧 Engineering (`engineering/`)
+
+Build, deploy, pack Composer:
+
+- **COMPOSER-DOCUMENTATION-PACK** — [engineering/COMPOSER-DOCUMENTATION-PACK.md](engineering/COMPOSER-DOCUMENTATION-PACK.md)
+- **DOCUMENTATION-SOURCES** — [engineering/DOCUMENTATION-SOURCES.md](engineering/DOCUMENTATION-SOURCES.md)
+- **OPERATIONS-REFERENCE** — [engineering/OPERATIONS-REFERENCE.md](engineering/OPERATIONS-REFERENCE.md) — Scripts npm, env, Supabase
+- **DEPLOYMENT-GUIDE** — [engineering/DEPLOYMENT-GUIDE.md](engineering/DEPLOYMENT-GUIDE.md)
+- **OPERATIONAL-RUNBOOK** — [engineering/OPERATIONAL-RUNBOOK.md](engineering/OPERATIONAL-RUNBOOK.md)
 
 ### 📖 User Stories (`stories/`)
 
-Development stories and epics (separate folder):
+Development stories and epics:
 
-- EPIC-5, 6, 7, 8, 9, 10 (completed)
-- Story tracking and implementation details
+- [docs/stories/EPIC-INDEX.md](stories/EPIC-INDEX.md)
+- [reference/PROJECT-CURRENT-STATE.md](reference/PROJECT-CURRENT-STATE.md)
 
 ---
 
@@ -53,21 +100,23 @@ Development stories and epics (separate folder):
 
 **I'm new and want to...**
 
-- ✅ **Set up local development** → `guides/DEVELOPMENT-SETUP.md`
-- ✅ **Understand the architecture** → `architecture/ADR-001`, `ADR-002`, `ADR-004`
-- ✅ **Write API code** → `reference/API-DOCUMENTATION.md`
-- ✅ **Implement a feature** → `guides/CONTEXT-ENGINEERING-RULES.md` then `stories/`
-- ✅ **Test my code** → `guides/TESTING-STRATEGY.md`
-- ✅ **Understand security** → `architecture/SECURITY-PATTERNS.md`
-- ✅ **Work with Espaider** → `architecture/ESPAIDER-INTEGRATION.md`
+- ✅ **Set up local development** → [guides/DEVELOPMENT-SETUP.md](guides/DEVELOPMENT-SETUP.md)
+- ✅ **Understand the architecture** → [architecture/ARCHITECTURE-OVERVIEW.md](architecture/ARCHITECTURE-OVERVIEW.md), [adr/ADR-001-RLS-STRATEGY.md](adr/ADR-001-RLS-STRATEGY.md)
+- ✅ **Generate/update docs** → [engineering/COMPOSER-DOCUMENTATION-PACK.md](engineering/COMPOSER-DOCUMENTATION-PACK.md)
+- ✅ **Implement a feature** → [guides/CONTEXT-ENGINEERING-RULES.md](guides/CONTEXT-ENGINEERING-RULES.md) then [stories/](stories/)
+- ✅ **Test my code** → [guides/TESTING-STRATEGY.md](guides/TESTING-STRATEGY.md)
+- ✅ **Understand security** → [architecture/SECURITY-PATTERNS.md](architecture/SECURITY-PATTERNS.md), [governance/SECURITY-STANDARDS.md](governance/SECURITY-STANDARDS.md)
+- ✅ **Work with Espaider** → [architecture/ESPAIDER-INTEGRATION.md](architecture/ESPAIDER-INTEGRATION.md)
 
 **I'm working on...**
 
-- 🔨 **Backend/API** → `reference/API-DOCUMENTATION.md` + `reference/SERVER-ACTIONS-GUIDE.md`
-- 🎨 **Frontend** → `reference/STATE-MANAGEMENT.md` + `reference/COMPONENTS-CATALOG.md`
-- 🗄️ **Database** → `reference/DATABASE-SCHEMA.md` + `architecture/ADR-001-RLS-STRATEGY.md`
-- 🔐 **Security** → `architecture/SECURITY-PATTERNS.md`
-- 🧪 **Testing** → `guides/TESTING-STRATEGY.md`
+- 🔨 **Backend/API** → [reference/SERVER-ACTIONS-GUIDE.md](reference/SERVER-ACTIONS-GUIDE.md)
+- 🎨 **Frontend** → [reference/STATE-MANAGEMENT.md](reference/STATE-MANAGEMENT.md)
+- 🗄️ **Database** → [architecture/data/schema.prisma](architecture/data/schema.prisma), [adr/ADR-001-RLS-STRATEGY.md](adr/ADR-001-RLS-STRATEGY.md)
+- 📋 **Capabilities (PRD)** → [prd/PRD-BROWFIELD-CAPABILITIES.md](prd/PRD-BROWFIELD-CAPABILITIES.md)
+- 🔧 **Ops & Scripts** → [engineering/OPERATIONS-REFERENCE.md](engineering/OPERATIONS-REFERENCE.md)
+- 🔐 **Security** → [architecture/SECURITY-PATTERNS.md](architecture/SECURITY-PATTERNS.md)
+- 🧪 **Testing** → [guides/TESTING-STRATEGY.md](guides/TESTING-STRATEGY.md)
 
 ---
 
@@ -75,11 +124,11 @@ Development stories and epics (separate folder):
 
 | Category | Documents | Status | Last Updated |
 |----------|-----------|--------|---|
-| Architecture & ADRs | 6 docs | ✅ Current | 2026-03-15 |
-| Guides & How-To | 3 docs | ✅ Current | 2026-03-15 |
-| Reference & API | 5 docs | ✅ Current | 2026-03-15 |
-| Stories & Epics | 20+ docs | ✅ Current | 2026-03-12 |
-| **TOTAL** | **34 docs** | **✅ AIOX 10/10** | **2026-03-15** |
+| Composer Pack & Sources | 2 docs | ✅ Current | 2026-03-21 |
+| Architecture & ADRs | 8+ docs | ✅ Current | 2026-03-21 |
+| Guides & How-To | 5+ docs | ✅ Current | 2026-03-21 |
+| Reference (root + framework) | 5+ docs | ✅ Current | 2026-03-21 |
+| Stories & Epics | 50+ docs | ✅ Current | 2026-03-21 |
 
 ---
 
@@ -95,15 +144,15 @@ All documentation follows **AIOX 10/10 standards**:
 
 ---
 
-## 🗂️ Archived Documentation
+## 🗂️ Archived Documentation (`_deprecated/`)
 
-Historical documents (deployment reports, planning docs, old audits) are preserved in `_deprecated/` for reference:
+Documentos históricos preservados para referência — **não usar para engenharia de contexto atual**:
 
-- `_deprecated/reports/` — Historical deployment & execution reports
-- `_deprecated/planning/` — Old planning documents & roadmaps
-- `_deprecated/audits/` — Past technical audits & assessments
+- `_deprecated/roadmaps-and-plans/` — Planos de documentação, roadmaps, análises pendentes
+- `_deprecated/audits-and-reports/` — Audits operacionais, reports de modernização Espaider, status quick-lookup
+- `_deprecated/reports/` — Deployment reports, sprint summaries
 
-*These are kept for historical context only and should not be referenced for current development.*
+*Para decisões e estado atual, usar sempre [reference/PROJECT-CURRENT-STATE.md](reference/PROJECT-CURRENT-STATE.md).*
 
 ---
 
@@ -119,8 +168,9 @@ Historical documents (deployment reports, planning docs, old audits) are preserv
 
 ### Adding a New Document
 
-1. Create doc in appropriate folder (`architecture/`, `guides/`, or `reference/`)
-2. Include AIOX frontmatter:
+1. Create doc in appropriate folder (`architecture/`, `adr/`, `guides/`, `reference/`, `prd/`, `engineering/`)
+2. Use [engineering/DOCUMENTATION-SOURCES.md](engineering/DOCUMENTATION-SOURCES.md) for required sources when documenting code
+3. Include AIOX frontmatter:
    ```markdown
    # Title
    **Status:** ACCEPTED
@@ -136,9 +186,10 @@ Historical documents (deployment reports, planning docs, old audits) are preserv
 ## 📞 Contact & Questions
 
 - **Architecture questions** → @architect (Aria) via `docs/architecture/`
-- **Implementation questions** → @dev (Dex) via `docs/guides/` or `docs/reference/`
-- **Database questions** → @data-engineer (Dara) via `docs/reference/DATABASE-SCHEMA.md`
+- **Implementation questions** → @dev (Dex) via `docs/guides/` or root docs
+- **Database questions** → @data-engineer (Dara) via `docs/architecture/data/`
 - **Testing questions** → @qa (Quinn) via `docs/guides/TESTING-STRATEGY.md`
+- **Documentation generation** → [engineering/COMPOSER-DOCUMENTATION-PACK.md](engineering/COMPOSER-DOCUMENTATION-PACK.md)
 
 ---
 
@@ -146,8 +197,8 @@ Historical documents (deployment reports, planning docs, old audits) are preserv
 
 | Version | Date | Change |
 |---------|------|--------|
+| **0.2.4+** | 2026-03-21 | Reorganização AIOX: reference/, prd/, adr/, guides/; docs Composer pack em engineering/ |
 | **0.2.3+** | 2026-03-15 | Reorganized documentation per AIOX 10/10, archived old docs, created README |
-| **0.2.3** | 2026-03-12 | Initial AIOX 10/10 documentation created (16 artifacts) |
 
 ---
 

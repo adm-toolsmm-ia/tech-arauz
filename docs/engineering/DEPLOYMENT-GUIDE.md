@@ -1,7 +1,7 @@
 # Deployment Guide — Vercel, Migrations, Rollback (AIOX 10/10)
 
-**Version:** 0.2.3 (Production Live)
-**Last Updated:** 2026-03-14
+**Version:** 0.2.4 (EPIC 11 Deployment Hardened)
+**Last Updated:** 2026-05-09
 **Status:** Authoritative
 **Platform:** Vercel + Supabase
 
@@ -47,12 +47,24 @@ gh pr create && gh pr merge
 If schema changes:
 
 ```bash
-# Apply migrations
+# Apply migrations in the validated EPIC 11 order
 npm run db:apply
 
 # Verify
 supabase migration list
 ```
+
+Validated deployment chain:
+
+```yaml
+066 → 067 → 068 → 069 → 070 → 077 → (071)
+```
+
+Notes:
+
+- `077_harden_org_tenant_integrity.sql` is the required post-070 hardening step.
+- Apply `077` before any optional `071_add_embeddings_to_knowledge_entries.sql` embeddings step.
+- Do not run `071` until the hardening migration and its validation pass.
 
 ### Step 4: Verify Deployment
 
@@ -65,6 +77,24 @@ curl https://tech-arauz.vercel.app/api/health
 # - View projects
 # - Sync Espaider
 ```
+
+### Step 5: Supabase Validation
+
+After the migration chain is applied, verify the hardened schema in Supabase:
+
+```bash
+# Confirm the applied migration order includes the hardening step
+supabase migration list
+
+# Confirm the hardened migration is present and successful
+# 077_harden_org_tenant_integrity.sql
+```
+
+Validation should confirm:
+
+- `066 → 067 → 068 → 069 → 070 → 077` completed successfully
+- RLS remains enabled on the EPIC 11 relation tables hardened by `077`
+- Optional `071` embeddings is still pending unless explicitly approved
 
 ---
 
@@ -82,6 +112,13 @@ git push origin main
 # (Vercel auto-deploys)
 ```
 
+**If the issue is in migration 077 hardening:**
+
+- Stop before applying any optional `071` embeddings step.
+- Sanitize legacy `org_*` relation rows that violate tenant integrity.
+- Re-run `supabase migration list` to confirm `077_harden_org_tenant_integrity.sql` is the last required EPIC 11 migration applied.
+- Only proceed once Supabase validation confirms the hardened migration and RLS state are clean.
+
 ---
 
 ## Versioning
@@ -90,7 +127,7 @@ git push origin main
 - **Minor (0.x.0):** New features
 - **Patch (0.0.x):** Bug fixes
 
-Current: **v0.2.3** (3 patches on 0.2)
+Current: **v0.2.4** (EPIC 11 hardened deployment sequence)
 
 ---
 
@@ -100,8 +137,8 @@ Current: **v0.2.3** (3 patches on 0.2)
 
 ```
 NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_KEY
-SUPABASE_TOKEN (service role)
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
 OPENROUTER_API_KEY
 DATABASE_URL
 ```
@@ -110,4 +147,4 @@ DATABASE_URL
 
 **Authored by:** Claude Code (Haiku 4.5)
 **Framework:** Synkra AIOX v1.0.0
-**Last Reviewed:** 2026-03-14
+**Last Reviewed:** 2026-05-09

@@ -39,7 +39,7 @@ $$ LANGUAGE plpgsql;
 -- TEST SUITE START
 -- =============================================================================
 
-SELECT plan(55); -- Total number of tests
+SELECT plan(65); -- Total number of tests
 
 -- =============================================================================
 -- TEST GROUP 1: PROJECTS TABLE (10 tests)
@@ -600,6 +600,118 @@ SELECT ok(
 );
 
 -- =============================================================================
+-- TEST GROUP 10: ORG ENRICHMENT HARDENING (10 tests)
+-- =============================================================================
+
+-- Test 10.1: org_activity_systems has tenant-aware RLS
+SELECT ok(
+    (
+        SELECT rls_enabled AND tenant_isolation_found AND total_policies >= 4
+        FROM public.audit_rls_policy('org_activity_systems')
+    ),
+    'Test 10.1: org_activity_systems has tenant-aware RLS'
+);
+
+-- Test 10.2: org_process_slas has tenant-aware RLS
+SELECT ok(
+    (
+        SELECT rls_enabled AND tenant_isolation_found AND total_policies >= 4
+        FROM public.audit_rls_policy('org_process_slas')
+    ),
+    'Test 10.2: org_process_slas has tenant-aware RLS'
+);
+
+-- Test 10.3: org_process_metrics has tenant-aware RLS
+SELECT ok(
+    (
+        SELECT rls_enabled AND tenant_isolation_found AND total_policies >= 4
+        FROM public.audit_rls_policy('org_process_metrics')
+    ),
+    'Test 10.3: org_process_metrics has tenant-aware RLS'
+);
+
+-- Test 10.4: org_role_definitions has tenant-aware RLS
+SELECT ok(
+    (
+        SELECT rls_enabled AND tenant_isolation_found AND total_policies >= 4
+        FROM public.audit_rls_policy('org_role_definitions')
+    ),
+    'Test 10.4: org_role_definitions has tenant-aware RLS'
+);
+
+-- Test 10.5: org_role_permissions has tenant-aware RLS
+SELECT ok(
+    (
+        SELECT rls_enabled AND tenant_isolation_found AND total_policies >= 4
+        FROM public.audit_rls_policy('org_role_permissions')
+    ),
+    'Test 10.5: org_role_permissions has tenant-aware RLS'
+);
+
+-- Test 10.6: org_activity_templates has tenant-aware RLS
+SELECT ok(
+    (
+        SELECT rls_enabled AND tenant_isolation_found AND total_policies >= 4
+        FROM public.audit_rls_policy('org_activity_templates')
+    ),
+    'Test 10.6: org_activity_templates has tenant-aware RLS'
+);
+
+-- Test 10.7: org_process_versions is append-only with tenant-aware RLS
+SELECT ok(
+    (
+        SELECT rls_enabled AND tenant_isolation_found AND total_policies >= 2
+        FROM public.audit_rls_policy('org_process_versions')
+    ),
+    'Test 10.7: org_process_versions is append-only with tenant-aware RLS'
+);
+
+-- Test 10.8: org_process_systems has tenant_id column and tenant-aware RLS
+SELECT ok(
+    EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'org_process_systems'
+          AND column_name = 'tenant_id'
+    ) AND (
+        SELECT rls_enabled AND tenant_isolation_found AND total_policies >= 4
+        FROM public.audit_rls_policy('org_process_systems')
+    ),
+    'Test 10.8: org_process_systems has tenant_id column and tenant-aware RLS'
+);
+
+-- Test 10.9: org_activity_documents has tenant_id column and tenant-aware RLS
+SELECT ok(
+    EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'org_activity_documents'
+          AND column_name = 'tenant_id'
+    ) AND (
+        SELECT rls_enabled AND tenant_isolation_found AND total_policies >= 4
+        FROM public.audit_rls_policy('org_activity_documents')
+    ),
+    'Test 10.9: org_activity_documents has tenant_id column and tenant-aware RLS'
+);
+
+-- Test 10.10: RLS audit summary includes the hardened org tables
+SELECT ok(
+    (SELECT COUNT(*) FROM public.rls_audit_summary
+     WHERE table_name IN (
+         'org_activity_systems',
+         'org_process_slas',
+         'org_process_metrics',
+         'org_role_definitions',
+         'org_role_permissions',
+         'org_activity_templates',
+         'org_process_versions',
+         'org_process_systems',
+         'org_activity_documents'
+     )) = 9,
+    'Test 10.10: rls_audit_summary includes all hardened org tables'
+);
+
+-- =============================================================================
 -- TEST SUMMARY AND FINALIZATION
 -- =============================================================================
 
@@ -615,8 +727,8 @@ BEGIN
     RAISE NOTICE '=============================================================================';
     RAISE NOTICE 'RLS POLICIES TEST SUITE SUMMARY - PGTAP EXECUTION';
     RAISE NOTICE '=============================================================================';
-    RAISE NOTICE 'Total Test Cases: 55 (exceeds requirement of 50+) ✅';
-    RAISE NOTICE 'Test Groups: 9';
+    RAISE NOTICE 'Total Test Cases: 65 (exceeds requirement of 50+) ✅';
+    RAISE NOTICE 'Test Groups: 10';
     RAISE NOTICE 'Coverage:';
     RAISE NOTICE '  - Group 1 (Projects): 10 tests';
     RAISE NOTICE '  - Group 2 (Project Schedules): 8 tests';
@@ -627,6 +739,7 @@ BEGIN
     RAISE NOTICE '  - Group 7 (Profiles): 4 tests';
     RAISE NOTICE '  - Group 8 (Service Role Bypass): 3 tests';
     RAISE NOTICE '  - Group 9 (Audit & Compliance): 3 tests';
+    RAISE NOTICE '  - Group 10 (Org Enrichment Hardening): 10 tests';
     RAISE NOTICE '';
     RAISE NOTICE 'Acceptance Criteria Mapping:';
     RAISE NOTICE '  AC-001: 8+ tables with RLS policies ✅';

@@ -711,6 +711,8 @@ Layer 3: Agent Decision-Making
 - Knowledge base: updated on-demand
 - SLA thresholds: < 1 hour old
 
+**Runtime fallback note:** when the FastAPI AI service is unavailable, the Next.js chat route injects a tenant-scoped organizational snapshot via `src/lib/ai/organization-context.ts` and `buildAgentOrganizationContext()`. The snapshot is limited by design to recent areas, nuclei, processes, routines, and activities so the fallback stays safe and bounded.
+
 ---
 
 ### 11.2 Role Context Injection

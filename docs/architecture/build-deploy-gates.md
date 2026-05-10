@@ -361,6 +361,8 @@ WHERE table_schema = 'public'
   └─ Seed: 9 default roles injected per tenant
 - 070: org_activity_templates + org_process_versions
   └─ Audit trail: append-only versioning
+- 077: org_process_systems + org_activity_documents hardening
+  └─ tenant_id backfill + same-tenant integrity checks
 - 071: org_knowledge_entries.embedding (prerequisite: pgvector extension)
   └─ Index: IVFFlat with vector_cosine_ops
 ```
@@ -374,10 +376,11 @@ WHERE table_schema = 'public'
 | Migration 068 fails | Duplicate UNIQUE constraint | Check if `org_process_slas` already exists. Use `IF NOT EXISTS`. |
 | Migration 069 fails | Seed INSERT conflicts | Tenants table mismatch. Verify all tenants have entries. |
 | Migration 070 fails | Column type mismatch | `org_activity_complexity` enum may not exist. Check base schema. |
+| Migration 077 fails | Cross-tenant integrity violation | Sanitize legacy org relation rows before applying hardening. |
 | Migration 071 fails | pgvector extension not found | Enable: `CREATE EXTENSION IF NOT EXISTS vector;` |
 
 **Gate Passes When:**
-- ✅ All 6 migrations (066-071) show status=success
+- ✅ All hardening migrations (066-070, 077) show status=success
 - ✅ All `org_*` tables have RLS enabled = true
 - ✅ `embedding_batch_log` table exists (071)
 - ✅ IVFFlat index created on `embedding` column
@@ -416,6 +419,7 @@ WHERE schemaname = 'public'
     'org_process_slas', 'org_process_metrics',
     'org_role_definitions', 'org_role_permissions',
     'org_activity_templates', 'org_process_versions',
+    'org_process_systems', 'org_activity_documents',
     'org_knowledge_entries', 'embedding_batch_log'
   )
 ORDER BY tablename, policyname;

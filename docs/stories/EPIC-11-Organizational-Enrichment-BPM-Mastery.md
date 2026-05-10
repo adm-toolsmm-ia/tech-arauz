@@ -59,7 +59,7 @@
 - [11.10] Create audit logging for responsible party changes
 
 ### Phase 3: Frontend Synchronization (Weeks 3-4)
-- [11.11] Integrate ResponsibleRolesInput in ActivityFormSheet
+- [11.11] Integrate ResponsibleRolesInput in OrgEntityFormSheet
 - [11.12] Add Activity-System management UI (modal/sheet)
 - [11.13] Display SLA metrics in ProcessCockpit360
 - [11.14] Add bulk edit/delete operations
@@ -471,7 +471,7 @@ CREATE TABLE IF NOT EXISTS public.org_process_versions (
 - [ ] Validation: no duplicates, no empty entries
 - [ ] Responsive: mobile-friendly, stacks on small screens
 - [ ] Accessibility: ARIA labels, keyboard navigation (WCAG AA)
-- [ ] Integrated in ActivityFormSheet (NEW)
+- [ ] Integrated in OrgEntityFormSheet (NEW)
 - [ ] Integrated in RoutineFormSheet (existing)
 - [ ] Role registry extensible (can add new roles via admin panel)
 - [ ] Unit tests: tag add/remove, filtering, validation
@@ -547,7 +547,7 @@ Responsible Roles Input:
 #### File List
 
 - `src/components/organization/ResponsibleRolesInput.tsx` (NEW)
-- `src/components/organization/ActivityFormSheet.tsx` (MODIFIED — integrate component)
+- `src/components/organization/OrgEntityFormSheet.tsx` (MODIFIED — integrates component)
 - `src/components/organization/RoutineFormSheet.tsx` (MODIFIED — ensure integrated)
 - `src/components/organization/__tests__/ResponsibleRolesInput.test.tsx` (NEW)
 - `src/stories/organization/ResponsibleRolesInput.stories.tsx` (NEW)
@@ -634,7 +634,7 @@ export async function updateActivityResponsibleRolesAction(
 - [ ] Unit: Tenant isolation enforced (can't modify other tenant)
 - [ ] Unit: Audit logging works
 - [ ] Unit: Revalidation triggered
-- [ ] Integration: Full flow with ActivityFormSheet
+- [ ] Integration: Full flow with OrgEntityFormSheet
 - [ ] Error handling: Invalid activityId, unauthorized user
 
 #### File List

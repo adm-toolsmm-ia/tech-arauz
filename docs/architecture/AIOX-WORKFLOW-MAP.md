@@ -230,7 +230,7 @@ Score: 10/10 → GO ✅
 
 Story 11.11 validation (Phase 3, frontend):
 ```
-[ ✅ ] Title: Clear (ResponsibleRolesInput in ActivityFormSheet)
+[ ✅ ] Title: Clear (ResponsibleRolesInput in OrgEntityFormSheet)
 [ ⚠️ ] AC: "Add autocomplete tagging" — too vague, needs examples
 [ ✅ ] Estimation: 6-8h is realistic
 [ ✅ ] Dependencies: Blocks 11.12, depends on 11.6 server actions

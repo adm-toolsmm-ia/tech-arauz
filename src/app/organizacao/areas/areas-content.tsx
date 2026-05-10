@@ -38,6 +38,7 @@ import { ActivityCockpit360 } from '@/components/organization/ActivityCockpit360
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AreasCardView } from './components/AreasCardView';
 import { AreasKanbanView } from './components/AreasKanbanView';
+import { ResponsibleRolesInput } from '@/components/organization/ResponsibleRolesInput';
 import { useAreasFilters } from '@/hooks/useOrganizacaoFilters';
 import {
   createAreaAction,
@@ -68,14 +69,14 @@ interface AreaFormData {
   name: string;
   description: string;
   objective: string;
-  responsible_roles: string;
+  responsible_roles: string[];
 }
 
 const DEFAULT_FORM: AreaFormData = {
   name: '',
   description: '',
   objective: '',
-  responsible_roles: '',
+  responsible_roles: [],
 };
 
 interface NucleusFormData {
@@ -83,7 +84,7 @@ interface NucleusFormData {
   name: string;
   description: string;
   objective: string;
-  responsible_roles: string;
+  responsible_roles: string[];
 }
 
 const DEFAULT_NUCLEUS_FORM: NucleusFormData = {
@@ -91,7 +92,7 @@ const DEFAULT_NUCLEUS_FORM: NucleusFormData = {
   name: '',
   description: '',
   objective: '',
-  responsible_roles: '',
+  responsible_roles: [],
 };
 
 export function AreasContent({
@@ -146,14 +147,6 @@ export function AreasContent({
     setEditingArea(null);
   }, []);
 
-  const parseRoles = (s: string) =>
-    s
-      ? s
-          .split(',')
-          .map((r) => r.trim())
-          .filter(Boolean)
-      : [];
-
   const handleCreate = React.useCallback(async () => {
     if (!formData.name.trim()) {
       toast.error('Nome é obrigatório');
@@ -165,7 +158,7 @@ export function AreasContent({
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
-        responsible_roles: parseRoles(formData.responsible_roles),
+        responsible_roles: formData.responsible_roles,
         documentation: {},
       });
       if (result.success && result.data) {
@@ -195,7 +188,7 @@ export function AreasContent({
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         objective: formData.objective.trim() || null,
-        responsible_roles: parseRoles(formData.responsible_roles),
+        responsible_roles: formData.responsible_roles,
         documentation: editingArea.documentation,
       });
       if (result.success && result.data) {
@@ -221,7 +214,7 @@ export function AreasContent({
       name: area.name,
       description: area.description ?? '',
       objective: area.objective ?? '',
-      responsible_roles: (area.responsible_roles ?? []).join(', '),
+      responsible_roles: area.responsible_roles ?? [],
     });
     setIsFormOpen(true);
   }, []);
@@ -275,7 +268,7 @@ export function AreasContent({
       name: '',
       description: '',
       objective: '',
-      responsible_roles: '',
+      responsible_roles: [],
     });
     setIsNucleusFormOpen(true);
   }, []);
@@ -291,19 +284,12 @@ export function AreasContent({
     }
     setIsNucleusLoading(true);
     try {
-      const parseRoles = (s: string) =>
-        s
-          ? s
-              .split(',')
-              .map((r) => r.trim())
-              .filter(Boolean)
-          : [];
       const result = await createNucleusAction({
         area_id: nucleusFormData.area_id,
         name: nucleusFormData.name.trim(),
         description: nucleusFormData.description.trim() || null,
         objective: nucleusFormData.objective.trim() || null,
-        responsible_roles: parseRoles(nucleusFormData.responsible_roles),
+        responsible_roles: nucleusFormData.responsible_roles,
         documentation: {},
       });
       if (result.success && result.data) {
@@ -671,12 +657,10 @@ export function AreasContent({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="area-roles">Roles responsáveis (separados por vírgula)</Label>
-              <Input
-                id="area-roles"
+              <Label>Roles responsáveis</Label>
+              <ResponsibleRolesInput
                 value={formData.responsible_roles}
-                onChange={(e) => setFormData((p) => ({ ...p, responsible_roles: e.target.value }))}
-                placeholder="ex.: coordenador, analista_senior"
+                onChange={(roles) => setFormData((p) => ({ ...p, responsible_roles: roles }))}
               />
             </div>
           </div>
@@ -749,14 +733,12 @@ export function AreasContent({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="nucleus-roles">Roles responsáveis (separados por vírgula)</Label>
-              <Input
-                id="nucleus-roles"
+              <Label>Roles responsáveis</Label>
+              <ResponsibleRolesInput
                 value={nucleusFormData.responsible_roles}
-                onChange={(e) =>
-                  setNucleusFormData((p) => ({ ...p, responsible_roles: e.target.value }))
+                onChange={(roles) =>
+                  setNucleusFormData((p) => ({ ...p, responsible_roles: roles }))
                 }
-                placeholder="ex.: coordenador, analista"
               />
             </div>
           </div>

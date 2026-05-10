@@ -2,9 +2,11 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { buildAgentOrganizationContext } from '@/lib/ai/organization-context';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 /**
  * Fallback: call OpenAI directly when the Python FastAPI service is unavailable.
@@ -13,13 +15,14 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 async function chatFallback(
   agentId: string,
   message: string,
-  supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never,
+  supabase: SupabaseClient,
+  tenantId?: string | null,
 ) {
   // 1. Fetch agent config from Supabase
   const { data: agent, error: agentError } = await supabase
     .from('agents')
     .select(
-      'name, persona, prompt_objective, model_provider, model_id, model_temperature, model_max_tokens',
+      'name, persona, prompt_objective, model_provider, model_id, model_temperature, model_max_tokens, configuration_meta',
     )
     .eq('id', agentId)
     .single();
@@ -34,9 +37,12 @@ async function chatFallback(
     return NextResponse.json({ error: 'LLM not configured' }, { status: 500 });
   }
 
+  const organizationContext = await buildAgentOrganizationContext(supabase, tenantId);
+
   const systemContent = [
     agent.persona || 'You are a helpful assistant.',
     agent.prompt_objective ? `\nObjective: ${agent.prompt_objective}` : '',
+    organizationContext ? `\n\n${organizationContext}` : '',
   ].join('');
 
   const model = agent.model_id || 'gpt-4o';
@@ -108,6 +114,9 @@ export async function POST(
     return NextResponse.json({ error: 'No session token' }, { status: 401 });
   }
 
+  const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
+  const tenantId = profile?.tenant_id ?? null;
+
   // Parse request body
   const body = await request.json();
 
@@ -132,7 +141,7 @@ export async function POST(
       // If FastAPI returns 503 or 502, fall back to direct LLM call
       if (res.status === 503 || res.status === 502) {
         console.warn('[agents/[id]/chat/POST] AI service unavailable, using fallback');
-        return chatFallback(id, body.message, supabase);
+        return chatFallback(id, body.message, supabase, tenantId);
       }
 
       const error = await res.json();
@@ -144,6 +153,6 @@ export async function POST(
   } catch (error) {
     // Network error (FastAPI not reachable at all) → fallback
     console.warn('[agents/[id]/chat/POST] Proxy error, using fallback:', error);
-    return chatFallback(id, body.message, supabase);
+    return chatFallback(id, body.message, supabase, tenantId);
   }
 }

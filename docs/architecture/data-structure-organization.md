@@ -1,7 +1,7 @@
 # Estrutura de Dados — Organização e Vínculos da Empresa
 
 **Data:** 2026-03-08  
-**Fonte:** Migrations 001, 060, 061, 062 e código em `src/`
+**Fonte:** Migrations 001, 060, 061, 062, 077 e código em `src/`
 
 Este documento descreve a estrutura atual dos dados de organização e vínculos da empresa **existentes no projeto**.
 
@@ -240,10 +240,13 @@ Associação processo ↔ sistema.
 
 | Coluna | Tipo |
 |--------|------|
+| tenant_id | UUID, FK → tenants |
 | process_id | UUID, FK → org_processes |
 | system_id | UUID, FK → org_systems |
 
 **PK:** (process_id, system_id)
+
+**Nota:** tenant_id foi adicionado na migration 077 para suportar RLS tenant-aware e validação same-tenant entre processo e sistema.
 
 ### 4.2 org_activity_documents
 
@@ -251,10 +254,13 @@ Associação atividade ↔ documento organizacional.
 
 | Coluna | Tipo |
 |--------|------|
+| tenant_id | UUID, FK → tenants |
 | activity_id | UUID, FK → org_activities |
 | org_document_id | UUID, FK → org_documents |
 
 **PK:** (activity_id, org_document_id)
+
+**Nota:** tenant_id foi adicionado na migration 077 para suportar RLS tenant-aware e validação same-tenant entre atividade e documento.
 
 ---
 
@@ -310,8 +316,8 @@ tenants
   ├── org_company_types
   │     └── org_bootstrap_templates
   │
-  ├── org_process_systems (process_id, system_id)
-  └── org_activity_documents (activity_id, org_document_id)
+  ├── org_process_systems (tenant_id, process_id, system_id)
+  └── org_activity_documents (tenant_id, activity_id, org_document_id)
 ```
 
 ---

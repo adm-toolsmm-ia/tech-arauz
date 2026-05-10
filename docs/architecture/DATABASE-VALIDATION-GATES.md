@@ -12,7 +12,7 @@
 
 This document provides **data-engineer-specific validation gates** that MUST pass before EPIC 11 (v0.2.4) deployment to production. It is the authoritative source for:
 
-- **5 Sequential Database Validation Gates** (066-070 migrations)
+- **5 Sequential Database Validation Gates** (066-070 migrations) plus post-070 hardening (077)
 - **RLS Compliance Verification** (all 10 EPIC 11 tables)
 - **pgvector & Embedding Setup** (Migration 071, if approved)
 - **SQL Queries for Validation** (copy-paste ready)
@@ -26,7 +26,7 @@ This document provides **data-engineer-specific validation gates** that MUST pas
 **CRITICAL:** Migrations MUST apply in this exact order. Any deviation breaks referential integrity.
 
 ```yaml
-066 → 067 → 068 → 069 → 070 → (071)
+066 → 067 → 068 → 069 → 070 → 077 → (071)
 ```
 
 | Order | Migration | File | Prerequisite | Output Tables | Status |
@@ -36,9 +36,12 @@ This document provides **data-engineer-specific validation gates** that MUST pas
 | 3 | **068** | `create_process_slas_and_metrics.sql` | org_processes exists | org_process_slas, org_process_metrics | ✅ READY |
 | 4 | **069** | `create_role_permissions.sql` | tenants exists | org_role_definitions, org_role_permissions | ✅ READY |
 | 5 | **070** | `create_activity_templates_and_process_versions.sql` | org_processes, org_activities | org_activity_templates, org_process_versions | ✅ READY |
-| 6 | **071** | `add_embeddings_to_knowledge_entries.sql` | pgvector extension, org_knowledge_entries | embedding_batch_log | 🟡 CONDITIONAL |
+| 6 | **077** | `harden_org_tenant_integrity.sql` | org_activity_systems, org_process_slas, org_process_metrics, org_role_definitions, org_role_permissions, org_activity_templates, org_process_versions | tenant-aware hardening for legacy org relation tables | ✅ READY |
+| 7 | **071** | `add_embeddings_to_knowledge_entries.sql` | pgvector extension, org_knowledge_entries | embedding_batch_log | 🟡 CONDITIONAL |
 
-**Note:** Migration 071 only applies if Story 11.11 (AI Context Embeddings) is approved. Current deployment (Phase 4) stops at 070.
+**Post-070 hardening note:** migration `077_harden_org_tenant_integrity.sql` adds tenant-aware integrity checks and RLS hardening for `org_activity_systems`, `org_process_slas`, `org_process_metrics`, `org_role_definitions`, `org_role_permissions`, `org_activity_templates`, `org_process_versions`, `org_process_systems`, and `org_activity_documents`.
+
+**Note:** Migration 071 only applies if Story 11.11 (AI Context Embeddings) is approved. The validated deployment chain extends through 077 before the optional embeddings step.
 
 ---
 
@@ -58,6 +61,7 @@ supabase migration list --local
 # 068_create_process_slas_and_metrics.sql ✓
 # 069_create_role_permissions.sql ✓
 # 070_create_activity_templates_and_process_versions.sql ✓
+# 077_harden_org_tenant_integrity.sql ✓
 ```
 
 **Failure:** If any migration shows error or ✗, STOP. Contact @data-engineer immediately.
@@ -124,6 +128,7 @@ supabase migration list
 # 068_create_process_slas_and_metrics ← 2026-03-16 10:32 ✓
 # 069_create_role_permissions ← 2026-03-16 10:33 ✓
 # 070_create_activity_templates_and_process_versions ← 2026-03-16 10:34 ✓
+# 077_harden_org_tenant_integrity ← 2026-05-08 10:35 ✓
 ```
 
 **Via Supabase Dashboard (If CLI unavailable):**
@@ -256,11 +261,12 @@ WHERE schemaname = 'public'
   AND tablename IN (
     'org_activities', 'org_activity_systems', 'org_process_slas',
     'org_process_metrics', 'org_role_definitions', 'org_role_permissions',
-    'org_activity_templates', 'org_process_versions'
+    'org_activity_templates', 'org_process_versions',
+    'org_process_systems', 'org_activity_documents'
   )
 ORDER BY tablename, policyname;
 
--- EXPECTED: 32 rows (8 tables × 4 policies)
+-- EXPECTED: 40 rows (10 tables × 4 policies)
 -- All rows: policy_quality = 'OK' (tenant_id present)
 --
 -- FAILURE: Any row with policy_quality = 'MISSING TENANT_ID'
@@ -355,7 +361,8 @@ WHERE schemaname = 'public'
   AND tablename IN (
     'org_activities', 'org_activity_systems', 'org_process_slas',
     'org_process_metrics', 'org_role_definitions', 'org_role_permissions',
-    'org_activity_templates', 'org_process_versions'
+    'org_activity_templates', 'org_process_versions',
+    'org_process_systems', 'org_activity_documents'
   )
 ORDER BY tablename, indexname;
 
@@ -365,6 +372,8 @@ ORDER BY tablename, indexname;
 -- - idx_org_activity_systems_tenant (B-tree on tenant_id)
 -- - idx_org_activity_systems_activity_id (B-tree on activity_id)
 -- - idx_org_process_metrics_period (B-tree on period_start, period_end)
+-- - idx_org_process_systems_tenant (B-tree on tenant_id)
+-- - idx_org_activity_documents_tenant (B-tree on tenant_id)
 ```
 
 ### 5.2 Query Performance Baseline

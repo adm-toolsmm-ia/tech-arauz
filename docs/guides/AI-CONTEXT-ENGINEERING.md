@@ -4,11 +4,12 @@
 
 ## Overview
 
-Integration guide for AI agents working with EPIC 11 organizational context. This document covers role context injection, process metrics transformation, knowledge base retrieval patterns, and prompt engineering best practices for autonomous agent systems like Synkra AIOX.
+Integration guide for AI agents working with EPIC 11 — Organizational Enrichment & BPM Mastery context. This document covers role context injection, process metrics transformation, knowledge base retrieval patterns, and prompt engineering best practices for autonomous agent systems like Synkra AIOX.
 
 ## Table of Contents
 
 - [Role Context Injection](#role-context-injection)
+- [Tenant Snapshot Fallback](#tenant-snapshot-fallback)
 - [Process Metrics Transformer](#process-metrics-transformer)
 - [Knowledge Base Retrieval](#knowledge-base-retrieval)
 - [Sample AI Prompts](#sample-ai-prompts)
@@ -180,6 +181,46 @@ interface ProcessRef {
   avg_cycle_time_hours: number;
 }
 ```
+
+---
+
+## Tenant Snapshot Fallback
+
+When the dedicated AI service is unavailable, the Next.js chat fallback now augments the agent prompt with a tenant-scoped organizational snapshot.
+
+The snapshot is assembled from the current tenant's:
+
+- areas
+- nuclei
+- processes
+- routines
+- activities
+
+It also highlights the most recently updated process, routine, or activity using the flat `toAIContext()` transformer so the fallback prompt still carries structured operational context.
+
+### Runtime Helper
+
+```typescript
+import { buildAgentOrganizationContext } from '@/lib/ai/organization-context';
+
+const organizationContext = await buildAgentOrganizationContext(supabase);
+```
+
+### Prompt Shape
+
+```text
+# Contexto organizacional do tenant
+- Áreas: 12
+  - Legal Operations — Fluxo de atuação jurídica...
+- Núcleos: 8
+...
+## Contexto em foco
+- Tipo: process
+- Entidade: Solicitação de Protocolo (Espaider)
+- Objetivo: ...
+```
+
+This keeps the direct LLM fallback aligned with the same organizational vocabulary used by the AI context layer, without inventing cross-tenant assumptions.
 
 ---
 

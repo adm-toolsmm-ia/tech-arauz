@@ -18,7 +18,7 @@ Complete schema reference for EPIC 11 organizational structure, encompassing all
 
 ### Core Organizational Tables
 
-This section documents all 16 tables in the EPIC 11 organizational schema, organized by functional layer:
+This section documents all 18 tables in the EPIC 11 organizational schema, organized by functional layer:
 
 #### Organizational Hierarchy Layer
 
@@ -144,6 +144,30 @@ This section documents all 16 tables in the EPIC 11 organizational schema, organ
 - **Unique Constraint:** (activity_id, system_id)
 - **Indexes:** (tenant_id), (activity_id), (system_id)
 - **Foreign Keys:** activity_id → org_activities(id) ON DELETE CASCADE, system_id → org_systems(id) ON DELETE CASCADE
+- **RLS:** SELECT/INSERT/UPDATE/DELETE where tenant_id = auth.jwt()->>'tenant_id'
+
+**`org_process_systems`** — Process-to-System mappings
+- `id` (UUID, PK)
+- `tenant_id` (UUID, FK, RLS)
+- `process_id` (UUID, FK)
+- `system_id` (UUID, FK)
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+- **Unique Constraint:** (process_id, system_id)
+- **Indexes:** (tenant_id), (process_id), (system_id)
+- **Foreign Keys:** process_id → org_processes(id) ON DELETE CASCADE, system_id → org_systems(id) ON DELETE CASCADE
+- **RLS:** SELECT/INSERT/UPDATE/DELETE where tenant_id = auth.jwt()->>'tenant_id'
+
+**`org_activity_documents`** — Activity-to-Document mappings
+- `id` (UUID, PK)
+- `tenant_id` (UUID, FK, RLS)
+- `activity_id` (UUID, FK)
+- `org_document_id` (UUID, FK)
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+- **Unique Constraint:** (activity_id, org_document_id)
+- **Indexes:** (tenant_id), (activity_id), (org_document_id)
+- **Foreign Keys:** activity_id → org_activities(id) ON DELETE CASCADE, org_document_id → org_documents(id) ON DELETE CASCADE
 - **RLS:** SELECT/INSERT/UPDATE/DELETE where tenant_id = auth.jwt()->>'tenant_id'
 
 #### Suppliers & Services Layer
@@ -392,6 +416,8 @@ Organization (tenant)
 **Cross-Entity Relationships:**
 - org_documents → org_processes (associated_process_id, nullable)
 - org_activity_systems → org_activities & org_systems (N:M junction)
+- org_process_systems → org_processes & org_systems (N:M junction)
+- org_activity_documents → org_activities & org_documents (N:M junction)
 - org_process_slas → org_processes (1:N SLA versions)
 - org_process_metrics → org_processes (1:N daily metrics)
 - org_knowledge_entries → various entities (related_entity_type, nullable)

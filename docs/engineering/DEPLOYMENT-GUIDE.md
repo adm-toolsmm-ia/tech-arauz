@@ -57,14 +57,15 @@ supabase migration list
 Validated deployment chain:
 
 ```yaml
-066 → 067 → 068 → 069 → 070 → 077 → (071)
+075 → 076 → 077
 ```
 
 Notes:
 
-- `077_harden_org_tenant_integrity.sql` is the required post-070 hardening step.
-- Apply `077` before any optional `071_add_embeddings_to_knowledge_entries.sql` embeddings step.
-- Do not run `071` until the hardening migration and its validation pass.
+- `075_knowledge_hub_schema.sql` must use trigger-maintained `search_vector` for `documents`.
+- `076_knowledge_graph_function.sql` depends on the links created by 075.
+- `077_harden_org_tenant_integrity.sql` is the required hardening step after the knowledge hub batch.
+- Do not run the optional embeddings step until the 075 → 076 → 077 batch and validation pass.
 
 ### Step 4: Verify Deployment
 

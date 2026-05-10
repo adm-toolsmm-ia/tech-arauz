@@ -20,7 +20,7 @@
   - `summary TEXT` — short document summary
   - `view_count INTEGER` — view tracking
   - `cover_image_url TEXT` — optional cover image
-  - `search_vector TSVECTOR` — full-text search index (Portuguese)
+  - `search_vector TSVECTOR` — full-text search index (Portuguese, maintained by trigger)
 
 - Created `document_entity_links` table:
   - Links documents to org entities (areas, processes, activities, systems, skills, etc.)

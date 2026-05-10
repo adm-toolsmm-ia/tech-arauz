@@ -670,7 +670,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE OR REPLACE VIEW public.rls_audit_summary AS
+DROP VIEW IF EXISTS public.rls_audit_summary;
+
+CREATE VIEW public.rls_audit_summary AS
 WITH source_data AS (
     SELECT
         table_name,

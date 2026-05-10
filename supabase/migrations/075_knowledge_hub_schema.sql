@@ -12,13 +12,38 @@ ADD COLUMN IF NOT EXISTS view_count INTEGER NOT NULL DEFAULT 0,
 ADD COLUMN IF NOT EXISTS cover_image_url TEXT;
 
 -- Full-text search vector (Portuguese)
+-- Stored as a regular column because generated tsvector expressions are not immutable.
 ALTER TABLE public.documents
-ADD COLUMN IF NOT EXISTS search_vector TSVECTOR
-  GENERATED ALWAYS AS (
-    to_tsvector('portuguese',
-      coalesce(title, '') || ' ' || coalesce(content_md, '') || ' ' || array_to_string(coalesce(tags, '{}'), ' ')
-    )
-  ) STORED;
+ADD COLUMN IF NOT EXISTS search_vector TSVECTOR;
+
+CREATE OR REPLACE FUNCTION public.documents_search_vector_update()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.search_vector := to_tsvector(
+    'portuguese'::regconfig,
+    coalesce(NEW.title, '') || ' ' ||
+    coalesce(NEW.content_md, '') || ' ' ||
+    array_to_string(coalesce(NEW.tags, '{}'::text[]), ' ')
+  );
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_documents_search_vector ON public.documents;
+CREATE TRIGGER trg_documents_search_vector
+BEFORE INSERT OR UPDATE OF title, content_md, tags ON public.documents
+FOR EACH ROW
+EXECUTE FUNCTION public.documents_search_vector_update();
+
+UPDATE public.documents
+SET search_vector = to_tsvector(
+  'portuguese'::regconfig,
+  coalesce(title, '') || ' ' ||
+  coalesce(content_md, '') || ' ' ||
+  array_to_string(coalesce(tags, '{}'::text[]), ' ')
+);
 
 -- Index for full-text search
 CREATE INDEX IF NOT EXISTS idx_documents_search_vector

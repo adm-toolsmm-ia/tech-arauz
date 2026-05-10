@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { ProcessSlaModal } from '../ProcessSlaModal';
 import type { OrgProcessSla } from '@/types/organization';
 
@@ -48,112 +47,92 @@ describe('ProcessSlaModal', () => {
     });
 
     it('should validate required fields on submit', async () => {
-      const user = userEvent.setup();
       render(
         <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const submitButton = screen.getByRole('button', { name: /Criar/i });
-      await user.click(submitButton);
+      fireEvent.click(submitButton);
 
-      await waitFor(() => {
-        expect(screen.getByText(/Métrica é obrigatória/i)).toBeInTheDocument();
-      });
+      expect(screen.getByText(/Métrica é obrigatória/i)).toBeInTheDocument();
     });
 
     it('should validate target duration is positive', async () => {
-      const user = userEvent.setup();
       render(
         <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
-      const durationInput = screen.getByPlaceholderText(/Ex: 5/i);
+      const durationInput = screen.getByLabelText(/Duração Alvo \(dias\)/i);
 
-      await user.type(metricInput, 'test_metric');
-      await user.type(durationInput, '0');
+      fireEvent.change(metricInput, { target: { value: 'test_metric' } });
+      fireEvent.change(durationInput, { target: { value: '0' } });
 
       const submitButton = screen.getByRole('button', { name: /Criar/i });
-      await user.click(submitButton);
+      fireEvent.click(submitButton);
 
-      await waitFor(() => {
-        expect(screen.getByText(/maior que 0/i)).toBeInTheDocument();
-      });
+      expect(screen.getByText(/maior que 0/i)).toBeInTheDocument();
     });
 
     it('should validate warning threshold is between 0-100', async () => {
-      const user = userEvent.setup();
       render(
         <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
-      const durationInput = screen.getByPlaceholderText(/Ex: 5/i);
-      const warningInput = screen.getByPlaceholderText(/Ex: 75/i);
+      const durationInput = screen.getByLabelText(/Duração Alvo \(dias\)/i);
+      const warningInput = screen.getByLabelText(/Threshold de Aviso/i);
 
-      await user.type(metricInput, 'test_metric');
-      await user.type(durationInput, '5');
-      await user.type(warningInput, '150');
+      fireEvent.change(metricInput, { target: { value: 'test_metric' } });
+      fireEvent.change(durationInput, { target: { value: '5' } });
+      fireEvent.change(warningInput, { target: { value: '150' } });
 
       const submitButton = screen.getByRole('button', { name: /Criar/i });
-      await user.click(submitButton);
+      fireEvent.click(submitButton);
 
-      await waitFor(() => {
-        expect(
-          screen.getByText(/Threshold de aviso deve estar entre 0 e 100/i),
-        ).toBeInTheDocument();
-      });
+      expect(screen.getByText(/Threshold de aviso deve estar entre 0 e 100/i)).toBeInTheDocument();
     });
 
     it('should validate critical threshold is between 0-100', async () => {
-      const user = userEvent.setup();
       render(
         <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
-      const durationInput = screen.getByPlaceholderText(/Ex: 5/i);
-      const warningInput = screen.getByPlaceholderText(/Ex: 75/i);
-      const criticalInput = screen.getAllByDisplayValue('')[3]; // Get the critical threshold input
+      const durationInput = screen.getByLabelText(/Duração Alvo \(dias\)/i);
+      const warningInput = screen.getByLabelText(/Threshold de Aviso/i);
+      const criticalInput = screen.getByLabelText(/Threshold Crítico/i);
 
-      await user.type(metricInput, 'test_metric');
-      await user.type(durationInput, '5');
-      await user.type(warningInput, '75');
-      await user.type(criticalInput, '-10');
+      fireEvent.change(metricInput, { target: { value: 'test_metric' } });
+      fireEvent.change(durationInput, { target: { value: '5' } });
+      fireEvent.change(warningInput, { target: { value: '75' } });
+      fireEvent.change(criticalInput, { target: { value: '-10' } });
 
       const submitButton = screen.getByRole('button', { name: /Criar/i });
-      await user.click(submitButton);
+      fireEvent.click(submitButton);
 
-      await waitFor(() => {
-        expect(screen.getByText(/Threshold crítico deve estar entre 0 e 100/i)).toBeInTheDocument();
-      });
+      expect(screen.getByText(/Threshold crítico deve estar entre 0 e 100/i)).toBeInTheDocument();
     });
 
     it('should validate warning < critical threshold', async () => {
-      const user = userEvent.setup();
       render(
         <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
-      const durationInput = screen.getByPlaceholderText(/Ex: 5/i);
-      const warningInput = screen.getByPlaceholderText(/Ex: 75/i);
-      const criticalInputs = screen.getAllByRole('spinbutton');
-      const criticalInput = criticalInputs[criticalInputs.length - 1];
+      const durationInput = screen.getByLabelText(/Duração Alvo \(dias\)/i);
+      const warningInput = screen.getByLabelText(/Threshold de Aviso/i);
+      const criticalInput = screen.getByLabelText(/Threshold Crítico/i);
 
-      await user.type(metricInput, 'test_metric');
-      await user.type(durationInput, '5');
-      await user.type(warningInput, '95');
-      await user.type(criticalInput, '90');
+      fireEvent.change(metricInput, { target: { value: 'test_metric' } });
+      fireEvent.change(durationInput, { target: { value: '5' } });
+      fireEvent.change(warningInput, { target: { value: '95' } });
+      fireEvent.change(criticalInput, { target: { value: '90' } });
 
       const submitButton = screen.getByRole('button', { name: /Criar/i });
-      await user.click(submitButton);
+      fireEvent.click(submitButton);
 
-      await waitFor(() => {
-        expect(
-          screen.getByText(/Threshold de aviso deve ser menor que o crítico/i),
-        ).toBeInTheDocument();
-      });
+      expect(screen.getByText(/Threshold de aviso deve ser menor que o crítico/i)).toBeInTheDocument();
     });
   });
 
@@ -219,28 +198,25 @@ describe('ProcessSlaModal', () => {
 
   describe('Form Submission', () => {
     it('should disable submit button while loading', async () => {
-      const user = userEvent.setup();
       render(
         <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
-      const durationInput = screen.getByPlaceholderText(/Ex: 5/i);
-      const warningInput = screen.getByPlaceholderText(/Ex: 75/i);
-      const criticalInputs = screen.getAllByRole('spinbutton');
-      const criticalInput = criticalInputs[criticalInputs.length - 1];
+      const durationInput = screen.getByLabelText(/Duração Alvo \(dias\)/i);
+      const warningInput = screen.getByLabelText(/Threshold de Aviso/i);
+      const criticalInput = screen.getByLabelText(/Threshold Crítico/i);
 
-      await user.type(metricInput, 'test_metric');
-      await user.type(durationInput, '5');
-      await user.type(warningInput, '75');
-      await user.type(criticalInput, '95');
+      fireEvent.change(metricInput, { target: { value: 'test_metric' } });
+      fireEvent.change(durationInput, { target: { value: '5' } });
+      fireEvent.change(warningInput, { target: { value: '75' } });
+      fireEvent.change(criticalInput, { target: { value: '95' } });
 
       const submitButton = screen.getByRole('button', { name: /Criar/i });
       expect(submitButton).not.toBeDisabled();
     });
 
     it('should call onClose after successful submission', async () => {
-      const user = userEvent.setup();
       const { createProcessSlaAction } = await import('@/app/actions/organization');
       (createProcessSlaAction as ReturnType<typeof vi.fn>).mockResolvedValue({
         success: true,
@@ -259,18 +235,17 @@ describe('ProcessSlaModal', () => {
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
-      const durationInput = screen.getByPlaceholderText(/Ex: 5/i);
-      const warningInput = screen.getByPlaceholderText(/Ex: 75/i);
-      const criticalInputs = screen.getAllByRole('spinbutton');
-      const criticalInput = criticalInputs[criticalInputs.length - 1];
+      const durationInput = screen.getByLabelText(/Duração Alvo \(dias\)/i);
+      const warningInput = screen.getByLabelText(/Threshold de Aviso/i);
+      const criticalInput = screen.getByLabelText(/Threshold Crítico/i);
 
-      await user.type(metricInput, 'test_metric');
-      await user.type(durationInput, '5');
-      await user.type(warningInput, '75');
-      await user.type(criticalInput, '95');
+      fireEvent.change(metricInput, { target: { value: 'test_metric' } });
+      fireEvent.change(durationInput, { target: { value: '5' } });
+      fireEvent.change(warningInput, { target: { value: '75' } });
+      fireEvent.change(criticalInput, { target: { value: '95' } });
 
       const submitButton = screen.getByRole('button', { name: /Criar/i });
-      await user.click(submitButton);
+      fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(mockOnClose).toHaveBeenCalled();
@@ -279,7 +254,6 @@ describe('ProcessSlaModal', () => {
     });
 
     it('should display error message on failed submission', async () => {
-      const user = userEvent.setup();
       const { createProcessSlaAction } = await import('@/app/actions/organization');
       (createProcessSlaAction as ReturnType<typeof vi.fn>).mockResolvedValue({
         success: false,
@@ -291,18 +265,17 @@ describe('ProcessSlaModal', () => {
       );
 
       const metricInput = screen.getByPlaceholderText(/Ex: tempo_conclusão/i);
-      const durationInput = screen.getByPlaceholderText(/Ex: 5/i);
-      const warningInput = screen.getByPlaceholderText(/Ex: 75/i);
-      const criticalInputs = screen.getAllByRole('spinbutton');
-      const criticalInput = criticalInputs[criticalInputs.length - 1];
+      const durationInput = screen.getByLabelText(/Duração Alvo \(dias\)/i);
+      const warningInput = screen.getByLabelText(/Threshold de Aviso/i);
+      const criticalInput = screen.getByLabelText(/Threshold Crítico/i);
 
-      await user.type(metricInput, 'test_metric');
-      await user.type(durationInput, '5');
-      await user.type(warningInput, '75');
-      await user.type(criticalInput, '95');
+      fireEvent.change(metricInput, { target: { value: 'test_metric' } });
+      fireEvent.change(durationInput, { target: { value: '5' } });
+      fireEvent.change(warningInput, { target: { value: '75' } });
+      fireEvent.change(criticalInput, { target: { value: '95' } });
 
       const submitButton = screen.getByRole('button', { name: /Criar/i });
-      await user.click(submitButton);
+      fireEvent.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText(/Failed to create SLA/i)).toBeInTheDocument();
@@ -312,13 +285,12 @@ describe('ProcessSlaModal', () => {
 
   describe('Cancel Button', () => {
     it('should call onClose when cancel button is clicked', async () => {
-      const user = userEvent.setup();
       render(
         <ProcessSlaModal processId={processId} isOpen={true} onClose={mockOnClose} mode="create" />,
       );
 
       const cancelButton = screen.getByRole('button', { name: /Cancelar/i });
-      await user.click(cancelButton);
+      fireEvent.click(cancelButton);
 
       expect(mockOnClose).toHaveBeenCalled();
     });

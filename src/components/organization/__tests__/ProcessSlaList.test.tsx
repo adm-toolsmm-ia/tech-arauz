@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { ProcessSlaList } from '../ProcessSlaList';
 import type { OrgProcessSla } from '@/types/organization';
 
@@ -107,21 +106,19 @@ describe('ProcessSlaList', () => {
 
   describe('Edit Button', () => {
     it('should call onEdit when edit button is clicked', async () => {
-      const user = userEvent.setup();
       render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const editButtons = screen.getAllByLabelText(/Editar SLA/i);
-      await user.click(editButtons[0]);
+      fireEvent.click(editButtons[0]);
 
       expect(mockOnEdit).toHaveBeenCalledWith(mockSlas[0]);
     });
 
     it('should pass correct SLA data to onEdit', async () => {
-      const user = userEvent.setup();
       render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const editButtons = screen.getAllByLabelText(/Editar SLA/i);
-      await user.click(editButtons[1]);
+      fireEvent.click(editButtons[1]);
 
       expect(mockOnEdit).toHaveBeenCalledWith(mockSlas[1]);
     });
@@ -136,43 +133,37 @@ describe('ProcessSlaList', () => {
 
   describe('Delete Button', () => {
     it('should show confirmation dialog when delete button is clicked', async () => {
-      const user = userEvent.setup();
       render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
-      await user.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]);
 
       expect(screen.getByText('Deletar SLA?')).toBeInTheDocument();
       expect(screen.getByText(/tem certeza que deseja deletar/i)).toBeInTheDocument();
     });
 
     it('should display SLA name in confirmation dialog', async () => {
-      const user = userEvent.setup();
       render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
-      await user.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]);
 
       expect(screen.getByText(/"tempo_conclusão"/)).toBeInTheDocument();
     });
 
     it('should close confirmation dialog when cancel is clicked', async () => {
-      const user = userEvent.setup();
       render(<ProcessSlaList slas={mockSlas} isLoading={false} onEdit={mockOnEdit} />);
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
-      await user.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]);
 
       const cancelButton = screen.getByRole('button', { name: /Cancelar/i });
-      await user.click(cancelButton);
+      fireEvent.click(cancelButton);
 
-      await waitFor(() => {
-        expect(screen.queryByText('Deletar SLA?')).not.toBeInTheDocument();
-      });
+      expect(screen.queryByText('Deletar SLA?')).not.toBeInTheDocument();
     });
 
     it('should call deleteProcessSlaAction when delete confirmed', async () => {
-      const user = userEvent.setup();
       const { deleteProcessSlaAction } = await import('@/app/actions/organization');
       (deleteProcessSlaAction as ReturnType<typeof vi.fn>).mockResolvedValue({
         success: true,
@@ -189,10 +180,10 @@ describe('ProcessSlaList', () => {
       );
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
-      await user.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]);
 
       const confirmButton = screen.getByRole('button', { name: /Deletar/i });
-      await user.click(confirmButton);
+      fireEvent.click(confirmButton);
 
       await waitFor(() => {
         expect(deleteProcessSlaAction).toHaveBeenCalledWith(mockSlas[0].id);
@@ -200,7 +191,6 @@ describe('ProcessSlaList', () => {
     });
 
     it('should call onDeleteSuccess after successful deletion', async () => {
-      const user = userEvent.setup();
       const { deleteProcessSlaAction } = await import('@/app/actions/organization');
       (deleteProcessSlaAction as ReturnType<typeof vi.fn>).mockResolvedValue({
         success: true,
@@ -217,10 +207,10 @@ describe('ProcessSlaList', () => {
       );
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
-      await user.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]);
 
       const confirmButton = screen.getByRole('button', { name: /Deletar/i });
-      await user.click(confirmButton);
+      fireEvent.click(confirmButton);
 
       await waitFor(() => {
         expect(mockOnDeleteSuccess).toHaveBeenCalled();
@@ -228,7 +218,6 @@ describe('ProcessSlaList', () => {
     });
 
     it('should handle deletion errors gracefully', async () => {
-      const user = userEvent.setup();
       const { deleteProcessSlaAction } = await import('@/app/actions/organization');
       (deleteProcessSlaAction as ReturnType<typeof vi.fn>).mockResolvedValue({
         success: false,
@@ -245,13 +234,12 @@ describe('ProcessSlaList', () => {
       );
 
       const deleteButtons = screen.getAllByLabelText(/Deletar SLA/i);
-      await user.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]);
 
       const confirmButton = screen.getByRole('button', { name: /Deletar/i });
-      await user.click(confirmButton);
+      fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        // Dialog should close even if deletion failed
         expect(screen.queryByText('Deletar SLA?')).not.toBeInTheDocument();
       });
     });

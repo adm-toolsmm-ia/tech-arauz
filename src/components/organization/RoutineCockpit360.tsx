@@ -183,6 +183,10 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
         mode="create"
         isOpen={showFormSheet}
         context={{ routineId: routine.id }}
+        contextSummary={[
+          ...(routine.process?.name ? [{ label: 'Processo', value: routine.process.name }] : []),
+          { label: 'Rotina', value: routine.name },
+        ]}
         onClose={() => setShowFormSheet(false)}
         onSaved={(newActivity) => {
           const updated = [...activities, newActivity as OrgActivity];

@@ -499,6 +499,11 @@ export function ProcessCockpit360({
         mode="create"
         isOpen={showFormSheet}
         context={{ processId: process.id }}
+        contextSummary={[
+          ...(areaName ? [{ label: 'Área', value: areaName }] : []),
+          ...(nucleusName ? [{ label: 'Núcleo', value: nucleusName }] : []),
+          { label: 'Processo', value: process.name },
+        ]}
         onClose={() => setShowFormSheet(false)}
         onSaved={(newRoutine) => {
           const updated = [...routines, newRoutine as OrgRoutine];
@@ -518,6 +523,11 @@ export function ProcessCockpit360({
           setShowEditProcess(false);
           // Parent component should handle refetching data
         }}
+        contextSummary={[
+          ...(areaName ? [{ label: 'Área', value: areaName }] : []),
+          ...(nucleusName ? [{ label: 'Núcleo', value: nucleusName }] : []),
+          { label: 'Processo', value: process.name },
+        ]}
       />
     </div>
   );

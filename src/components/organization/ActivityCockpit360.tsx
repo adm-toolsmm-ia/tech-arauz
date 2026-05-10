@@ -294,6 +294,14 @@ export function ActivityCockpit360({
         onClose={() => setIsFormOpen(false)}
         onSaved={() => setIsFormOpen(false)}
         initialTab={formTab}
+        contextSummary={
+          routine
+            ? [
+                { label: 'Rotina', value: routine.name },
+                { label: 'Atividade', value: activity.name },
+              ]
+            : [{ label: 'Atividade', value: activity.name }]
+        }
       />
     </div>
   );

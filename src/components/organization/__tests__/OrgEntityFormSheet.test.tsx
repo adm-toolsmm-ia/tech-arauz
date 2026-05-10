@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { OrgEntityFormSheet } from './OrgEntityFormSheet';
+import { OrgEntityFormSheet } from '../OrgEntityFormSheet';
 import type { OrgActivity } from '@/types/organization';
 
 // Mock server actions
@@ -19,7 +19,7 @@ vi.mock('@/app/actions/organization', () => ({
 }));
 
 // Mock ResponsibleRolesInput
-vi.mock('./ResponsibleRolesInput', () => ({
+vi.mock('../ResponsibleRolesInput', () => ({
   ResponsibleRolesInput: ({ value, onChange, disabled }: any) => (
     <div data-testid="responsible-roles-input">
       <input
@@ -57,7 +57,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
   it('renders in create mode with initial values', () => {
     render(<OrgEntityFormSheet entity="activity" mode="create" isOpen={true} />);
 
-    expect(screen.getByDisplayValue('')).toBeInTheDocument(); // Empty name field
+    expect(screen.getByPlaceholderText(/nome da atividade/i)).toHaveValue('');
   });
 
   it('renders in edit mode with initial data', () => {
@@ -67,6 +67,26 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
 
     expect(screen.getByDisplayValue(mockActivity.name)).toBeInTheDocument();
     expect(screen.getByDisplayValue(mockActivity.description || '')).toBeInTheDocument();
+  });
+
+  it('shows context summary and edit summary when provided', () => {
+    render(
+      <OrgEntityFormSheet
+        entity="activity"
+        mode="edit"
+        isOpen={true}
+        initialData={mockActivity}
+        contextSummary={[
+          { label: 'Processo', value: 'Abertura de Pastas de Clientes' },
+          { label: 'Rotina', value: 'Cadastro inicial' },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText(/Contexto do cadastro/i)).toBeInTheDocument();
+    expect(screen.getByText(/Processo:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Resumo atual/i)).toBeInTheDocument();
+    expect(screen.getByText(/30 min/i)).toBeInTheDocument();
   });
 
   it('shows info tab by default', () => {
@@ -174,7 +194,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/riscos/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /^Riscos$/i })).toBeInTheDocument();
     });
   });
 
@@ -266,7 +286,7 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
 
     // Change roles
     await user.clear(rolesInput);
-    await user.type(rolesInput, 'reviewer,admin');
+    fireEvent.change(rolesInput, { target: { value: 'reviewer,admin' } });
 
     expect(rolesInput.value).toBe('reviewer,admin');
   });

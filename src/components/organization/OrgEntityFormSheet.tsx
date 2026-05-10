@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -15,7 +16,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertTriangle, Save, Loader2, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Save, Loader2, Plus, Trash2, GitBranch } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import type {
   OrgArea,
@@ -52,6 +54,10 @@ interface OrgEntityFormSheetProps {
     processId?: string;
     routineId?: string;
   };
+  contextSummary?: Array<{
+    label: string;
+    value: string;
+  }>;
   isOpen?: boolean;
   onClose?: () => void;
   onSaved?: (saved: Entity) => void;
@@ -107,6 +113,7 @@ export function OrgEntityFormSheet({
   mode,
   initialData,
   context,
+  contextSummary,
   isOpen = true,
   onClose,
   onSaved,
@@ -272,13 +279,107 @@ export function OrgEntityFormSheet({
   if (!entity) return null;
 
   const title = `${mode === 'create' ? 'Nova' : 'Editar'} ${entityLabels[entity]}`;
+  const descriptionText =
+    mode === 'create'
+      ? `Preencha os dados do cadastro de ${entityLabels[entity].toLowerCase()}.`
+      : `Atualize os dados, vínculos e documentação deste ${entityLabels[entity].toLowerCase()}.`;
+
+  const summaryCards = [
+    { label: 'Nome', value: formData.name?.trim() || 'Não informado' },
+    {
+      label: 'Descrição',
+      value: formData.description?.trim() || 'Não informada',
+    },
+    {
+      label: 'Objetivo',
+      value: formData.objective?.trim() || 'Não informado',
+    },
+    {
+      label: 'Roles',
+      value: `${formData.responsible_roles?.length || 0} vinculada(s)`,
+    },
+    ...(entity === 'process' || entity === 'activity'
+      ? [
+          {
+            label: 'BPM',
+            value: `${(formData.inputs || []).length} entradas · ${(formData.outputs || []).length} saídas`,
+          },
+          {
+            label: 'Riscos',
+            value: `${(formData.risks || []).length} item(ns)`,
+          },
+        ]
+      : []),
+    ...(entity === 'activity'
+      ? [
+          {
+            label: 'Atividade',
+            value: `${String(formData.complexity || 'low').toUpperCase()} · ${String(formData.priority || 'normal').toUpperCase()}`,
+          },
+          {
+            label: 'Tempo médio',
+            value: formData.average_execution_time ? `${formData.average_execution_time} min` : 'Não informado',
+          },
+        ]
+      : []),
+  ];
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
-      <SheetContent side="right" className="flex w-full max-w-2xl flex-col overflow-hidden p-0">
-        <SheetHeader className="border-b px-6 py-4">
-          <SheetTitle>{title}</SheetTitle>
+      <SheetContent
+        side="right"
+        className="flex w-full max-w-[760px] flex-col overflow-hidden p-0"
+      >
+        <SheetHeader className="border-b px-6 py-5 text-left">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <SheetTitle>{title}</SheetTitle>
+              <p className="text-sm text-muted-foreground">{descriptionText}</p>
+            </div>
+            <Badge variant="secondary" className="gap-1.5">
+              <GitBranch className="h-3.5 w-3.5" />
+              {mode === 'create' ? 'Novo' : 'Edição'}
+            </Badge>
+          </div>
         </SheetHeader>
+
+        {(contextSummary?.length || mode === 'edit') && (
+          <div className="border-b bg-muted/30 px-6 py-4">
+            {contextSummary?.length ? (
+              <div className="mb-4 space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Contexto do cadastro
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {contextSummary.map((item) => (
+                    <Badge key={`${item.label}-${item.value}`} variant="outline" className="gap-1.5">
+                      <span className="text-muted-foreground">{item.label}:</span>
+                      <span className="font-medium text-foreground">{item.value}</span>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {mode === 'edit' && (
+              <div className="space-y-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Resumo atual
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {summaryCards.map((item) => (
+                    <div key={item.label} className="rounded-lg border bg-background p-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-foreground">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Dirty State Alert */}
         {isDirty && (
@@ -295,7 +396,7 @@ export function OrgEntityFormSheet({
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+        <ScrollArea className="min-h-0 flex-1">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList
               className="grid w-full rounded-none border-b px-6"
@@ -667,7 +768,7 @@ export function OrgEntityFormSheet({
               </div>
             </TabsContent>
           </Tabs>
-        </div>
+        </ScrollArea>
 
         {/* Footer Actions */}
         <div className="bg-muted/50 flex justify-end gap-3 border-t px-6 py-4">

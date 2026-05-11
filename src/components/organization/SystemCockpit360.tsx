@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { FileText, Settings, Plus, Pencil, Trash2 } from 'lucide-react';
+import { FileText, Settings, Plus, Pencil, Trash2, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/ui/EmptyState';
 import type { OrgSystem, OrgSystemResource } from '@/types/organization';
@@ -84,9 +85,32 @@ export const SystemCockpit360: React.FC<SystemCockpit360Props> = ({
             </div>
           )}
 
+          <Card className="border-dashed">
+            <CardContent className="grid gap-3 p-4 md:grid-cols-3">
+              <div className="rounded-lg border p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Cadastro
+                </p>
+                <p className="mt-2 text-sm font-medium">{system.name}</p>
+              </div>
+              <div className="rounded-lg border p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Propósito
+                </p>
+                <p className="mt-2 text-sm font-medium">{system.purpose || 'Não definido'}</p>
+              </div>
+              <div className="rounded-lg border p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Recursos
+                </p>
+                <p className="mt-2 text-sm font-medium">{resources.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
-              <FileText className="text-primary size-5" />
+              <Monitor className="text-primary size-5" />
               <h3 className="text-base font-semibold">Informações</h3>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

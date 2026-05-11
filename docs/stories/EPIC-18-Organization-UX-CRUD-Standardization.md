@@ -4,7 +4,7 @@
 **Owner:** Organization UX/CRUD refactor  
 **Scope:** `docs/stories` + `docs/architecture` + `src/app/organizacao` + `src/components/organization`  
 **Priority:** HIGH  
-**Updated:** 2026-05-10
+**Updated:** 2026-05-11
 
 ---
 
@@ -52,6 +52,8 @@ Primeira fase de implementação executada junto com a consolidação da epic:
 - `processos`, `rotinas` e rotas hierárquicas relevantes deixaram de depender de superfícies externas para editar processo/rotina.
 - `atividades` em rota hierárquica passou a usar o cockpit compartilhado e o mesmo `OrgEntityFormSheet` para criação.
 - `empresa` deixou de encaminhar `área` e `processo` para o dialog genérico de recurso, reduzindo o principal bug funcional de roteamento de edição.
+- `empresa` e `recursos` passaram a usar surfaces compartilhadas para `sistemas`, `fornecedores`, `serviços`, `documentos` e `recursos de sistema`.
+- `SupplierCockpit360`, `ServiceCockpit360`, `SystemCockpit360` e `DocumentCockpit360` foram enriquecidos para expor contexto, resumo e responsáveis com o mesmo idioma visual do domínio organizacional.
 - Os testes da `OrgEntityFormSheet`, `OrganizationSearchBar` e `ProcessSlaList` foram endurecidos para suportar a carga da suíte completa sem timeouts falsos.
 
 Validação após a implementação:
@@ -168,6 +170,8 @@ Os princípios detalhados estão documentados em `docs/architecture/ORGANIZATION
 - formulários coerentes com o padrão compartilhado
 - vínculos com processo/atividade destacados quando existirem
 
+**Status atual:** concluída nesta rodada para `sistemas`, `fornecedores`, `serviços`, `documentos` e `recursos de sistema`
+
 ### Fase 5: Validação e governança
 
 **Objetivo:** deixar o material pronto para orientar stories futuras.
@@ -245,9 +249,15 @@ Os princípios detalhados estão documentados em `docs/architecture/ORGANIZATION
 - `src/components/organization/OrgEntityFormSheet.tsx`
 - `src/components/organization/ActivityCockpit360.tsx`
 - `src/components/organization/AreaCockpit360.tsx`
+- `src/components/organization/DocumentCockpit360.tsx`
 - `src/components/organization/NucleusCockpit360.tsx`
 - `src/components/organization/ProcessCockpit360.tsx`
+- `src/components/organization/ResourceEntityFormSheet.tsx`
 - `src/components/organization/RoutineCockpit360.tsx`
+- `src/components/organization/ServiceCockpit360.tsx`
+- `src/components/organization/SupplierCockpit360.tsx`
+- `src/components/organization/SystemCockpit360.tsx`
+- `src/components/organization/SystemResourceFormSheet.tsx`
 - `src/app/organizacao/areas/[areaId]/nucleos/nucleos-content.tsx`
 - `src/app/organizacao/areas/areas-content.tsx`
 - `src/app/organizacao/nucleos/nucleos-content.tsx`
@@ -256,6 +266,7 @@ Os princípios detalhados estão documentados em `docs/architecture/ORGANIZATION
 - `src/app/organizacao/rotinas/rotinas-content.tsx`
 - `src/app/organizacao/processos/[processId]/rotinas/rotinas-content.tsx`
 - `src/app/organizacao/empresa/empresa-content.tsx`
+- `src/app/organizacao/recursos/recursos-content.tsx`
 - `src/components/organization/__tests__/OrgEntityFormSheet.test.tsx`
 - `src/components/organization/__tests__/OrganizationSearchBar.test.tsx`
 - `src/components/organization/__tests__/ProcessSlaList.test.tsx`

@@ -1,7 +1,7 @@
 # Organization UX/CRUD Standards
 
 **Status:** Active baseline  
-**Updated:** 2026-05-10  
+**Updated:** 2026-05-11  
 **Scope:** `docs/architecture` reference for the organizational module  
 **Baseline Sources:** `docs/architecture/module-standards.md`, `docs/architecture/data-structure-organization.md`, `docs/architecture/ORGANIZATION-SCHEMA.md`, `docs/architecture/dashboards.md`, `docs/architecture/BPM-PATTERNS.md`, `docs/stories/EPIC-9-INDEX.md`, `docs/stories/EPIC-10-Org-Knowledge-Graph-Refinement.md`, `docs/stories/EPIC-11-Organizational-Enrichment-BPM-Mastery.md`
 
@@ -34,6 +34,8 @@ Este baseline já passou a orientar a primeira onda de convergência do runtime:
 - páginas de `processos` e `rotinas` deixando de depender de dialogs paralelos para edição
 - rota hierárquica de `atividades` convergida para `SplitView + ActivityCockpit360 + OrgEntityFormSheet`
 - correção do roteamento errado de edição de `área` e `processo` dentro de `empresa`
+- `empresa` e `recursos` convergidos para sheets compartilhadas de `sistemas`, `fornecedores`, `serviços`, `documentos` e `recursos de sistema`
+- cockpits de recursos enriquecidos para explicitar resumo, relacionamentos e responsáveis
 
 ---
 
@@ -176,6 +178,12 @@ Fornecedores, serviços, sistemas e documentos devem seguir o mesmo contrato vis
 - formulário compartilhado quando possível
 - relações explícitas com processos/atividades quando existirem
 - responsible roles com a mesma semântica aplicada a áreas, núcleos, processos, rotinas e atividades
+
+No baseline atual, isso se traduz em:
+
+- `ResourceEntityFormSheet` como surface compartilhada para criar/editar `sistemas`, `fornecedores`, `serviços` e `documentos`
+- `SystemResourceFormSheet` como surface compartilhada para recursos internos de sistema
+- `SupplierCockpit360`, `ServiceCockpit360`, `SystemCockpit360` e `DocumentCockpit360` usando o mesmo idioma de detalhe lateral do restante do módulo
 
 ---
 

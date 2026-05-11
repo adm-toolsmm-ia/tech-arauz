@@ -16,16 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { SplitView } from '@/components/views/SplitView';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { RecursosKPIBar } from './components/RecursosKPIBar';
@@ -34,21 +24,13 @@ import { SystemCockpit360 } from '@/components/organization/SystemCockpit360';
 import { SupplierCockpit360 } from '@/components/organization/SupplierCockpit360';
 import { ServiceCockpit360 } from '@/components/organization/ServiceCockpit360';
 import { DocumentCockpit360 } from '@/components/organization/DocumentCockpit360';
+import { ResourceEntityFormSheet } from '@/components/organization/ResourceEntityFormSheet';
+import { SystemResourceFormSheet } from '@/components/organization/SystemResourceFormSheet';
 import {
-  createSystemAction,
-  updateSystemAction,
   deleteSystemAction,
-  createSupplierAction,
-  updateSupplierAction,
   deleteSupplierAction,
-  createServiceAction,
-  updateServiceAction,
   deleteServiceAction,
-  createOrgDocumentAction,
-  updateOrgDocumentAction,
   deleteOrgDocumentAction,
-  createSystemResourceAction,
-  updateSystemResourceAction,
   deleteSystemResourceAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
@@ -77,31 +59,7 @@ interface RecursosContentProps {
   processMap: Record<string, string>;
 }
 
-interface FormData {
-  name: string;
-  description: string;
-  purpose: string;
-  type: string;
-  associated_process_id: string;
-}
-
-const DEFAULT_FORM: FormData = {
-  name: '',
-  description: '',
-  purpose: '',
-  type: '',
-  associated_process_id: '',
-};
-
-interface SystemResourceFormData {
-  name: string;
-  description: string;
-}
-
-const DEFAULT_SYSTEM_RESOURCE_FORM: SystemResourceFormData = {
-  name: '',
-  description: '',
-};
+type ResourceSheetEntity = 'system' | 'supplier' | 'service' | 'document';
 
 export function RecursosContent({
   systems: initialSystems,
@@ -125,28 +83,30 @@ export function RecursosContent({
   const [suppliers, setSuppliers] = React.useState<OrgSupplier[]>(initialSuppliers);
   const [services, setServices] = React.useState<OrgService[]>(initialServices);
   const [documents, setDocuments] = React.useState<OrgDocument[]>(initialDocuments);
+  const [systemResourcesMap, setSystemResourcesMap] =
+    React.useState<Record<string, OrgSystemResource[]>>(resourcesBySystemId);
   const [selectedItem, setSelectedItem] = React.useState<RecursosEntity | null>(null);
   const [selectedTab, setSelectedTab] = React.useState<RecursosTab | null>(null);
-  const [isFormOpen, setIsFormOpen] = React.useState(false);
+  const [isResourceFormOpen, setIsResourceFormOpen] = React.useState(false);
+  const [resourceFormEntity, setResourceFormEntity] = React.useState<ResourceSheetEntity>('system');
   const [editingItem, setEditingItem] = React.useState<RecursosEntity | null>(null);
   const [itemToDelete, setItemToDelete] = React.useState<RecursosEntity | null>(null);
-  const [formData, setFormData] = React.useState<FormData>(DEFAULT_FORM);
-  const [isLoading, setIsLoading] = React.useState(false);
   const [isSystemResourceFormOpen, setIsSystemResourceFormOpen] = React.useState(false);
+  const [selectedSystemForResource, setSelectedSystemForResource] = React.useState<OrgSystem | null>(
+    null,
+  );
   const [editingSystemResource, setEditingSystemResource] =
     React.useState<OrgSystemResource | null>(null);
   const [systemResourceToDelete, setSystemResourceToDelete] =
     React.useState<OrgSystemResource | null>(null);
-  const [systemResourceFormData, setSystemResourceFormData] =
-    React.useState<SystemResourceFormData>(DEFAULT_SYSTEM_RESOURCE_FORM);
-  const [isSystemResourceLoading, setIsSystemResourceLoading] = React.useState(false);
 
   React.useEffect(() => {
     setSystems(initialSystems);
     setSuppliers(initialSuppliers);
     setServices(initialServices);
     setDocuments(initialDocuments);
-  }, [initialSystems, initialSuppliers, initialServices, initialDocuments]);
+    setSystemResourcesMap(resourcesBySystemId);
+  }, [initialSystems, initialSuppliers, initialServices, initialDocuments, resourcesBySystemId]);
 
   React.useEffect(() => {
     if (tabParam && VALID_TABS.includes(tabParam as RecursosTab)) {
@@ -183,163 +143,72 @@ export function RecursosContent({
 
   const filterState = useRecursosFilters(currentItems as RecursosEntity[]);
 
-  const resetForm = React.useCallback(() => {
-    setFormData(DEFAULT_FORM);
-    setEditingItem(null);
-  }, []);
-
   const openCreate = React.useCallback(() => {
-    resetForm();
-    setIsFormOpen(true);
-  }, [resetForm]);
-
-  const handleCreateOrUpdate = React.useCallback(async () => {
-    if (!formData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      if (editingItem) {
-        if ('purpose' in editingItem) {
-          const result = await updateSystemAction(editingItem.id, {
-            name: formData.name.trim(),
-            description: formData.description.trim() || null,
-            purpose: formData.purpose.trim() || null,
-          });
-          if (result.success && result.data) {
-            setSystems((prev) => prev.map((s) => (s.id === editingItem.id ? result.data! : s)));
-            setSelectedItem(result.data);
-            toast.success(result.message);
-          } else {
-            toast.error(result.message);
-          }
-        } else if ('description' in editingItem && !('type' in editingItem)) {
-          const sup = editingItem as OrgSupplier;
-          const result = await updateSupplierAction(sup.id, {
-            name: formData.name.trim(),
-            description: formData.description.trim() || null,
-          });
-          if (result.success && result.data) {
-            setSuppliers((prev) => prev.map((s) => (s.id === sup.id ? result.data! : s)));
-            setSelectedItem(result.data);
-            toast.success(result.message);
-          } else {
-            toast.error(result.message);
-          }
-        } else if ('description' in editingItem && !('associated_process_id' in editingItem)) {
-          const svc = editingItem as OrgService;
-          const result = await updateServiceAction(svc.id, {
-            name: formData.name.trim(),
-            description: formData.description.trim() || null,
-          });
-          if (result.success && result.data) {
-            setServices((prev) => prev.map((s) => (s.id === svc.id ? result.data! : s)));
-            setSelectedItem(result.data);
-            toast.success(result.message);
-          } else {
-            toast.error(result.message);
-          }
-        } else {
-          const doc = editingItem as OrgDocument;
-          const result = await updateOrgDocumentAction(doc.id, {
-            name: formData.name.trim(),
-            type: formData.type.trim() || null,
-            description: formData.description.trim() || null,
-            associated_process_id: formData.associated_process_id || null,
-          });
-          if (result.success && result.data) {
-            setDocuments((prev) => prev.map((d) => (d.id === doc.id ? result.data! : d)));
-            setSelectedItem(result.data);
-            toast.success(result.message);
-          } else {
-            toast.error(result.message);
-          }
-        }
-      } else {
-        switch (activeTab) {
-          case 'sistemas': {
-            const result = await createSystemAction({
-              name: formData.name.trim(),
-              description: formData.description.trim() || null,
-              purpose: formData.purpose.trim() || null,
-            });
-            if (result.success && result.data) {
-              setSystems((prev) => [...prev, result.data!]);
-              toast.success(result.message);
-            } else {
-              toast.error(result.message);
-            }
-            break;
-          }
-          case 'fornecedores': {
-            const result = await createSupplierAction({
-              name: formData.name.trim(),
-              description: formData.description.trim() || null,
-              responsible_roles: [],
-            });
-            if (result.success && result.data) {
-              setSuppliers((prev) => [...prev, result.data!]);
-              toast.success(result.message);
-            } else {
-              toast.error(result.message);
-            }
-            break;
-          }
-          case 'servicos': {
-            const result = await createServiceAction({
-              name: formData.name.trim(),
-              description: formData.description.trim() || null,
-              responsible_roles: [],
-            });
-            if (result.success && result.data) {
-              setServices((prev) => [...prev, result.data!]);
-              toast.success(result.message);
-            } else {
-              toast.error(result.message);
-            }
-            break;
-          }
-          case 'documentos': {
-            const result = await createOrgDocumentAction({
-              name: formData.name.trim(),
-              type: formData.type.trim() || null,
-              description: formData.description.trim() || null,
-              associated_process_id: formData.associated_process_id || null,
-              responsible_roles: [],
-            });
-            if (result.success && result.data) {
-              setDocuments((prev) => [...prev, result.data!]);
-              toast.success(result.message);
-            } else {
-              toast.error(result.message);
-            }
-            break;
-          }
-        }
-      }
-      resetForm();
-      setIsFormOpen(false);
-      router.refresh();
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [editingItem, formData, activeTab, resetForm, router]);
+    setEditingItem(null);
+    setResourceFormEntity(
+      activeTab === 'sistemas'
+        ? 'system'
+        : activeTab === 'fornecedores'
+          ? 'supplier'
+          : activeTab === 'servicos'
+            ? 'service'
+            : 'document',
+    );
+    setIsResourceFormOpen(true);
+  }, [activeTab]);
 
   const handleOpenEdit = React.useCallback((item: RecursosEntity) => {
     setEditingItem(item);
-    setFormData({
-      name: item.name,
-      description: item.description ?? '',
-      purpose: 'purpose' in item ? (item.purpose ?? '') : '',
-      type: 'type' in item ? (item.type ?? '') : '',
-      associated_process_id:
-        'associated_process_id' in item ? (item.associated_process_id ?? '') : '',
-    });
-    setIsFormOpen(true);
-  }, []);
+    setResourceFormEntity(
+      'purpose' in item
+        ? 'system'
+        : 'associated_process_id' in item
+          ? 'document'
+          : 'responsible_roles' in item && activeTab === 'fornecedores'
+            ? 'supplier'
+            : 'service',
+    );
+    setIsResourceFormOpen(true);
+  }, [activeTab]);
+
+  const handleResourceSaved = React.useCallback(
+    (saved: RecursosEntity) => {
+      if ('purpose' in saved) {
+        setSystems((prev) => {
+          const exists = prev.some((item) => item.id === saved.id);
+          return exists
+            ? prev.map((item) => (item.id === saved.id ? (saved as OrgSystem) : item))
+            : [...prev, saved as OrgSystem];
+        });
+      } else if ('associated_process_id' in saved) {
+        setDocuments((prev) => {
+          const exists = prev.some((item) => item.id === saved.id);
+          return exists
+            ? prev.map((item) => (item.id === saved.id ? (saved as OrgDocument) : item))
+            : [...prev, saved as OrgDocument];
+        });
+      } else if (activeTab === 'fornecedores' || resourceFormEntity === 'supplier') {
+        setSuppliers((prev) => {
+          const exists = prev.some((item) => item.id === saved.id);
+          return exists
+            ? prev.map((item) => (item.id === saved.id ? (saved as OrgSupplier) : item))
+            : [...prev, saved as OrgSupplier];
+        });
+      } else {
+        setServices((prev) => {
+          const exists = prev.some((item) => item.id === saved.id);
+          return exists
+            ? prev.map((item) => (item.id === saved.id ? (saved as OrgService) : item))
+            : [...prev, saved as OrgService];
+        });
+      }
+
+      if (selectedItem?.id === saved.id) {
+        setSelectedItem(saved);
+      }
+    },
+    [activeTab, resourceFormEntity, selectedItem],
+  );
 
   const handleConfirmDelete = React.useCallback(async () => {
     if (!itemToDelete) return;
@@ -383,56 +252,26 @@ export function RecursosContent({
         }
       }
       setItemToDelete(null);
-      router.refresh();
     } catch (error) {
       toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
-  }, [itemToDelete, router]);
+  }, [itemToDelete]);
 
-  const handleSystemResourceCreateOrUpdate = React.useCallback(async () => {
-    const system = selectedItem && selectedTab === 'sistemas' ? (selectedItem as OrgSystem) : null;
-    if (!system) return;
-    if (!systemResourceFormData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsSystemResourceLoading(true);
-    try {
-      if (editingSystemResource) {
-        const result = await updateSystemResourceAction(editingSystemResource.id, {
-          name: systemResourceFormData.name.trim(),
-          description: systemResourceFormData.description.trim() || null,
-        });
-        if (result.success) {
-          toast.success(result.message);
-          setSystemResourceFormData(DEFAULT_SYSTEM_RESOURCE_FORM);
-          setEditingSystemResource(null);
-          setIsSystemResourceFormOpen(false);
-          router.refresh();
-        } else {
-          toast.error(result.message);
-        }
-      } else {
-        const result = await createSystemResourceAction({
-          system_id: system.id,
-          name: systemResourceFormData.name.trim(),
-          description: systemResourceFormData.description.trim() || null,
-        });
-        if (result.success) {
-          toast.success(result.message);
-          setSystemResourceFormData(DEFAULT_SYSTEM_RESOURCE_FORM);
-          setIsSystemResourceFormOpen(false);
-          router.refresh();
-        } else {
-          toast.error(result.message);
-        }
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsSystemResourceLoading(false);
-    }
-  }, [selectedItem, selectedTab, editingSystemResource, systemResourceFormData, router]);
+  const handleSystemResourceSaved = React.useCallback(
+    (saved: OrgSystemResource) => {
+      setSystemResourcesMap((prev) => {
+        const current = prev[saved.system_id] ?? [];
+        const exists = current.some((item) => item.id === saved.id);
+        return {
+          ...prev,
+          [saved.system_id]: exists
+            ? current.map((item) => (item.id === saved.id ? saved : item))
+            : [...current, saved],
+        };
+      });
+    },
+    [],
+  );
 
   const handleConfirmDeleteSystemResource = React.useCallback(async () => {
     if (!systemResourceToDelete) return;
@@ -440,15 +279,20 @@ export function RecursosContent({
       const result = await deleteSystemResourceAction(systemResourceToDelete.id);
       if (result.success) {
         toast.success(result.message);
+        setSystemResourcesMap((prev) => ({
+          ...prev,
+          [systemResourceToDelete.system_id]: (prev[systemResourceToDelete.system_id] ?? []).filter(
+            (item) => item.id !== systemResourceToDelete.id,
+          ),
+        }));
         setSystemResourceToDelete(null);
-        router.refresh();
       } else {
         toast.error(result.message);
       }
     } catch (error) {
       toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
-  }, [systemResourceToDelete, router]);
+  }, [systemResourceToDelete]);
 
   const listAnnouncement = `${filterState.filteredData.length} ${activeTab === 'sistemas' ? 'sistemas' : activeTab === 'fornecedores' ? 'fornecedores' : activeTab === 'servicos' ? 'serviços' : 'documentos'} exibidos`;
 
@@ -549,7 +393,7 @@ export function RecursosContent({
     switch (selectedTab) {
       case 'sistemas': {
         const system = selectedItem as OrgSystem;
-        const resources = resourcesBySystemId[system.id] ?? [];
+        const resources = systemResourcesMap[system.id] ?? [];
         return (
           <SystemCockpit360
             system={system}
@@ -557,16 +401,13 @@ export function RecursosContent({
             onEdit={() => handleOpenEdit(system)}
             onDelete={() => setItemToDelete(system)}
             onAddResource={() => {
+              setSelectedSystemForResource(system);
               setEditingSystemResource(null);
-              setSystemResourceFormData(DEFAULT_SYSTEM_RESOURCE_FORM);
               setIsSystemResourceFormOpen(true);
             }}
             onEditResource={(r) => {
+              setSelectedSystemForResource(system);
               setEditingSystemResource(r);
-              setSystemResourceFormData({
-                name: r.name,
-                description: r.description ?? '',
-              });
               setIsSystemResourceFormOpen(true);
             }}
             onDeleteResource={(r) => setSystemResourceToDelete(r)}
@@ -605,22 +446,6 @@ export function RecursosContent({
       }
       default:
         return null;
-    }
-  };
-
-  const getFormTitle = () => {
-    if (editingItem) return 'Editar';
-    switch (activeTab) {
-      case 'sistemas':
-        return 'Novo Sistema';
-      case 'fornecedores':
-        return 'Novo Fornecedor';
-      case 'servicos':
-        return 'Novo Serviço';
-      case 'documentos':
-        return 'Novo Documento';
-      default:
-        return 'Novo';
     }
   };
 
@@ -831,90 +656,18 @@ export function RecursosContent({
         )}
       </div>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{getFormTitle()}</DialogTitle>
-            <DialogDescription>
-              {editingItem
-                ? 'Atualize os dados do item.'
-                : 'Preencha os dados para criar um novo item.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="recursos-name">Nome *</Label>
-              <Input
-                id="recursos-name"
-                value={formData.name}
-                onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="Nome"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="recursos-description">Descrição</Label>
-              <Textarea
-                id="recursos-description"
-                value={formData.description}
-                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Descrição"
-                rows={3}
-              />
-            </div>
-            {activeTab === 'sistemas' || 'purpose' in (editingItem ?? {}) ? (
-              <div className="grid gap-2">
-                <Label htmlFor="recursos-purpose">Propósito</Label>
-                <Input
-                  id="recursos-purpose"
-                  value={formData.purpose}
-                  onChange={(e) => setFormData((p) => ({ ...p, purpose: e.target.value }))}
-                  placeholder="Propósito do sistema"
-                />
-              </div>
-            ) : null}
-            {activeTab === 'documentos' || 'type' in (editingItem ?? {}) ? (
-              <>
-                <div className="grid gap-2">
-                  <Label htmlFor="recursos-type">Tipo</Label>
-                  <Input
-                    id="recursos-type"
-                    value={formData.type}
-                    onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))}
-                    placeholder="Tipo do documento"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="recursos-process">Processo associado</Label>
-                  <Select
-                    value={formData.associated_process_id}
-                    onValueChange={(v) => setFormData((p) => ({ ...p, associated_process_id: v }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o processo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
-                      {processes.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            ) : null}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsFormOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCreateOrUpdate} disabled={isLoading}>
-              {editingItem ? 'Salvar' : 'Criar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ResourceEntityFormSheet
+        entity={resourceFormEntity}
+        mode={editingItem ? 'edit' : 'create'}
+        initialData={editingItem ?? undefined}
+        processOptions={processes}
+        isOpen={isResourceFormOpen}
+        onClose={() => {
+          setIsResourceFormOpen(false);
+          setEditingItem(null);
+        }}
+        onSaved={handleResourceSaved}
+      />
 
       <Dialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
         <DialogContent>
@@ -935,70 +688,19 @@ export function RecursosContent({
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={isSystemResourceFormOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsSystemResourceFormOpen(false);
-            setEditingSystemResource(null);
-            setSystemResourceFormData(DEFAULT_SYSTEM_RESOURCE_FORM);
-          }
+      <SystemResourceFormSheet
+        mode={editingSystemResource ? 'edit' : 'create'}
+        systemId={selectedSystemForResource?.id}
+        systemName={selectedSystemForResource?.name}
+        initialData={editingSystemResource ?? undefined}
+        isOpen={isSystemResourceFormOpen}
+        onClose={() => {
+          setIsSystemResourceFormOpen(false);
+          setEditingSystemResource(null);
+          setSelectedSystemForResource(null);
         }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingSystemResource ? 'Editar recurso' : 'Adicionar recurso'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingSystemResource
-                ? 'Atualize os dados do recurso de sistema.'
-                : 'Preencha os dados para adicionar um recurso ao sistema.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="system-resource-name">Nome *</Label>
-              <Input
-                id="system-resource-name"
-                value={systemResourceFormData.name}
-                onChange={(e) => setSystemResourceFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="Nome do recurso"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="system-resource-description">Descrição</Label>
-              <Textarea
-                id="system-resource-description"
-                value={systemResourceFormData.description}
-                onChange={(e) =>
-                  setSystemResourceFormData((p) => ({ ...p, description: e.target.value }))
-                }
-                placeholder="Descrição"
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsSystemResourceFormOpen(false);
-                setEditingSystemResource(null);
-                setSystemResourceFormData(DEFAULT_SYSTEM_RESOURCE_FORM);
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSystemResourceCreateOrUpdate}
-              disabled={isSystemResourceLoading || !systemResourceFormData.name.trim()}
-            >
-              {editingSystemResource ? 'Salvar' : 'Adicionar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onSaved={handleSystemResourceSaved}
+      />
 
       <Dialog
         open={!!systemResourceToDelete}

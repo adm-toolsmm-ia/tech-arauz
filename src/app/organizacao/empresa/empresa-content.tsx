@@ -18,6 +18,7 @@ import {
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -27,15 +28,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { SplitView } from '@/components/views/SplitView';
@@ -48,6 +40,9 @@ import { SystemCockpit360 } from '@/components/organization/SystemCockpit360';
 import { SupplierCockpit360 } from '@/components/organization/SupplierCockpit360';
 import { ServiceCockpit360 } from '@/components/organization/ServiceCockpit360';
 import { DocumentCockpit360 } from '@/components/organization/DocumentCockpit360';
+import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
+import { ResourceEntityFormSheet } from '@/components/organization/ResourceEntityFormSheet';
+import { SystemResourceFormSheet } from '@/components/organization/SystemResourceFormSheet';
 import { OrgBreadcrumb } from '@/components/organization/OrgBreadcrumb';
 import { EmpresaListView } from './components/EmpresaListView';
 import { EmpresaKanbanView } from './components/EmpresaKanbanView';
@@ -55,29 +50,21 @@ import { EmpresaKPIBar } from './components/EmpresaKPIBar';
 import { toast } from 'sonner';
 import type { EmpresaVinculo } from './types';
 import type {
+  OrgArea,
+  OrgDocument,
   OrgNucleus,
   OrgProcess,
   OrgRoutine,
+  OrgService,
+  OrgSupplier,
   OrgSystemResource,
   OrgSystem,
 } from '@/types/organization';
 import {
-  createAreaAction,
-  createNucleusAction,
-  createSystemAction,
-  createSupplierAction,
-  createServiceAction,
-  createOrgDocumentAction,
-  updateSystemAction,
-  updateSupplierAction,
-  updateServiceAction,
-  updateOrgDocumentAction,
   deleteSystemAction,
   deleteSupplierAction,
   deleteServiceAction,
   deleteOrgDocumentAction,
-  createSystemResourceAction,
-  updateSystemResourceAction,
   deleteSystemResourceAction,
   addProcessSystemAction,
   removeProcessSystemAction,
@@ -110,54 +97,7 @@ interface EmpresaContentProps {
   linkedData?: EmpresaLinkedData;
   error?: string;
 }
-
-interface AreaFormData {
-  name: string;
-  description: string;
-  objective: string;
-  responsible_roles: string;
-}
-
-interface NucleusFormData {
-  area_id: string;
-  name: string;
-  description: string;
-  objective: string;
-  responsible_roles: string;
-}
-
-const DEFAULT_AREA_FORM: AreaFormData = {
-  name: '',
-  description: '',
-  objective: '',
-  responsible_roles: '',
-};
-
-const DEFAULT_NUCLEUS_FORM: NucleusFormData = {
-  area_id: '',
-  name: '',
-  description: '',
-  objective: '',
-  responsible_roles: '',
-};
-
 type ResourceFormType = 'system' | 'supplier' | 'service' | 'document';
-
-interface ResourceFormData {
-  name: string;
-  description: string;
-  purpose: string;
-  type: string;
-  associated_process_id: string;
-}
-
-const DEFAULT_RESOURCE_FORM: ResourceFormData = {
-  name: '',
-  description: '',
-  purpose: '',
-  type: '',
-  associated_process_id: '',
-};
 
 export function EmpresaContent({
   tenant,
@@ -175,28 +115,18 @@ export function EmpresaContent({
   const [search, setSearch] = React.useState('');
   const [isAreaFormOpen, setIsAreaFormOpen] = React.useState(false);
   const [isNucleusFormOpen, setIsNucleusFormOpen] = React.useState(false);
-  const [areaFormData, setAreaFormData] = React.useState<AreaFormData>(DEFAULT_AREA_FORM);
-  const [nucleusFormData, setNucleusFormData] =
-    React.useState<NucleusFormData>(DEFAULT_NUCLEUS_FORM);
-  const [isAreaLoading, setIsAreaLoading] = React.useState(false);
-  const [isNucleusLoading, setIsNucleusLoading] = React.useState(false);
   const [isResourceFormOpen, setIsResourceFormOpen] = React.useState(false);
-  const [resourceFormType, setResourceFormType] = React.useState<ResourceFormType | null>(null);
-  const [resourceFormData, setResourceFormData] =
-    React.useState<ResourceFormData>(DEFAULT_RESOURCE_FORM);
+  const [resourceFormType, setResourceFormType] = React.useState<ResourceFormType>('system');
   const [editingVinculo, setEditingVinculo] = React.useState<EmpresaVinculo | null>(null);
   const [vinculoToDelete, setVinculoToDelete] = React.useState<EmpresaVinculo | null>(null);
-  const [isResourceLoading, setIsResourceLoading] = React.useState(false);
   const [isSystemResourceFormOpen, setIsSystemResourceFormOpen] = React.useState(false);
+  const [selectedSystemForResource, setSelectedSystemForResource] = React.useState<OrgSystem | null>(
+    null,
+  );
   const [editingSystemResource, setEditingSystemResource] =
     React.useState<OrgSystemResource | null>(null);
   const [systemResourceToDelete, setSystemResourceToDelete] =
     React.useState<OrgSystemResource | null>(null);
-  const [systemResourceFormData, setSystemResourceFormData] = React.useState({
-    name: '',
-    description: '',
-  });
-  const [isSystemResourceLoading, setIsSystemResourceLoading] = React.useState(false);
 
   const areas = React.useMemo(
     () =>
@@ -210,77 +140,6 @@ export function EmpresaContent({
     if (tenant) setEditName(tenant.name);
   }, [tenant]);
 
-  const parseRoles = (s: string) =>
-    s
-      ? s
-          .split(',')
-          .map((r) => r.trim())
-          .filter(Boolean)
-      : [];
-
-  const handleCreateArea = React.useCallback(async () => {
-    if (!areaFormData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsAreaLoading(true);
-    try {
-      const result = await createAreaAction({
-        name: areaFormData.name.trim(),
-        description: areaFormData.description.trim() || null,
-        objective: areaFormData.objective.trim() || null,
-        responsible_roles: parseRoles(areaFormData.responsible_roles),
-        documentation: {},
-      });
-      if (result.success) {
-        toast.success(result.message);
-        setAreaFormData(DEFAULT_AREA_FORM);
-        setIsAreaFormOpen(false);
-        router.refresh();
-      } else {
-        toast.error(result.message);
-      }
-    } catch (e) {
-      toast.error(`Erro: ${e instanceof Error ? e.message : 'desconhecido'}`);
-    } finally {
-      setIsAreaLoading(false);
-    }
-  }, [areaFormData, router]);
-
-  const handleCreateNucleus = React.useCallback(async () => {
-    if (!nucleusFormData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    if (!nucleusFormData.area_id) {
-      toast.error('Área é obrigatória');
-      return;
-    }
-    setIsNucleusLoading(true);
-    try {
-      const result = await createNucleusAction({
-        area_id: nucleusFormData.area_id,
-        name: nucleusFormData.name.trim(),
-        description: nucleusFormData.description.trim() || null,
-        objective: nucleusFormData.objective.trim() || null,
-        responsible_roles: parseRoles(nucleusFormData.responsible_roles),
-        documentation: {},
-      });
-      if (result.success) {
-        toast.success(result.message);
-        setNucleusFormData(DEFAULT_NUCLEUS_FORM);
-        setIsNucleusFormOpen(false);
-        router.refresh();
-      } else {
-        toast.error(result.message);
-      }
-    } catch (e) {
-      toast.error(`Erro: ${e instanceof Error ? e.message : 'desconhecido'}`);
-    } finally {
-      setIsNucleusLoading(false);
-    }
-  }, [nucleusFormData, router]);
-
   const processOptions = React.useMemo(
     () =>
       linkedData ? Object.entries(linkedData.processMap).map(([id, name]) => ({ id, name })) : [],
@@ -289,182 +148,18 @@ export function EmpresaContent({
 
   const openResourceCreate = React.useCallback((type: ResourceFormType) => {
     setResourceFormType(type);
-    setResourceFormData(DEFAULT_RESOURCE_FORM);
     setEditingVinculo(null);
     setIsResourceFormOpen(true);
   }, []);
 
-  const handleResourceCreateOrUpdate = React.useCallback(async () => {
-    if (!resourceFormData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsResourceLoading(true);
-    try {
-      if (editingVinculo) {
-        const entity = editingVinculo.entity;
-        if (editingVinculo.type === 'sistemas') {
-          const result = await updateSystemAction(entity.id, {
-            name: resourceFormData.name.trim(),
-            description: resourceFormData.description.trim() || null,
-            purpose: resourceFormData.purpose.trim() || null,
-          });
-          if (result.success) {
-            toast.success(result.message);
-            router.refresh();
-          } else toast.error(result.message);
-        } else if (editingVinculo.type === 'fornecedores') {
-          const result = await updateSupplierAction(entity.id, {
-            name: resourceFormData.name.trim(),
-            description: resourceFormData.description.trim() || null,
-          });
-          if (result.success) {
-            toast.success(result.message);
-            router.refresh();
-          } else toast.error(result.message);
-        } else if (editingVinculo.type === 'servicos') {
-          const result = await updateServiceAction(entity.id, {
-            name: resourceFormData.name.trim(),
-            description: resourceFormData.description.trim() || null,
-          });
-          if (result.success) {
-            toast.success(result.message);
-            router.refresh();
-          } else toast.error(result.message);
-        } else if (editingVinculo.type === 'documentos') {
-          const result = await updateOrgDocumentAction(entity.id, {
-            name: resourceFormData.name.trim(),
-            type: resourceFormData.type.trim() || null,
-            description: resourceFormData.description.trim() || null,
-            associated_process_id: resourceFormData.associated_process_id || null,
-          });
-          if (result.success) {
-            toast.success(result.message);
-            router.refresh();
-          } else toast.error(result.message);
-        }
-      } else if (resourceFormType) {
-        switch (resourceFormType) {
-          case 'system': {
-            const result = await createSystemAction({
-              name: resourceFormData.name.trim(),
-              description: resourceFormData.description.trim() || null,
-              purpose: resourceFormData.purpose.trim() || null,
-            });
-            if (result.success) {
-              toast.success(result.message);
-              router.refresh();
-            } else toast.error(result.message);
-            break;
-          }
-          case 'supplier': {
-            const result = await createSupplierAction({
-              name: resourceFormData.name.trim(),
-              description: resourceFormData.description.trim() || null,
-              responsible_roles: [],
-            });
-            if (result.success) {
-              toast.success(result.message);
-              router.refresh();
-            } else toast.error(result.message);
-            break;
-          }
-          case 'service': {
-            const result = await createServiceAction({
-              name: resourceFormData.name.trim(),
-              description: resourceFormData.description.trim() || null,
-              responsible_roles: [],
-            });
-            if (result.success) {
-              toast.success(result.message);
-              router.refresh();
-            } else toast.error(result.message);
-            break;
-          }
-          case 'document': {
-            const result = await createOrgDocumentAction({
-              name: resourceFormData.name.trim(),
-              type: resourceFormData.type.trim() || null,
-              description: resourceFormData.description.trim() || null,
-              associated_process_id: resourceFormData.associated_process_id || null,
-              responsible_roles: [],
-            });
-            if (result.success) {
-              toast.success(result.message);
-              router.refresh();
-            } else toast.error(result.message);
-            break;
-          }
-        }
-      }
-      setResourceFormData(DEFAULT_RESOURCE_FORM);
-      setResourceFormType(null);
-      setEditingVinculo(null);
-      setIsResourceFormOpen(false);
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsResourceLoading(false);
-    }
-  }, [resourceFormData, resourceFormType, editingVinculo, router]);
-
   const openSystemResourceForm = React.useCallback(
     (system?: OrgSystem, resource?: OrgSystemResource) => {
-      if (resource) {
-        setEditingSystemResource(resource);
-        setSystemResourceFormData({
-          name: resource.name,
-          description: resource.description ?? '',
-        });
-      } else {
-        setEditingSystemResource(null);
-        setSystemResourceFormData({ name: '', description: '' });
-      }
+      setSelectedSystemForResource(system ?? null);
+      setEditingSystemResource(resource ?? null);
       setIsSystemResourceFormOpen(true);
     },
     [],
   );
-
-  const handleSystemResourceCreateOrUpdate = React.useCallback(async () => {
-    const system = selectedVinculo?.type === 'sistemas' ? selectedVinculo.entity : null;
-    if (!system) return;
-    if (!systemResourceFormData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsSystemResourceLoading(true);
-    try {
-      if (editingSystemResource) {
-        const result = await updateSystemResourceAction(editingSystemResource.id, {
-          name: systemResourceFormData.name.trim(),
-          description: systemResourceFormData.description.trim() || null,
-        });
-        if (result.success) {
-          toast.success(result.message);
-          setEditingSystemResource(null);
-          setSystemResourceFormData({ name: '', description: '' });
-          setIsSystemResourceFormOpen(false);
-          router.refresh();
-        } else toast.error(result.message);
-      } else {
-        const result = await createSystemResourceAction({
-          system_id: system.id,
-          name: systemResourceFormData.name.trim(),
-          description: systemResourceFormData.description.trim() || null,
-        });
-        if (result.success) {
-          toast.success(result.message);
-          setSystemResourceFormData({ name: '', description: '' });
-          setIsSystemResourceFormOpen(false);
-          router.refresh();
-        } else toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsSystemResourceLoading(false);
-    }
-  }, [selectedVinculo, editingSystemResource, systemResourceFormData, router]);
 
   const [processSystemToUnlink, setProcessSystemToUnlink] = React.useState<{
     processId: string;
@@ -623,10 +318,7 @@ export function EmpresaContent({
           <Button
             className="gap-2"
             size="sm"
-            onClick={() => {
-              setAreaFormData(DEFAULT_AREA_FORM);
-              setIsAreaFormOpen(true);
-            }}
+            onClick={() => setIsAreaFormOpen(true)}
           >
             <Plus className="h-4 w-4" />
             Nova Área
@@ -635,10 +327,7 @@ export function EmpresaContent({
             variant="outline"
             size="sm"
             className="gap-2"
-            onClick={() => {
-              setNucleusFormData(DEFAULT_NUCLEUS_FORM);
-              setIsNucleusFormOpen(true);
-            }}
+            onClick={() => setIsNucleusFormOpen(true)}
             disabled={areas.length === 0}
             title={areas.length === 0 ? 'Cadastre ao menos uma área antes' : undefined}
           >
@@ -796,21 +485,28 @@ export function EmpresaContent({
                       }
                       onEdit={(v) => {
                         setEditingVinculo(v);
-                        const e = v.entity;
-                        setResourceFormData({
-                          name: e.name,
-                          description: e.description ?? '',
-                          purpose: 'purpose' in e ? (e.purpose ?? '') : '',
-                          type: 'type' in e ? (e.type ?? '') : '',
-                          associated_process_id:
-                            'associated_process_id' in e ? (e.associated_process_id ?? '') : '',
-                        });
-                        setResourceFormType(null);
+                        setResourceFormType(
+                          v.type === 'sistemas'
+                            ? 'system'
+                            : v.type === 'fornecedores'
+                              ? 'supplier'
+                              : v.type === 'servicos'
+                                ? 'service'
+                                : 'document',
+                        );
                         setIsResourceFormOpen(true);
                       }}
                       onDelete={(v) => setVinculoToDelete(v)}
-                      onAddSystemResource={() => openSystemResourceForm()}
-                      onEditSystemResource={(r) => openSystemResourceForm(undefined, r)}
+                      onAddSystemResource={() =>
+                        selectedVinculo?.type === 'sistemas'
+                          ? openSystemResourceForm(selectedVinculo.entity)
+                          : undefined
+                      }
+                      onEditSystemResource={(r) =>
+                        selectedVinculo?.type === 'sistemas'
+                          ? openSystemResourceForm(selectedVinculo.entity, r)
+                          : undefined
+                      }
                       onDeleteSystemResource={(r) => setSystemResourceToDelete(r)}
                       systems={linkedData?.systems ?? []}
                       systemsByProcessId={linkedData?.systemsByProcessId ?? {}}
@@ -857,276 +553,35 @@ export function EmpresaContent({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isAreaFormOpen} onOpenChange={setIsAreaFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nova Área</DialogTitle>
-            <DialogDescription>
-              Preencha os dados para criar uma nova área na organização.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="area-name">Nome *</Label>
-              <Input
-                id="area-name"
-                value={areaFormData.name}
-                onChange={(e) => setAreaFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="ex.: Recuperação de Crédito"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="area-description">Descrição</Label>
-              <Textarea
-                id="area-description"
-                value={areaFormData.description}
-                onChange={(e) => setAreaFormData((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Descrição da área"
-                rows={3}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="area-objective">Objetivo</Label>
-              <Textarea
-                id="area-objective"
-                value={areaFormData.objective}
-                onChange={(e) => setAreaFormData((p) => ({ ...p, objective: e.target.value }))}
-                placeholder="Objetivo da área"
-                rows={2}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="area-roles">Roles responsáveis (separados por vírgula)</Label>
-              <Input
-                id="area-roles"
-                value={areaFormData.responsible_roles}
-                onChange={(e) =>
-                  setAreaFormData((p) => ({ ...p, responsible_roles: e.target.value }))
-                }
-                placeholder="ex.: coordenador, analista_senior"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAreaFormOpen(false)}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleCreateArea}
-              disabled={isAreaLoading || !areaFormData.name.trim()}
-            >
-              {isAreaLoading ? 'Criando...' : 'Criar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <OrgEntityFormSheet
+        entity="area"
+        mode="create"
+        isOpen={isAreaFormOpen}
+        onClose={() => setIsAreaFormOpen(false)}
+        onSaved={() => router.refresh()}
+      />
 
-      <Dialog open={isNucleusFormOpen} onOpenChange={setIsNucleusFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Novo Núcleo</DialogTitle>
-            <DialogDescription>
-              Preencha os dados para criar um novo núcleo vinculado a uma área.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="nucleus-area">Área *</Label>
-              <Select
-                value={nucleusFormData.area_id}
-                onValueChange={(v) => setNucleusFormData((p) => ({ ...p, area_id: v }))}
-              >
-                <SelectTrigger id="nucleus-area">
-                  <SelectValue placeholder="Selecione a área" />
-                </SelectTrigger>
-                <SelectContent>
-                  {areas.map((area) => (
-                    <SelectItem key={area.id} value={area.id}>
-                      {area.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="nucleus-name">Nome *</Label>
-              <Input
-                id="nucleus-name"
-                value={nucleusFormData.name}
-                onChange={(e) => setNucleusFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="ex.: Núcleo de Ajuizamento"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="nucleus-description">Descrição</Label>
-              <Textarea
-                id="nucleus-description"
-                value={nucleusFormData.description}
-                onChange={(e) => setNucleusFormData((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Descrição do núcleo"
-                rows={3}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="nucleus-objective">Objetivo</Label>
-              <Textarea
-                id="nucleus-objective"
-                value={nucleusFormData.objective}
-                onChange={(e) => setNucleusFormData((p) => ({ ...p, objective: e.target.value }))}
-                placeholder="Objetivo do núcleo"
-                rows={2}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="nucleus-roles">Roles responsáveis (separados por vírgula)</Label>
-              <Input
-                id="nucleus-roles"
-                value={nucleusFormData.responsible_roles}
-                onChange={(e) =>
-                  setNucleusFormData((p) => ({ ...p, responsible_roles: e.target.value }))
-                }
-                placeholder="ex.: coordenador, analista"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNucleusFormOpen(false)}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleCreateNucleus}
-              disabled={
-                isNucleusLoading || !nucleusFormData.name.trim() || !nucleusFormData.area_id
-              }
-            >
-              {isNucleusLoading ? 'Criando...' : 'Criar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <OrgEntityFormSheet
+        entity="nucleus"
+        mode="create"
+        isOpen={isNucleusFormOpen}
+        relationOptions={{ areas }}
+        onClose={() => setIsNucleusFormOpen(false)}
+        onSaved={() => router.refresh()}
+      />
 
-      <Dialog
-        open={isResourceFormOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsResourceFormOpen(false);
-            setResourceFormType(null);
-            setEditingVinculo(null);
-            setResourceFormData(DEFAULT_RESOURCE_FORM);
-          }
+      <ResourceEntityFormSheet
+        entity={resourceFormType}
+        mode={editingVinculo ? 'edit' : 'create'}
+        initialData={editingVinculo?.entity as OrgSystem | OrgSupplier | OrgService | OrgDocument | undefined}
+        processOptions={processOptions}
+        isOpen={isResourceFormOpen}
+        onClose={() => {
+          setIsResourceFormOpen(false);
+          setEditingVinculo(null);
         }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingVinculo
-                ? 'Editar'
-                : resourceFormType === 'system'
-                  ? 'Novo Sistema'
-                  : resourceFormType === 'supplier'
-                    ? 'Novo Fornecedor'
-                    : resourceFormType === 'service'
-                      ? 'Novo Serviço'
-                      : 'Novo Documento'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingVinculo
-                ? 'Atualize os dados do item.'
-                : 'Preencha os dados para criar um novo item.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="resource-name">Nome *</Label>
-              <Input
-                id="resource-name"
-                value={resourceFormData.name}
-                onChange={(e) => setResourceFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="Nome"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="resource-description">Descrição</Label>
-              <Textarea
-                id="resource-description"
-                value={resourceFormData.description}
-                onChange={(e) =>
-                  setResourceFormData((p) => ({ ...p, description: e.target.value }))
-                }
-                placeholder="Descrição"
-                rows={3}
-              />
-            </div>
-            {(resourceFormType === 'system' || editingVinculo?.type === 'sistemas') && (
-              <div className="grid gap-2">
-                <Label htmlFor="resource-purpose">Propósito</Label>
-                <Input
-                  id="resource-purpose"
-                  value={resourceFormData.purpose}
-                  onChange={(e) => setResourceFormData((p) => ({ ...p, purpose: e.target.value }))}
-                  placeholder="Propósito do sistema"
-                />
-              </div>
-            )}
-            {(resourceFormType === 'document' || editingVinculo?.type === 'documentos') && (
-              <>
-                <div className="grid gap-2">
-                  <Label htmlFor="resource-type">Tipo</Label>
-                  <Input
-                    id="resource-type"
-                    value={resourceFormData.type}
-                    onChange={(e) => setResourceFormData((p) => ({ ...p, type: e.target.value }))}
-                    placeholder="Tipo do documento"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="resource-process">Processo associado</Label>
-                  <Select
-                    value={resourceFormData.associated_process_id}
-                    onValueChange={(v) =>
-                      setResourceFormData((p) => ({
-                        ...p,
-                        associated_process_id: v,
-                      }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o processo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
-                      {processOptions.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsResourceFormOpen(false);
-                setResourceFormType(null);
-                setEditingVinculo(null);
-                setResourceFormData(DEFAULT_RESOURCE_FORM);
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleResourceCreateOrUpdate}
-              disabled={isResourceLoading || !resourceFormData.name.trim()}
-            >
-              {editingVinculo ? 'Salvar' : 'Criar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onSaved={() => router.refresh()}
+      />
 
       <Dialog open={!!vinculoToDelete} onOpenChange={(open) => !open && setVinculoToDelete(null)}>
         <DialogContent>
@@ -1147,70 +602,19 @@ export function EmpresaContent({
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={isSystemResourceFormOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsSystemResourceFormOpen(false);
-            setEditingSystemResource(null);
-            setSystemResourceFormData({ name: '', description: '' });
-          }
+      <SystemResourceFormSheet
+        mode={editingSystemResource ? 'edit' : 'create'}
+        systemId={selectedSystemForResource?.id}
+        systemName={selectedSystemForResource?.name}
+        initialData={editingSystemResource ?? undefined}
+        isOpen={isSystemResourceFormOpen}
+        onClose={() => {
+          setIsSystemResourceFormOpen(false);
+          setEditingSystemResource(null);
+          setSelectedSystemForResource(null);
         }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingSystemResource ? 'Editar recurso' : 'Adicionar recurso'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingSystemResource
-                ? 'Atualize os dados do recurso de sistema.'
-                : 'Preencha os dados para adicionar um recurso ao sistema.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="empresa-system-resource-name">Nome *</Label>
-              <Input
-                id="empresa-system-resource-name"
-                value={systemResourceFormData.name}
-                onChange={(e) => setSystemResourceFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="Nome do recurso"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="empresa-system-resource-description">Descrição</Label>
-              <Textarea
-                id="empresa-system-resource-description"
-                value={systemResourceFormData.description}
-                onChange={(e) =>
-                  setSystemResourceFormData((p) => ({ ...p, description: e.target.value }))
-                }
-                placeholder="Descrição"
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsSystemResourceFormOpen(false);
-                setEditingSystemResource(null);
-                setSystemResourceFormData({ name: '', description: '' });
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSystemResourceCreateOrUpdate}
-              disabled={isSystemResourceLoading || !systemResourceFormData.name.trim()}
-            >
-              {editingSystemResource ? 'Salvar' : 'Adicionar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onSaved={() => router.refresh()}
+      />
 
       <Dialog
         open={!!systemResourceToDelete}

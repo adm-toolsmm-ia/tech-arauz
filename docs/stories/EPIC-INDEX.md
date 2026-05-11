@@ -234,6 +234,47 @@ Transform Tech Arauz from a **project management platform** into a comprehensive
 
 ---
 
+## 📋 EPIC 19: Espaider v2 Sync Migration
+
+**Timeline:** To be refined
+**Team:** PM + Architect + Data Engineer + Dev + QA
+**Effort:** To be refined during story breakdown
+**Status:** 🔄 **DRAFT FOR EXECUTION**
+
+### Vision
+
+Replace the current Espaider v1 sync contract with API v2 using:
+
+- dedicated v2 client boundary
+- incremental-first ETL
+- inline child dataset processing via `ListaFilhos`
+- frontend-visible integration logs
+- controlled v1 to v2 cutover with rollback
+
+### Initial Deliverables
+
+- v2 contract and architecture context documented
+- epic scope, phases, acceptance criteria, and risks documented
+- initial story backlog proposed for Claude implementation flow
+
+### Story Breakdown
+
+- [19.1 Client and Connectivity](./19.1-espaider-v2-client-connectivity.story.md)
+- [19.2 Schemas and Contract Tests](./19.2-espaider-v2-schemas-contract-tests.story.md)
+- [19.3 Parent Incremental Sync](./19.3-espaider-v2-parent-incremental-sync.story.md)
+- [19.4 Child Dataset Orchestration](./19.4-espaider-v2-child-datasets-orchestration.story.md)
+- [19.5 Invalid Record Quarantine](./19.5-espaider-v2-quarantine-invalid-records.story.md)
+- [19.6 Frontend-Visible Logs](./19.6-espaider-v2-frontend-visible-logs.story.md)
+- [19.7 Cutover Controls](./19.7-espaider-v2-cutover-controls.story.md)
+- [19.8 Rollout and Rollback](./19.8-espaider-v2-rollout-rollback-decommission.story.md)
+
+### References
+
+- [EPIC 19: Espaider v2 Sync Migration](./EPIC-19-Espaider-v2-Sync-Migration.md)
+- [ESPAIDER V2 API CONTEXT](../architecture/ESPAIDER-V2-API-CONTEXT.md)
+
+---
+
 ## 📊 Summary Metrics
 
 ### Total Program

@@ -36,9 +36,7 @@ import { NucleosKanbanView } from './components/NucleosKanbanView';
 import { useNucleosFilters, type NucleusWithMeta } from '@/hooks/useNucleosFilters';
 import {
   createNucleusAction,
-  updateNucleusAction,
   deleteNucleusAction,
-  createProcessAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
 
@@ -84,15 +82,9 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
   const [nuclei, setNuclei] = React.useState<NucleusWithMeta[]>(initialNuclei);
   const [selectedNucleus, setSelectedNucleus] = React.useState<NucleusWithMeta | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
-  const [editingNucleus, setEditingNucleus] = React.useState<NucleusWithMeta | null>(null);
   const [nucleusToDelete, setNucleusToDelete] = React.useState<NucleusWithMeta | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [formData, setFormData] = React.useState<NucleusFormData>(DEFAULT_FORM);
-
-  const [isProcessFormOpen, setIsProcessFormOpen] = React.useState(false);
-  const [processFormData, setProcessFormData] =
-    React.useState<ProcessFormData>(DEFAULT_PROCESS_FORM);
-  const [isProcessLoading, setIsProcessLoading] = React.useState(false);
 
   const {
     filters,
@@ -120,7 +112,6 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
 
   const resetForm = React.useCallback(() => {
     setFormData(DEFAULT_FORM);
-    setEditingNucleus(null);
   }, []);
 
   const handleCreate = React.useCallback(async () => {
@@ -162,55 +153,6 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
     }
   }, [formData, areas, resetForm]);
 
-  const handleUpdate = React.useCallback(async () => {
-    if (!editingNucleus) return;
-    if (!formData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const result = await updateNucleusAction(editingNucleus.id, {
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        objective: formData.objective.trim() || null,
-        responsible_roles: formData.responsible_roles,
-        documentation: editingNucleus.documentation,
-      });
-      if (result.success && result.data) {
-        const updated: NucleusWithMeta = {
-          ...result.data,
-          processes_count: editingNucleus.processes_count,
-          area_name: editingNucleus.area_name,
-        };
-        setNuclei((prev) => prev.map((n) => (n.id === editingNucleus.id ? updated : n)));
-        setSelectedNucleus(updated);
-        toast.success(result.message);
-        resetForm();
-        setIsFormOpen(false);
-        setEditingNucleus(null);
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [editingNucleus, formData, resetForm]);
-
-  const handleOpenEdit = React.useCallback((nucleus: NucleusWithMeta) => {
-    setEditingNucleus(nucleus);
-    setFormData({
-      area_id: nucleus.area_id,
-      name: nucleus.name,
-      description: nucleus.description ?? '',
-      objective: nucleus.objective ?? '',
-      responsible_roles: nucleus.responsible_roles ?? [],
-    });
-    setIsFormOpen(true);
-  }, []);
-
   const handleConfirmDelete = React.useCallback(async () => {
     if (!nucleusToDelete) return;
     try {
@@ -227,57 +169,6 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
       toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
   }, [nucleusToDelete]);
-
-  const handleOpenCreateProcess = React.useCallback((nucleus: NucleusWithMeta) => {
-    setProcessFormData({
-      area_id: nucleus.area_id,
-      nucleus_id: nucleus.id,
-      name: '',
-      description: '',
-      objective: '',
-    });
-    setIsProcessFormOpen(true);
-  }, []);
-
-  const handleCreateProcess = React.useCallback(async () => {
-    if (!processFormData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsProcessLoading(true);
-    try {
-      const result = await createProcessAction({
-        name: processFormData.name.trim(),
-        description: processFormData.description.trim() || null,
-        objective: processFormData.objective.trim() || null,
-        area_id: processFormData.area_id || null,
-        nucleus_id: processFormData.nucleus_id || null,
-        inputs: [],
-        outputs: [],
-        responsible_roles: [],
-        risks: [],
-        impacts: [],
-        documentation: {},
-      });
-      if (result.success && result.data) {
-        toast.success(result.message);
-        setProcessFormData(DEFAULT_PROCESS_FORM);
-        setIsProcessFormOpen(false);
-        router.refresh();
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsProcessLoading(false);
-    }
-  }, [processFormData, router]);
-
-  const nucleiForProcessArea = React.useMemo(
-    () => nuclei.filter((n) => n.area_id === processFormData.area_id),
-    [nuclei, processFormData.area_id],
-  );
 
   const listAnnouncement = `Lista com ${filteredData.length} núcleo(s).`;
 
@@ -437,8 +328,21 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
               <NucleusCockpit360
                 nucleus={selectedNucleus}
                 areaId={selectedNucleus.area_id}
-                onEdit={() => handleOpenEdit(selectedNucleus)}
+                areaOptions={areas.map((area) => ({ id: area.id, name: area.name }))}
                 onDelete={() => setNucleusToDelete(selectedNucleus)}
+                onNucleusUpdated={(updatedNucleus) => {
+                  const updated: NucleusWithMeta = {
+                    ...(updatedNucleus as NucleusWithMeta),
+                    processes_count: selectedNucleus.processes_count,
+                    area_name:
+                      areas.find((area) => area.id === updatedNucleus.area_id)?.name ??
+                      selectedNucleus.area_name,
+                  };
+                  setNuclei((prev) =>
+                    prev.map((nucleus) => (nucleus.id === updated.id ? updated : nucleus)),
+                  );
+                  setSelectedNucleus(updated);
+                }}
               />
             )}
           </SplitView>
@@ -448,11 +352,9 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingNucleus ? 'Editar Núcleo' : 'Novo Núcleo'}</DialogTitle>
+            <DialogTitle>Novo Núcleo</DialogTitle>
             <DialogDescription>
-              {editingNucleus
-                ? 'Atualize os dados do núcleo.'
-                : 'Preencha os dados para criar um novo núcleo.'}
+              Preencha os dados para criar um novo núcleo.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -461,7 +363,6 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
               <Select
                 value={formData.area_id}
                 onValueChange={(v) => setFormData((p) => ({ ...p, area_id: v }))}
-                disabled={!!editingNucleus}
               >
                 <SelectTrigger id="nucleus-area">
                   <SelectValue placeholder="Selecione a área" />
@@ -474,11 +375,6 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
                   ))}
                 </SelectContent>
               </Select>
-              {editingNucleus && (
-                <p className="text-xs text-muted-foreground">
-                  A área não pode ser alterada na edição.
-                </p>
-              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="nucleus-name">Nome *</Label>
@@ -521,98 +417,8 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
             <Button variant="outline" onClick={() => setIsFormOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={editingNucleus ? handleUpdate : handleCreate} disabled={isLoading}>
-              {editingNucleus ? 'Salvar' : 'Criar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create Process Dialog (from Nucleus card) */}
-      <Dialog open={isProcessFormOpen} onOpenChange={setIsProcessFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Novo Processo</DialogTitle>
-            <DialogDescription>
-              Crie um processo vinculado ao núcleo selecionado. Área e núcleo já estão
-              pré-preenchidos.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="process-area">Área</Label>
-              <Select
-                value={processFormData.area_id}
-                onValueChange={(v) =>
-                  setProcessFormData((p) => ({ ...p, area_id: v, nucleus_id: '' }))
-                }
-              >
-                <SelectTrigger id="process-area">
-                  <SelectValue placeholder="Selecione a área" />
-                </SelectTrigger>
-                <SelectContent>
-                  {areas.map((area) => (
-                    <SelectItem key={area.id} value={area.id}>
-                      {area.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="process-nucleus">Núcleo</Label>
-              <Select
-                value={processFormData.nucleus_id}
-                onValueChange={(v) => setProcessFormData((p) => ({ ...p, nucleus_id: v }))}
-              >
-                <SelectTrigger id="process-nucleus">
-                  <SelectValue placeholder="Selecione o núcleo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {nucleiForProcessArea.map((n) => (
-                    <SelectItem key={n.id} value={n.id}>
-                      {n.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="process-name">Nome *</Label>
-              <Input
-                id="process-name"
-                value={processFormData.name}
-                onChange={(e) => setProcessFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="ex.: Ajuizamento de Ações"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="process-description">Descrição</Label>
-              <Textarea
-                id="process-description"
-                value={processFormData.description}
-                onChange={(e) => setProcessFormData((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Descrição do processo"
-                rows={3}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="process-objective">Objetivo</Label>
-              <Textarea
-                id="process-objective"
-                value={processFormData.objective}
-                onChange={(e) => setProcessFormData((p) => ({ ...p, objective: e.target.value }))}
-                placeholder="Objetivo do processo"
-                rows={2}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsProcessFormOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCreateProcess} disabled={isProcessLoading}>
-              {isProcessLoading ? 'Criando...' : 'Criar'}
+            <Button onClick={handleCreate} disabled={isLoading}>
+              Criar
             </Button>
           </DialogFooter>
         </DialogContent>

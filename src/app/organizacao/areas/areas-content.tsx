@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { KPICard } from '@/components/dashboard/KPICard';
@@ -42,10 +41,8 @@ import { ResponsibleRolesInput } from '@/components/organization/ResponsibleRole
 import { useAreasFilters } from '@/hooks/useOrganizacaoFilters';
 import {
   createAreaAction,
-  updateAreaAction,
   deleteAreaAction,
   runBootstrapAction,
-  createNucleusAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
 import type {
@@ -99,7 +96,6 @@ export function AreasContent({
   areas: initialAreas,
   linkedData = { nucleiByAreaId: {}, processesByAreaId: {} },
 }: AreasContentProps) {
-  const router = useRouter();
   const [areas, setAreas] = React.useState<OrgArea[]>(initialAreas);
   const [selectedArea, setSelectedArea] = React.useState<OrgArea | null>(null);
   const [selectedNucleus, setSelectedNucleus] = React.useState<OrgNucleus | null>(null);
@@ -107,16 +103,10 @@ export function AreasContent({
   const [selectedRoutine, setSelectedRoutine] = React.useState<OrgRoutine | null>(null);
   const [selectedActivity, setSelectedActivity] = React.useState<OrgActivity | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
-  const [editingArea, setEditingArea] = React.useState<OrgArea | null>(null);
   const [areaToDelete, setAreaToDelete] = React.useState<OrgArea | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isBootstrapRunning, setIsBootstrapRunning] = React.useState(false);
   const [formData, setFormData] = React.useState<AreaFormData>(DEFAULT_FORM);
-
-  const [isNucleusFormOpen, setIsNucleusFormOpen] = React.useState(false);
-  const [nucleusFormData, setNucleusFormData] =
-    React.useState<NucleusFormData>(DEFAULT_NUCLEUS_FORM);
-  const [isNucleusLoading, setIsNucleusLoading] = React.useState(false);
 
   const {
     filters,
@@ -144,7 +134,6 @@ export function AreasContent({
 
   const resetForm = React.useCallback(() => {
     setFormData(DEFAULT_FORM);
-    setEditingArea(null);
   }, []);
 
   const handleCreate = React.useCallback(async () => {
@@ -175,53 +164,6 @@ export function AreasContent({
       setIsLoading(false);
     }
   }, [formData, resetForm]);
-
-  const handleUpdate = React.useCallback(async () => {
-    if (!editingArea) return;
-    if (!formData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const result = await updateAreaAction(editingArea.id, {
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        objective: formData.objective.trim() || null,
-        responsible_roles: formData.responsible_roles,
-        documentation: editingArea.documentation,
-      });
-      if (result.success && result.data) {
-        setAreas((prev) => prev.map((a) => (a.id === editingArea.id ? result.data! : a)));
-        setSelectedArea(result.data);
-        toast.success(result.message);
-        resetForm();
-        setIsFormOpen(false);
-        setEditingArea(null);
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [editingArea, formData, resetForm]);
-
-  const handleOpenEdit = React.useCallback((area: OrgArea) => {
-    setEditingArea(area);
-    setFormData({
-      name: area.name,
-      description: area.description ?? '',
-      objective: area.objective ?? '',
-      responsible_roles: area.responsible_roles ?? [],
-    });
-    setIsFormOpen(true);
-  }, []);
-
-  const handleDelete = React.useCallback((area: OrgArea) => {
-    setAreaToDelete(area);
-  }, []);
 
   const handleBootstrap = React.useCallback(async () => {
     if (areas.length > 0) {
@@ -260,52 +202,6 @@ export function AreasContent({
       toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
   }, [areaToDelete]);
-
-  const handleOpenCreateNucleus = React.useCallback((area: OrgArea) => {
-    setNucleusFormData({
-      ...DEFAULT_NUCLEUS_FORM,
-      area_id: area.id,
-      name: '',
-      description: '',
-      objective: '',
-      responsible_roles: [],
-    });
-    setIsNucleusFormOpen(true);
-  }, []);
-
-  const handleCreateNucleus = React.useCallback(async () => {
-    if (!nucleusFormData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    if (!nucleusFormData.area_id) {
-      toast.error('Área é obrigatória');
-      return;
-    }
-    setIsNucleusLoading(true);
-    try {
-      const result = await createNucleusAction({
-        area_id: nucleusFormData.area_id,
-        name: nucleusFormData.name.trim(),
-        description: nucleusFormData.description.trim() || null,
-        objective: nucleusFormData.objective.trim() || null,
-        responsible_roles: nucleusFormData.responsible_roles,
-        documentation: {},
-      });
-      if (result.success && result.data) {
-        toast.success(result.message);
-        setNucleusFormData(DEFAULT_NUCLEUS_FORM);
-        setIsNucleusFormOpen(false);
-        router.refresh();
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsNucleusLoading(false);
-    }
-  }, [nucleusFormData, router]);
 
   const listAnnouncement = `Lista com ${filteredData.length} área(s).`;
 
@@ -493,8 +389,13 @@ export function AreasContent({
                 area={selectedArea}
                 nuclei={linkedData.nucleiByAreaId[selectedArea.id] ?? []}
                 processes={linkedData.processesByAreaId[selectedArea.id] ?? []}
-                onEdit={() => handleOpenEdit(selectedArea)}
                 onSelectNucleus={handleSelectNucleus}
+                onAreaUpdated={(updatedArea) => {
+                  setAreas((prev) =>
+                    prev.map((area) => (area.id === updatedArea.id ? updatedArea : area)),
+                  );
+                  setSelectedArea(updatedArea);
+                }}
               />
             )}
           </SplitView>
@@ -524,7 +425,11 @@ export function AreasContent({
               <NucleusCockpit360
                 nucleus={selectedNucleus}
                 areaId={selectedArea?.id}
+                areaOptions={areas.map((area) => ({ id: area.id, name: area.name }))}
                 onSelectProcess={handleSelectProcess}
+                onNucleusUpdated={(updatedNucleus) => {
+                  handleSelectNucleus(updatedNucleus);
+                }}
               />
             )}
           </ContextPanel>
@@ -555,7 +460,23 @@ export function AreasContent({
             depth={2}
           >
             {selectedProcess && (
-              <ProcessCockpit360 process={selectedProcess} onSelectRoutine={setSelectedRoutine} />
+              <ProcessCockpit360
+                process={selectedProcess}
+                areaName={selectedArea?.name}
+                nucleusName={selectedNucleus?.name}
+                areaOptions={areas.map((area) => ({ id: area.id, name: area.name }))}
+                nucleusOptions={Object.values(linkedData.nucleiByAreaId)
+                  .flat()
+                  .map((nucleus) => ({
+                    id: nucleus.id,
+                    name: nucleus.name,
+                    area_id: nucleus.area_id,
+                  }))}
+                onSelectRoutine={setSelectedRoutine}
+                onProcessUpdated={(updatedProcess) => {
+                  handleSelectProcess(updatedProcess);
+                }}
+              />
             )}
           </ContextPanel>
 
@@ -589,7 +510,12 @@ export function AreasContent({
             depth={3}
           >
             {selectedRoutine && (
-              <RoutineCockpit360 routine={selectedRoutine} onSelectActivity={setSelectedActivity} />
+              <RoutineCockpit360
+                routine={selectedRoutine}
+                processOptions={selectedProcess ? [{ id: selectedProcess.id, name: selectedProcess.name }] : undefined}
+                onSelectActivity={setSelectedActivity}
+                onRoutineUpdated={(updatedRoutine) => setSelectedRoutine(updatedRoutine)}
+              />
             )}
           </ContextPanel>
 
@@ -619,12 +545,8 @@ export function AreasContent({
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingArea ? 'Editar Área' : 'Nova Área'}</DialogTitle>
-            <DialogDescription>
-              {editingArea
-                ? 'Atualize os dados da área.'
-                : 'Preencha os dados para criar uma nova área.'}
-            </DialogDescription>
+            <DialogTitle>Nova Área</DialogTitle>
+            <DialogDescription>Preencha os dados para criar uma nova área.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -668,86 +590,8 @@ export function AreasContent({
             <Button variant="outline" onClick={() => setIsFormOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={editingArea ? handleUpdate : handleCreate} disabled={isLoading}>
-              {editingArea ? 'Salvar' : 'Criar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create Nucleus Dialog (from Area card) */}
-      <Dialog open={isNucleusFormOpen} onOpenChange={setIsNucleusFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Novo Núcleo</DialogTitle>
-            <DialogDescription>
-              Crie um núcleo vinculado à área selecionada. A área já está pré-preenchida.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="nucleus-area">Área</Label>
-              <Select
-                value={nucleusFormData.area_id}
-                onValueChange={(v) => setNucleusFormData((p) => ({ ...p, area_id: v }))}
-              >
-                <SelectTrigger id="nucleus-area">
-                  <SelectValue placeholder="Selecione a área" />
-                </SelectTrigger>
-                <SelectContent>
-                  {areas.map((area) => (
-                    <SelectItem key={area.id} value={area.id}>
-                      {area.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="nucleus-name">Nome *</Label>
-              <Input
-                id="nucleus-name"
-                value={nucleusFormData.name}
-                onChange={(e) => setNucleusFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="ex.: Núcleo de Ajuizamento"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="nucleus-description">Descrição</Label>
-              <Textarea
-                id="nucleus-description"
-                value={nucleusFormData.description}
-                onChange={(e) => setNucleusFormData((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Descrição do núcleo"
-                rows={3}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="nucleus-objective">Objetivo</Label>
-              <Textarea
-                id="nucleus-objective"
-                value={nucleusFormData.objective}
-                onChange={(e) => setNucleusFormData((p) => ({ ...p, objective: e.target.value }))}
-                placeholder="Objetivo do núcleo"
-                rows={2}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Roles responsáveis</Label>
-              <ResponsibleRolesInput
-                value={nucleusFormData.responsible_roles}
-                onChange={(roles) =>
-                  setNucleusFormData((p) => ({ ...p, responsible_roles: roles }))
-                }
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNucleusFormOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCreateNucleus} disabled={isNucleusLoading}>
-              {isNucleusLoading ? 'Criando...' : 'Criar'}
+            <Button onClick={handleCreate} disabled={isLoading}>
+              Criar
             </Button>
           </DialogFooter>
         </DialogContent>

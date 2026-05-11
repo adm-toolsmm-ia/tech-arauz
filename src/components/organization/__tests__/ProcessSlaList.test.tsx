@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ProcessSlaList } from '../ProcessSlaList';
 import type { OrgProcessSla } from '@/types/organization';
+import * as organizationActions from '@/app/actions/organization';
 
 // Mock server actions
 vi.mock('@/app/actions/organization', () => ({
@@ -16,6 +17,7 @@ vi.mock('@/app/actions/organization', () => ({
 describe('ProcessSlaList', () => {
   const mockOnEdit = vi.fn();
   const mockOnDeleteSuccess = vi.fn();
+  const mockDeleteProcessSlaAction = vi.mocked(organizationActions.deleteProcessSlaAction);
 
   const mockSlas: OrgProcessSla[] = [
     {
@@ -44,6 +46,7 @@ describe('ProcessSlaList', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockDeleteProcessSlaAction.mockReset();
   });
 
   describe('Empty State', () => {
@@ -164,8 +167,7 @@ describe('ProcessSlaList', () => {
     });
 
     it('should call deleteProcessSlaAction when delete confirmed', async () => {
-      const { deleteProcessSlaAction } = await import('@/app/actions/organization');
-      (deleteProcessSlaAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockDeleteProcessSlaAction.mockResolvedValue({
         success: true,
         message: 'SLA deleted',
       });
@@ -186,13 +188,12 @@ describe('ProcessSlaList', () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(deleteProcessSlaAction).toHaveBeenCalledWith(mockSlas[0].id);
+        expect(mockDeleteProcessSlaAction).toHaveBeenCalledWith(mockSlas[0].id);
       });
     });
 
     it('should call onDeleteSuccess after successful deletion', async () => {
-      const { deleteProcessSlaAction } = await import('@/app/actions/organization');
-      (deleteProcessSlaAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockDeleteProcessSlaAction.mockResolvedValue({
         success: true,
         message: 'SLA deleted',
       });
@@ -213,13 +214,13 @@ describe('ProcessSlaList', () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockOnDeleteSuccess).toHaveBeenCalled();
+        expect(mockDeleteProcessSlaAction).toHaveBeenCalledWith(mockSlas[0].id);
+        expect(mockOnDeleteSuccess).toHaveBeenCalledTimes(1);
       });
     });
 
     it('should handle deletion errors gracefully', async () => {
-      const { deleteProcessSlaAction } = await import('@/app/actions/organization');
-      (deleteProcessSlaAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockDeleteProcessSlaAction.mockResolvedValue({
         success: false,
         message: 'Deletion failed',
       });

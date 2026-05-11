@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Building2, GitBranch, FileText, Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,24 +13,36 @@ interface AreaCockpit360Props {
   area: OrgArea;
   nuclei: OrgNucleus[];
   processes: OrgProcess[];
-  onEdit?: () => void;
   onSelectNucleus?: (nucleus: OrgNucleus) => void;
   onNucleiUpdated?: (nuclei: OrgNucleus[]) => void;
+  onAreaUpdated?: (area: OrgArea) => void;
 }
 
 export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
   area,
   nuclei,
   processes,
-  onEdit,
   onSelectNucleus,
   onNucleiUpdated,
+  onAreaUpdated,
 }) => {
-  const [showFormSheet, setShowFormSheet] = useState(false);
+  const [showCreateNucleusSheet, setShowCreateNucleusSheet] = useState(false);
+  const [showEditAreaSheet, setShowEditAreaSheet] = useState(false);
+  const [currentArea, setCurrentArea] = useState(area);
   const [localNuclei, setLocalNuclei] = useState(nuclei);
 
+  useEffect(() => {
+    setCurrentArea(area);
+  }, [area]);
+
+  useEffect(() => {
+    setLocalNuclei(nuclei);
+  }, [nuclei]);
+
   const rolesDisplay =
-    area.responsible_roles?.length > 0 ? area.responsible_roles.join(', ') : 'Não definido';
+    currentArea.responsible_roles?.length > 0
+      ? currentArea.responsible_roles.join(', ')
+      : 'Não definido';
 
   return (
     <div className="space-y-6">
@@ -49,8 +61,8 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
           >
             <Building2 className="mr-2 size-4" />
             Núcleos
-            {nuclei.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">({nuclei.length})</span>
+            {localNuclei.length > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">({localNuclei.length})</span>
             )}
           </TabsTrigger>
           <TabsTrigger
@@ -66,13 +78,11 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
         </TabsList>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
-          {onEdit && (
-            <div className="flex justify-end">
-              <Button variant="outline" size="sm" onClick={onEdit}>
-                Editar
-              </Button>
-            </div>
-          )}
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => setShowEditAreaSheet(true)}>
+              Editar
+            </Button>
+          </div>
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
@@ -80,8 +90,8 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
               <h3 className="text-base font-semibold">Informações</h3>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <InfoField label="Descrição" value={area.description} />
-              <InfoField label="Objetivo" value={area.objective} />
+              <InfoField label="Descrição" value={currentArea.description} />
+              <InfoField label="Objetivo" value={currentArea.objective} />
             </div>
           </section>
 
@@ -96,7 +106,7 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
           <Button
             variant="default"
             className="w-full gap-2"
-            onClick={() => setShowFormSheet(true)}
+            onClick={() => setShowCreateNucleusSheet(true)}
             aria-label="Criar núcleo vinculado a esta área"
           >
             <Plus className="size-4" />
@@ -110,7 +120,7 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
               variant="default"
               size="sm"
               className="gap-2"
-              onClick={() => setShowFormSheet(true)}
+              onClick={() => setShowCreateNucleusSheet(true)}
               aria-label="Criar núcleo vinculado a esta área"
             >
               <Plus className="size-4" />
@@ -123,16 +133,16 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              {localNuclei.map((n) => (
+              {localNuclei.map((nucleus) => (
                 <OrgEntityCard
-                  key={n.id}
-                  title={n.name}
-                  subtitle={n.objective ?? undefined}
-                  badge={`${n.processes_count || 0} processos`}
+                  key={nucleus.id}
+                  title={nucleus.name}
+                  subtitle={nucleus.objective ?? undefined}
+                  badge={`${nucleus.processes_count || 0} processos`}
                   meta={{
-                    roles: n.responsible_roles?.length || 0,
+                    roles: nucleus.responsible_roles?.length || 0,
                   }}
-                  onClick={() => onSelectNucleus?.(n)}
+                  onClick={() => onSelectNucleus?.(nucleus)}
                 />
               ))}
             </div>
@@ -146,14 +156,14 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              {processes.map((p) => (
-                <Link key={p.id} href={`/organizacao/processos/${p.id}/rotinas`}>
+              {processes.map((process) => (
+                <Link key={process.id} href={`/organizacao/processos/${process.id}/rotinas`}>
                   <div className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-colors">
                     <div>
-                      <p className="text-sm font-medium">{p.name}</p>
-                      {p.description && (
+                      <p className="text-sm font-medium">{process.name}</p>
+                      {process.description && (
                         <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                          {p.description}
+                          {process.description}
                         </p>
                       )}
                     </div>
@@ -168,14 +178,29 @@ export const AreaCockpit360: React.FC<AreaCockpit360Props> = ({
       <OrgEntityFormSheet
         entity="nucleus"
         mode="create"
-        isOpen={showFormSheet}
-        context={{ areaId: area.id }}
-        onClose={() => setShowFormSheet(false)}
+        isOpen={showCreateNucleusSheet}
+        context={{ areaId: currentArea.id }}
+        contextSummary={[{ label: 'Área', value: currentArea.name }]}
+        onClose={() => setShowCreateNucleusSheet(false)}
         onSaved={(newNucleus) => {
           const updated = [...localNuclei, newNucleus as OrgNucleus];
           setLocalNuclei(updated);
           onNucleiUpdated?.(updated);
-          setShowFormSheet(false);
+          setShowCreateNucleusSheet(false);
+        }}
+      />
+
+      <OrgEntityFormSheet
+        entity="area"
+        mode="edit"
+        initialData={currentArea}
+        isOpen={showEditAreaSheet}
+        contextSummary={[{ label: 'Área', value: currentArea.name }]}
+        onClose={() => setShowEditAreaSheet(false)}
+        onSaved={(savedArea) => {
+          setCurrentArea(savedArea as OrgArea);
+          onAreaUpdated?.(savedArea as OrgArea);
+          setShowEditAreaSheet(false);
         }}
       />
     </div>

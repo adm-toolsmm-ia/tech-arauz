@@ -58,6 +58,17 @@ interface OrgEntityFormSheetProps {
     label: string;
     value: string;
   }>;
+  relationOptions?: {
+    areas?: Array<{ id: string; name: string }>;
+    nuclei?: Array<{ id: string; name: string; area_id: string }>;
+    processes?: Array<{
+      id: string;
+      name: string;
+      area_id?: string | null;
+      nucleus_id?: string | null;
+    }>;
+    routines?: Array<{ id: string; name: string; process_id: string }>;
+  };
   isOpen?: boolean;
   onClose?: () => void;
   onSaved?: (saved: Entity) => void;
@@ -78,6 +89,10 @@ type FormData = Partial<Entity> & {
   priority?: 'low' | 'normal' | 'high';
   required_role?: string | null;
   average_execution_time?: number | null;
+  area_id?: string;
+  nucleus_id?: string;
+  process_id?: string;
+  routine_id?: string;
 };
 
 const defaultFormData: FormData = {
@@ -90,6 +105,10 @@ const defaultFormData: FormData = {
   outputs: [],
   risks: [],
   impacts: [],
+  area_id: '',
+  nucleus_id: '',
+  process_id: '',
+  routine_id: '',
 };
 
 const entityLabels: Record<EntityType, string> = {
@@ -114,6 +133,7 @@ export function OrgEntityFormSheet({
   initialData,
   context,
   contextSummary,
+  relationOptions,
   isOpen = true,
   onClose,
   onSaved,
@@ -138,6 +158,15 @@ export function OrgEntityFormSheet({
         outputs: (initialData as any).outputs || [],
         risks: (initialData as any).risks || [],
         impacts: (initialData as any).impacts || [],
+        area_id:
+          entity === 'nucleus'
+            ? ((initialData as OrgNucleus).area_id ?? '')
+            : entity === 'process'
+              ? ((initialData as OrgProcess).area_id ?? '')
+              : '',
+        nucleus_id: entity === 'process' ? ((initialData as OrgProcess).nucleus_id ?? '') : '',
+        process_id: entity === 'routine' ? ((initialData as OrgRoutine).process_id ?? '') : '',
+        routine_id: entity === 'activity' ? ((initialData as OrgActivity).routine_id ?? '') : '',
       };
 
       const activityData =
@@ -154,11 +183,17 @@ export function OrgEntityFormSheet({
       setIsDirty(false);
       setErrors({});
     } else if (mode === 'create' && isOpen) {
-      setFormData(defaultFormData);
+      setFormData({
+        ...defaultFormData,
+        area_id: context?.areaId ?? '',
+        nucleus_id: context?.nucleusId ?? '',
+        process_id: context?.processId ?? '',
+        routine_id: context?.routineId ?? '',
+      });
       setIsDirty(false);
       setErrors({});
     }
-  }, [initialData, isOpen, mode, entity]);
+  }, [initialData, isOpen, mode, entity, context]);
 
   // Update active tab when initialTab prop changes
   useEffect(() => {
@@ -171,6 +206,35 @@ export function OrgEntityFormSheet({
     setFormData((prev) => ({ ...prev, [field]: value }));
     setIsDirty(true);
   };
+
+  const filteredNuclei = React.useMemo(() => {
+    if (!relationOptions?.nuclei?.length) return [];
+    if (!formData.area_id) return relationOptions.nuclei;
+    return relationOptions.nuclei.filter((nucleus) => nucleus.area_id === formData.area_id);
+  }, [relationOptions?.nuclei, formData.area_id]);
+
+  const relationBadges = React.useMemo(() => {
+    if (!relationOptions) return [];
+
+    const areaName =
+      relationOptions.areas?.find((area) => area.id === formData.area_id)?.name ?? undefined;
+    const nucleusName =
+      relationOptions.nuclei?.find((nucleus) => nucleus.id === formData.nucleus_id)?.name ??
+      undefined;
+    const processName =
+      relationOptions.processes?.find((process) => process.id === formData.process_id)?.name ??
+      undefined;
+    const routineName =
+      relationOptions.routines?.find((routine) => routine.id === formData.routine_id)?.name ??
+      undefined;
+
+    return [
+      ...(areaName ? [{ label: 'Área', value: areaName }] : []),
+      ...(nucleusName ? [{ label: 'Núcleo', value: nucleusName }] : []),
+      ...(processName ? [{ label: 'Processo', value: processName }] : []),
+      ...(routineName ? [{ label: 'Rotina', value: routineName }] : []),
+    ];
+  }, [relationOptions, formData.area_id, formData.nucleus_id, formData.process_id, formData.routine_id]);
 
   const handleAddArrayItem = (field: 'inputs' | 'outputs' | 'risks' | 'impacts') => {
     const current = formData[field] || [];
@@ -206,6 +270,21 @@ export function OrgEntityFormSheet({
       return;
     }
 
+    if (entity === 'nucleus' && !(formData.area_id || context?.areaId)) {
+      setErrors({ area_id: 'Área é obrigatória' });
+      return;
+    }
+
+    if (entity === 'routine' && !(formData.process_id || context?.processId)) {
+      setErrors({ process_id: 'Processo é obrigatório' });
+      return;
+    }
+
+    if (entity === 'activity' && !(formData.routine_id || context?.routineId)) {
+      setErrors({ routine_id: 'Rotina é obrigatória' });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const action =
@@ -218,6 +297,19 @@ export function OrgEntityFormSheet({
         objective: formData.objective || null,
         responsible_roles: formData.responsible_roles || [],
         documentation: formData.documentation || {},
+        ...(entity === 'nucleus' && {
+          area_id: formData.area_id || context?.areaId || '',
+        }),
+        ...(entity === 'process' && {
+          area_id: formData.area_id || null,
+          nucleus_id: formData.nucleus_id || null,
+        }),
+        ...(entity === 'routine' && {
+          process_id: formData.process_id || context?.processId || '',
+        }),
+        ...(entity === 'activity' && {
+          routine_id: formData.routine_id || context?.routineId || '',
+        }),
         ...(entity !== 'routine' && {
           inputs: formData.inputs || [],
           outputs: formData.outputs || [],
@@ -285,6 +377,12 @@ export function OrgEntityFormSheet({
       : `Atualize os dados, vínculos e documentação deste ${entityLabels[entity].toLowerCase()}.`;
 
   const summaryCards = [
+    ...(relationBadges.length > 0
+      ? relationBadges.map((item) => ({
+          label: item.label,
+          value: item.value,
+        }))
+      : []),
     { label: 'Nome', value: formData.name?.trim() || 'Não informado' },
     {
       label: 'Descrição',
@@ -416,6 +514,130 @@ export function OrgEntityFormSheet({
 
             {/* TAB: INFO */}
             <TabsContent value="info" className="space-y-4 p-6">
+              {entity === 'nucleus' && relationOptions?.areas?.length ? (
+                <div>
+                  <Label>Área *</Label>
+                  <Select
+                    value={formData.area_id || ''}
+                    onValueChange={(value) => handleChange('area_id', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a área" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {relationOptions.areas.map((area) => (
+                        <SelectItem key={area.id} value={area.id}>
+                          {area.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+
+              {entity === 'process' && relationOptions?.areas?.length ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label>Área</Label>
+                    <Select
+                      value={formData.area_id || 'none'}
+                      onValueChange={(value) => {
+                        const nextAreaId = value === 'none' ? '' : value;
+                        const nextNucleus =
+                          relationOptions.nuclei?.some(
+                            (nucleus) =>
+                              nucleus.id === formData.nucleus_id && nucleus.area_id === nextAreaId,
+                          ) && nextAreaId === formData.area_id
+                            ? formData.nucleus_id
+                            : '';
+                        setFormData((prev) => ({
+                          ...prev,
+                          area_id: nextAreaId,
+                          nucleus_id: nextNucleus,
+                        }));
+                        setIsDirty(true);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a área" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Nenhuma</SelectItem>
+                        {relationOptions.areas.map((area) => (
+                          <SelectItem key={area.id} value={area.id}>
+                            {area.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Núcleo</Label>
+                    <Select
+                      value={formData.nucleus_id || ''}
+                      onValueChange={(value) =>
+                        handleChange('nucleus_id', value === 'none' ? '' : value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o núcleo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Nenhum</SelectItem>
+                        {filteredNuclei.map((nucleus) => (
+                          <SelectItem key={nucleus.id} value={nucleus.id}>
+                            {nucleus.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ) : null}
+
+              {entity === 'routine' && relationOptions?.processes?.length ? (
+                <div>
+                  <Label>Processo *</Label>
+                  <Select
+                    value={formData.process_id || ''}
+                    onValueChange={(value) => handleChange('process_id', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o processo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {relationOptions.processes.map((process) => (
+                        <SelectItem key={process.id} value={process.id}>
+                          {process.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+
+              {entity === 'activity' && relationOptions?.routines?.length ? (
+                <div>
+                  <Label>Rotina *</Label>
+                  <Select
+                    value={formData.routine_id || ''}
+                    onValueChange={(value) => handleChange('routine_id', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a rotina" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {relationOptions.routines.map((routine) => (
+                        <SelectItem key={routine.id} value={routine.id}>
+                          {routine.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+
               <div>
                 <Label>Nome *</Label>
                 <Input

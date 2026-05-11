@@ -110,18 +110,16 @@ describe('OrganizationSearchBar', () => {
       data: mockSearchResults,
     });
 
-    const user = userEvent.setup();
     render(<OrganizationSearchBar onSelect={onSelect} />);
 
     const input = screen.getByRole('textbox', { name: /Buscar organizações/i });
-    await user.type(input, 'Recuperação');
+    fireEvent.change(input, { target: { value: 'Recuperação' } });
 
     await waitFor(() => {
       expect(screen.getByText('Recuperação de Crédito')).toBeInTheDocument();
     });
 
-    const resultButton = screen.getByText('Recuperação de Crédito');
-    await user.click(resultButton);
+    fireEvent.click(screen.getByRole('option', { name: /Recuperação de Crédito/i }));
 
     expect(onSelect).toHaveBeenCalledWith(mockSearchResults[0]);
   });
@@ -146,22 +144,18 @@ describe('OrganizationSearchBar', () => {
   });
 
   it('should clear query when clear button is clicked', async () => {
-    const user = userEvent.setup();
     render(<OrganizationSearchBar />);
 
     const input = screen.getByRole('textbox', {
       name: /Buscar organizações/i,
     }) as HTMLInputElement;
-    await user.type(input, 'test');
+    fireEvent.change(input, { target: { value: 'test' } });
 
-    // Wait for clear button to appear
     await waitFor(() => {
-      const clearButton = screen.getByRole('button', { name: /Limpar busca/i });
-      expect(clearButton).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Limpar busca/i })).toBeInTheDocument();
     });
 
-    const clearButton = screen.getByRole('button', { name: /Limpar busca/i });
-    await user.click(clearButton);
+    fireEvent.click(screen.getByRole('button', { name: /Limpar busca/i }));
 
     expect(input.value).toBe('');
   });

@@ -46,10 +46,12 @@ interface ProcessCockpit360Props {
   routines?: OrgRoutine[];
   systems?: OrgSystem[];
   allSystems?: OrgSystem[];
-  onEdit?: () => void;
+  areaOptions?: Array<{ id: string; name: string }>;
+  nucleusOptions?: Array<{ id: string; name: string; area_id: string }>;
   onDelete?: () => void;
   onSelectRoutine?: (routine: OrgRoutine) => void;
   onRoutinesUpdated?: (routines: OrgRoutine[]) => void;
+  onProcessUpdated?: (process: OrgProcess) => void;
   onLinkSystem?: (systemId: string) => void;
   onUnlinkSystem?: (systemId: string, systemName: string) => void;
 }
@@ -61,10 +63,12 @@ export function ProcessCockpit360({
   routines: initialRoutines = [],
   systems = [],
   allSystems = [],
-  onEdit,
+  areaOptions,
+  nucleusOptions,
   onDelete,
   onSelectRoutine,
   onRoutinesUpdated,
+  onProcessUpdated,
   onLinkSystem,
   onUnlinkSystem,
 }: ProcessCockpit360Props) {
@@ -179,25 +183,21 @@ export function ProcessCockpit360({
         </TabsList>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
-          {(onEdit || onDelete) && (
-            <div className="flex justify-end gap-2">
-              {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit}>
-                  Editar
-                </Button>
-              )}
-              {onDelete && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onDelete}
-                  className="text-destructive hover:text-destructive"
-                >
-                  Excluir
-                </Button>
-              )}
-            </div>
-          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowEditProcess(true)}>
+              Editar
+            </Button>
+            {onDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onDelete}
+                className="text-destructive hover:text-destructive"
+              >
+                Excluir
+              </Button>
+            )}
+          </div>
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
@@ -517,11 +517,16 @@ export function ProcessCockpit360({
         entity="process"
         mode="edit"
         initialData={process}
+        relationOptions={{
+          ...(areaOptions?.length ? { areas: areaOptions } : {}),
+          ...(nucleusOptions?.length ? { nuclei: nucleusOptions } : {}),
+        }}
         isOpen={showEditProcess}
         onClose={() => setShowEditProcess(false)}
-        onSaved={() => {
+        onSaved={(savedProcess) => {
           setShowEditProcess(false);
-          // Parent component should handle refetching data
+          onProcessUpdated?.(savedProcess as OrgProcess);
+          router.refresh();
         }}
         contextSummary={[
           ...(areaName ? [{ label: 'Área', value: areaName }] : []),

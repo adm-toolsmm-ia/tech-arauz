@@ -292,17 +292,13 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
   });
 
   it('marks form as dirty when changes are made', async () => {
-    const user = userEvent.setup();
     render(
       <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
-    // Change a field
     const nameInput = screen.getByPlaceholderText(/nome da atividade/i);
-    await user.clear(nameInput);
-    await user.type(nameInput, 'Updated Activity Name');
+    fireEvent.change(nameInput, { target: { value: 'Updated Activity Name' } });
 
-    // Dirty state alert should be visible
     await waitFor(() => {
       expect(screen.getByText(/alterações não salvas/i)).toBeInTheDocument();
     });
@@ -318,14 +314,12 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
   });
 
   it('enables save button when form is dirty', async () => {
-    const user = userEvent.setup();
     render(
       <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     const nameInput = screen.getByPlaceholderText(/nome da atividade/i);
-    await user.clear(nameInput);
-    await user.type(nameInput, 'Updated Name');
+    fireEvent.change(nameInput, { target: { value: 'Updated Name' } });
 
     await waitFor(() => {
       const saveButton = screen.getByRole('button', { name: /salvar/i });
@@ -334,16 +328,15 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
   });
 
   it('validates required name field', async () => {
-    const user = userEvent.setup();
     render(
       <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
     );
 
     const nameInput = screen.getByPlaceholderText(/nome da atividade/i);
-    await user.clear(nameInput);
+    fireEvent.change(nameInput, { target: { value: '' } });
 
     const saveButton = screen.getByRole('button', { name: /salvar/i });
-    await user.click(saveButton);
+    fireEvent.click(saveButton);
 
     await waitFor(() => {
       expect(screen.getByText(/nome é obrigatório/i)).toBeInTheDocument();

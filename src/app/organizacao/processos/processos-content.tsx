@@ -34,7 +34,6 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useProcessosFilters } from '@/hooks/useOrganizacaoFilters';
 import {
   createProcessAction,
-  updateProcessAction,
   deleteProcessAction,
   addProcessSystemAction,
   removeProcessSystemAction,
@@ -85,7 +84,6 @@ export function ProcessosContent({
   const [selectedProcess, setSelectedProcess] = React.useState<OrgProcess | null>(null);
   const [selectedRoutine, setSelectedRoutine] = React.useState<OrgRoutine | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
-  const [editingProcess, setEditingProcess] = React.useState<OrgProcess | null>(null);
   const [processToDelete, setProcessToDelete] = React.useState<OrgProcess | null>(null);
   const [processSystemToUnlink, setProcessSystemToUnlink] = React.useState<{
     processId: string;
@@ -109,7 +107,6 @@ export function ProcessosContent({
 
   const resetForm = React.useCallback(() => {
     setFormData(DEFAULT_FORM);
-    setEditingProcess(null);
   }, []);
 
   const handleCreate = React.useCallback(async () => {
@@ -146,56 +143,6 @@ export function ProcessosContent({
       setIsLoading(false);
     }
   }, [formData, resetForm]);
-
-  const handleUpdate = React.useCallback(async () => {
-    if (!editingProcess) return;
-    if (!formData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const result = await updateProcessAction(editingProcess.id, {
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        objective: formData.objective.trim() || null,
-        area_id: formData.area_id || null,
-        nucleus_id: formData.nucleus_id || null,
-        inputs: editingProcess.inputs,
-        outputs: editingProcess.outputs,
-        responsible_roles: editingProcess.responsible_roles,
-        risks: editingProcess.risks,
-        impacts: editingProcess.impacts,
-        documentation: editingProcess.documentation,
-      });
-      if (result.success && result.data) {
-        setProcesses((prev) => prev.map((p) => (p.id === editingProcess.id ? result.data! : p)));
-        setSelectedProcess(result.data);
-        toast.success(result.message);
-        resetForm();
-        setIsFormOpen(false);
-        setEditingProcess(null);
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [editingProcess, formData, resetForm]);
-
-  const handleOpenEdit = React.useCallback((proc: OrgProcess) => {
-    setEditingProcess(proc);
-    setFormData({
-      name: proc.name,
-      description: proc.description ?? '',
-      objective: proc.objective ?? '',
-      area_id: proc.area_id ?? '',
-      nucleus_id: proc.nucleus_id ?? '',
-    });
-    setIsFormOpen(true);
-  }, []);
 
   const handleConfirmDelete = React.useCallback(async () => {
     if (!processToDelete) return;
@@ -385,9 +332,18 @@ export function ProcessosContent({
                 routines={routinesByProcessId[selectedProcess.id] ?? []}
                 systems={systemsByProcessId[selectedProcess.id] ?? []}
                 allSystems={systems}
-                onEdit={() => handleOpenEdit(selectedProcess)}
+                areaOptions={areas}
+                nucleusOptions={nuclei}
                 onDelete={() => setProcessToDelete(selectedProcess)}
                 onSelectRoutine={setSelectedRoutine}
+                onProcessUpdated={(updatedProcess) => {
+                  setProcesses((prev) =>
+                    prev.map((process) =>
+                      process.id === updatedProcess.id ? updatedProcess : process,
+                    ),
+                  );
+                  setSelectedProcess(updatedProcess);
+                }}
                 onLinkSystem={(systemId) => handleLinkProcessSystem(selectedProcess.id, systemId)}
                 onUnlinkSystem={(systemId, systemName) =>
                   setProcessSystemToUnlink({
@@ -421,7 +377,13 @@ export function ProcessosContent({
             }
             depth={2}
           >
-            {selectedRoutine && <RoutineCockpit360 routine={selectedRoutine} />}
+            {selectedRoutine && (
+              <RoutineCockpit360
+                routine={selectedRoutine}
+                processOptions={selectedProcess ? [{ id: selectedProcess.id, name: selectedProcess.name }] : undefined}
+                onRoutineUpdated={(updatedRoutine) => setSelectedRoutine(updatedRoutine)}
+              />
+            )}
           </ContextPanel>
         </div>
         {/* end flex gap-6 */}
@@ -431,11 +393,9 @@ export function ProcessosContent({
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingProcess ? 'Editar Processo' : 'Novo Processo'}</DialogTitle>
+            <DialogTitle>Novo Processo</DialogTitle>
             <DialogDescription>
-              {editingProcess
-                ? 'Atualize os dados do processo.'
-                : 'Preencha os dados para criar um novo processo.'}
+              Preencha os dados para criar um novo processo.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -511,8 +471,8 @@ export function ProcessosContent({
             <Button variant="outline" onClick={() => setIsFormOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={editingProcess ? handleUpdate : handleCreate} disabled={isLoading}>
-              {editingProcess ? 'Salvar' : 'Criar'}
+            <Button onClick={handleCreate} disabled={isLoading}>
+              Criar
             </Button>
           </DialogFooter>
         </DialogContent>

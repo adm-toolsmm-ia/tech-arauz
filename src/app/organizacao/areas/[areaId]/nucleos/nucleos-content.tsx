@@ -20,9 +20,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { SplitView } from '@/components/views/SplitView';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { NucleusCockpit360 } from '@/components/organization/NucleusCockpit360';
 import {
   createNucleusAction,
-  updateNucleusAction,
   deleteNucleusAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
@@ -48,41 +48,10 @@ const DEFAULT_FORM: NucleusFormData = {
   responsible_roles: '',
 };
 
-function NucleusCockpit({ nucleus, onEdit }: { nucleus: OrgNucleus; onEdit?: () => void }) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="font-semibold">{nucleus.name}</h3>
-        {nucleus.description && (
-          <p className="mt-1 text-sm text-muted-foreground">{nucleus.description}</p>
-        )}
-      </div>
-      {nucleus.objective && (
-        <div>
-          <p className="text-xs text-muted-foreground">Objetivo</p>
-          <p className="text-sm">{nucleus.objective}</p>
-        </div>
-      )}
-      {(nucleus.responsible_roles?.length ?? 0) > 0 && (
-        <div>
-          <p className="text-xs text-muted-foreground">Roles responsáveis</p>
-          <p className="text-sm">{nucleus.responsible_roles!.join(', ')}</p>
-        </div>
-      )}
-      {onEdit && (
-        <Button variant="outline" size="sm" onClick={onEdit}>
-          Editar
-        </Button>
-      )}
-    </div>
-  );
-}
-
 export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: NucleosContentProps) {
   const [nuclei, setNuclei] = React.useState<OrgNucleus[]>(initialNuclei);
   const [selectedNucleus, setSelectedNucleus] = React.useState<OrgNucleus | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
-  const [editingNucleus, setEditingNucleus] = React.useState<OrgNucleus | null>(null);
   const [nucleusToDelete, setNucleusToDelete] = React.useState<OrgNucleus | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [formData, setFormData] = React.useState<NucleusFormData>(DEFAULT_FORM);
@@ -93,7 +62,6 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
 
   const resetForm = React.useCallback(() => {
     setFormData(DEFAULT_FORM);
-    setEditingNucleus(null);
   }, []);
 
   const handleCreate = React.useCallback(async () => {
@@ -132,56 +100,6 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
       setIsLoading(false);
     }
   }, [areaId, formData, resetForm]);
-
-  const handleUpdate = React.useCallback(async () => {
-    if (!editingNucleus) return;
-    if (!formData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const parseRoles = (s: string) =>
-        s
-          ? s
-              .split(',')
-              .map((r) => r.trim())
-              .filter(Boolean)
-          : [];
-      const result = await updateNucleusAction(editingNucleus.id, {
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        objective: formData.objective.trim() || null,
-        responsible_roles: parseRoles(formData.responsible_roles),
-        documentation: editingNucleus.documentation,
-      });
-      if (result.success && result.data) {
-        setNuclei((prev) => prev.map((n) => (n.id === editingNucleus.id ? result.data! : n)));
-        setSelectedNucleus(result.data);
-        toast.success(result.message);
-        resetForm();
-        setIsFormOpen(false);
-        setEditingNucleus(null);
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [editingNucleus, formData, resetForm]);
-
-  const handleOpenEdit = React.useCallback((nucleus: OrgNucleus) => {
-    setEditingNucleus(nucleus);
-    setFormData({
-      name: nucleus.name,
-      description: nucleus.description ?? '',
-      objective: nucleus.objective ?? '',
-      responsible_roles: (nucleus.responsible_roles ?? []).join(', '),
-    });
-    setIsFormOpen(true);
-  }, []);
 
   const handleConfirmDelete = React.useCallback(async () => {
     if (!nucleusToDelete) return;
@@ -295,9 +213,18 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
           width="lg"
         >
           {selectedNucleus && (
-            <NucleusCockpit
+            <NucleusCockpit360
               nucleus={selectedNucleus}
-              onEdit={() => handleOpenEdit(selectedNucleus)}
+              areaId={areaId}
+              areaOptions={[{ id: areaId, name: areaName }]}
+              onNucleusUpdated={(updatedNucleus) => {
+                setNuclei((prev) =>
+                  prev.map((nucleus) =>
+                    nucleus.id === updatedNucleus.id ? updatedNucleus : nucleus,
+                  ),
+                );
+                setSelectedNucleus(updatedNucleus);
+              }}
             />
           )}
         </SplitView>
@@ -306,11 +233,9 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingNucleus ? 'Editar Núcleo' : 'Novo Núcleo'}</DialogTitle>
+            <DialogTitle>Novo Núcleo</DialogTitle>
             <DialogDescription>
-              {editingNucleus
-                ? 'Atualize os dados do núcleo.'
-                : 'Preencha os dados para criar um novo núcleo.'}
+              Preencha os dados para criar um novo núcleo.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -357,8 +282,8 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
             <Button variant="outline" onClick={() => setIsFormOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={editingNucleus ? handleUpdate : handleCreate} disabled={isLoading}>
-              {editingNucleus ? 'Salvar' : 'Criar'}
+            <Button onClick={handleCreate} disabled={isLoading}>
+              Criar
             </Button>
           </DialogFooter>
         </DialogContent>

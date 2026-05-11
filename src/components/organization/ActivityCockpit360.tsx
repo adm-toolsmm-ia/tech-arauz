@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState } from 'react';
 import { FileText, AlertCircle, Users, BarChart3, Trash2, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,15 +12,26 @@ import {
   DocumentationAccordion,
   InputOutputList,
 } from '@/components/organization/shared';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ActivitySystemsModal } from './ActivitySystemsModal';
 import { OrgEntityFormSheet } from './OrgEntityFormSheet';
-import type { OrgActivity, OrgRoutine } from '@/types/organization';
+import type { OrgActivity, OrgDocument, OrgRoutine } from '@/types/organization';
 
 interface ActivityCockpit360Props {
   activity: OrgActivity;
   routine?: OrgRoutine;
-  onEdit?: () => void;
+  documents?: OrgDocument[];
+  allDocuments?: OrgDocument[];
   onDelete?: () => void;
+  onLinkDocument?: (documentId: string) => void;
+  onUnlinkDocument?: (documentId: string, documentName: string) => void;
+  onActivityUpdated?: (activity: OrgActivity) => void;
 }
 
 const complexityColors: Record<string, string> = {
@@ -37,12 +49,18 @@ const priorityColors: Record<string, string> = {
 export function ActivityCockpit360({
   activity,
   routine,
-  onEdit,
+  documents = [],
+  allDocuments = [],
   onDelete,
+  onLinkDocument,
+  onUnlinkDocument,
+  onActivityUpdated,
 }: ActivityCockpit360Props) {
   const [showSystemsModal, setShowSystemsModal] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formTab, setFormTab] = useState('info');
+  const linkedDocumentIds = new Set(documents.map((document) => document.id));
+  const availableDocuments = allDocuments.filter((document) => !linkedDocumentIds.has(document.id));
 
   const formatExecutionTime = (minutes?: number | null) => {
     if (!minutes) return 'N/A';
@@ -240,12 +258,66 @@ export function ActivityCockpit360({
         {/* Tab: Documentos */}
         <TabsContent value="docs" className="mt-6">
           <div className="space-y-4">
-            <Button variant="outline" size="sm" disabled>
-              Vincular Documento
-            </Button>
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              Integração de documentos vinculados disponível em Story 9.6
-            </div>
+            {onLinkDocument && availableDocuments.length > 0 ? (
+              <div className="flex gap-2">
+                <Select
+                  key={documents.length}
+                  onValueChange={(value) => {
+                    if (value) onLinkDocument(value);
+                  }}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Vincular documento..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDocuments.map((document) => (
+                      <SelectItem key={document.id} value={document.id}>
+                        {document.name}
+                        {document.type ? ` (${document.type})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+
+            {documents.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                {allDocuments.length === 0
+                  ? 'Nenhum documento disponível. Cadastre em Recursos.'
+                  : 'Nenhum documento vinculado.'}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {documents.map((document) => (
+                  <div
+                    key={document.id}
+                    className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3 transition-colors"
+                  >
+                    <Link
+                      href="/organizacao/recursos?tab=documentos"
+                      className="min-w-0 flex-1 hover:underline"
+                    >
+                      <p className="text-sm font-medium">{document.name}</p>
+                      {document.type && (
+                        <p className="text-xs text-muted-foreground">{document.type}</p>
+                      )}
+                    </Link>
+                    {onUnlinkDocument && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0 gap-2 text-destructive hover:text-destructive"
+                        onClick={() => onUnlinkDocument(document.id, document.name)}
+                        aria-label={`Desvincular ${document.name}`}
+                      >
+                        Desvincular
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </TabsContent>
 
@@ -292,7 +364,10 @@ export function ActivityCockpit360({
         initialData={activity}
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        onSaved={() => setIsFormOpen(false)}
+        onSaved={(savedActivity) => {
+          onActivityUpdated?.(savedActivity as OrgActivity);
+          setIsFormOpen(false);
+        }}
         initialTab={formTab}
         contextSummary={
           routine

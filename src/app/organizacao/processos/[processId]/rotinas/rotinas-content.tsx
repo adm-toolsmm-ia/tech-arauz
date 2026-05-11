@@ -9,10 +9,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SplitView } from '@/components/views/SplitView';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { BpmDocumentationPanel } from '@/components/organization/BpmDocumentationPanel';
+import { RoutineCockpit360 } from '@/components/organization/RoutineCockpit360';
 import {
   createRoutineAction,
-  updateRoutineAction,
   deleteRoutineAction,
 } from '@/app/actions/organization';
 import {
@@ -35,56 +34,6 @@ interface RotinasContentProps {
   routines: OrgRoutine[];
 }
 
-function RoutineCockpit({
-  routine,
-  processId,
-  onEdit,
-  onDelete,
-}: {
-  routine: OrgRoutine;
-  processId: string;
-  onEdit?: () => void;
-  onDelete?: () => void;
-}) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="font-semibold">{routine.name}</h3>
-        {routine.description && (
-          <p className="mt-1 text-sm text-muted-foreground">{routine.description}</p>
-        )}
-      </div>
-      {routine.objective && (
-        <div>
-          <p className="text-xs text-muted-foreground">Objetivo</p>
-          <p className="text-sm">{routine.objective}</p>
-        </div>
-      )}
-      <BpmDocumentationPanel
-        documentation={routine.documentation}
-        showSourceBadge={!!(routine.documentation as { source?: string })?.source}
-      />
-      <div className="flex gap-2">
-        <Button variant="secondary" size="sm" asChild>
-          <Link href={`/organizacao/processos/${processId}/rotinas/${routine.id}/atividades`}>
-            Ver Atividades
-          </Link>
-        </Button>
-        {onEdit && (
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            Editar
-          </Button>
-        )}
-        {onDelete && (
-          <Button variant="ghost" size="sm" onClick={onDelete} className="text-destructive">
-            Excluir
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export function RotinasContent({
   processId,
   processName,
@@ -93,7 +42,6 @@ export function RotinasContent({
   const [routines, setRoutines] = React.useState<OrgRoutine[]>(initialRoutines);
   const [selectedRoutine, setSelectedRoutine] = React.useState<OrgRoutine | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
-  const [editingRoutine, setEditingRoutine] = React.useState<OrgRoutine | null>(null);
   const [routineToDelete, setRoutineToDelete] = React.useState<OrgRoutine | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [formData, setFormData] = React.useState({ name: '', description: '', objective: '' });
@@ -131,37 +79,6 @@ export function RotinasContent({
       setIsLoading(false);
     }
   }, [processId, formData]);
-
-  const handleUpdate = React.useCallback(async () => {
-    if (!editingRoutine) return;
-    if (!formData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const result = await updateRoutineAction(editingRoutine.id, {
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        objective: formData.objective.trim() || null,
-        responsible_roles: editingRoutine.responsible_roles,
-        documentation: editingRoutine.documentation,
-      });
-      if (result.success && result.data) {
-        setRoutines((prev) => prev.map((r) => (r.id === editingRoutine.id ? result.data! : r)));
-        setSelectedRoutine(result.data);
-        toast.success(result.message);
-        setEditingRoutine(null);
-        setIsFormOpen(false);
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [editingRoutine, formData]);
 
   const handleConfirmDelete = React.useCallback(async () => {
     if (!routineToDelete) return;
@@ -272,19 +189,18 @@ export function RotinasContent({
           width="lg"
         >
           {selectedRoutine && (
-            <RoutineCockpit
+            <RoutineCockpit360
               routine={selectedRoutine}
-              processId={processId}
-              onEdit={() => {
-                setEditingRoutine(selectedRoutine);
-                setFormData({
-                  name: selectedRoutine.name,
-                  description: selectedRoutine.description ?? '',
-                  objective: selectedRoutine.objective ?? '',
-                });
-                setIsFormOpen(true);
-              }}
+              processOptions={[{ id: processId, name: processName }]}
               onDelete={() => setRoutineToDelete(selectedRoutine)}
+              onRoutineUpdated={(updatedRoutine) => {
+                setRoutines((prev) =>
+                  prev.map((routine) =>
+                    routine.id === updatedRoutine.id ? updatedRoutine : routine,
+                  ),
+                );
+                setSelectedRoutine(updatedRoutine);
+              }}
             />
           )}
         </SplitView>
@@ -293,11 +209,9 @@ export function RotinasContent({
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingRoutine ? 'Editar Rotina' : 'Nova Rotina'}</DialogTitle>
+            <DialogTitle>Nova Rotina</DialogTitle>
             <DialogDescription>
-              {editingRoutine
-                ? 'Atualize os dados da rotina.'
-                : 'Preencha os dados para criar uma nova rotina.'}
+              Preencha os dados para criar uma nova rotina.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -335,8 +249,8 @@ export function RotinasContent({
             <Button variant="outline" onClick={() => setIsFormOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={editingRoutine ? handleUpdate : handleCreate} disabled={isLoading}>
-              {editingRoutine ? 'Salvar' : 'Criar'}
+            <Button onClick={handleCreate} disabled={isLoading}>
+              Criar
             </Button>
           </DialogFooter>
         </DialogContent>

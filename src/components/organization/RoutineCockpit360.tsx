@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FileText, Clock, AlertCircle, Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,35 +12,43 @@ import {
   DocumentationAccordion,
 } from '@/components/organization/shared';
 import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
-import type { OrgRoutine, OrgActivity } from '@/types/organization';
+import type { OrgProcess, OrgRoutine, OrgActivity } from '@/types/organization';
 import { getActivitiesByRoutine } from '@/app/actions/organization';
 
 interface RoutineCockpit360Props {
   routine: OrgRoutine;
-  onEdit?: () => void;
+  processOptions?: Array<Pick<OrgProcess, 'id' | 'name'>>;
   onDelete?: () => void;
   onSelectActivity?: (activity: OrgActivity) => void;
   onActivitiesUpdated?: (activities: OrgActivity[]) => void;
+  onRoutineUpdated?: (routine: OrgRoutine) => void;
 }
 
 export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
   routine,
-  onEdit,
+  processOptions,
   onDelete,
   onSelectActivity,
   onActivitiesUpdated,
+  onRoutineUpdated,
 }) => {
-  const [showFormSheet, setShowFormSheet] = useState(false);
+  const [showCreateActivitySheet, setShowCreateActivitySheet] = useState(false);
+  const [showEditRoutineSheet, setShowEditRoutineSheet] = useState(false);
+  const [currentRoutine, setCurrentRoutine] = useState(routine);
   const [activities, setActivities] = useState<OrgActivity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
 
   useEffect(() => {
-    if (!routine?.id) return;
+    setCurrentRoutine(routine);
+  }, [routine]);
+
+  useEffect(() => {
+    if (!currentRoutine?.id) return;
 
     setLoadingActivities(true);
     (async () => {
       try {
-        const result = await getActivitiesByRoutine(routine.id);
+        const result = await getActivitiesByRoutine(currentRoutine.id);
         setActivities(result || []);
       } catch (error) {
         console.error('Erro ao carregar atividades:', error);
@@ -48,7 +56,7 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
         setLoadingActivities(false);
       }
     })();
-  }, [routine?.id]);
+  }, [currentRoutine?.id]);
 
   return (
     <div className="space-y-6">
@@ -81,25 +89,21 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
         </TabsList>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
-          {(onEdit || onDelete) && (
-            <div className="flex justify-end gap-2">
-              {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
-                  Editar
-                </Button>
-              )}
-              {onDelete && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onDelete}
-                  className="gap-2 text-destructive hover:text-destructive"
-                >
-                  Excluir
-                </Button>
-              )}
-            </div>
-          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowEditRoutineSheet(true)}>
+              Editar
+            </Button>
+            {onDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onDelete}
+                className="gap-2 text-destructive hover:text-destructive"
+              >
+                Excluir
+              </Button>
+            )}
+          </div>
 
           <section>
             <div className="mb-4 flex items-center gap-2 border-b pb-2">
@@ -107,8 +111,8 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
               <h3 className="text-base font-semibold">Informações</h3>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <InfoField label="Descrição" value={routine.description} />
-              <InfoField label="Objetivo" value={routine.objective} />
+              <InfoField label="Descrição" value={currentRoutine.description} />
+              <InfoField label="Objetivo" value={currentRoutine.objective} />
             </div>
           </section>
 
@@ -117,13 +121,13 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
               <Users className="text-primary size-5" />
               <h3 className="text-base font-semibold">Roles responsáveis</h3>
             </div>
-            <RolesDisplay roles={routine.responsible_roles || []} />
+            <RolesDisplay roles={currentRoutine.responsible_roles || []} />
           </section>
 
           <Button
             variant="default"
             className="w-full gap-2"
-            onClick={() => setShowFormSheet(true)}
+            onClick={() => setShowCreateActivitySheet(true)}
             aria-label="Criar atividade vinculada a esta rotina"
           >
             <Plus className="size-4" />
@@ -137,7 +141,7 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
               variant="default"
               size="sm"
               className="gap-2"
-              onClick={() => setShowFormSheet(true)}
+              onClick={() => setShowCreateActivitySheet(true)}
               aria-label="Criar atividade vinculada a esta rotina"
             >
               <Plus className="size-4" />
@@ -170,8 +174,8 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
         </TabsContent>
 
         <TabsContent value="documentacao" className="mt-6">
-          {routine.documentation && Object.keys(routine.documentation).length > 0 ? (
-            <DocumentationAccordion data={routine.documentation} />
+          {currentRoutine.documentation && Object.keys(currentRoutine.documentation).length > 0 ? (
+            <DocumentationAccordion data={currentRoutine.documentation} />
           ) : (
             <div className="py-12 text-center text-sm text-muted-foreground">Sem documentação</div>
           )}
@@ -181,18 +185,49 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
       <OrgEntityFormSheet
         entity="activity"
         mode="create"
-        isOpen={showFormSheet}
-        context={{ routineId: routine.id }}
+        isOpen={showCreateActivitySheet}
+        context={{ routineId: currentRoutine.id }}
         contextSummary={[
-          ...(routine.process?.name ? [{ label: 'Processo', value: routine.process.name }] : []),
-          { label: 'Rotina', value: routine.name },
+          ...(currentRoutine.process?.name
+            ? [{ label: 'Processo', value: currentRoutine.process.name }]
+            : []),
+          { label: 'Rotina', value: currentRoutine.name },
         ]}
-        onClose={() => setShowFormSheet(false)}
+        onClose={() => setShowCreateActivitySheet(false)}
         onSaved={(newActivity) => {
           const updated = [...activities, newActivity as OrgActivity];
           setActivities(updated);
           onActivitiesUpdated?.(updated);
-          setShowFormSheet(false);
+          setShowCreateActivitySheet(false);
+        }}
+      />
+
+      <OrgEntityFormSheet
+        entity="routine"
+        mode="edit"
+        initialData={currentRoutine}
+        relationOptions={
+          processOptions?.length
+            ? {
+                processes: processOptions.map((processOption) => ({
+                  id: processOption.id,
+                  name: processOption.name,
+                })),
+              }
+            : undefined
+        }
+        isOpen={showEditRoutineSheet}
+        contextSummary={[
+          ...(currentRoutine.process?.name
+            ? [{ label: 'Processo', value: currentRoutine.process.name }]
+            : []),
+          { label: 'Rotina', value: currentRoutine.name },
+        ]}
+        onClose={() => setShowEditRoutineSheet(false)}
+        onSaved={(savedRoutine) => {
+          setCurrentRoutine(savedRoutine as OrgRoutine);
+          onRoutineUpdated?.(savedRoutine as OrgRoutine);
+          setShowEditRoutineSheet(false);
         }}
       />
     </div>

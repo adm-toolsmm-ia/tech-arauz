@@ -327,11 +327,21 @@ async function loadWatermark(supabase: SupabaseClient, tenantId: string): Promis
 }
 
 async function advanceWatermark(supabase: SupabaseClient, tenantId: string): Promise<void> {
+  // Upsert so the row is auto-created on the first successful sync (no pre-seed required).
   await supabase
     .from('espaider_apis')
-    .update({ last_sync_at: new Date().toISOString() })
-    .eq('tenant_id', tenantId)
-    .eq('tipo', 'Projetos-v2');
+    .upsert(
+      {
+        tenant_id: tenantId,
+        nome: 'Projetos-v2 (watermark)',
+        base_url: 'internal',
+        token: 'internal',
+        identificador: `v2-watermark-${tenantId}`,
+        tipo: 'Projetos-v2',
+        last_sync_at: new Date().toISOString(),
+      },
+      { onConflict: 'tenant_id,identificador' },
+    );
 }
 
 // =============================================================================

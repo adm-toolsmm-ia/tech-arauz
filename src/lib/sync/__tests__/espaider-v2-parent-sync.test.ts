@@ -102,13 +102,22 @@ function makeSupabaseMock({
     return chain;
   });
 
+  const watermarkUpsertFn = vi.fn().mockResolvedValue({ error: null });
+
   return {
-    from: vi.fn().mockReturnValue({
-      select: selectFn,
-      upsert: upsertFn,
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnThis(),
-      }),
+    from: vi.fn((table: string) => {
+      if (table === 'espaider_apis') {
+        return {
+          select: selectFn,
+          update: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnThis() }),
+          upsert: watermarkUpsertFn,
+        };
+      }
+      // projects table
+      return {
+        select: selectFn,
+        upsert: upsertFn,
+      };
     }),
     _upsertFn: upsertFn,
     _selectFn: selectFn,

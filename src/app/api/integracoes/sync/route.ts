@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
-import { executeSyncAll } from '@/lib/sync/espaider-sync';
+import { runEspaiderSync } from '@/lib/sync/sync-orchestrator';
 
 const TENANT_ARAUZ_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -105,33 +105,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const serviceClient = createServiceClient();
     const tenantId = profile.tenant_id || TENANT_ARAUZ_ID;
 
-    // STEP 6: Execute sync
+    // STEP 6: Execute sync (version routed by orchestrator)
     console.info(
       `[POST /api/integracoes/sync] Starting sync for tenant ${tenantId}, user ${user.id}`,
     );
-    const result = await executeSyncAll(serviceClient, tenantId);
+    const result = await runEspaiderSync(serviceClient, tenantId);
 
     // STEP 7: Log sync result
     const duration = Date.now() - startTime;
-    const requestId = `sync_${Date.now()}_${user.id.slice(0, 8)}`;
     console.info(`[POST /api/integracoes/sync] Sync completed in ${duration}ms:`, {
       success: result.success,
-      request_id: requestId,
-      datasets: result.datasets.length,
+      version: result.version,
+      request_id: result.requestId,
     });
 
     // STEP 8: Return successful response
     return NextResponse.json({
       success: result.success,
-      message: result.message || 'Sincronização concluída com sucesso.',
-      request_id: requestId,
-      details: {
-        datasets: result.datasets,
-        totalCreated: result.totalCreated,
-        totalUpdated: result.totalUpdated,
-        totalErrors: result.totalErrors,
-        durationMs: result.durationMs,
-      },
+      message: result.message,
+      request_id: result.requestId,
+      version: result.version,
+      details: result.details,
     });
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));

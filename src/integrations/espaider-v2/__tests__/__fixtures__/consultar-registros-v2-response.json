@@ -1,0 +1,333 @@
+{
+  "Situacao": "S",
+  "MensagemRetorno": {
+    "Mensagem": "Consulta realizada com sucesso!"
+  },
+  "URLPaginacao": "https://espaider.com.br/arauz//WCF/WCFConsultaDados/WCFConsultaDados.svc/ConsultarRegistrosComChave?ChavePaginacao=G7wAAMSEtaV-GdNVVKrvfa8KTjlRr5ZDgFlyucdYjG0wbLk02Gm6n4ohKmtBfGUBAS3stOQEjeLgypKACi-w0xaBb4h5Z6lBw9FUHna-qMIuaDCZTUb9fgtXNsVnEB-OkqS8FjeNgwT0eLVwS7UTl3fdXItrBXd9zOGpnoCafwvBIVkEfpK5KWsQV1c5OH_OJrjTjoEJ6v0B",
+  "ListaRegistros": [
+    {
+      "IDEspaider": 116727,
+      "TIPOCHAMADO": "Controle de projetos",
+      "TIPOASSUNTO": "RH",
+      "STATUSPROJETO": "Projeto futuro",
+      "SOLUCAOAPLICADAEM": null,
+      "SOLICITANTE": "Gabriel Andreas Cristofolini",
+      "SITUACAOATUAL": "Em aprovação",
+      "RESPONSAVELPROJETO": null,
+      "PRIORIDADE": "Normal",
+      "PRAZOFINAL": null,
+      "PRAZOCRONOGRAMAATUAL": null,
+      "PRAZOAPROVADOR": "01/03/2026",
+      "PASTACONSULTIVO": {
+        "ID": 20232,
+        "NumeroCaso": "CS.36482"
+      },
+      "OBJETIVO": "Integração com o sistema da Sênior de RH para automação de cadastros e lançamentos envolvendo o RH",
+      "NOME": "Integração Sênior - Folha de pagamento",
+      "MOTIVO_IMPORTANCIAESPECIAL": "Complexidade",
+      "MENSAGEM_MOVIMENTACAO": "Aguardando definição de prioridades do 1º semestre",
+      "JUSTIFICATIVA": null,
+      "IMPORTANCIAESPECIAL": "Sim",
+      "IMPACTOOPERACIONAL": null,
+      "IMPACTOESTRATEGICO": null,
+      "ESCOPO": null,
+      "ENCERRADOEM": null,
+      "DATAMOVIMENTACAO": "12/06/2025 14:21:16",
+      "DATAINICIOAPROVACAO": "19/05/2025 18:53",
+      "CRONOGRAMAATUAL": null,
+      "COMPLEXIDADETECNICA": null,
+      "CODIGO": "ESPDR.00204/20",
+      "CHAMADO_EXTERNO": "498440 / 272444",
+      "ASSUNTOAREA": "RH",
+      "APROVADORATUAL": "Fila de projetos"
+    },
+    {
+      "IDEspaider": 197253,
+      "TIPOCHAMADO": "Levantamentos/Análises",
+      "TIPOASSUNTO": "Templates",
+      "STATUSPROJETO": "Cancelado",
+      "SOLUCAOAPLICADAEM": null,
+      "SOLICITANTE": "Gabriel Andreas Cristofolini",
+      "SITUACAOATUAL": "Aprovado e concluído",
+      "RESPONSAVELPROJETO": "Gabriel Andreas Cristofolini",
+      "PRIORIDADE": "Normal",
+      "PRAZOFINAL": null,
+      "PRAZOCRONOGRAMAATUAL": null,
+      "PRAZOAPROVADOR": null,
+      "PASTACONSULTIVO": {
+        "ID": 19671,
+        "NumeroCaso": "CS.35921"
+      },
+      "OBJETIVO": "Melhorias para desenvolvimento de modelos de documentos padrões",
+      "NOME": "Minutaria e Templates",
+      "MOTIVO_IMPORTANCIAESPECIAL": null,
+      "MENSAGEM_MOVIMENTACAO": "46)\r\nDe: Gabriel Andreas Cristofolini\r\nEnviado em: quarta-feira, 21 de maio de 2025 18:13:20\r\nPara: Thaís de Oliveira Rodrigues\r\n\r\nBoa noite pessoal,\r\n\r\nDecidimos não seguir com a contratação da funcionalidade devido a limitações.\r\n\r\nAtualmente a rotina de templates e a possibilidade de utilizar textos processados atende melhor a necessidade do escritório.\r\n\r\nPodem desativar a funcionalidade no ambiente de projetos e concluir o chamado.\r\n\r\nApenas para conhecimento, segue mapeamento de funcionalidades que não identificamos no minutaria:\r\n- Fórmula para trazer os dados em letra maiúscula (Ex.: ToUpper)\r\n- Valores padrões do sistema (Ex.: $dateext)\r\n- Fonte necessária: Aptos\r\n- Possibilidade de configurar textos processados.",
+      "JUSTIFICATIVA": "Melhorias para desenvolvimento de modelos de documentos padrões",
+      "IMPORTANCIAESPECIAL": "Não",
+      "IMPACTOOPERACIONAL": "Normal",
+      "IMPACTOESTRATEGICO": "Normal",
+      "ESCOPO": "Melhorias para desenvolvimento de modelos de documentos padrões",
+      "ENCERRADOEM": "21/05/2025",
+      "DATAMOVIMENTACAO": "21/05/2025 18:15:59",
+      "DATAINICIOAPROVACAO": "18/05/2025 20:02",
+      "CRONOGRAMAATUAL": null,
+      "COMPLEXIDADETECNICA": "Alta",
+      "CODIGO": "SUPOR.00153/20",
+      "CHAMADO_EXTERNO": "285283",
+      "ASSUNTOAREA": null,
+      "APROVADORATUAL": null
+    }
+  ],
+  "ListaFilhos": [
+    {
+      "Identificador": "BI_SOLICITACOES_PROJETOSESPAIDER_TEMPOSPERMANCENCIA",
+      "URLPaginacao": "https://espaider.com.br/arauz//WCF/WCFConsultaDados/WCFConsultaDados.svc/ConsultarRegistrosComChave?ChavePaginacao=G-YAAGRpbakvvxh2DXy8aEP3Plx0cmJ64P-7Q_MgCtsCD9keukBRze0XMC8ONy45o_x4CYhBQA9Xse9gH5Nu3x_GqyDyp8PEj-mCLg6G0ephgASYX3_S5HIMiK8gOjEAzPvHQ8lVRPwBYVoteYMHzph2IBqG1WjqTQkCqvhAIHQeHL7eaMS72-V4BTFbSBDecpdeUVGNeFcfo2LvkbfiCuL7lyC4uPaPh-t9d6Mc2xUZHb2VZwLMnWMF6w1Db7T09h8",
+      "ListaRegistros": [
+        {
+          "IDEspaider": 492296,
+          "IDREGISTROPAI": 116727,
+          "TOTALMINUTOSDEC": 0,
+          "TOTALHORASDEC": 0,
+          "TOTALDIASDEC": 0,
+          "TIPO": "Transferência",
+          "SOLICITACAO_CODIGO": "ESPDR.00204/20",
+          "SITUACAO": "Aguardando envio para aprovação",
+          "SETOR": "Sistemas e Projetos",
+          "RESPONSAVEL": "Gabriel Andreas Cristofolini",
+          "IDENTIFICADOR": "ID",
+          "DATAINICIO": "10/08/2020 17:12",
+          "DATAFIM": "10/08/2020 17:12",
+          "APROVADOR": null
+        },
+        {
+          "IDEspaider": 492297,
+          "IDREGISTROPAI": 116727,
+          "TOTALMINUTOSDEC": 0,
+          "TOTALHORASDEC": 0,
+          "TOTALDIASDEC": 0,
+          "TIPO": "Transferência",
+          "SOLICITACAO_CODIGO": "ESPDR.00204/20",
+          "SITUACAO": "Aguardando envio para aprovação",
+          "SETOR": "Sistemas e Projetos",
+          "RESPONSAVEL": "Gabriel Andreas Cristofolini",
+          "IDENTIFICADOR": "ID",
+          "DATAINICIO": "10/08/2020 17:12",
+          "DATAFIM": "10/08/2020 17:12",
+          "APROVADOR": null
+        }
+      ]
+    },
+    {
+      "Identificador": "BI_SOLICITACOES_PROJETOSESPAIDER_REQUISITOS",
+      "ListaRegistros": [
+        {
+          "IDEspaider": 104,
+          "IDREGISTROPAI": 2311150,
+          "STATUSREQUISITO": "4. Em desenvolvimento",
+          "REQUISITO": "Identificar os materiais que exigem aprovação do coordenador",
+          "PRIORIDADE": "Normal",
+          "ORIGEMREQUISITO": "Sugestão - Equipe de Projetos",
+          "IMPACTO": "Médio",
+          "IDENTIFICADOR_ENTREGA": 1,
+          "IDENTIFICADOR": 104,
+          "ENTREGA": "Passo de Aprovação do Coordenador",
+          "DETALHAMENTOREQUISITO": null,
+          "DATACONCLUSAO": null
+        },
+        {
+          "IDEspaider": 105,
+          "IDREGISTROPAI": 2311150,
+          "STATUSREQUISITO": "3. Aprovado",
+          "REQUISITO": "Possibilitar a aprovação em lote de solicitações de compras",
+          "PRIORIDADE": "Normal",
+          "ORIGEMREQUISITO": "Sugestão - Equipe de Projetos",
+          "IMPACTO": "Médio",
+          "IDENTIFICADOR_ENTREGA": 1,
+          "IDENTIFICADOR": 105,
+          "ENTREGA": "Passo de Aprovação do Coordenador",
+          "DETALHAMENTOREQUISITO": null,
+          "DATACONCLUSAO": null
+        }
+      ]
+    },
+    {
+      "Identificador": "BI_SOLICITACOES_PROJETOSESPAIDER_ORCAMENTOS",
+      "ListaRegistros": [
+        {
+          "IDEspaider": 438,
+          "IDREGISTROPAI": 357378,
+          "VALOR": 4033.94,
+          "FORNECEDOR": "Fácil (Espaider)",
+          "DATACOTACAO": "30/01/2026"
+        }
+      ]
+    },
+    {
+      "Identificador": "BI_SOLICITACOES_PROJETOSESPAIDER_HORASLANCADAS",
+      "ListaRegistros": [
+        {
+          "IDEspaider": 1898021,
+          "IDREGISTROPAI": 1354544,
+          "UPDATEDONINTERFACE": null,
+          "UPDATEDON": "29/04/2024 14:15:07",
+          "SOLICITACAO_IDENTIFICADOR": 1354544,
+          "SETOR": "Ambiental e ESG",
+          "PASTACONSULTIVO_ID": "CasoID",
+          "PASTACONSULTIVO": "CS.29114",
+          "OBSERVACOES": "Definição de requisitos e rotinas envolvidas na integração de dados do Cobmais para o Espaider",
+          "NUMERO": 1898021,
+          "LOCALIZACAOCOLABORADOR": "Escritório / Presencial",
+          "HORASORIGINAISHOR": "00:33",
+          "DATA": "28/03/2024",
+          "CREATEDON": "29/03/2024 15:41:53",
+          "COMPLEXIDADE": "Media",
+          "COLABORADOR": "Gabriel Andreas Cristofolini",
+          "ATIVIDADE": "Análise de Caso"
+        },
+        {
+          "IDEspaider": 1898022,
+          "IDREGISTROPAI": 1354544,
+          "UPDATEDONINTERFACE": null,
+          "UPDATEDON": "29/04/2024 14:15:07",
+          "SOLICITACAO_IDENTIFICADOR": 1354544,
+          "SETOR": "Ambiental e ESG",
+          "PASTACONSULTIVO_ID": "CasoID",
+          "PASTACONSULTIVO": "CS.29114",
+          "OBSERVACOES": "Definição de requisitos e rotinas envolvidas na integração de dados do Cobmais para o Espaider",
+          "NUMERO": 1898022,
+          "LOCALIZACAOCOLABORADOR": "Escritório / Presencial",
+          "HORASORIGINAISHOR": "00:02",
+          "DATA": "28/03/2024",
+          "CREATEDON": "29/03/2024 15:41:53",
+          "COMPLEXIDADE": "Media",
+          "COLABORADOR": "Gabriel Andreas Cristofolini",
+          "ATIVIDADE": "Análise de Caso"
+        }
+      ]
+    },
+    {
+      "Identificador": "BI_SOLICITACOES_PROJETOSESPAIDER_HISTORICOS",
+      "URLPaginacao": "https://espaider.com.br/arauz//WCF/WCFConsultaDados/WCFConsultaDados.svc/ConsultarRegistrosComChave?ChavePaginacao=G-YAAGRpbakvvxh2DXy8aEP3Plx0cmJ64P-7Q_MgCtsCD9keukBRze0XMC8ONy45o_x4CYhBQA9Xse9gH5Nu3x_GqyDyp8PEj-mCLg6G0ephgASYX3_S5HIMiK8gOjEAzPvHQ8lVRPwBYVoteYMHzph2IPR2q90y2xIEVPGBQBg8OHy90Yh3t8vxCmK2kCC85S69oqIa8a4-RsXeI2_FFcT3L0Fwce0fD9f77kY5tisyOnorzwSYO8cK1huG3mjp7T8",
+      "ListaRegistros": [
+        {
+          "IDEspaider": 483651,
+          "IDREGISTROPAI": 116727,
+          "TIPOHISTORICO": "Requisição criada",
+          "RESPONSAVEL_PARA": "Gabriel Andreas Cristofolini",
+          "RESPONSAVEL_DE": "Gabriel Andreas Cristofolini",
+          "PASSO_PARA": null,
+          "PASSO_DE": null,
+          "NUMEROTRAMITE": 1,
+          "MENSAGEM": null,
+          "IDENTIFICADOR": "ID",
+          "DATA_DE": "10/08/2020 17:12:33"
+        },
+        {
+          "IDEspaider": 483653,
+          "IDREGISTROPAI": 116727,
+          "TIPOHISTORICO": "Fluxo de aprovações iniciado",
+          "RESPONSAVEL_PARA": "Gabriel Andreas Cristofolini",
+          "RESPONSAVEL_DE": "Gabriel Andreas Cristofolini",
+          "PASSO_PARA": "Análise de suporte",
+          "PASSO_DE": null,
+          "NUMEROTRAMITE": 2,
+          "MENSAGEM": null,
+          "IDENTIFICADOR": "ID",
+          "DATA_DE": "10/08/2020 17:12:42"
+        }
+      ]
+    },
+    {
+      "Identificador": "BI_SOLICITACOES_PROJETOSESPAIDER_ENTREGAS",
+      "ListaRegistros": [
+        {
+          "IDEspaider": 1,
+          "IDREGISTROPAI": 2311150,
+          "PRIORIDADE": "Normal",
+          "ORDEM": 2,
+          "IDENTIFICADOR": 1,
+          "ENTREGA": "Passo de Aprovação do Coordenador",
+          "DETALHAMENTO": "Incluir passo de aprovação do coordenador do solicitante do material no fluxo de compra/entrega de materiais",
+          "DATAINICIO": null,
+          "DATACONCLUSAO": null
+        },
+        {
+          "IDEspaider": 2,
+          "IDREGISTROPAI": 2311150,
+          "PRIORIDADE": "Normal",
+          "ORDEM": 5,
+          "IDENTIFICADOR": 2,
+          "ENTREGA": "Passo de Aprovação do Gerente Área",
+          "DETALHAMENTO": "Incluir passo de aprovação do gerente de área do material no fluxo de compra/entrega de materiais",
+          "DATAINICIO": null,
+          "DATACONCLUSAO": null
+        }
+      ]
+    },
+    {
+      "Identificador": "BI_SOLICITACOES_PROJETOSESPAIDER_CRONOGRAMAS",
+      "ListaRegistros": [
+        {
+          "IDEspaider": 262,
+          "IDREGISTROPAI": 1287517,
+          "STATUS": "Concluído",
+          "SETORRESPONSAVEL": null,
+          "RESPONSAVEL": "Andre Luiz Calvo",
+          "PRAZOCONFIRMADO": "Sim",
+          "ITEM": "1",
+          "IDENTIFICADOR": 262,
+          "FASEATIVIDADE": "Execução - Produção",
+          "DETALHAMENTO": null,
+          "DATAPRAZO": "21/08/2023",
+          "DATANOVOPRAZO": null,
+          "DATAINICIO": "09/08/2023",
+          "DATACONCLUSAO": "22/09/2023",
+          "DATAALERTAPRAZO": "18/08/2023",
+          "CRIARAGENDACONSULTIVO": "Não",
+          "ATRASADO": "Sim",
+          "ATIVIDADE": "Desenvolver robô para cadastro no portal do cliente - Credpago Andamentos"
+        },
+        {
+          "IDEspaider": 263,
+          "IDREGISTROPAI": 1287517,
+          "STATUS": "Concluído",
+          "SETORRESPONSAVEL": null,
+          "RESPONSAVEL": "Andre Luiz Calvo",
+          "PRAZOCONFIRMADO": "Sim",
+          "ITEM": "0",
+          "IDENTIFICADOR": 263,
+          "FASEATIVIDADE": "Execução - Produção",
+          "DETALHAMENTO": "<div><div>\n<div style=\"display: flex; margin-top: 16px; border: 1px solid var(--theme-border); padding-bottom: 8px; letter-spacing: 0.23218px; background-color: rgb(252, 252, 252)\"><div style=\"display: flex; border-width: 0px 0px 1px; margin: 0px; padding: 8px\"><h6 style=\"margin-top: 0px; margin-bottom: 8px\">7</h6><div style=\"display: flex\"><div style=\"display: flex\"><div style=\"display: flex\">De:<span style=\"margin: 0px 4px !important\">Fabiola Cueto Clementi</span></div><div style=\"display: flex\">Para:<span style=\"margin: 0px 4px !important\">Amanda Dombroski</span></div></div><div style=\"display: flex\"><div style=\"display: flex\">Data:<span style=\"margin: 0px 4px !important\">22/08/2023 20:29:42</span></div><div style=\"display: flex\">Tipo:<span style=\"margin: 0px 4px !important\">Prazo recalculado</span></div></div></div></div><div style=\"display: flex; margin-left: 16px\"><div style=\"margin-top: 16px\"><p>Amanda testar</p></div></div></div><div style=\"display: flex; margin-top: 16px; border: 1px solid var(--theme-border); padding-bottom: 8px; letter-spacing: 0.23218px; background-color: rgb(252, 252, 252)\"><div style=\"display: flex; border-width: 0px 0px 1px; margin: 0px; padding: 8px\"><h6 style=\"margin-top: 0px; margin-bottom: 8px\">6</h6><div style=\"display: flex\"><div style=\"display: flex\"><div style=\"display: flex\">De:<span style=\"margin: 0px 4px !important\">Andre Luiz Calvo</span></div><div style=\"display: flex\">Para:<span style=\"margin: 0px 4px !important\">Amanda Dombroski</span></div></div><div style=\"display: flex\"><div style=\"display: flex\">Data:<span style=\"margin: 0px 4px !important\">22/08/2023 19:59:46</span></div><div style=\"display: flex\">Tipo:<span style=\"margin: 0px 4px !important\">Aprovada</span></div></div></div></div><div style=\"display: flex; margin-left: 16px\"><div style=\"margin-top: 16px\"><p>Concluído</p></div></div></div>\n\n</div>\n</div>",
+          "DATAPRAZO": "14/08/2023",
+          "DATANOVOPRAZO": null,
+          "DATAINICIO": "07/07/2023",
+          "DATACONCLUSAO": "08/09/2023",
+          "DATAALERTAPRAZO": "14/08/2023",
+          "CRIARAGENDACONSULTIVO": "Não",
+          "ATRASADO": "Sim",
+          "ATIVIDADE": "Incluir coluna na planilha do robô de classificações com o número do processo"
+        }
+      ]
+    },
+    {
+      "Identificador": "BI_SOLICITACOES_PROJETOSESPAIDER_APROVADORES",
+      "URLPaginacao": "https://espaider.com.br/arauz//WCF/WCFConsultaDados/WCFConsultaDados.svc/ConsultarRegistrosComChave?ChavePaginacao=G-MAAGRpbakvvxh2DXy8aEP3Plzcxs67jq3iH_EjGisIPGR76AJFNbdfwLw43LjkjPLjJSAGAT1cxb6DfUy6fX8Yr4LInw4TP6YLujgYRquHARJgfv1Jk8sxIL6C6MQCMO8fDyVXEfEHhGm15DEeOGPagWi0jY4EAVV8IBAmDw5fbzTi3e1yvIKYLSQIb7lLr6ioRryrj1Ex9shbcQXx_UuQWlz7x8P1vrtRju2KjI7eyjMB5s6xgvWGoTdaevsP",
+      "ListaRegistros": [
+        {
+          "IDEspaider": 180,
+          "IDREGISTROPAI": 266986,
+          "TIPO": "Aprovar definição/validação",
+          "RESPONSAVEL": "Juliane Pereira da Silva Jarczewski",
+          "PONTOSATENCAO": null
+        },
+        {
+          "IDEspaider": 456,
+          "IDREGISTROPAI": 482216,
+          "TIPO": "Aprovar definição/validação",
+          "RESPONSAVEL": "Gabriel Andreas Cristofolini",
+          "PONTOSATENCAO": null
+        }
+      ]
+    }
+  ]
+}

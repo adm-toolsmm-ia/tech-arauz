@@ -13,6 +13,7 @@ export default defineConfig({
       'src/components/organization/__tests__/*.test.tsx',
       'src/app/actions/__tests__/*.test.ts',
       'src/lib/**/__tests__/*.test.ts',
+      'src/integrations/**/__tests__/*.test.ts',
     ],
     coverage: {
       provider: 'v8',

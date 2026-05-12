@@ -301,11 +301,13 @@ describe('Espaider API Schema Validation', () => {
 
   describe('Zod error messages', () => {
     it('provides clear field error messages', () => {
+      // Use a float to trigger z.number().int() validation (string input triggers
+      // "Expected number, received string" which does not mention "integer").
       const response = {
         Situacao: 'S',
         ListaRegistros: [
           {
-            IDEspaider: 'invalid',
+            IDEspaider: 1.5,
             Identificador: 'test',
             ListaCampos: [],
           },
@@ -318,7 +320,7 @@ describe('Espaider API Schema Validation', () => {
       } catch (error) {
         if (error instanceof z.ZodError) {
           const messages = error.errors.map((e) => e.message);
-          expect(messages.some((m) => m.includes('integer'))).toBe(true);
+          expect(messages.some((m) => m.toLowerCase().includes('integer'))).toBe(true);
         } else {
           throw error;
         }

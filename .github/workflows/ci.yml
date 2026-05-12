@@ -54,10 +54,6 @@ jobs:
           echo "Missing required secret: SUPABASE_SERVICE_ROLE_KEY"
           exit 1
         fi
-        if [ -z "${{ secrets.INTEGRATION_TOKEN_SECRET }}" ]; then
-          echo "Missing required secret: INTEGRATION_TOKEN_SECRET"
-          exit 1
-        fi
 
     - name: Run RLS audit gate
       if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}

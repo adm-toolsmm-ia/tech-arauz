@@ -31,7 +31,12 @@ export async function switchIntegrationVersion(
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    return { success: false, previousVersion: 'v1', newVersion: targetVersion, error: 'Não autenticado' };
+    return {
+      success: false,
+      previousVersion: 'v1',
+      newVersion: targetVersion,
+      error: 'Não autenticado',
+    };
   }
 
   const { data: profile } = await supabase
@@ -41,11 +46,21 @@ export async function switchIntegrationVersion(
     .single();
 
   if (!profile) {
-    return { success: false, previousVersion: 'v1', newVersion: targetVersion, error: 'Perfil não encontrado' };
+    return {
+      success: false,
+      previousVersion: 'v1',
+      newVersion: targetVersion,
+      error: 'Perfil não encontrado',
+    };
   }
 
   if (profile.role !== 'admin') {
-    return { success: false, previousVersion: 'v1', newVersion: targetVersion, error: 'Apenas administradores podem alterar a versão da integração' };
+    return {
+      success: false,
+      previousVersion: 'v1',
+      newVersion: targetVersion,
+      error: 'Apenas administradores podem alterar a versão da integração',
+    };
   }
 
   const serviceClient = createServiceClient();

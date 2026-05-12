@@ -31,8 +31,18 @@ function makeParentResult(overrides: Partial<SyncV2ParentResult> = {}): SyncV2Pa
     pagesFetched: 1,
     durationMs: 250,
     logs: [
-      { timestamp: STARTED_AT.toISOString(), level: 'info', dataset: 'Projetos-v2', message: 'Sync iniciado' },
-      { timestamp: STARTED_AT.toISOString(), level: 'success', dataset: 'Projetos-v2', message: '5 novos, 2 atualizados' },
+      {
+        timestamp: STARTED_AT.toISOString(),
+        level: 'info',
+        dataset: 'Projetos-v2',
+        message: 'Sync iniciado',
+      },
+      {
+        timestamp: STARTED_AT.toISOString(),
+        level: 'success',
+        dataset: 'Projetos-v2',
+        message: '5 novos, 2 atualizados',
+      },
     ],
     ...overrides,
   };
@@ -44,8 +54,18 @@ function makeChildrenResult(overrides: Partial<SyncChildrenResult> = {}): SyncCh
     datasets: [],
     totalQuarantined: 2,
     logs: [
-      { timestamp: STARTED_AT.toISOString(), level: 'info', dataset: 'Children-v2', message: 'Processando 3 datasets' },
-      { timestamp: STARTED_AT.toISOString(), level: 'warn', dataset: CHILD_IDENTIFIERS.APROVADORES, message: '2 registros quarentenados' },
+      {
+        timestamp: STARTED_AT.toISOString(),
+        level: 'info',
+        dataset: 'Children-v2',
+        message: 'Processando 3 datasets',
+      },
+      {
+        timestamp: STARTED_AT.toISOString(),
+        level: 'warn',
+        dataset: CHILD_IDENTIFIERS.APROVADORES,
+        message: '2 registros quarentenados',
+      },
     ],
     ...overrides,
   };

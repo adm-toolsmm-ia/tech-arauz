@@ -252,10 +252,9 @@ describe('syncV2ParentDataset — duplicate prevention', () => {
       configOverride: BASE_CONFIG,
     });
 
-    expect(supabase._upsertFn).toHaveBeenCalledWith(
-      expect.any(Array),
-      { onConflict: 'tenant_id,espaider_id' },
-    );
+    expect(supabase._upsertFn).toHaveBeenCalledWith(expect.any(Array), {
+      onConflict: 'tenant_id,espaider_id',
+    });
   });
 });
 

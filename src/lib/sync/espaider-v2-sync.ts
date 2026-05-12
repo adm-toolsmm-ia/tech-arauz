@@ -135,7 +135,9 @@ export async function syncV2ParentDataset(params: SyncV2ParentParams): Promise<S
 
   if (syncWindow) {
     dateFilter = syncWindow;
-    logs.push(createLog('info', 'Projetos-v2', `Janela explícita: ${dateFilter.de} → ${dateFilter.ate}`));
+    logs.push(
+      createLog('info', 'Projetos-v2', `Janela explícita: ${dateFilter.de} → ${dateFilter.ate}`),
+    );
   } else if (!fullSync) {
     const watermark = await loadWatermark(supabase, tenantId);
     if (watermark) {
@@ -260,7 +262,9 @@ export async function syncV2ParentDataset(params: SyncV2ParentParams): Promise<S
       .upsert(batch, { onConflict: 'tenant_id,espaider_id' });
 
     if (error) {
-      logs.push(createLog('error', 'Projetos-v2', `Upsert error: ${error.message}`, { code: error.code }));
+      logs.push(
+        createLog('error', 'Projetos-v2', `Upsert error: ${error.message}`, { code: error.code }),
+      );
       return {
         success: false,
         newRecords,
@@ -328,20 +332,18 @@ async function loadWatermark(supabase: SupabaseClient, tenantId: string): Promis
 
 async function advanceWatermark(supabase: SupabaseClient, tenantId: string): Promise<void> {
   // Upsert so the row is auto-created on the first successful sync (no pre-seed required).
-  await supabase
-    .from('espaider_apis')
-    .upsert(
-      {
-        tenant_id: tenantId,
-        nome: 'Projetos-v2 (watermark)',
-        base_url: 'internal',
-        token: 'internal',
-        identificador: `v2-watermark-${tenantId}`,
-        tipo: 'Projetos-v2',
-        last_sync_at: new Date().toISOString(),
-      },
-      { onConflict: 'tenant_id,identificador' },
-    );
+  await supabase.from('espaider_apis').upsert(
+    {
+      tenant_id: tenantId,
+      nome: 'Projetos-v2 (watermark)',
+      base_url: 'internal',
+      token: 'internal',
+      identificador: `v2-watermark-${tenantId}`,
+      tipo: 'Projetos-v2',
+      last_sync_at: new Date().toISOString(),
+    },
+    { onConflict: 'tenant_id,identificador' },
+  );
 }
 
 // =============================================================================

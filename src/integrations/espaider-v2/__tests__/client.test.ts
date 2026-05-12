@@ -12,7 +12,9 @@ import type { ConsultarRegistrosResponse } from '../types';
 // Helpers
 // =============================================================================
 
-function makeResponse(partial: Partial<ConsultarRegistrosResponse> = {}): ConsultarRegistrosResponse {
+function makeResponse(
+  partial: Partial<ConsultarRegistrosResponse> = {},
+): ConsultarRegistrosResponse {
   return {
     ListaRegistros: [],
     ListaFilhos: [],
@@ -82,10 +84,7 @@ describe('consultarRegistros — request construction', () => {
 
     await consultarRegistros({ configOverride: BASE_CONFIG });
 
-    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      string,
-      RequestInit,
-    ];
+    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit];
     const headers = options.headers as Record<string, string>;
 
     expect(headers['token']).toBe('test-token-abc123');
@@ -106,10 +105,7 @@ describe('consultarRegistros — request construction', () => {
       dateFilter: { de: '01/01/2026 00:00:00', ate: '31/01/2026 23:59:59' },
     });
 
-    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      string,
-      RequestInit,
-    ];
+    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(options.body as string);
 
     expect(body).toEqual([
@@ -128,10 +124,7 @@ describe('consultarRegistros — request construction', () => {
 
     await consultarRegistros({ configOverride: BASE_CONFIG });
 
-    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      string,
-      RequestInit,
-    ];
+    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(options.body as string);
     expect(body).toEqual([]);
   });
@@ -141,7 +134,8 @@ describe('consultarRegistros — pagination', () => {
   it('follows URLPaginacao with GET for parent pagination', async () => {
     const page1 = makeResponse({
       ListaRegistros: [{ IDEspaider: 1 }],
-      URLPaginacao: 'https://espaider.example.com/WCF/WCFConsultaDados/WCFConsultaDados.svc/ConsultarRegistrosComChave?ChavePaginacao=abc',
+      URLPaginacao:
+        'https://espaider.example.com/WCF/WCFConsultaDados/WCFConsultaDados.svc/ConsultarRegistrosComChave?ChavePaginacao=abc',
     });
     const page2 = makeResponse({
       ListaRegistros: [{ IDEspaider: 2 }],
@@ -162,7 +156,10 @@ describe('consultarRegistros — pagination', () => {
 
   it('aggregates parent records across all pages', async () => {
     const pages = [
-      makeResponse({ ListaRegistros: [{ IDEspaider: 1 }, { IDEspaider: 2 }], URLPaginacao: 'https://espaider.example.com/page2' }),
+      makeResponse({
+        ListaRegistros: [{ IDEspaider: 1 }, { IDEspaider: 2 }],
+        URLPaginacao: 'https://espaider.example.com/page2',
+      }),
       makeResponse({ ListaRegistros: [{ IDEspaider: 3 }], URLPaginacao: null }),
     ];
     mockFetch(pages);

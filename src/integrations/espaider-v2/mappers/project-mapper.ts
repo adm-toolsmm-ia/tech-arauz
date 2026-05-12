@@ -85,8 +85,7 @@ export interface ProjectV2Row {
  * Idempotent: safe to call multiple times for the same record.
  */
 export function mapProjetoV2ToRow(record: ProjetoV2Record, tenantId: string): ProjectV2Row {
-  const pastaNumeroCaso =
-    record.PASTACONSULTIVO != null ? record.PASTACONSULTIVO.NumeroCaso : null;
+  const pastaNumeroCaso = record.PASTACONSULTIVO != null ? record.PASTACONSULTIVO.NumeroCaso : null;
   const pastaId = record.PASTACONSULTIVO != null ? record.PASTACONSULTIVO.ID : null;
 
   return {

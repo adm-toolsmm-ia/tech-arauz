@@ -14,7 +14,7 @@ export function createClientFromToken(token: string) {
           Authorization: `Bearer ${token}`,
         },
       },
-    }
+    },
   );
 }
 

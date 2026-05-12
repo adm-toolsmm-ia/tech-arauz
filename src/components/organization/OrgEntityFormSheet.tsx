@@ -234,7 +234,13 @@ export function OrgEntityFormSheet({
       ...(processName ? [{ label: 'Processo', value: processName }] : []),
       ...(routineName ? [{ label: 'Rotina', value: routineName }] : []),
     ];
-  }, [relationOptions, formData.area_id, formData.nucleus_id, formData.process_id, formData.routine_id]);
+  }, [
+    relationOptions,
+    formData.area_id,
+    formData.nucleus_id,
+    formData.process_id,
+    formData.routine_id,
+  ]);
 
   const handleAddArrayItem = (field: 'inputs' | 'outputs' | 'risks' | 'impacts') => {
     const current = formData[field] || [];
@@ -416,7 +422,9 @@ export function OrgEntityFormSheet({
           },
           {
             label: 'Tempo médio',
-            value: formData.average_execution_time ? `${formData.average_execution_time} min` : 'Não informado',
+            value: formData.average_execution_time
+              ? `${formData.average_execution_time} min`
+              : 'Não informado',
           },
         ]
       : []),
@@ -442,7 +450,7 @@ export function OrgEntityFormSheet({
         </SheetHeader>
 
         {(contextSummary?.length || mode === 'edit') && (
-          <div className="border-b bg-muted/30 px-6 py-4">
+          <div className="bg-muted/30 border-b px-6 py-4">
             {contextSummary?.length ? (
               <div className="mb-4 space-y-2">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -450,7 +458,11 @@ export function OrgEntityFormSheet({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {contextSummary.map((item) => (
-                    <Badge key={`${item.label}-${item.value}`} variant="outline" className="gap-1.5">
+                    <Badge
+                      key={`${item.label}-${item.value}`}
+                      variant="outline"
+                      className="gap-1.5"
+                    >
                       <span className="text-muted-foreground">{item.label}:</span>
                       <span className="font-medium text-foreground">{item.value}</span>
                     </Badge>
@@ -485,9 +497,7 @@ export function OrgEntityFormSheet({
             <CardContent className="pt-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                <p className="text-sm text-yellow-800">
-                  Você tem alterações não salvas.
-                </p>
+                <p className="text-sm text-yellow-800">Você tem alterações não salvas.</p>
               </div>
             </CardContent>
           </Card>

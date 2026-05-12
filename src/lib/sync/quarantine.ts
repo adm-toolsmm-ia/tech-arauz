@@ -75,8 +75,6 @@ export async function quarantineRecord(
 /**
  * Formats validation errors into a traceable quarantine reason string.
  */
-export function formatValidationReason(
-  errors: Array<{ path: string; message: string }>,
-): string {
+export function formatValidationReason(errors: Array<{ path: string; message: string }>): string {
   return errors.map((e) => `${e.path || 'root'}: ${e.message}`).join('; ');
 }

@@ -21,10 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { SplitView } from '@/components/views/SplitView';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { NucleusCockpit360 } from '@/components/organization/NucleusCockpit360';
-import {
-  createNucleusAction,
-  deleteNucleusAction,
-} from '@/app/actions/organization';
+import { createNucleusAction, deleteNucleusAction } from '@/app/actions/organization';
 import { toast } from 'sonner';
 import type { OrgNucleus } from '@/types/organization';
 
@@ -234,9 +231,7 @@ export function NucleosContent({ areaId, areaName, nuclei: initialNuclei }: Nucl
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Novo Núcleo</DialogTitle>
-            <DialogDescription>
-              Preencha os dados para criar um novo núcleo.
-            </DialogDescription>
+            <DialogDescription>Preencha os dados para criar um novo núcleo.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">

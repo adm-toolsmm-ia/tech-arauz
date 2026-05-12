@@ -11,7 +11,7 @@ import type { KnowledgeDocument, APIError } from '@/types/knowledge-graph';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ): Promise<NextResponse<{ related: KnowledgeDocument[] } | APIError>> {
   try {
     // Extract JWT token from Authorization header
@@ -20,19 +20,26 @@ export async function GET(
 
     if (!token) {
       return NextResponse.json(
-        { error: 'Missing or invalid Authorization header', statusCode: 401, timestamp: new Date().toISOString() },
-        { status: 401 }
+        {
+          error: 'Missing or invalid Authorization header',
+          statusCode: 401,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 },
       );
     }
 
     // Auth check with token
     const supabase = createClientFromToken(token);
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized', statusCode: 401, timestamp: new Date().toISOString() },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -46,7 +53,7 @@ export async function GET(
     if (profileError || !profile) {
       return NextResponse.json(
         { error: 'Profile not found', statusCode: 400, timestamp: new Date().toISOString() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -61,7 +68,7 @@ export async function GET(
     if (docError || !baseDoc) {
       return NextResponse.json(
         { error: 'Document not found', statusCode: 404, timestamp: new Date().toISOString() },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -76,8 +83,12 @@ export async function GET(
     if (linksError) {
       console.error('Links query error:', linksError);
       return NextResponse.json(
-        { error: 'Failed to fetch related documents', statusCode: 500, timestamp: new Date().toISOString() },
-        { status: 500 }
+        {
+          error: 'Failed to fetch related documents',
+          statusCode: 500,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 500 },
       );
     }
 
@@ -129,7 +140,7 @@ export async function GET(
         statusCode: 500,
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClientFromToken, extractBearerToken } from '@/lib/supabase/server-with-token';
-import type { KnowledgeDocumentsResponse, KnowledgeDocument, APIError } from '@/types/knowledge-graph';
+import type {
+  KnowledgeDocumentsResponse,
+  KnowledgeDocument,
+  APIError,
+} from '@/types/knowledge-graph';
 
 interface SearchParams {
   category?: string;
@@ -22,7 +26,9 @@ interface SearchParams {
  *   - limit: number of results (default 10, max 50)
  *   - cursor: keyset pagination cursor (created_at)
  */
-export async function GET(request: NextRequest): Promise<NextResponse<KnowledgeDocumentsResponse | APIError>> {
+export async function GET(
+  request: NextRequest,
+): Promise<NextResponse<KnowledgeDocumentsResponse | APIError>> {
   try {
     // Extract JWT token from Authorization header
     const authHeader = request.headers.get('authorization');
@@ -30,19 +36,26 @@ export async function GET(request: NextRequest): Promise<NextResponse<KnowledgeD
 
     if (!token) {
       return NextResponse.json(
-        { error: 'Missing or invalid Authorization header', statusCode: 401, timestamp: new Date().toISOString() },
-        { status: 401 }
+        {
+          error: 'Missing or invalid Authorization header',
+          statusCode: 401,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 },
       );
     }
 
     // Auth check with token
     const supabase = createClientFromToken(token);
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized', statusCode: 401, timestamp: new Date().toISOString() },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -56,7 +69,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<KnowledgeD
     if (profileError || !profile) {
       return NextResponse.json(
         { error: 'Profile not found', statusCode: 400, timestamp: new Date().toISOString() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -123,8 +136,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<KnowledgeD
     if (queryError) {
       console.error('Documents query error:', queryError);
       return NextResponse.json(
-        { error: 'Failed to fetch documents', statusCode: 500, timestamp: new Date().toISOString() },
-        { status: 500 }
+        {
+          error: 'Failed to fetch documents',
+          statusCode: 500,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 500 },
       );
     }
 
@@ -156,7 +173,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<KnowledgeD
         statusCode: 500,
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

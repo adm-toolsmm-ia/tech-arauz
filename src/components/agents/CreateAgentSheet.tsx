@@ -55,7 +55,9 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
   const defaultProvider = providers[0];
   const defaultProviderSlug = defaultProvider?.slug ?? 'openai';
 
-  const buildInitialForm = useCallback((): CreateAgentRequest & { prompt_instructions?: string[] } => {
+  const buildInitialForm = useCallback((): CreateAgentRequest & {
+    prompt_instructions?: string[];
+  } => {
     return {
       name: '',
       slug: '',
@@ -251,7 +253,9 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
                         className={errors.name ? 'border-destructive' : ''}
                         aria-invalid={!!errors.name}
                       />
-                      {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
+                      {errors.name && (
+                        <p className="mt-1 text-xs text-destructive">{errors.name}</p>
+                      )}
                     </div>
 
                     <div>
@@ -272,7 +276,9 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
                         className={errors.slug ? 'border-destructive' : ''}
                         aria-invalid={!!errors.slug}
                       />
-                      {errors.slug && <p className="mt-1 text-xs text-destructive">{errors.slug}</p>}
+                      {errors.slug && (
+                        <p className="mt-1 text-xs text-destructive">{errors.slug}</p>
+                      )}
                     </div>
 
                     <div>
@@ -307,7 +313,11 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
                         <SelectTrigger id="entity-kind">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className={SELECT_IN_SHEET_Z} position="popper" sideOffset={4}>
+                        <SelectContent
+                          className={SELECT_IN_SHEET_Z}
+                          position="popper"
+                          sideOffset={4}
+                        >
                           <SelectItem value="agent">Agente (executor)</SelectItem>
                           <SelectItem value="squad">Squad (equipe de agentes)</SelectItem>
                         </SelectContent>
@@ -332,7 +342,11 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
                         <SelectTrigger id="agent-type">
                           <SelectValue placeholder="Selecionar tipo..." />
                         </SelectTrigger>
-                        <SelectContent className={SELECT_IN_SHEET_Z} position="popper" sideOffset={4}>
+                        <SelectContent
+                          className={SELECT_IN_SHEET_Z}
+                          position="popper"
+                          sideOffset={4}
+                        >
                           <SelectItem value="no-type">Sem tipo (Custom)</SelectItem>
                           {agentTypes.map((type) => (
                             <SelectItem key={type.id} value={type.id}>
@@ -383,7 +397,11 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
                         <SelectTrigger id="usage-type">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className={SELECT_IN_SHEET_Z} position="popper" sideOffset={4}>
+                        <SelectContent
+                          className={SELECT_IN_SHEET_Z}
+                          position="popper"
+                          sideOffset={4}
+                        >
                           <SelectItem value="chatbot">Chatbot (conversacional)</SelectItem>
                           <SelectItem value="workflow">Workflow (automação)</SelectItem>
                         </SelectContent>
@@ -444,7 +462,11 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
                           <SelectTrigger id="provider">
                             <SelectValue placeholder="Selecionar provedor..." />
                           </SelectTrigger>
-                          <SelectContent className={SELECT_IN_SHEET_Z} position="popper" sideOffset={4}>
+                          <SelectContent
+                            className={SELECT_IN_SHEET_Z}
+                            position="popper"
+                            sideOffset={4}
+                          >
                             {providers.map((p) => (
                               <SelectItem key={p.id} value={p.slug}>
                                 {p.icon_emoji} {p.name}
@@ -469,7 +491,11 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
                           <SelectTrigger id="model-id">
                             <SelectValue placeholder="Selecionar modelo..." />
                           </SelectTrigger>
-                          <SelectContent className={SELECT_IN_SHEET_Z} position="popper" sideOffset={4}>
+                          <SelectContent
+                            className={SELECT_IN_SHEET_Z}
+                            position="popper"
+                            sideOffset={4}
+                          >
                             {(() => {
                               const provider = providers.find(
                                 (p) => p.slug === (formData.model_provider || 'openai'),
@@ -482,7 +508,9 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
                                 <SelectItem key={m.id} value={m.model_id}>
                                   <span className="flex items-center gap-2">
                                     <span>{m.name}</span>
-                                    {m.tier && <span className="text-xs opacity-70">[{m.tier}]</span>}
+                                    {m.tier && (
+                                      <span className="text-xs opacity-70">[{m.tier}]</span>
+                                    )}
                                   </span>
                                 </SelectItem>
                               ));
@@ -500,7 +528,9 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
 
                     <div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="temperature">Temperatura: {formData.model_temperature}</Label>
+                        <Label htmlFor="temperature">
+                          Temperatura: {formData.model_temperature}
+                        </Label>
                         <span className="text-xs text-muted-foreground">
                           (0 = determinístico, 2 = aleatório)
                         </span>
@@ -651,7 +681,9 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
                         id="output-schema"
                         placeholder='{"type": "object", "properties": {...}}'
                         value={
-                          formData.output_schema ? JSON.stringify(formData.output_schema, null, 2) : ''
+                          formData.output_schema
+                            ? JSON.stringify(formData.output_schema, null, 2)
+                            : ''
                         }
                         onChange={(e) => {
                           const val = e.target.value.trim();
@@ -677,7 +709,12 @@ export const CreateAgentSheet: React.FC<CreateAgentSheetProps> = ({
             </ScrollArea>
 
             <div className="flex shrink-0 justify-end gap-3 border-t bg-card px-6 py-4">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={busy}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={busy} className="gap-2">

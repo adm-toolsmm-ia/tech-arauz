@@ -39,11 +39,7 @@ import { AreasCardView } from './components/AreasCardView';
 import { AreasKanbanView } from './components/AreasKanbanView';
 import { ResponsibleRolesInput } from '@/components/organization/ResponsibleRolesInput';
 import { useAreasFilters } from '@/hooks/useOrganizacaoFilters';
-import {
-  createAreaAction,
-  deleteAreaAction,
-  runBootstrapAction,
-} from '@/app/actions/organization';
+import { createAreaAction, deleteAreaAction, runBootstrapAction } from '@/app/actions/organization';
 import { toast } from 'sonner';
 import type {
   OrgArea,
@@ -512,7 +508,11 @@ export function AreasContent({
             {selectedRoutine && (
               <RoutineCockpit360
                 routine={selectedRoutine}
-                processOptions={selectedProcess ? [{ id: selectedProcess.id, name: selectedProcess.name }] : undefined}
+                processOptions={
+                  selectedProcess
+                    ? [{ id: selectedProcess.id, name: selectedProcess.name }]
+                    : undefined
+                }
                 onSelectActivity={setSelectedActivity}
                 onRoutineUpdated={(updatedRoutine) => setSelectedRoutine(updatedRoutine)}
               />

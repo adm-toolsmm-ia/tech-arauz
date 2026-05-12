@@ -198,7 +198,9 @@ export const NucleusCockpit360: React.FC<NucleusCockpit360Props> = ({
         ]}
         onClose={() => setShowEditNucleusSheet(false)}
         onSaved={(savedNucleus) => {
-          setCurrentNucleus(savedNucleus as OrgNucleus & { processes_count?: number; area_name?: string });
+          setCurrentNucleus(
+            savedNucleus as OrgNucleus & { processes_count?: number; area_name?: string },
+          );
           onNucleusUpdated?.(savedNucleus as OrgNucleus);
           setShowEditNucleusSheet(false);
         }}

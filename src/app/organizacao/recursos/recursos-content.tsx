@@ -92,9 +92,8 @@ export function RecursosContent({
   const [editingItem, setEditingItem] = React.useState<RecursosEntity | null>(null);
   const [itemToDelete, setItemToDelete] = React.useState<RecursosEntity | null>(null);
   const [isSystemResourceFormOpen, setIsSystemResourceFormOpen] = React.useState(false);
-  const [selectedSystemForResource, setSelectedSystemForResource] = React.useState<OrgSystem | null>(
-    null,
-  );
+  const [selectedSystemForResource, setSelectedSystemForResource] =
+    React.useState<OrgSystem | null>(null);
   const [editingSystemResource, setEditingSystemResource] =
     React.useState<OrgSystemResource | null>(null);
   const [systemResourceToDelete, setSystemResourceToDelete] =
@@ -157,19 +156,22 @@ export function RecursosContent({
     setIsResourceFormOpen(true);
   }, [activeTab]);
 
-  const handleOpenEdit = React.useCallback((item: RecursosEntity) => {
-    setEditingItem(item);
-    setResourceFormEntity(
-      'purpose' in item
-        ? 'system'
-        : 'associated_process_id' in item
-          ? 'document'
-          : 'responsible_roles' in item && activeTab === 'fornecedores'
-            ? 'supplier'
-            : 'service',
-    );
-    setIsResourceFormOpen(true);
-  }, [activeTab]);
+  const handleOpenEdit = React.useCallback(
+    (item: RecursosEntity) => {
+      setEditingItem(item);
+      setResourceFormEntity(
+        'purpose' in item
+          ? 'system'
+          : 'associated_process_id' in item
+            ? 'document'
+            : 'responsible_roles' in item && activeTab === 'fornecedores'
+              ? 'supplier'
+              : 'service',
+      );
+      setIsResourceFormOpen(true);
+    },
+    [activeTab],
+  );
 
   const handleResourceSaved = React.useCallback(
     (saved: RecursosEntity) => {
@@ -257,21 +259,18 @@ export function RecursosContent({
     }
   }, [itemToDelete]);
 
-  const handleSystemResourceSaved = React.useCallback(
-    (saved: OrgSystemResource) => {
-      setSystemResourcesMap((prev) => {
-        const current = prev[saved.system_id] ?? [];
-        const exists = current.some((item) => item.id === saved.id);
-        return {
-          ...prev,
-          [saved.system_id]: exists
-            ? current.map((item) => (item.id === saved.id ? saved : item))
-            : [...current, saved],
-        };
-      });
-    },
-    [],
-  );
+  const handleSystemResourceSaved = React.useCallback((saved: OrgSystemResource) => {
+    setSystemResourcesMap((prev) => {
+      const current = prev[saved.system_id] ?? [];
+      const exists = current.some((item) => item.id === saved.id);
+      return {
+        ...prev,
+        [saved.system_id]: exists
+          ? current.map((item) => (item.id === saved.id ? saved : item))
+          : [...current, saved],
+      };
+    });
+  }, []);
 
   const handleConfirmDeleteSystemResource = React.useCallback(async () => {
     if (!systemResourceToDelete) return;

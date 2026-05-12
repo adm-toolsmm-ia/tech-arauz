@@ -34,10 +34,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { NucleosCardView } from './components/NucleosCardView';
 import { NucleosKanbanView } from './components/NucleosKanbanView';
 import { useNucleosFilters, type NucleusWithMeta } from '@/hooks/useNucleosFilters';
-import {
-  createNucleusAction,
-  deleteNucleusAction,
-} from '@/app/actions/organization';
+import { createNucleusAction, deleteNucleusAction } from '@/app/actions/organization';
 import { toast } from 'sonner';
 
 interface NucleosContentProps {
@@ -353,9 +350,7 @@ export function NucleosContent({ nuclei: initialNuclei, areas }: NucleosContentP
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Novo Núcleo</DialogTitle>
-            <DialogDescription>
-              Preencha os dados para criar um novo núcleo.
-            </DialogDescription>
+            <DialogDescription>Preencha os dados para criar um novo núcleo.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">

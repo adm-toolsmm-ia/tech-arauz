@@ -132,7 +132,9 @@ describe('ProcessSlaModal', () => {
       const submitButton = screen.getByRole('button', { name: /Criar/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByText(/Threshold de aviso deve ser menor que o crítico/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Threshold de aviso deve ser menor que o crítico/i),
+      ).toBeInTheDocument();
     });
   });
 

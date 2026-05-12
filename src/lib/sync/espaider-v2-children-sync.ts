@@ -230,7 +230,13 @@ const PROCESSORS: Record<string, ChildProcessor> = {
     });
   },
 
-  [CHILD_IDENTIFIERS.TEMPOSPERMANCENCIA]: async (child, params, projectIdMap, quarantineEntries, logs) => {
+  [CHILD_IDENTIFIERS.TEMPOSPERMANCENCIA]: async (
+    child,
+    params,
+    projectIdMap,
+    quarantineEntries,
+    logs,
+  ) => {
     return processChildDataset({
       child,
       tableName: 'project_tempo_permanencia',
@@ -243,7 +249,13 @@ const PROCESSORS: Record<string, ChildProcessor> = {
     });
   },
 
-  [CHILD_IDENTIFIERS.HORASLANCADAS]: async (child, params, projectIdMap, quarantineEntries, logs) => {
+  [CHILD_IDENTIFIERS.HORASLANCADAS]: async (
+    child,
+    params,
+    projectIdMap,
+    quarantineEntries,
+    logs,
+  ) => {
     return processChildDataset({
       child,
       tableName: 'project_horas_lancadas',
@@ -341,7 +353,9 @@ async function processChildDataset<T>({
   if (rows.length > 0) {
     const { error } = await upsertChildBatch(params.supabase, tableName, rows);
     if (error) {
-      logs.push(createLog('error', dataset, `Upsert error: ${error.message}`, { code: error.code }));
+      logs.push(
+        createLog('error', dataset, `Upsert error: ${error.message}`, { code: error.code }),
+      );
       return { dataset, processed: child.ListaRegistros.length, persisted: 0, invalid, orphans };
     }
     logs.push(createLog('success', dataset, `${rows.length} registros persistidos`));
@@ -360,9 +374,7 @@ async function processChildDataset<T>({
 // Main entry point
 // =============================================================================
 
-export async function syncV2ChildDatasets(
-  params: SyncChildrenParams,
-): Promise<SyncChildrenResult> {
+export async function syncV2ChildDatasets(params: SyncChildrenParams): Promise<SyncChildrenResult> {
   const { supabase, tenantId, childDatasets } = params;
   const logs: SyncLogEntry[] = [];
   const datasetResults: ChildDatasetResult[] = [];
@@ -384,11 +396,7 @@ export async function syncV2ChildDatasets(
     }
   }
 
-  const projectIdMap = await buildProjectIdMap(
-    supabase,
-    tenantId,
-    Array.from(allParentIds),
-  );
+  const projectIdMap = await buildProjectIdMap(supabase, tenantId, Array.from(allParentIds));
 
   logs.push(
     createLog('info', 'Children-v2', `Project ID map: ${projectIdMap.size} projetos resolvidos`),
@@ -400,7 +408,11 @@ export async function syncV2ChildDatasets(
 
     if (!processor) {
       logs.push(
-        createLog('warn', child.Identificador, `Dataset desconhecido — ignorado. Registros: ${child.ListaRegistros.length}`),
+        createLog(
+          'warn',
+          child.Identificador,
+          `Dataset desconhecido — ignorado. Registros: ${child.ListaRegistros.length}`,
+        ),
       );
       datasetResults.push({
         dataset: child.Identificador,

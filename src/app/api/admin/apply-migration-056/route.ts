@@ -17,10 +17,7 @@ export async function GET(req: NextRequest) {
 
   // Simple auth check - in production this should be more robust
   if (!adminKey || adminKey !== process.env.ADMIN_API_KEY) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const supabase = createServiceClient();
@@ -63,30 +60,27 @@ ALTER TABLE public.integration_log_entries
 
     // Test 1: Try to insert a log with HorasLancadas (will fail if constraint not updated)
     console.log('[apply-migration-056] Step 1: Testing current constraint...');
-    const { error: preTestError } = await supabase
-      .from('integration_log_entries')
-      .insert([
-        {
-          tenant_id: '00000000-0000-0000-0000-000000000001',
-          request_id: 'TEST-PRE-056',
-          level: 'info',
-          dataset: 'HorasLancadas',
-          message: 'Pre-migration test',
-          logged_at: new Date().toISOString(),
-        },
-      ]);
+    const { error: preTestError } = await supabase.from('integration_log_entries').insert([
+      {
+        tenant_id: '00000000-0000-0000-0000-000000000001',
+        request_id: 'TEST-PRE-056',
+        level: 'info',
+        dataset: 'HorasLancadas',
+        message: 'Pre-migration test',
+        logged_at: new Date().toISOString(),
+      },
+    ]);
 
     if (preTestError?.message.includes('violates check constraint')) {
       console.log('[apply-migration-056] ✅ Confirmed: Constraint needs expansion');
     } else if (preTestError) {
       console.log('[apply-migration-056] Pre-test error:', preTestError.message);
     } else {
-      console.log('[apply-migration-056] ⚠️  HorasLancadas already works (constraint may already be expanded)');
+      console.log(
+        '[apply-migration-056] ⚠️  HorasLancadas already works (constraint may already be expanded)',
+      );
       // Cleanup
-      await supabase
-        .from('integration_log_entries')
-        .delete()
-        .eq('request_id', 'TEST-PRE-056');
+      await supabase.from('integration_log_entries').delete().eq('request_id', 'TEST-PRE-056');
     }
 
     // Execute the migration SQL

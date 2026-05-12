@@ -69,8 +69,9 @@ export function ProcessosContent({
     systemId: string;
     systemName: string;
   } | null>(null);
-  const [routinesByProcessId, setRoutinesByProcessId] =
-    React.useState<Record<string, OrgRoutine[]>>(initialRoutinesByProcessId);
+  const [routinesByProcessId, setRoutinesByProcessId] = React.useState<
+    Record<string, OrgRoutine[]>
+  >(initialRoutinesByProcessId);
 
   const {
     filters,
@@ -95,8 +96,9 @@ export function ProcessosContent({
   const kpis = React.useMemo(
     () => ({
       total: processes.length,
-      withRoutines: processes.filter((process) => (routinesByProcessId[process.id] ?? []).length > 0)
-        .length,
+      withRoutines: processes.filter(
+        (process) => (routinesByProcessId[process.id] ?? []).length > 0,
+      ).length,
       withSystems: processes.filter((process) => (systemsByProcessId[process.id] ?? []).length > 0)
         .length,
     }),
@@ -174,19 +176,16 @@ export function ProcessosContent({
     [router],
   );
 
-  const handleProcessSaved = React.useCallback(
-    (savedProcess: OrgProcess) => {
-      setProcesses((prev) => {
-        const exists = prev.some((process) => process.id === savedProcess.id);
-        return exists
-          ? prev.map((process) => (process.id === savedProcess.id ? savedProcess : process))
-          : [...prev, savedProcess];
-      });
-      setSelectedProcess(savedProcess);
-      setIsCreateSheetOpen(false);
-    },
-    [],
-  );
+  const handleProcessSaved = React.useCallback((savedProcess: OrgProcess) => {
+    setProcesses((prev) => {
+      const exists = prev.some((process) => process.id === savedProcess.id);
+      return exists
+        ? prev.map((process) => (process.id === savedProcess.id ? savedProcess : process))
+        : [...prev, savedProcess];
+    });
+    setSelectedProcess(savedProcess);
+    setIsCreateSheetOpen(false);
+  }, []);
 
   const renderListView = React.useCallback(
     (items: OrgProcess[]) => (
@@ -434,7 +433,9 @@ export function ProcessosContent({
               <RoutineCockpit360
                 routine={selectedRoutine}
                 processOptions={
-                  selectedProcess ? [{ id: selectedProcess.id, name: selectedProcess.name }] : undefined
+                  selectedProcess
+                    ? [{ id: selectedProcess.id, name: selectedProcess.name }]
+                    : undefined
                 }
                 onSelectActivity={setSelectedActivity}
                 onRoutineUpdated={(updatedRoutine) => {
@@ -452,14 +453,20 @@ export function ProcessosContent({
         </div>
       </div>
 
-      <Sheet open={selectedActivity !== null} onOpenChange={(open) => !open && setSelectedActivity(null)}>
+      <Sheet
+        open={selectedActivity !== null}
+        onOpenChange={(open) => !open && setSelectedActivity(null)}
+      >
         <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
           {selectedActivity && (
             <>
               <SheetHeader className="mb-6">
                 <SheetTitle>{selectedActivity.name}</SheetTitle>
               </SheetHeader>
-              <ActivityCockpit360 activity={selectedActivity} routine={selectedRoutine ?? undefined} />
+              <ActivityCockpit360
+                activity={selectedActivity}
+                routine={selectedRoutine ?? undefined}
+              />
             </>
           )}
         </SheetContent>

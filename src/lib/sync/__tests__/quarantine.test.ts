@@ -75,10 +75,9 @@ describe('writeQuarantine — persistence', () => {
       reason: 'Parent not found',
     });
 
-    await writeQuarantine(
-      supabase as unknown as import('@supabase/supabase-js').SupabaseClient,
-      [entry],
-    );
+    await writeQuarantine(supabase as unknown as import('@supabase/supabase-js').SupabaseClient, [
+      entry,
+    ]);
 
     expect(supabase._insertFn).toHaveBeenCalledTimes(1);
     const rows = supabase._insertFn.mock.calls[0][0] as Array<Record<string, unknown>>;
@@ -151,10 +150,9 @@ describe('writeQuarantine — error resilience', () => {
     const supabase = makeSupabaseMock({ shouldThrow: true });
 
     await expect(
-      writeQuarantine(
-        supabase as unknown as import('@supabase/supabase-js').SupabaseClient,
-        [makeEntry()],
-      ),
+      writeQuarantine(supabase as unknown as import('@supabase/supabase-js').SupabaseClient, [
+        makeEntry(),
+      ]),
     ).resolves.not.toThrow();
   });
 });

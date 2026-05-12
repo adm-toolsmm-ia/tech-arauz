@@ -21,11 +21,7 @@ export const epic16EntityNameSchema = z
   .min(1, 'Nome é obrigatório')
   .max(200, 'Nome deve ter no máximo 200 caracteres');
 
-const descriptionSchema = z
-  .string()
-  .max(10_000, 'Descrição muito longa')
-  .optional()
-  .default('');
+const descriptionSchema = z.string().max(10_000, 'Descrição muito longa').optional().default('');
 
 function zodErrorToFieldMap(error: z.ZodError): Record<string, string> {
   const map: Record<string, string> = {};
@@ -36,7 +32,9 @@ function zodErrorToFieldMap(error: z.ZodError): Record<string, string> {
   return map;
 }
 
-export function parseOutputSchemaJson(text: string): { ok: true; value: Record<string, unknown> } | { ok: false; message: string } {
+export function parseOutputSchemaJson(
+  text: string,
+): { ok: true; value: Record<string, unknown> } | { ok: false; message: string } {
   const t = text.trim();
   if (!t) return { ok: true, value: {} };
   try {

@@ -198,7 +198,9 @@ describe('syncV2ChildDatasets — routing', () => {
 
     expect(result.success).toBe(true);
     expect(result.datasets[0].persisted).toBe(0);
-    expect(result.logs.some((l) => l.level === 'warn' && l.message.includes('desconhecido'))).toBe(true);
+    expect(result.logs.some((l) => l.level === 'warn' && l.message.includes('desconhecido'))).toBe(
+      true,
+    );
   });
 });
 
@@ -317,9 +319,8 @@ describe('syncV2ChildDatasets — reprocessing idempotency', () => {
       childDatasets: [child],
     });
 
-    expect(supabase._upsertFn).toHaveBeenCalledWith(
-      expect.any(Array),
-      { onConflict: 'tenant_id,espaider_id' },
-    );
+    expect(supabase._upsertFn).toHaveBeenCalledWith(expect.any(Array), {
+      onConflict: 'tenant_id,espaider_id',
+    });
   });
 });

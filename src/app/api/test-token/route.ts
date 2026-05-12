@@ -21,7 +21,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         message: 'You already have a valid token!',
         token: auth.replace('Bearer ', ''),
-        usage: 'Use this token with: curl -H "Authorization: Bearer [token]" https://arauz-tech.vercel.app/api/knowledge/graph'
+        usage:
+          'Use this token with: curl -H "Authorization: Bearer [token]" https://arauz-tech.vercel.app/api/knowledge/graph',
       });
     }
 
@@ -29,11 +30,15 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Try to get current user (if authenticated)
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (user) {
       // User is authenticated - return their session
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (session?.access_token) {
         return NextResponse.json({
@@ -47,23 +52,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Not authenticated - return instructions
-    return NextResponse.json({
-      message: 'Not authenticated. Please login first at https://arauz-tech.vercel.app',
-      instructions: [
-        '1. Go to https://arauz-tech.vercel.app',
-        '2. Login with your account',
-        '3. Try this endpoint again in the browser (cookies will be sent automatically)',
-        '4. Or copy the token from F12 > Application > Local Storage'
-      ],
-      example: 'In browser: https://arauz-tech.vercel.app/api/test-token',
-      error: 'No authentication context found'
-    }, { status: 401 });
-
+    return NextResponse.json(
+      {
+        message: 'Not authenticated. Please login first at https://arauz-tech.vercel.app',
+        instructions: [
+          '1. Go to https://arauz-tech.vercel.app',
+          '2. Login with your account',
+          '3. Try this endpoint again in the browser (cookies will be sent automatically)',
+          '4. Or copy the token from F12 > Application > Local Storage',
+        ],
+        example: 'In browser: https://arauz-tech.vercel.app/api/test-token',
+        error: 'No authentication context found',
+      },
+      { status: 401 },
+    );
   } catch (error) {
     console.error('Test token error:', error);
     return NextResponse.json(
       { error: 'Failed to generate test token', details: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

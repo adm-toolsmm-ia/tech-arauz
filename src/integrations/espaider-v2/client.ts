@@ -218,7 +218,11 @@ async function executeRequest(
         }
 
         lastError = err;
-        log('WARN', `Request failed, retrying`, { requestId, attempt, statusCode: response.status });
+        log('WARN', `Request failed, retrying`, {
+          requestId,
+          attempt,
+          statusCode: response.status,
+        });
 
         if (attempt < config.retry.maxAttempts) {
           await sleep(retryDelay(attempt, config));

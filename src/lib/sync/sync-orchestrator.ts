@@ -112,7 +112,9 @@ export async function runEspaiderSync(
   const requestId = generateRequestId();
   const startedAt = new Date();
 
-  console.info(`[orchestrator] Sync iniciado — version=${version} tenant=${tenantId} requestId=${requestId}`);
+  console.info(
+    `[orchestrator] Sync iniciado — version=${version} tenant=${tenantId} requestId=${requestId}`,
+  );
 
   if (version === 'v1') {
     try {

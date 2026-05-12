@@ -99,9 +99,7 @@ export function AtividadesContent({
         if (result.success) {
           setDocumentsByActivityId((prev) => ({
             ...prev,
-            [activityId]: (prev[activityId] ?? []).filter(
-              (document) => document.id !== documentId,
-            ),
+            [activityId]: (prev[activityId] ?? []).filter((document) => document.id !== documentId),
           }));
           toast.success(result.message);
           setDocumentToUnlink(null);
@@ -157,10 +155,7 @@ export function AtividadesContent({
               Voltar
             </Link>
           </Button>
-          <Button
-            className="gap-2"
-            onClick={() => setShowCreateActivitySheet(true)}
-          >
+          <Button className="gap-2" onClick={() => setShowCreateActivitySheet(true)}>
             <Plus className="h-4 w-4" />
             Nova Atividade
           </Button>

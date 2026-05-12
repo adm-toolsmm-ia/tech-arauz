@@ -275,7 +275,9 @@ async function executeWithRetry(
           validatedData = ExportarDadosResponseSchema.parse(data);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            const fieldErrors = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('; ');
+            const fieldErrors = error.errors
+              .map((e) => `${e.path.join('.')}: ${e.message}`)
+              .join('; ');
             throw createError(
               'INVALID_RESPONSE',
               `API contract violation: ${fieldErrors}`,

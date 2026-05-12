@@ -83,15 +83,13 @@ export async function persistV2SyncLogs(
 
     const totalNew = parentResult?.newRecords ?? 0;
     const totalUpdated = parentResult?.updatedRecords ?? 0;
-    const totalInvalid = (parentResult?.invalidRecords ?? 0) + (childrenResult?.totalQuarantined ?? 0);
+    const totalInvalid =
+      (parentResult?.invalidRecords ?? 0) + (childrenResult?.totalQuarantined ?? 0);
     const parentSuccess = parentResult ? parentResult.success : true;
     const childrenSuccess = childrenResult ? childrenResult.success : true;
 
-    const status = !parentSuccess || !childrenSuccess
-      ? 'failed'
-      : totalInvalid > 0
-        ? 'partial'
-        : 'success';
+    const status =
+      !parentSuccess || !childrenSuccess ? 'failed' : totalInvalid > 0 ? 'partial' : 'success';
 
     const { data: syncLogRow, error: syncLogError } = await supabase
       .from('sync_logs')
@@ -108,7 +106,8 @@ export async function persistV2SyncLogs(
         errors: totalInvalid,
         retries: 0,
         status,
-        error_message: totalInvalid > 0 ? `${totalInvalid} registros inválidos/quarentenados` : null,
+        error_message:
+          totalInvalid > 0 ? `${totalInvalid} registros inválidos/quarentenados` : null,
       })
       .select('id')
       .single();
@@ -119,14 +118,14 @@ export async function persistV2SyncLogs(
       syncLogId = (syncLogRow as { id: string } | null)?.id ?? null;
     }
   } catch (err) {
-    console.error('[v2-logger] Unexpected error writing sync_logs:', err instanceof Error ? err.message : String(err));
+    console.error(
+      '[v2-logger] Unexpected error writing sync_logs:',
+      err instanceof Error ? err.message : String(err),
+    );
   }
 
   // 2. Collect and map all log entries
-  const allLogs: SyncLogEntry[] = [
-    ...(parentResult?.logs ?? []),
-    ...(childrenResult?.logs ?? []),
-  ];
+  const allLogs: SyncLogEntry[] = [...(parentResult?.logs ?? []), ...(childrenResult?.logs ?? [])];
 
   if (allLogs.length === 0) {
     return { syncLogId, logsPersisted: 0, logsFailed: 0 };
@@ -159,7 +158,10 @@ export async function persistV2SyncLogs(
         logsPersisted += batch.length;
       }
     } catch (err) {
-      console.error('[v2-logger] Unexpected error inserting log batch:', err instanceof Error ? err.message : String(err));
+      console.error(
+        '[v2-logger] Unexpected error inserting log batch:',
+        err instanceof Error ? err.message : String(err),
+      );
       logsFailed += batch.length;
     }
   }

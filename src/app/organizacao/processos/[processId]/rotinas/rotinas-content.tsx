@@ -329,14 +329,20 @@ export function RotinasContent({
         )}
       </div>
 
-      <Sheet open={selectedActivity !== null} onOpenChange={(open) => !open && setSelectedActivity(null)}>
+      <Sheet
+        open={selectedActivity !== null}
+        onOpenChange={(open) => !open && setSelectedActivity(null)}
+      >
         <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
           {selectedActivity && (
             <>
               <SheetHeader className="mb-6">
                 <SheetTitle>{selectedActivity.name}</SheetTitle>
               </SheetHeader>
-              <ActivityCockpit360 activity={selectedActivity} routine={selectedRoutine ?? undefined} />
+              <ActivityCockpit360
+                activity={selectedActivity}
+                routine={selectedRoutine ?? undefined}
+              />
             </>
           )}
         </SheetContent>

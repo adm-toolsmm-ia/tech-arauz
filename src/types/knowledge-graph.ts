@@ -90,14 +90,14 @@ export interface APIError {
 }
 
 export const GRAPH_NODE_COLORS: Record<GraphNodeType, string> = {
-  document: '#3b82f6',    // blue-500
-  process: '#22c55e',     // green-500
-  area: '#f97316',        // orange-500
-  activity: '#14b8a6',    // teal-500
-  system: '#a855f7',      // purple-500
-  nucleus: '#eab308',     // yellow-500
-  routine: '#6b7280',     // gray-500
-  skill: '#06b6d4',       // cyan-500
+  document: '#3b82f6', // blue-500
+  process: '#22c55e', // green-500
+  area: '#f97316', // orange-500
+  activity: '#14b8a6', // teal-500
+  system: '#a855f7', // purple-500
+  nucleus: '#eab308', // yellow-500
+  routine: '#6b7280', // gray-500
+  skill: '#06b6d4', // cyan-500
 };
 
 export const GRAPH_NODE_LABELS: Record<GraphNodeType, string> = {
@@ -113,7 +113,7 @@ export const GRAPH_NODE_LABELS: Record<GraphNodeType, string> = {
 
 export const DOCUMENT_CATEGORIES = ['manual', 'regra_negocio', 'arquitetura', 'guia'] as const;
 
-export const DOCUMENT_CATEGORY_LABELS: Record<typeof DOCUMENT_CATEGORIES[number], string> = {
+export const DOCUMENT_CATEGORY_LABELS: Record<(typeof DOCUMENT_CATEGORIES)[number], string> = {
   manual: 'Manuais',
   regra_negocio: 'Regras de Negócio',
   arquitetura: 'Arquitetura',

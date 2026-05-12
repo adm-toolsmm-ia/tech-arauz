@@ -14,7 +14,7 @@ interface ViewResponse {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ): Promise<NextResponse<ViewResponse | APIError>> {
   try {
     // Extract JWT token from Authorization header
@@ -23,19 +23,26 @@ export async function POST(
 
     if (!token) {
       return NextResponse.json(
-        { error: 'Missing or invalid Authorization header', statusCode: 401, timestamp: new Date().toISOString() },
-        { status: 401 }
+        {
+          error: 'Missing or invalid Authorization header',
+          statusCode: 401,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 },
       );
     }
 
     // Auth check with token
     const supabase = createClientFromToken(token);
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized', statusCode: 401, timestamp: new Date().toISOString() },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -49,7 +56,7 @@ export async function POST(
     if (profileError || !profile) {
       return NextResponse.json(
         { error: 'Profile not found', statusCode: 400, timestamp: new Date().toISOString() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -64,7 +71,7 @@ export async function POST(
     if (docError || !document) {
       return NextResponse.json(
         { error: 'Document not found', statusCode: 404, timestamp: new Date().toISOString() },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -80,8 +87,12 @@ export async function POST(
     if (updateError) {
       console.error('View count update error:', updateError);
       return NextResponse.json(
-        { error: 'Failed to update view count', statusCode: 500, timestamp: new Date().toISOString() },
-        { status: 500 }
+        {
+          error: 'Failed to update view count',
+          statusCode: 500,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 500 },
       );
     }
 
@@ -94,7 +105,7 @@ export async function POST(
         statusCode: 500,
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

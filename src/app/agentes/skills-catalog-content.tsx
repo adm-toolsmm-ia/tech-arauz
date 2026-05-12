@@ -224,7 +224,9 @@ export function SkillsCatalogContent({ initialSkills }: SkillsCatalogContentProp
         saving={saving}
         setSaving={setSaving}
         onSaved={(row) => {
-          setSkills((prev) => [...prev, dbProjectSkillToUI(row)].sort((a, b) => a.name.localeCompare(b.name)));
+          setSkills((prev) =>
+            [...prev, dbProjectSkillToUI(row)].sort((a, b) => a.name.localeCompare(b.name)),
+          );
           setCreating(false);
           router.refresh();
         }}
@@ -481,7 +483,10 @@ function SkillFormSheet({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Categoria</Label>
-                <Select value={category} onValueChange={(v) => setCategory(v as ProjectSkillCategory)}>
+                <Select
+                  value={category}
+                  onValueChange={(v) => setCategory(v as ProjectSkillCategory)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -496,7 +501,10 @@ function SkillFormSheet({
               </div>
               <div>
                 <Label>Tipo de skill</Label>
-                <Select value={skillType} onValueChange={(v) => setSkillType(v as ProjectSkillKind)}>
+                <Select
+                  value={skillType}
+                  onValueChange={(v) => setSkillType(v as ProjectSkillKind)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -566,7 +574,8 @@ function SkillFormSheet({
                 <div>
                   <h4 className="mb-2 text-sm font-semibold">Documentos anexados</h4>
                   <p className="mb-3 text-xs text-muted-foreground">
-                    Textos extraídos, trechos de manuais ou notas coladas pelo usuário (RLS por tenant).
+                    Textos extraídos, trechos de manuais ou notas coladas pelo usuário (RLS por
+                    tenant).
                   </p>
                   <div className="mb-3 space-y-2">
                     {docs.map((d) => (
@@ -599,7 +608,13 @@ function SkillFormSheet({
                       value={newDocContent}
                       onChange={(e) => setNewDocContent(e.target.value)}
                     />
-                    <Button type="button" variant="secondary" size="sm" onClick={() => void addDocument()} disabled={saving}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => void addDocument()}
+                      disabled={saving}
+                    >
                       Anexar documento
                     </Button>
                   </div>
@@ -613,7 +628,11 @@ function SkillFormSheet({
             Fechar
           </Button>
           <Button onClick={() => void handleSave()} disabled={saving}>
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
             Salvar
           </Button>
         </div>

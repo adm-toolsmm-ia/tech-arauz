@@ -157,9 +157,7 @@ describe('Espaider API Schema Validation', () => {
           {
             IDEspaider: 12345,
             Identificador: 'BI_SOLICITACOES_PROJETOSESPAIDER',
-            ListaCampos: [
-              { Identificador: 'CODIGO', Valor: 'PROJ-001' },
-            ],
+            ListaCampos: [{ Identificador: 'CODIGO', Valor: 'PROJ-001' }],
           },
         ],
         URLPaginacao: 'https://api.espaider.com/page2',

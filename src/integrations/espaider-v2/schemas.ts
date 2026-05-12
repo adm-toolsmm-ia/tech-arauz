@@ -310,7 +310,9 @@ export interface ValidationResult<T> {
 /**
  * Validates the top-level response envelope. Does not deeply validate ListaRegistros records.
  */
-export function validateTopLevelResponse(raw: unknown): ValidationResult<ConsultarRegistrosResponseValidated> {
+export function validateTopLevelResponse(
+  raw: unknown,
+): ValidationResult<ConsultarRegistrosResponseValidated> {
   const result = ConsultarRegistrosResponseSchema.safeParse(raw);
   if (result.success) return { success: true, data: result.data };
 

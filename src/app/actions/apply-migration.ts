@@ -55,18 +55,16 @@ ALTER TABLE public.integration_log_entries
 
     // Test insert with HorasLancadas
     console.log('[applyMigration056] Testing insert with HorasLancadas...');
-    const { error: testError } = await supabase
-      .from('integration_log_entries')
-      .insert([
-        {
-          tenant_id: '00000000-0000-0000-0000-000000000001',
-          request_id: 'MIGRATION-TEST-056',
-          level: 'info',
-          dataset: 'HorasLancadas',
-          message: 'Migration 056: HorasLancadas constraint expansion verified',
-          logged_at: new Date().toISOString(),
-        },
-      ]);
+    const { error: testError } = await supabase.from('integration_log_entries').insert([
+      {
+        tenant_id: '00000000-0000-0000-0000-000000000001',
+        request_id: 'MIGRATION-TEST-056',
+        level: 'info',
+        dataset: 'HorasLancadas',
+        message: 'Migration 056: HorasLancadas constraint expansion verified',
+        logged_at: new Date().toISOString(),
+      },
+    ]);
 
     if (testError) {
       console.error('[applyMigration056] Test insert failed:', testError.message);
@@ -77,10 +75,7 @@ ALTER TABLE public.integration_log_entries
     }
 
     // Cleanup test entry
-    await supabase
-      .from('integration_log_entries')
-      .delete()
-      .eq('request_id', 'MIGRATION-TEST-056');
+    await supabase.from('integration_log_entries').delete().eq('request_id', 'MIGRATION-TEST-056');
 
     console.log('[applyMigration056] ✅ All checks passed');
 

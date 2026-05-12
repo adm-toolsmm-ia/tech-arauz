@@ -88,8 +88,7 @@ export class AgentSupabaseService {
       prompt_template: data.prompt_template ?? '',
       persona: data.persona ?? '',
       entity_kind: data.entity_kind ?? 'agent',
-      usage_type:
-        data.entity_kind === 'squad' ? 'workflow' : (data.usage_type ?? 'chatbot'),
+      usage_type: data.entity_kind === 'squad' ? 'workflow' : (data.usage_type ?? 'chatbot'),
       show_in_shortcut: data.entity_kind === 'squad' ? false : (data.show_in_shortcut ?? false),
       is_global_chatbot: data.entity_kind === 'squad' ? false : (data.is_global_chatbot ?? false),
       requirements: data.requirements ?? [],

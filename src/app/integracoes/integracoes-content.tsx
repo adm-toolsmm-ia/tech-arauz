@@ -48,9 +48,7 @@ export function IntegracoesContent({ userRole }: IntegracoesContentProps) {
         <APIManager onViewLogs={handleViewLogs} onSyncComplete={handleSyncComplete} />
 
         {/* Dataset Feature Flags — visible for admin only */}
-        {isAdmin && (
-          <DatasetFeatureFlagsPanel />
-        )}
+        {isAdmin && <DatasetFeatureFlagsPanel />}
 
         {/* Log Viewer — visible for admin and user roles (API enforces auth) */}
         {['admin', 'user'].includes(userRole) && (

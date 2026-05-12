@@ -1,6 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { toAIContext, type OrgAIContext } from '@/lib/transformers/organization';
-import type { OrgActivity, OrgArea, OrgNucleus, OrgProcess, OrgRoutine } from '@/types/organization';
+import type {
+  OrgActivity,
+  OrgArea,
+  OrgNucleus,
+  OrgProcess,
+  OrgRoutine,
+} from '@/types/organization';
 
 type SupabaseLike = SupabaseClient;
 
@@ -28,14 +34,24 @@ function joinRoles(roles: string[] | null | undefined): string {
   return roles.join(', ');
 }
 
-function formatOrgLine(label: string, name: string, details: Array<string | null | undefined>): string {
+function formatOrgLine(
+  label: string,
+  name: string,
+  details: Array<string | null | undefined>,
+): string {
   const compactDetails = details.filter(Boolean).join(' | ');
   return compactDetails ? `- ${label} ${name} | ${compactDetails}` : `- ${label} ${name}`;
 }
 
-function formatAIContextLine(label: string, context: OrgAIContext, details: Array<string | null | undefined>): string {
+function formatAIContextLine(
+  label: string,
+  context: OrgAIContext,
+  details: Array<string | null | undefined>,
+): string {
   const compactDetails = details.filter(Boolean).join(' | ');
-  return compactDetails ? `- ${label} ${context.title} | ${compactDetails}` : `- ${label} ${context.title}`;
+  return compactDetails
+    ? `- ${label} ${context.title} | ${compactDetails}`
+    : `- ${label} ${context.title}`;
 }
 
 function selectColumns(level: keyof OrganizationContextSnapshot): string {
@@ -113,7 +129,9 @@ export function formatOrganizationContext(snapshot: OrganizationContextSnapshot)
           ]),
         );
 
-        const nucleusProcesses = snapshot.processes.filter((process) => process.nucleus_id === nucleus.id);
+        const nucleusProcesses = snapshot.processes.filter(
+          (process) => process.nucleus_id === nucleus.id,
+        );
         for (const process of nucleusProcesses) {
           coveredProcesses.add(process.id);
           const processContext = toAIContext(process);
@@ -123,11 +141,15 @@ export function formatOrganizationContext(snapshot: OrganizationContextSnapshot)
               `núcleo: ${nucleus.name}`,
               `objetivo: ${truncate(processContext.objective) ?? 'Não definido'}`,
               `roles: ${joinRoles(processContext.roles)}`,
-              processContext.steps.length > 0 ? `passos: ${processContext.steps.slice(0, 3).join(' · ')}` : null,
+              processContext.steps.length > 0
+                ? `passos: ${processContext.steps.slice(0, 3).join(' · ')}`
+                : null,
             ]),
           );
 
-          const processRoutines = snapshot.routines.filter((routine) => routine.process_id === process.id);
+          const processRoutines = snapshot.routines.filter(
+            (routine) => routine.process_id === process.id,
+          );
           for (const routine of processRoutines) {
             coveredRoutines.add(routine.id);
             const routineContext = toAIContext(routine);
@@ -136,11 +158,15 @@ export function formatOrganizationContext(snapshot: OrganizationContextSnapshot)
                 `processo: ${process.name}`,
                 `objetivo: ${truncate(routineContext.objective) ?? 'Não definido'}`,
                 `roles: ${joinRoles(routineContext.roles)}`,
-                routineContext.steps.length > 0 ? `passos: ${routineContext.steps.slice(0, 3).join(' · ')}` : null,
+                routineContext.steps.length > 0
+                  ? `passos: ${routineContext.steps.slice(0, 3).join(' · ')}`
+                  : null,
               ]),
             );
 
-            const routineActivities = snapshot.activities.filter((activity) => activity.routine_id === routine.id);
+            const routineActivities = snapshot.activities.filter(
+              (activity) => activity.routine_id === routine.id,
+            );
             for (const activity of routineActivities) {
               coveredActivities.add(activity.id);
               const activityContext = toAIContext(activity);
@@ -150,7 +176,9 @@ export function formatOrganizationContext(snapshot: OrganizationContextSnapshot)
                   `role: ${activity.required_role || joinRoles(activityContext.roles)}`,
                   `complexidade: ${activityContext.complexity ?? 'medium'}`,
                   `prioridade: ${activityContext.priority ?? 'normal'}`,
-                  activityContext.avgExecutionTime ? `tempo: ${activityContext.avgExecutionTime}` : null,
+                  activityContext.avgExecutionTime
+                    ? `tempo: ${activityContext.avgExecutionTime}`
+                    : null,
                 ]),
               );
             }
@@ -174,9 +202,11 @@ export function formatOrganizationContext(snapshot: OrganizationContextSnapshot)
 
   for (const process of snapshot.processes) {
     if (coveredProcesses.has(process.id)) continue;
-    const areaName = process.area_id ? areasById.get(process.area_id)?.name ?? 'Área não identificada' : 'Sem área';
+    const areaName = process.area_id
+      ? (areasById.get(process.area_id)?.name ?? 'Área não identificada')
+      : 'Sem área';
     const nucleusName = process.nucleus_id
-      ? nucleiById.get(process.nucleus_id)?.name ?? 'Núcleo não identificado'
+      ? (nucleiById.get(process.nucleus_id)?.name ?? 'Núcleo não identificado')
       : 'Sem núcleo';
     const processContext = toAIContext(process);
     sections.push(
@@ -185,7 +215,9 @@ export function formatOrganizationContext(snapshot: OrganizationContextSnapshot)
         `núcleo: ${nucleusName}`,
         `objetivo: ${truncate(processContext.objective) ?? 'Não definido'}`,
         `roles: ${joinRoles(processContext.roles)}`,
-        processContext.steps.length > 0 ? `passos: ${processContext.steps.slice(0, 3).join(' · ')}` : null,
+        processContext.steps.length > 0
+          ? `passos: ${processContext.steps.slice(0, 3).join(' · ')}`
+          : null,
       ]),
     );
   }
@@ -221,7 +253,10 @@ export function formatOrganizationContext(snapshot: OrganizationContextSnapshot)
   return sections.join('\n');
 }
 
-async function resolveTenantId(supabase: SupabaseLike, explicitTenantId?: string | null): Promise<string | null> {
+async function resolveTenantId(
+  supabase: SupabaseLike,
+  explicitTenantId?: string | null,
+): Promise<string | null> {
   if (explicitTenantId) return explicitTenantId;
 
   const {
@@ -230,7 +265,11 @@ async function resolveTenantId(supabase: SupabaseLike, explicitTenantId?: string
 
   if (!user) return null;
 
-  const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
 
   return profile?.tenant_id ?? null;
 }

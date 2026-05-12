@@ -79,21 +79,21 @@ export function DatasetFeatureFlagsPanel() {
 
       <div className="grid gap-3">
         {DATASETS.map((dataset) => (
-          <div key={dataset.id} className="flex items-center justify-between p-3 border rounded">
+          <div key={dataset.id} className="flex items-center justify-between rounded border p-3">
             <div className="flex-1">
-              <label className="font-medium cursor-pointer">{dataset.label}</label>
+              <label className="cursor-pointer font-medium">{dataset.label}</label>
               <p className="text-sm text-gray-500">{dataset.description}</p>
             </div>
             <button
               onClick={() => handleToggle(dataset.id)}
-              className={`w-12 h-6 rounded-full transition-colors ${
+              className={`h-6 w-12 rounded-full transition-colors ${
                 flags[dataset.id] ? 'bg-green-500' : 'bg-gray-300'
               }`}
               aria-label={`Toggle ${dataset.label}`}
               aria-pressed={flags[dataset.id]}
             >
               <div
-                className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                className={`h-5 w-5 rounded-full bg-white transition-transform ${
                   flags[dataset.id] ? 'translate-x-6' : 'translate-x-0.5'
                 }`}
               />
@@ -106,7 +106,7 @@ export function DatasetFeatureFlagsPanel() {
         <button
           onClick={handleSave}
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? 'Saving...' : 'Save Changes'}
         </button>

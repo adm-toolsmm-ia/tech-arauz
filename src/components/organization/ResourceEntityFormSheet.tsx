@@ -1,7 +1,16 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Loader2, Monitor, Save, ShieldCheck, Truck, Wrench, FileText, GitBranch } from 'lucide-react';
+import {
+  Loader2,
+  Monitor,
+  Save,
+  ShieldCheck,
+  Truck,
+  Wrench,
+  FileText,
+  GitBranch,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -189,9 +198,7 @@ export function ResourceEntityFormSheet({
 
     setIsSaving(true);
     try {
-      let result:
-        | { success: boolean; message: string; data?: ResourceEntity }
-        | undefined;
+      let result: { success: boolean; message: string; data?: ResourceEntity } | undefined;
 
       if (entity === 'system') {
         const payload = {
@@ -272,7 +279,9 @@ export function ResourceEntityFormSheet({
       >
         <SheetHeader className="border-b px-6 py-5">
           <div className="flex items-start gap-3">
-            <div className={`mt-1 flex size-11 items-center justify-center rounded-xl ${meta.accent}`}>
+            <div
+              className={`mt-1 flex size-11 items-center justify-center rounded-xl ${meta.accent}`}
+            >
               <Icon className="size-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -317,7 +326,7 @@ export function ResourceEntityFormSheet({
               <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
                 <TabsTrigger
                   value="info"
-                  className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                  className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
                 >
                   <FileText className="mr-2 size-4" />
                   Informações
@@ -325,7 +334,7 @@ export function ResourceEntityFormSheet({
                 {meta.tabs.includes('relationships') && (
                   <TabsTrigger
                     value="relationships"
-                    className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
                   >
                     <GitBranch className="mr-2 size-4" />
                     Relacionamentos
@@ -334,7 +343,7 @@ export function ResourceEntityFormSheet({
                 {meta.tabs.includes('roles') && (
                   <TabsTrigger
                     value="roles"
-                    className="rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
                   >
                     <ShieldCheck className="mr-2 size-4" />
                     Responsáveis
@@ -396,10 +405,7 @@ export function ResourceEntityFormSheet({
                     <Select
                       value={formData.associated_process_id || EMPTY_PROCESS}
                       onValueChange={(value) =>
-                        handleChange(
-                          'associated_process_id',
-                          value === EMPTY_PROCESS ? '' : value,
-                        )
+                        handleChange('associated_process_id', value === EMPTY_PROCESS ? '' : value)
                       }
                     >
                       <SelectTrigger id="resource-associated-process">
@@ -453,7 +459,11 @@ export function ResourceEntityFormSheet({
               Cancelar
             </Button>
             <Button onClick={handleSave} disabled={isSaving || !formData.name.trim()}>
-              {isSaving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Save className="mr-2 size-4" />}
+              {isSaving ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 size-4" />
+              )}
               {mode === 'create' ? 'Criar cadastro' : 'Salvar alterações'}
             </Button>
           </div>

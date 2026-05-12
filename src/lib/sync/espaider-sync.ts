@@ -320,7 +320,9 @@ async function syncDataset<T>(
         if (existingIds.has(row.espaider_id)) updated++;
         else created++;
       }
-      logs.push(createLog('success', config.dataset, `Upsert: ${created} novos, ${updated} atualizados`));
+      logs.push(
+        createLog('success', config.dataset, `Upsert: ${created} novos, ${updated} atualizados`),
+      );
     }
   } catch (err) {
     const msg = getErrorMessage(err, 'Falha de conexão/acesso');
@@ -1006,10 +1008,12 @@ export async function executeSyncAll(
     } catch (apiErr) {
       const apiMsg = getErrorMessage(apiErr, 'Erro desconhecido na chamada à API');
       const detailedMsg = `Falha ao buscar ListaURLFilhos: Token pode estar inválido/expirado. Detalhes: ${apiMsg}`;
-      logs.push(createLog('error', 'Geral', detailedMsg, {
-        errorType: apiErr instanceof Error ? apiErr.name : 'Unknown',
-        tokenStatus: 'verify_in_espaider',
-      }));
+      logs.push(
+        createLog('error', 'Geral', detailedMsg, {
+          errorType: apiErr instanceof Error ? apiErr.name : 'Unknown',
+          tokenStatus: 'verify_in_espaider',
+        }),
+      );
       throw new Error(detailedMsg);
     }
 
@@ -1074,7 +1078,12 @@ export async function executeSyncAll(
         } else if (dataset === 'Orcamentos') {
           childResult = await syncBudgetsFromRegistros(supabase, tenantId, logs, registros);
         } else if (dataset === 'TempoPermanencia') {
-          childResult = await syncTempoPermanenciaFromRegistros(supabase, tenantId, logs, registros);
+          childResult = await syncTempoPermanenciaFromRegistros(
+            supabase,
+            tenantId,
+            logs,
+            registros,
+          );
         } else if (dataset === 'HorasLancadas') {
           childResult = await syncHorasLancadasFromRegistros(supabase, tenantId, logs, registros);
         } else if (dataset === 'Aprovadores') {
@@ -1124,7 +1133,6 @@ export async function executeSyncAll(
     await updateApiSyncStatus(supabase, apiConfig.id, totalErrors === 0 ? 'success' : 'failed');
   }
 
-
   // Aggregate
   const totalCreated = results.reduce((s, r) => s + r.created, 0);
   const totalUpdated = results.reduce((s, r) => s + r.updated, 0);
@@ -1154,7 +1162,8 @@ export async function executeSyncAll(
     );
   } catch (logPersistErr) {
     // CRITICAL FIX #2: Log persistence failure is NOW VISIBLE in response
-    const persistErrMsg = logPersistErr instanceof Error ? logPersistErr.message : String(logPersistErr);
+    const persistErrMsg =
+      logPersistErr instanceof Error ? logPersistErr.message : String(logPersistErr);
     console.error('[executeSyncAll] ❌ Erro CRÍTICO ao persistir logs:', persistErrMsg);
     // Add error log entry for visibility
     logs.push(
@@ -1551,9 +1560,7 @@ async function persistLogEntries(
 
     for (let i = 0; i < rows.length; i += BATCH_SIZE) {
       const batch = rows.slice(i, i + BATCH_SIZE);
-      const { error, count } = await supabase
-        .from('integration_log_entries')
-        .insert(batch);
+      const { error, count } = await supabase.from('integration_log_entries').insert(batch);
 
       // CRITICAL FIX #2: Validate insert success
       if (error) {
@@ -2260,22 +2267,15 @@ async function syncHorasLancadasFromRegistros(
 
   try {
     logs.push(
-      createLog(
-        'info',
-        'HorasLancadas',
-        `Processando ${registros.length} registros brutos da API`,
-      ),
+      createLog('info', 'HorasLancadas', `Processando ${registros.length} registros brutos da API`),
     );
 
     if (registros.length > 0 && registros[0].ListaCampos) {
       const camposDisponiveis = registros[0].ListaCampos.map((c) => c.Identificador);
       logs.push(
-        createLog(
-          'info',
-          'HorasLancadas',
-          `Campos disponíveis: ${camposDisponiveis.join(', ')}`,
-          { campos: camposDisponiveis },
-        ),
+        createLog('info', 'HorasLancadas', `Campos disponíveis: ${camposDisponiveis.join(', ')}`, {
+          campos: camposDisponiveis,
+        }),
       );
     }
 
@@ -2367,9 +2367,7 @@ async function syncHorasLancadasFromRegistros(
           pasta_consultivo_id: r.pasta_consultivo_id || null,
           profissional: r.profissional || null,
           horas: r.horas ?? null,
-          data_lancamento: r.data_lancamento
-            ? r.data_lancamento.toISOString().split('T')[0]
-            : null,
+          data_lancamento: r.data_lancamento ? r.data_lancamento.toISOString().split('T')[0] : null,
           tipo_lancamento: r.tipo_lancamento || null,
           espaider_raw: r.espaider_raw || null,
         };
@@ -2400,9 +2398,7 @@ async function syncHorasLancadasFromRegistros(
       );
     }
 
-    logs.push(
-      createLog('info', 'HorasLancadas', `${rows.length} registros prontos para upsert`),
-    );
+    logs.push(createLog('info', 'HorasLancadas', `${rows.length} registros prontos para upsert`));
 
     if (rows.length > 0) {
       const { error } = await supabase
@@ -2452,4 +2448,3 @@ async function syncHorasLancadasFromRegistros(
     durationMs: Date.now() - start,
   };
 }
-

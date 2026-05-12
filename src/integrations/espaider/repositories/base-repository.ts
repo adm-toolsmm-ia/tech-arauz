@@ -35,7 +35,10 @@ export abstract class BaseRepository<T> implements IRepository<T> {
    * Upsert implementation using Supabase upsert with conflict strategy
    * Handles batch upserts with (tenant_id, espaider_id) conflict resolution
    */
-  async upsert(items: T[], tenantId: string): Promise<{ created: number; updated: number; errors: number }> {
+  async upsert(
+    items: T[],
+    tenantId: string,
+  ): Promise<{ created: number; updated: number; errors: number }> {
     if (items.length === 0) {
       return { created: 0, updated: 0, errors: 0 };
     }

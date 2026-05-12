@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { formatOrganizationContext, type OrganizationContextSnapshot } from '../organization-context';
+import {
+  formatOrganizationContext,
+  type OrganizationContextSnapshot,
+} from '../organization-context';
 
 describe('organization context helper', () => {
   it('formats a hierarchical snapshot for chat fallback', () => {

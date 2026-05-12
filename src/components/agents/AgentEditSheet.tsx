@@ -213,8 +213,7 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
         entity_kind: formData.entityKind,
         agent_type_id: formData.agentTypeId || null,
         agent_type: agentTypes.find((t) => t.id === formData.agentTypeId)?.slug || 'custom',
-        usage_type:
-          formData.entityKind === 'squad' ? 'workflow' : formData.usageType,
+        usage_type: formData.entityKind === 'squad' ? 'workflow' : formData.usageType,
         show_in_shortcut: formData.entityKind === 'squad' ? false : formData.showInShortcut,
         is_global_chatbot: formData.entityKind === 'squad' ? false : formData.isGlobalChatbot,
         tags: formData.tags,
@@ -482,9 +481,7 @@ export const AgentEditSheet: React.FC<AgentEditSheetProps> = ({
                                 setIsDirty(true);
                                 setFieldErrors({});
                                 setSquadMemberIds((prev) =>
-                                  c === true
-                                    ? [...prev, a.id]
-                                    : prev.filter((id) => id !== a.id),
+                                  c === true ? [...prev, a.id] : prev.filter((id) => id !== a.id),
                                 );
                               }}
                             />

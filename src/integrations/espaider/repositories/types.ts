@@ -16,7 +16,10 @@ export interface IRepository<T> {
    * @param tenantId - Tenant context for RLS
    * @returns Object with counts: { created, updated, errors }
    */
-  upsert(items: T[], tenantId: string): Promise<{ created: number; updated: number; errors: number }>;
+  upsert(
+    items: T[],
+    tenantId: string,
+  ): Promise<{ created: number; updated: number; errors: number }>;
 
   /**
    * Find item by Espaider ID

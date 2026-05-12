@@ -256,17 +256,17 @@ export function RotinasContent({ routines: initialRoutines, processes }: Rotinas
         ) : (
           <div className="flex gap-6">
             <div className="min-w-0 flex-1">
-              {filteredData.length === 0
-                ? (
-                  <EmptyState
-                    icon={ClipboardList}
-                    title="Nenhum resultado"
-                    description="Ajuste os filtros ou busque por outro termo."
-                  />
-                )
-                : viewMode === 'cards'
-                  ? renderCardView(filteredData)
-                  : renderListView(filteredData)}
+              {filteredData.length === 0 ? (
+                <EmptyState
+                  icon={ClipboardList}
+                  title="Nenhum resultado"
+                  description="Ajuste os filtros ou busque por outro termo."
+                />
+              ) : viewMode === 'cards' ? (
+                renderCardView(filteredData)
+              ) : (
+                renderListView(filteredData)
+              )}
             </div>
 
             <SplitView
@@ -307,14 +307,20 @@ export function RotinasContent({ routines: initialRoutines, processes }: Rotinas
         )}
       </div>
 
-      <Sheet open={selectedActivity !== null} onOpenChange={(open) => !open && setSelectedActivity(null)}>
+      <Sheet
+        open={selectedActivity !== null}
+        onOpenChange={(open) => !open && setSelectedActivity(null)}
+      >
         <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
           {selectedActivity && (
             <>
               <SheetHeader className="mb-6">
                 <SheetTitle>{selectedActivity.name}</SheetTitle>
               </SheetHeader>
-              <ActivityCockpit360 activity={selectedActivity} routine={selectedRoutine ?? undefined} />
+              <ActivityCockpit360
+                activity={selectedActivity}
+                routine={selectedRoutine ?? undefined}
+              />
             </>
           )}
         </SheetContent>
@@ -333,8 +339,8 @@ export function RotinasContent({ routines: initialRoutines, processes }: Rotinas
         onClose={() => setIsCreateSheetOpen(false)}
         onSaved={(savedRoutine) => {
           const processName =
-            processes.find((process) => process.id === (savedRoutine as OrgRoutine).process_id)?.name ??
-            '';
+            processes.find((process) => process.id === (savedRoutine as OrgRoutine).process_id)
+              ?.name ?? '';
           const nextRoutine = {
             ...(savedRoutine as RoutineWithProcess),
             process_name: processName,

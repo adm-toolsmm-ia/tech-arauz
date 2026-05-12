@@ -11,10 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  createSystemResourceAction,
-  updateSystemResourceAction,
-} from '@/app/actions/organization';
+import { createSystemResourceAction, updateSystemResourceAction } from '@/app/actions/organization';
 import type { OrgSystemResource } from '@/types/organization';
 
 interface SystemResourceFormSheetProps {
@@ -161,9 +158,7 @@ export function SystemResourceFormSheet({
               <Textarea
                 id="system-resource-description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, description: e.target.value }))
-                }
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 placeholder="Explique a função operacional deste recurso"
                 rows={4}
               />
@@ -176,7 +171,11 @@ export function SystemResourceFormSheet({
             Cancelar
           </Button>
           <Button onClick={handleSave} disabled={isSaving || !formData.name.trim()}>
-            {isSaving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Save className="mr-2 size-4" />}
+            {isSaving ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 size-4" />
+            )}
             {mode === 'create' ? 'Adicionar recurso' : 'Salvar alterações'}
           </Button>
         </div>

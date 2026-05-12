@@ -45,7 +45,9 @@ describe('sample response — top-level envelope', () => {
 
   it('has URLPaginacao as string (sample has pagination)', () => {
     expect(typeof (sampleResponse as { URLPaginacao: unknown }).URLPaginacao).toBe('string');
-    expect((sampleResponse as { URLPaginacao: string }).URLPaginacao).toContain('ConsultarRegistrosComChave');
+    expect((sampleResponse as { URLPaginacao: string }).URLPaginacao).toContain(
+      'ConsultarRegistrosComChave',
+    );
     expect((sampleResponse as { URLPaginacao: string }).URLPaginacao).toContain('ChavePaginacao');
   });
 
@@ -100,7 +102,13 @@ describe('sample response — parent records', () => {
 
 describe('sample response — child datasets', () => {
   const children = (
-    sampleResponse as { ListaFilhos: Array<{ Identificador: string; ListaRegistros: unknown[]; URLPaginacao: unknown }> }
+    sampleResponse as {
+      ListaFilhos: Array<{
+        Identificador: string;
+        ListaRegistros: unknown[];
+        URLPaginacao: unknown;
+      }>;
+    }
   ).ListaFilhos;
 
   it('all child datasets validate against FilhoDatasetSchema', () => {
@@ -119,33 +127,25 @@ describe('sample response — child datasets', () => {
   });
 
   it('TEMPOSPERMANCENCIA has URLPaginacao (requires pagination)', () => {
-    const tempos = children.find(
-      (c) => c.Identificador === CHILD_IDENTIFIERS.TEMPOSPERMANCENCIA,
-    );
+    const tempos = children.find((c) => c.Identificador === CHILD_IDENTIFIERS.TEMPOSPERMANCENCIA);
     expect(tempos).toBeDefined();
     expect(tempos?.URLPaginacao).toBeTruthy();
   });
 
   it('HISTORICOS has URLPaginacao (requires pagination)', () => {
-    const historicos = children.find(
-      (c) => c.Identificador === CHILD_IDENTIFIERS.HISTORICOS,
-    );
+    const historicos = children.find((c) => c.Identificador === CHILD_IDENTIFIERS.HISTORICOS);
     expect(historicos).toBeDefined();
     expect(historicos?.URLPaginacao).toBeTruthy();
   });
 
   it('APROVADORES has URLPaginacao (requires pagination)', () => {
-    const aprovadores = children.find(
-      (c) => c.Identificador === CHILD_IDENTIFIERS.APROVADORES,
-    );
+    const aprovadores = children.find((c) => c.Identificador === CHILD_IDENTIFIERS.APROVADORES);
     expect(aprovadores).toBeDefined();
     expect(aprovadores?.URLPaginacao).toBeTruthy();
   });
 
   it('REQUISITOS has no URLPaginacao', () => {
-    const requisitos = children.find(
-      (c) => c.Identificador === CHILD_IDENTIFIERS.REQUISITOS,
-    );
+    const requisitos = children.find((c) => c.Identificador === CHILD_IDENTIFIERS.REQUISITOS);
     expect(requisitos).toBeDefined();
     expect(requisitos?.URLPaginacao ?? null).toBeNull();
   });
@@ -175,7 +175,8 @@ describe('sample response — child datasets', () => {
 
 describe('v2 contract — breaking changes verified', () => {
   it('does not use ListaCampos (v1 pattern)', () => {
-    const records = (sampleResponse as { ListaRegistros: Array<Record<string, unknown>> }).ListaRegistros;
+    const records = (sampleResponse as { ListaRegistros: Array<Record<string, unknown>> })
+      .ListaRegistros;
     for (const record of records) {
       expect(record).not.toHaveProperty('ListaCampos');
     }

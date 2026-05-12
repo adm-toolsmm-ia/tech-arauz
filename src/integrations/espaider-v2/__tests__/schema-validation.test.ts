@@ -26,7 +26,9 @@ import {
 
 describe('MensagemRetornoSchema', () => {
   it('accepts object with Mensagem string', () => {
-    expect(MensagemRetornoSchema.safeParse({ Mensagem: 'Consulta realizada com sucesso!' }).success).toBe(true);
+    expect(
+      MensagemRetornoSchema.safeParse({ Mensagem: 'Consulta realizada com sucesso!' }).success,
+    ).toBe(true);
   });
 
   it('rejects plain string (v1 style)', () => {
@@ -108,7 +110,9 @@ describe('ProjetoV2RecordSchema', () => {
   it('requires IDEspaider as positive integer', () => {
     expect(ProjetoV2RecordSchema.safeParse({ ...validRecord, IDEspaider: -1 }).success).toBe(false);
     expect(ProjetoV2RecordSchema.safeParse({ ...validRecord, IDEspaider: 0 }).success).toBe(false);
-    expect(ProjetoV2RecordSchema.safeParse({ ...validRecord, IDEspaider: 'abc' }).success).toBe(false);
+    expect(ProjetoV2RecordSchema.safeParse({ ...validRecord, IDEspaider: 'abc' }).success).toBe(
+      false,
+    );
   });
 
   it('accepts null for nullable fields', () => {
@@ -117,7 +121,9 @@ describe('ProjetoV2RecordSchema', () => {
   });
 
   it('accepts null PASTACONSULTIVO', () => {
-    expect(ProjetoV2RecordSchema.safeParse({ ...validRecord, PASTACONSULTIVO: null }).success).toBe(true);
+    expect(ProjetoV2RecordSchema.safeParse({ ...validRecord, PASTACONSULTIVO: null }).success).toBe(
+      true,
+    );
   });
 });
 
@@ -175,7 +181,9 @@ describe('CHILD_IDENTIFIERS', () => {
 
 describe('getChildSchema', () => {
   it('returns schema for known identifiers', () => {
-    expect(getChildSchema(CHILD_IDENTIFIERS.TEMPOSPERMANCENCIA)).toBe(TemposPermanenciaRecordSchema);
+    expect(getChildSchema(CHILD_IDENTIFIERS.TEMPOSPERMANCENCIA)).toBe(
+      TemposPermanenciaRecordSchema,
+    );
     expect(getChildSchema(CHILD_IDENTIFIERS.APROVADORES)).toBe(AprovadoresRecordSchema);
   });
 
@@ -240,17 +248,36 @@ describe('validateProjetoRecord', () => {
   it('returns success for valid record', () => {
     const record = {
       IDEspaider: 100,
-      TIPOCHAMADO: null, TIPOASSUNTO: null, STATUSPROJETO: null,
-      SOLUCAOAPLICADAEM: null, SOLICITANTE: null, SITUACAOATUAL: null,
-      RESPONSAVELPROJETO: null, PRIORIDADE: null, PRAZOFINAL: null,
-      PRAZOCRONOGRAMAATUAL: null, PRAZOAPROVADOR: null,
-      PASTACONSULTIVO: null, OBJETIVO: null, NOME: 'Test',
-      MOTIVO_IMPORTANCIAESPECIAL: null, MENSAGEM_MOVIMENTACAO: null,
-      JUSTIFICATIVA: null, IMPORTANCIAESPECIAL: null, IMPACTOOPERACIONAL: null,
-      IMPACTOESTRATEGICO: null, ESCOPO: null, ENCERRADOEM: null,
-      DATAMOVIMENTACAO: null, DATAINICIOAPROVACAO: null, CRONOGRAMAATUAL: null,
-      COMPLEXIDADETECNICA: null, CODIGO: null, CHAMADO_EXTERNO: null,
-      ASSUNTOAREA: null, APROVADORATUAL: null,
+      TIPOCHAMADO: null,
+      TIPOASSUNTO: null,
+      STATUSPROJETO: null,
+      SOLUCAOAPLICADAEM: null,
+      SOLICITANTE: null,
+      SITUACAOATUAL: null,
+      RESPONSAVELPROJETO: null,
+      PRIORIDADE: null,
+      PRAZOFINAL: null,
+      PRAZOCRONOGRAMAATUAL: null,
+      PRAZOAPROVADOR: null,
+      PASTACONSULTIVO: null,
+      OBJETIVO: null,
+      NOME: 'Test',
+      MOTIVO_IMPORTANCIAESPECIAL: null,
+      MENSAGEM_MOVIMENTACAO: null,
+      JUSTIFICATIVA: null,
+      IMPORTANCIAESPECIAL: null,
+      IMPACTOOPERACIONAL: null,
+      IMPACTOESTRATEGICO: null,
+      ESCOPO: null,
+      ENCERRADOEM: null,
+      DATAMOVIMENTACAO: null,
+      DATAINICIOAPROVACAO: null,
+      CRONOGRAMAATUAL: null,
+      COMPLEXIDADETECNICA: null,
+      CODIGO: null,
+      CHAMADO_EXTERNO: null,
+      ASSUNTOAREA: null,
+      APROVADORATUAL: null,
     };
     expect(validateProjetoRecord(record).success).toBe(true);
   });
@@ -270,7 +297,13 @@ describe('validateChildRecords', () => {
   it('validates known child records successfully', () => {
     const records = [
       { IDEspaider: 1, IDREGISTROPAI: 100, TIPO: null, RESPONSAVEL: null, PONTOSATENCAO: null },
-      { IDEspaider: 2, IDREGISTROPAI: 100, TIPO: 'Aprovador', RESPONSAVEL: 'João', PONTOSATENCAO: null },
+      {
+        IDEspaider: 2,
+        IDREGISTROPAI: 100,
+        TIPO: 'Aprovador',
+        RESPONSAVEL: 'João',
+        PONTOSATENCAO: null,
+      },
     ];
     const results = validateChildRecords(CHILD_IDENTIFIERS.APROVADORES, records);
     expect(results).toHaveLength(2);

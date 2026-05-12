@@ -8,7 +8,10 @@ import type { ProjetoMapeado } from '../types';
 import { BaseRepository } from './base-repository';
 import type { IProjetoRepository } from './types';
 
-export class ProjetoRepository extends BaseRepository<ProjetoMapeado> implements IProjetoRepository {
+export class ProjetoRepository
+  extends BaseRepository<ProjetoMapeado>
+  implements IProjetoRepository
+{
   constructor() {
     super('espaider_projetos');
   }

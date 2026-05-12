@@ -120,9 +120,8 @@ export function EmpresaContent({
   const [editingVinculo, setEditingVinculo] = React.useState<EmpresaVinculo | null>(null);
   const [vinculoToDelete, setVinculoToDelete] = React.useState<EmpresaVinculo | null>(null);
   const [isSystemResourceFormOpen, setIsSystemResourceFormOpen] = React.useState(false);
-  const [selectedSystemForResource, setSelectedSystemForResource] = React.useState<OrgSystem | null>(
-    null,
-  );
+  const [selectedSystemForResource, setSelectedSystemForResource] =
+    React.useState<OrgSystem | null>(null);
   const [editingSystemResource, setEditingSystemResource] =
     React.useState<OrgSystemResource | null>(null);
   const [systemResourceToDelete, setSystemResourceToDelete] =
@@ -315,11 +314,7 @@ export function EmpresaContent({
           <OrgBreadcrumb items={[{ label: 'Empresa' }]} />
         </div>
         <div className="flex items-center gap-2 pr-6">
-          <Button
-            className="gap-2"
-            size="sm"
-            onClick={() => setIsAreaFormOpen(true)}
-          >
+          <Button className="gap-2" size="sm" onClick={() => setIsAreaFormOpen(true)}>
             <Plus className="h-4 w-4" />
             Nova Área
           </Button>
@@ -573,7 +568,9 @@ export function EmpresaContent({
       <ResourceEntityFormSheet
         entity={resourceFormType}
         mode={editingVinculo ? 'edit' : 'create'}
-        initialData={editingVinculo?.entity as OrgSystem | OrgSupplier | OrgService | OrgDocument | undefined}
+        initialData={
+          editingVinculo?.entity as OrgSystem | OrgSupplier | OrgService | OrgDocument | undefined
+        }
         processOptions={processOptions}
         isOpen={isResourceFormOpen}
         onClose={() => {

@@ -240,7 +240,8 @@ export function mapRequisitoV2(
     status: record.STATUSREQUISITO ?? 'Aberto',
     impacto: record.IMPACTO ?? null,
     detalhamento: record.DETALHAMENTOREQUISITO ?? null,
-    entrega_id_espaider: typeof record.IDENTIFICADOR_ENTREGA === 'number' ? record.IDENTIFICADOR_ENTREGA : null,
+    entrega_id_espaider:
+      typeof record.IDENTIFICADOR_ENTREGA === 'number' ? record.IDENTIFICADOR_ENTREGA : null,
     entrega_nome: record.ENTREGA ?? null,
     data_conclusao: parseDate(record.DATACONCLUSAO),
     espaider_raw: raw,
@@ -334,9 +335,10 @@ export function mapHorasLancadasV2(
     tenant_id: tenantId,
     project_id: projectId,
     espaider_id: record.IDEspaider,
-    solicitacao_id: typeof record.SOLICITACAO_IDENTIFICADOR === 'number'
-      ? record.SOLICITACAO_IDENTIFICADOR
-      : null,
+    solicitacao_id:
+      typeof record.SOLICITACAO_IDENTIFICADOR === 'number'
+        ? record.SOLICITACAO_IDENTIFICADOR
+        : null,
     pasta_consultivo_id: parseIntId(record.PASTACONSULTIVO_ID),
     profissional: record.COLABORADOR ?? null,
     horas: parseHoras(record.HORASORIGINAISHOR),

@@ -114,7 +114,11 @@ export async function POST(
     return NextResponse.json({ error: 'No session token' }, { status: 401 });
   }
 
-  const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
   const tenantId = profile?.tenant_id ?? null;
 
   // Parse request body

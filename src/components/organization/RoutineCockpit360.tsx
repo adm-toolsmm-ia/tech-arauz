@@ -58,35 +58,41 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
     })();
   }, [currentRoutine?.id]);
 
+  const currentProcessName =
+    currentRoutine.process?.name ??
+    processOptions?.find((processOption) => processOption.id === currentRoutine.process_id)?.name;
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="principal" className="w-full">
-        <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
-          <TabsTrigger
-            value="principal"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
-          >
-            <FileText className="mr-2 size-4" />
-            Principal
-          </TabsTrigger>
-          <TabsTrigger
-            value="atividades"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
-          >
-            <Clock className="mr-2 size-4" />
-            Atividades
-            {activities.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">({activities.length})</span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger
-            value="documentacao"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
-          >
-            <AlertCircle className="mr-2 size-4" />
-            Documentação
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto border-b">
+          <TabsList className="h-auto min-w-max justify-start rounded-none bg-transparent p-0">
+            <TabsTrigger
+              value="principal"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
+            >
+              <FileText className="mr-2 size-4" />
+              Principal
+            </TabsTrigger>
+            <TabsTrigger
+              value="atividades"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
+            >
+              <Clock className="mr-2 size-4" />
+              Atividades
+              {activities.length > 0 && (
+                <span className="ml-2 text-xs text-muted-foreground">({activities.length})</span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value="documentacao"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
+            >
+              <AlertCircle className="mr-2 size-4" />
+              Documentação
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
           <div className="flex justify-end gap-2">
@@ -188,9 +194,7 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
         isOpen={showCreateActivitySheet}
         context={{ routineId: currentRoutine.id }}
         contextSummary={[
-          ...(currentRoutine.process?.name
-            ? [{ label: 'Processo', value: currentRoutine.process.name }]
-            : []),
+          ...(currentProcessName ? [{ label: 'Processo', value: currentProcessName }] : []),
           { label: 'Rotina', value: currentRoutine.name },
         ]}
         onClose={() => setShowCreateActivitySheet(false)}
@@ -218,9 +222,7 @@ export const RoutineCockpit360: React.FC<RoutineCockpit360Props> = ({
         }
         isOpen={showEditRoutineSheet}
         contextSummary={[
-          ...(currentRoutine.process?.name
-            ? [{ label: 'Processo', value: currentRoutine.process.name }]
-            : []),
+          ...(currentProcessName ? [{ label: 'Processo', value: currentProcessName }] : []),
           { label: 'Rotina', value: currentRoutine.name },
         ]}
         onClose={() => setShowEditRoutineSheet(false)}

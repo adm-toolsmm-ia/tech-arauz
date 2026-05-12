@@ -266,7 +266,10 @@ export function ResourceEntityFormSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
-      <SheetContent side="right" className="w-full border-l p-0 sm:max-w-3xl">
+      <SheetContent
+        side="right"
+        className="dialog-light-theme w-full border-l bg-white p-0 text-foreground sm:max-w-3xl"
+      >
         <SheetHeader className="border-b px-6 py-5">
           <div className="flex items-start gap-3">
             <div className={`mt-1 flex size-11 items-center justify-center rounded-xl ${meta.accent}`}>

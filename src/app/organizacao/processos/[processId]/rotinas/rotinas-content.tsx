@@ -2,18 +2,21 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Plus, ArrowLeft, ListTodo } from 'lucide-react';
+import { ArrowLeft, ClipboardList, FileText, Plus } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { OrgBreadcrumb } from '@/components/organization/OrgBreadcrumb';
+import { KPICard } from '@/components/dashboard/KPICard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SplitView } from '@/components/views/SplitView';
+import { FilterBar } from '@/components/filters/FilterBar';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { RoutineCockpit360 } from '@/components/organization/RoutineCockpit360';
-import {
-  createRoutineAction,
-  deleteRoutineAction,
-} from '@/app/actions/organization';
+import { ActivityCockpit360 } from '@/components/organization/ActivityCockpit360';
+import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
+import { OrgEntityCard } from '@/components/organization/shared';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Dialog,
   DialogContent,
@@ -22,11 +25,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { deleteRoutineAction } from '@/app/actions/organization';
+import { useRotinasFilters } from '@/hooks/useOrganizacaoFilters';
 import { toast } from 'sonner';
-import type { OrgRoutine } from '@/types/organization';
+import type { OrgActivity, OrgRoutine } from '@/types/organization';
 
 interface RotinasContentProps {
   processId: string;
@@ -34,59 +36,67 @@ interface RotinasContentProps {
   routines: OrgRoutine[];
 }
 
+interface RoutineWithMeta extends OrgRoutine {
+  process_name: string;
+}
+
 export function RotinasContent({
   processId,
   processName,
   routines: initialRoutines,
 }: RotinasContentProps) {
-  const [routines, setRoutines] = React.useState<OrgRoutine[]>(initialRoutines);
-  const [selectedRoutine, setSelectedRoutine] = React.useState<OrgRoutine | null>(null);
-  const [isFormOpen, setIsFormOpen] = React.useState(false);
-  const [routineToDelete, setRoutineToDelete] = React.useState<OrgRoutine | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [formData, setFormData] = React.useState({ name: '', description: '', objective: '' });
+  const seededRoutines = React.useMemo<RoutineWithMeta[]>(
+    () =>
+      initialRoutines.map((routine) => ({
+        ...routine,
+        process_name: processName,
+      })),
+    [initialRoutines, processName],
+  );
+
+  const [routines, setRoutines] = React.useState<RoutineWithMeta[]>(seededRoutines);
+  const [selectedRoutine, setSelectedRoutine] = React.useState<RoutineWithMeta | null>(null);
+  const [selectedActivity, setSelectedActivity] = React.useState<OrgActivity | null>(null);
+  const [isCreateSheetOpen, setIsCreateSheetOpen] = React.useState(false);
+  const [routineToDelete, setRoutineToDelete] = React.useState<RoutineWithMeta | null>(null);
+
+  const {
+    filters,
+    search,
+    viewMode,
+    setViewMode,
+    filteredData,
+    updateFilter,
+    setSearch,
+    resetAllFilters,
+    registry,
+  } = useRotinasFilters(routines, [{ id: processId, name: processName }], {
+    enableProcessFilter: false,
+  });
 
   React.useEffect(() => {
-    setRoutines(initialRoutines);
-  }, [initialRoutines]);
+    setRoutines(seededRoutines);
+  }, [seededRoutines]);
 
-  const handleCreate = React.useCallback(async () => {
-    if (!formData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const result = await createRoutineAction({
-        process_id: processId,
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        objective: formData.objective.trim() || null,
-        responsible_roles: [],
-        documentation: {},
-      });
-      if (result.success && result.data) {
-        setRoutines((prev) => [...prev, result.data as OrgRoutine]);
-        toast.success(result.message);
-        setFormData({ name: '', description: '', objective: '' });
-        setIsFormOpen(false);
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [processId, formData]);
+  const kpis = React.useMemo(
+    () => ({
+      total: routines.length,
+      comObjetivo: routines.filter((routine) => Boolean(routine.objective?.trim())).length,
+      comRoles: routines.filter((routine) => (routine.responsible_roles ?? []).length > 0).length,
+    }),
+    [routines],
+  );
 
   const handleConfirmDelete = React.useCallback(async () => {
     if (!routineToDelete) return;
     try {
       const result = await deleteRoutineAction(routineToDelete.id);
       if (result.success) {
-        setRoutines((prev) => prev.filter((r) => r.id !== routineToDelete.id));
-        setSelectedRoutine(null);
+        setRoutines((prev) => prev.filter((routine) => routine.id !== routineToDelete.id));
+        if (selectedRoutine?.id === routineToDelete.id) {
+          setSelectedRoutine(null);
+          setSelectedActivity(null);
+        }
         setRoutineToDelete(null);
         toast.success(result.message);
       } else {
@@ -95,7 +105,77 @@ export function RotinasContent({
     } catch (error) {
       toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
-  }, [routineToDelete]);
+  }, [routineToDelete, selectedRoutine]);
+
+  const renderListView = React.useCallback(
+    (items: RoutineWithMeta[]) => (
+      <Card>
+        <CardContent className="p-0">
+          <div className="divide-y">
+            {items.map((routine) => (
+              <div
+                key={routine.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  setSelectedRoutine(routine);
+                  setSelectedActivity(null);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setSelectedRoutine(routine);
+                    setSelectedActivity(null);
+                  }
+                }}
+                className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+                    <ClipboardList className="text-primary size-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{routine.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {routine.description || 'Sem descrição'}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right text-xs text-muted-foreground">
+                  {routine.activities_count ?? 0} atividade(s)
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    ),
+    [],
+  );
+
+  const renderCardView = React.useCallback(
+    (items: RoutineWithMeta[]) => (
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((routine) => (
+          <OrgEntityCard
+            key={routine.id}
+            title={routine.name}
+            subtitle={routine.description ?? processName}
+            badge={`${routine.activities_count ?? 0} atividade(s)`}
+            meta={{
+              roles: (routine.responsible_roles ?? []).length,
+            }}
+            onClick={() => {
+              setSelectedRoutine(routine);
+              setSelectedActivity(null);
+            }}
+            className="h-full"
+          />
+        ))}
+      </div>
+    ),
+    [processName],
+  );
 
   return (
     <div className="flex flex-col">
@@ -120,141 +200,168 @@ export function RotinasContent({
               Voltar
             </Link>
           </Button>
-          <Button
-            className="gap-2"
-            onClick={() => {
-              setFormData({ name: '', description: '', objective: '' });
-              setIsFormOpen(true);
-            }}
-          >
+          <Button className="gap-2" onClick={() => setIsCreateSheetOpen(true)}>
             <Plus className="h-4 w-4" />
             Nova Rotina
           </Button>
         </div>
       </div>
 
-      <div className="flex gap-6 p-6">
-        <div className="min-w-0 flex-1">
-          {routines.length === 0 ? (
-            <EmptyState
-              icon={ListTodo}
-              title="Nenhuma rotina cadastrada"
-              description="Crie rotinas para organizar as atividades deste processo."
-              actionLabel="Nova Rotina"
-              onAction={() => setIsFormOpen(true)}
+      <div className="space-y-6 p-6">
+        <p className="sr-only" role="status" aria-live="polite">
+          {`Lista com ${filteredData.length} rotina(s).`}
+        </p>
+
+        {routines.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <KPICard
+              icon={ClipboardList}
+              title="Total de Rotinas"
+              value={kpis.total}
+              trend={{ value: '0', positive: false }}
             />
-          ) : (
-            <Card>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {routines.map((r) => (
-                    <div
-                      key={r.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setSelectedRoutine(r)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          setSelectedRoutine(r);
-                        }
-                      }}
-                      className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
-                          <ListTodo className="text-primary size-5" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{r.name}</p>
-                          {r.description && (
-                            <p className="line-clamp-1 text-sm text-muted-foreground">
-                              {r.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+            <KPICard
+              icon={FileText}
+              title="Com Objetivo"
+              value={kpis.comObjetivo}
+              trend={{ value: '0', positive: true }}
+            />
+            <KPICard
+              icon={Plus}
+              title="Com Roles"
+              value={kpis.comRoles}
+              trend={{ value: '0', positive: true }}
+            />
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <div className="flex justify-end">
+            <ViewModeBar
+              moduleId="organizacao-processo-rotinas"
+              registry={registry}
+              activeViewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          </div>
+          <FilterBar
+            moduleId="organizacao-processo-rotinas"
+            filters={registry}
+            onFiltersChange={(newFilters) => {
+              Object.entries(newFilters).forEach(([key, value]) => {
+                if (filters[key] !== value) {
+                  updateFilter(key, value);
+                }
+              });
+            }}
+            onSearchChange={setSearch}
+            onViewModeChange={setViewMode}
+            initialFilters={filters}
+            initialSearch={search}
+            initialViewMode={viewMode}
+            currentFilters={filters}
+            currentSearch={search}
+            currentViewMode={viewMode}
+            onUpdateFilter={updateFilter}
+            onResetFilters={() => {
+              resetAllFilters();
+              setSearch('');
+            }}
+          />
         </div>
 
-        <SplitView
-          isOpen={!!selectedRoutine}
-          onClose={() => setSelectedRoutine(null)}
-          title={selectedRoutine?.name ?? ''}
-          width="lg"
-        >
-          {selectedRoutine && (
-            <RoutineCockpit360
-              routine={selectedRoutine}
-              processOptions={[{ id: processId, name: processName }]}
-              onDelete={() => setRoutineToDelete(selectedRoutine)}
-              onRoutineUpdated={(updatedRoutine) => {
-                setRoutines((prev) =>
-                  prev.map((routine) =>
-                    routine.id === updatedRoutine.id ? updatedRoutine : routine,
-                  ),
-                );
-                setSelectedRoutine(updatedRoutine);
+        {routines.length === 0 ? (
+          <EmptyState
+            icon={ClipboardList}
+            title="Nenhuma rotina cadastrada"
+            description="Crie rotinas para organizar as atividades deste processo."
+            actionLabel="Nova Rotina"
+            onAction={() => setIsCreateSheetOpen(true)}
+          />
+        ) : (
+          <div className="flex gap-6">
+            <div className="min-w-0 flex-1">
+              {filteredData.length === 0 ? (
+                <EmptyState
+                  icon={ClipboardList}
+                  title="Nenhum resultado"
+                  description="Ajuste a busca para encontrar outra rotina."
+                />
+              ) : viewMode === 'cards' ? (
+                renderCardView(filteredData)
+              ) : (
+                renderListView(filteredData)
+              )}
+            </div>
+
+            <SplitView
+              isOpen={!!selectedRoutine}
+              onClose={() => {
+                setSelectedRoutine(null);
+                setSelectedActivity(null);
               }}
-            />
-          )}
-        </SplitView>
+              title={selectedRoutine?.name ?? ''}
+              subtitle={selectedRoutine?.description ?? processName}
+              width="wide"
+            >
+              {selectedRoutine && (
+                <RoutineCockpit360
+                  routine={selectedRoutine}
+                  processOptions={[{ id: processId, name: processName }]}
+                  onDelete={() => setRoutineToDelete(selectedRoutine)}
+                  onSelectActivity={setSelectedActivity}
+                  onRoutineUpdated={(updatedRoutine) => {
+                    const nextRoutine = {
+                      ...(updatedRoutine as RoutineWithMeta),
+                      process_name: processName,
+                    };
+                    setRoutines((prev) =>
+                      prev.map((routine) =>
+                        routine.id === nextRoutine.id ? nextRoutine : routine,
+                      ),
+                    );
+                    setSelectedRoutine(nextRoutine);
+                  }}
+                />
+              )}
+            </SplitView>
+          </div>
+        )}
       </div>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nova Rotina</DialogTitle>
-            <DialogDescription>
-              Preencha os dados para criar uma nova rotina.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="routine-name">Nome *</Label>
-              <Input
-                id="routine-name"
-                value={formData.name}
-                onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="ex.: análise inicial do processo"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="routine-description">Descrição</Label>
-              <Textarea
-                id="routine-description"
-                value={formData.description}
-                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Descrição da rotina"
-                rows={3}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="routine-objective">Objetivo</Label>
-              <Textarea
-                id="routine-objective"
-                value={formData.objective}
-                onChange={(e) => setFormData((p) => ({ ...p, objective: e.target.value }))}
-                placeholder="Objetivo da rotina"
-                rows={2}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsFormOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCreate} disabled={isLoading}>
-              Criar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Sheet open={selectedActivity !== null} onOpenChange={(open) => !open && setSelectedActivity(null)}>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
+          {selectedActivity && (
+            <>
+              <SheetHeader className="mb-6">
+                <SheetTitle>{selectedActivity.name}</SheetTitle>
+              </SheetHeader>
+              <ActivityCockpit360 activity={selectedActivity} routine={selectedRoutine ?? undefined} />
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      <OrgEntityFormSheet
+        entity="routine"
+        mode="create"
+        isOpen={isCreateSheetOpen}
+        context={{ processId }}
+        relationOptions={{
+          processes: [{ id: processId, name: processName }],
+        }}
+        contextSummary={[{ label: 'Processo', value: processName }]}
+        onClose={() => setIsCreateSheetOpen(false)}
+        onSaved={(savedRoutine) => {
+          const nextRoutine = {
+            ...(savedRoutine as RoutineWithMeta),
+            process_name: processName,
+          };
+          setRoutines((prev) => [...prev, nextRoutine]);
+          setSelectedRoutine(nextRoutine);
+          setIsCreateSheetOpen(false);
+        }}
+      />
 
       <Dialog open={!!routineToDelete} onOpenChange={(open) => !open && setRoutineToDelete(null)}>
         <DialogContent>

@@ -3,7 +3,7 @@
  * Configuração centralizada de filtros para Áreas, Processos, etc.
  */
 
-import { List, LayoutGrid, Layers, Columns3, Building2 } from 'lucide-react';
+import { List, LayoutGrid, Layers, Columns3, Building2, GitBranch } from 'lucide-react';
 import type { FilterDefinition, FilterRegistry } from './filter-types';
 
 /**
@@ -121,7 +121,10 @@ export const filterRegistryProcessos: FilterRegistry = {
   moduleId: 'organizacao-processos',
   filters: filterDefinitionsProcessos,
   searchable: true,
-  viewModes: [{ id: 'list', label: 'Lista', icon: List, default: true }],
+  viewModes: [
+    { id: 'list', label: 'Lista', icon: List, default: true },
+    { id: 'cards', label: 'Cards', icon: LayoutGrid },
+  ],
 };
 
 export const searchFieldsProcessos = [
@@ -131,3 +134,30 @@ export const searchFieldsProcessos = [
   'area_name',
   'nucleus_name',
 ];
+
+/**
+ * Filter Definitions para Rotinas
+ */
+export const filterDefinitionsRotinas: FilterDefinition[] = [
+  {
+    id: 'process_id',
+    label: 'Processo',
+    type: 'select',
+    options: [],
+    quickFilter: true,
+    icon: GitBranch,
+    description: 'Filtrar por processo',
+  },
+];
+
+export const filterRegistryRotinas: FilterRegistry = {
+  moduleId: 'organizacao-rotinas',
+  filters: filterDefinitionsRotinas,
+  searchable: true,
+  viewModes: [
+    { id: 'list', label: 'Lista', icon: List, default: true },
+    { id: 'cards', label: 'Cards', icon: LayoutGrid },
+  ],
+};
+
+export const searchFieldsRotinas = ['name', 'description', 'objective', 'process_name'];

@@ -128,59 +128,61 @@ export function ProcessCockpit360({
   return (
     <div className="space-y-6">
       <Tabs defaultValue="principal" className="w-full">
-        <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
-          <TabsTrigger
-            value="principal"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
-          >
-            <FileText className="mr-2 size-4" />
-            Principal
-          </TabsTrigger>
-          <TabsTrigger
-            value="detalhes"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
-          >
-            <ClipboardList className="mr-2 size-4" />
-            Detalhes
-          </TabsTrigger>
-          <TabsTrigger
-            value="rotinas"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
-          >
-            <ClipboardList className="mr-2 size-4" />
-            Rotinas
-            {routines.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">({routines.length})</span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger
-            value="sistemas"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
-          >
-            <Monitor className="mr-2 size-4" />
-            Sistemas
-            {systems.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">({systems.length})</span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger
-            value="metricas"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
-          >
-            <BarChart3 className="mr-2 size-4" />
-            Métricas
-          </TabsTrigger>
-          <TabsTrigger
-            value="slas"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
-          >
-            <Target className="mr-2 size-4" />
-            SLAs
-            {slas.length > 0 && (
-              <span className="ml-2 text-xs text-muted-foreground">({slas.length})</span>
-            )}
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto border-b">
+          <TabsList className="h-auto min-w-max justify-start rounded-none bg-transparent p-0">
+            <TabsTrigger
+              value="principal"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
+            >
+              <FileText className="mr-2 size-4" />
+              Principal
+            </TabsTrigger>
+            <TabsTrigger
+              value="detalhes"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
+            >
+              <ClipboardList className="mr-2 size-4" />
+              Detalhes
+            </TabsTrigger>
+            <TabsTrigger
+              value="rotinas"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
+            >
+              <ClipboardList className="mr-2 size-4" />
+              Rotinas
+              {routines.length > 0 && (
+                <span className="ml-2 text-xs text-muted-foreground">({routines.length})</span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value="sistemas"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
+            >
+              <Monitor className="mr-2 size-4" />
+              Sistemas
+              {systems.length > 0 && (
+                <span className="ml-2 text-xs text-muted-foreground">({systems.length})</span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value="metricas"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
+            >
+              <BarChart3 className="mr-2 size-4" />
+              Métricas
+            </TabsTrigger>
+            <TabsTrigger
+              value="slas"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-2.5 data-[state=active]:bg-transparent"
+            >
+              <Target className="mr-2 size-4" />
+              SLAs
+              {slas.length > 0 && (
+                <span className="ml-2 text-xs text-muted-foreground">({slas.length})</span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="principal" className="mt-6 space-y-8">
           <div className="flex justify-end gap-2">
@@ -388,21 +390,24 @@ export function ProcessCockpit360({
         <TabsContent value="metricas" className="mt-6 space-y-6">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <label htmlFor="metricsTimeframeSelect" className="text-sm font-medium">
+              <label htmlFor="metrics-timeframe-select" className="text-sm font-medium">
                 Período:
               </label>
-              <select
-                id="metricsTimeframeSelect"
+              <Select
                 value={metricsTimeframe}
-                onChange={(e) =>
-                  setMetricsTimeframe(e.target.value as 'week' | 'month' | 'quarter')
+                onValueChange={(value) =>
+                  setMetricsTimeframe(value as 'week' | 'month' | 'quarter')
                 }
-                className="rounded-md border px-3 py-2 text-sm"
               >
-                <option value="week">Semanal</option>
-                <option value="month">Mensal</option>
-                <option value="quarter">Trimestral</option>
-              </select>
+                <SelectTrigger id="metrics-timeframe-select" className="w-[200px]">
+                  <SelectValue placeholder="Selecione o período" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="week">Semanal</SelectItem>
+                  <SelectItem value="month">Mensal</SelectItem>
+                  <SelectItem value="quarter">Trimestral</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <ProcessMetricsCard processId={process.id} />

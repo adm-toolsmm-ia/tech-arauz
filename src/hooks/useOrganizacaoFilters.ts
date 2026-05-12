@@ -12,10 +12,13 @@ import {
   filterDefinitionsProcessos,
   filterRegistryProcessos,
   searchFieldsProcessos,
+  filterDefinitionsRotinas,
+  filterRegistryRotinas,
+  searchFieldsRotinas,
 } from '@/lib/filters/filters-organizacao';
 import { applyFilters } from '@/lib/filters/filter-utils';
 import { useFilterState } from '@/hooks/useFilterState';
-import type { OrgArea, OrgProcess } from '@/types/organization';
+import type { OrgArea, OrgProcess, OrgRoutine } from '@/types/organization';
 
 /**
  * Hook for managing Areas filters
@@ -119,5 +122,69 @@ export function useProcessosFilters(
     activeFilterCount: filterState.activeFilterCount,
     hasActiveFilters: filterState.hasActiveFilters,
     registry,
+  };
+}
+
+export interface RoutineWithMeta extends OrgRoutine {
+  process_name: string;
+}
+
+export function useRotinasFilters(
+  routines: RoutineWithMeta[],
+  processOptions: Array<{ id: string; name: string }>,
+  options?: { enableProcessFilter?: boolean },
+) {
+  const enableProcessFilter = options?.enableProcessFilter ?? true;
+
+  const definitions = enableProcessFilter
+    ? filterDefinitionsRotinas.map((definition) =>
+        definition.id === 'process_id'
+          ? {
+              ...definition,
+              options: processOptions.map((processOption) => ({
+                value: processOption.id,
+                label: processOption.name,
+              })),
+            }
+          : definition,
+      )
+    : [];
+
+  const filterState = useFilterState({
+    moduleId: 'organizacao-rotinas',
+    definitions,
+    initialViewMode: filterRegistryRotinas.viewModes?.[0]?.id ?? 'list',
+    persistence: {
+      enabled: true,
+      storageKey: enableProcessFilter
+        ? 'filters-organizacao-rotinas'
+        : 'filters-organizacao-processo-rotinas',
+    },
+  });
+
+  const routinesWithComputed = routines.map((routine) => ({
+    ...routine,
+    process_name: routine.process_name ?? routine.process?.name ?? '',
+  }));
+
+  const filteredData = applyFilters(routinesWithComputed, filterState.filters, {
+    search: filterState.search,
+    searchFields: searchFieldsRotinas,
+    matchMode: 'partial',
+    caseSensitive: false,
+  }) as RoutineWithMeta[];
+
+  return {
+    filters: filterState.filters,
+    search: filterState.search,
+    viewMode: filterState.viewMode,
+    setViewMode: filterState.setViewMode,
+    filteredData,
+    updateFilter: filterState.updateFilter,
+    setSearch: filterState.setSearch,
+    resetAllFilters: filterState.resetAllFilters,
+    activeFilterCount: filterState.activeFilterCount,
+    hasActiveFilters: filterState.hasActiveFilters,
+    registry: { ...filterRegistryRotinas, filters: definitions },
   };
 }

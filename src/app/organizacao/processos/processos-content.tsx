@@ -2,9 +2,10 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import { GitBranch, Layers, Monitor, Plus } from 'lucide-react';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { OrgBreadcrumb } from '@/components/organization/OrgBreadcrumb';
+import { KPICard } from '@/components/dashboard/KPICard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,32 +16,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { SplitView } from '@/components/views/SplitView';
 import { ContextPanel } from '@/components/views/ContextPanel';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { ViewModeBar } from '@/components/filters/ViewModeBar';
 import { ProcessCockpit360 } from '@/components/organization/ProcessCockpit360';
 import { RoutineCockpit360 } from '@/components/organization/RoutineCockpit360';
+import { ActivityCockpit360 } from '@/components/organization/ActivityCockpit360';
+import { OrgEntityFormSheet } from '@/components/organization/OrgEntityFormSheet';
+import { OrgEntityCard } from '@/components/organization/shared';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useProcessosFilters } from '@/hooks/useOrganizacaoFilters';
 import {
-  createProcessAction,
   deleteProcessAction,
   addProcessSystemAction,
   removeProcessSystemAction,
 } from '@/app/actions/organization';
 import { toast } from 'sonner';
-import type { OrgProcess, OrgRoutine, OrgSystem } from '@/types/organization';
-import { GitBranch } from 'lucide-react';
+import type { OrgActivity, OrgProcess, OrgRoutine, OrgSystem } from '@/types/organization';
 
 interface ProcessosContentProps {
   processes: OrgProcess[];
@@ -53,29 +47,13 @@ interface ProcessosContentProps {
   systemsByProcessId: Record<string, OrgSystem[]>;
 }
 
-interface ProcessFormData {
-  name: string;
-  description: string;
-  objective: string;
-  area_id: string;
-  nucleus_id: string;
-}
-
-const DEFAULT_FORM: ProcessFormData = {
-  name: '',
-  description: '',
-  objective: '',
-  area_id: '',
-  nucleus_id: '',
-};
-
 export function ProcessosContent({
   processes: initialProcesses,
   areas,
   nuclei,
   areaMap,
   nucleusMap,
-  routinesByProcessId = {},
+  routinesByProcessId: initialRoutinesByProcessId = {},
   systems = [],
   systemsByProcessId = {},
 }: ProcessosContentProps) {
@@ -83,74 +61,74 @@ export function ProcessosContent({
   const [processes, setProcesses] = React.useState<OrgProcess[]>(initialProcesses);
   const [selectedProcess, setSelectedProcess] = React.useState<OrgProcess | null>(null);
   const [selectedRoutine, setSelectedRoutine] = React.useState<OrgRoutine | null>(null);
-  const [isFormOpen, setIsFormOpen] = React.useState(false);
+  const [selectedActivity, setSelectedActivity] = React.useState<OrgActivity | null>(null);
+  const [isCreateSheetOpen, setIsCreateSheetOpen] = React.useState(false);
   const [processToDelete, setProcessToDelete] = React.useState<OrgProcess | null>(null);
   const [processSystemToUnlink, setProcessSystemToUnlink] = React.useState<{
     processId: string;
     systemId: string;
     systemName: string;
   } | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [formData, setFormData] = React.useState<ProcessFormData>(DEFAULT_FORM);
+  const [routinesByProcessId, setRoutinesByProcessId] =
+    React.useState<Record<string, OrgRoutine[]>>(initialRoutinesByProcessId);
 
-  const { filters, search, filteredData, updateFilter, setSearch, resetAllFilters, registry } =
-    useProcessosFilters(processes, areaMap, nucleusMap, routinesByProcessId);
+  const {
+    filters,
+    search,
+    viewMode,
+    setViewMode,
+    filteredData,
+    updateFilter,
+    setSearch,
+    resetAllFilters,
+    registry,
+  } = useProcessosFilters(processes, areaMap, nucleusMap, routinesByProcessId);
 
   React.useEffect(() => {
     setProcesses(initialProcesses);
   }, [initialProcesses]);
 
-  const nucleiForArea = React.useMemo(
-    () => nuclei.filter((n) => n.area_id === formData.area_id),
-    [nuclei, formData.area_id],
+  React.useEffect(() => {
+    setRoutinesByProcessId(initialRoutinesByProcessId);
+  }, [initialRoutinesByProcessId]);
+
+  const kpis = React.useMemo(
+    () => ({
+      total: processes.length,
+      withRoutines: processes.filter((process) => (routinesByProcessId[process.id] ?? []).length > 0)
+        .length,
+      withSystems: processes.filter((process) => (systemsByProcessId[process.id] ?? []).length > 0)
+        .length,
+    }),
+    [processes, routinesByProcessId, systemsByProcessId],
   );
 
-  const resetForm = React.useCallback(() => {
-    setFormData(DEFAULT_FORM);
-  }, []);
-
-  const handleCreate = React.useCallback(async () => {
-    if (!formData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const result = await createProcessAction({
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        objective: formData.objective.trim() || null,
-        area_id: formData.area_id || null,
-        nucleus_id: formData.nucleus_id || null,
-        inputs: [],
-        outputs: [],
-        responsible_roles: [],
-        risks: [],
-        impacts: [],
-        documentation: {},
-      });
-      if (result.success && result.data) {
-        setProcesses((prev) => [...prev, result.data as OrgProcess]);
-        toast.success(result.message);
-        resetForm();
-        setIsFormOpen(false);
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [formData, resetForm]);
+  const getProcessSubtitle = React.useCallback(
+    (process: OrgProcess) =>
+      [
+        process.area_id ? areaMap[process.area_id] : null,
+        process.nucleus_id ? nucleusMap[process.nucleus_id] : null,
+      ]
+        .filter(Boolean)
+        .join(' / ') || 'Sem área/núcleo',
+    [areaMap, nucleusMap],
+  );
 
   const handleConfirmDelete = React.useCallback(async () => {
     if (!processToDelete) return;
     try {
       const result = await deleteProcessAction(processToDelete.id);
       if (result.success) {
-        setProcesses((prev) => prev.filter((p) => p.id !== processToDelete.id));
-        setSelectedProcess(null);
+        setProcesses((prev) => prev.filter((process) => process.id !== processToDelete.id));
+        setRoutinesByProcessId((prev) => {
+          const next = { ...prev };
+          delete next[processToDelete.id];
+          return next;
+        });
+        if (selectedProcess?.id === processToDelete.id) {
+          setSelectedProcess(null);
+          setSelectedRoutine(null);
+        }
         setProcessToDelete(null);
         toast.success(result.message);
       } else {
@@ -159,7 +137,7 @@ export function ProcessosContent({
     } catch (error) {
       toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
     }
-  }, [processToDelete]);
+  }, [processToDelete, selectedProcess]);
 
   const handleLinkProcessSystem = React.useCallback(
     async (processId: string, systemId: string) => {
@@ -168,7 +146,9 @@ export function ProcessosContent({
         if (result.success) {
           toast.success(result.message);
           router.refresh();
-        } else toast.error(result.message);
+        } else {
+          toast.error(result.message);
+        }
       } catch (error) {
         toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
       }
@@ -184,12 +164,99 @@ export function ProcessosContent({
           toast.success(result.message);
           setProcessSystemToUnlink(null);
           router.refresh();
-        } else toast.error(result.message);
+        } else {
+          toast.error(result.message);
+        }
       } catch (error) {
         toast.error(`Erro: ${error instanceof Error ? error.message : 'desconhecido'}`);
       }
     },
     [router],
+  );
+
+  const handleProcessSaved = React.useCallback(
+    (savedProcess: OrgProcess) => {
+      setProcesses((prev) => {
+        const exists = prev.some((process) => process.id === savedProcess.id);
+        return exists
+          ? prev.map((process) => (process.id === savedProcess.id ? savedProcess : process))
+          : [...prev, savedProcess];
+      });
+      setSelectedProcess(savedProcess);
+      setIsCreateSheetOpen(false);
+    },
+    [],
+  );
+
+  const renderListView = React.useCallback(
+    (items: OrgProcess[]) => (
+      <Card>
+        <CardContent className="p-0">
+          <div className="divide-y">
+            {items.map((process) => (
+              <div
+                key={process.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  setSelectedProcess(process);
+                  setSelectedRoutine(null);
+                  setSelectedActivity(null);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setSelectedProcess(process);
+                    setSelectedRoutine(null);
+                    setSelectedActivity(null);
+                  }
+                }}
+                className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+                    <GitBranch className="text-primary size-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{process.name}</p>
+                    <p className="text-sm text-muted-foreground">{getProcessSubtitle(process)}</p>
+                  </div>
+                </div>
+                <div className="text-right text-xs text-muted-foreground">
+                  {(routinesByProcessId[process.id] ?? []).length} rotina(s)
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    ),
+    [getProcessSubtitle, routinesByProcessId],
+  );
+
+  const renderCardView = React.useCallback(
+    (items: OrgProcess[]) => (
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((process) => (
+          <OrgEntityCard
+            key={process.id}
+            title={process.name}
+            subtitle={getProcessSubtitle(process)}
+            badge={`${(routinesByProcessId[process.id] ?? []).length} rotina(s)`}
+            meta={{
+              sistemas: (systemsByProcessId[process.id] ?? []).length,
+            }}
+            onClick={() => {
+              setSelectedProcess(process);
+              setSelectedRoutine(null);
+              setSelectedActivity(null);
+            }}
+            className="h-full"
+          />
+        ))}
+      </div>
+    ),
+    [getProcessSubtitle, routinesByProcessId, systemsByProcessId],
   );
 
   return (
@@ -199,13 +266,7 @@ export function ProcessosContent({
           <DashboardHeader title="Processos" subtitle="Fluxos operacionais da organização" />
           <OrgBreadcrumb items={[{ label: 'Processos' }]} />
         </div>
-        <Button
-          className="gap-2"
-          onClick={() => {
-            resetForm();
-            setIsFormOpen(true);
-          }}
-        >
+        <Button className="gap-2" onClick={() => setIsCreateSheetOpen(true)}>
           <Plus className="h-4 w-4" />
           Novo Processo
         </Button>
@@ -216,28 +277,63 @@ export function ProcessosContent({
           {`Lista com ${filteredData.length} processo(s).`}
         </p>
 
-        <FilterBar
-          moduleId="organizacao-processos"
-          filters={registry}
-          onFiltersChange={(newFilters) => {
-            Object.entries(newFilters).forEach(([key, value]) => {
-              if (filters[key] !== value) updateFilter(key, value);
-            });
-          }}
-          onSearchChange={setSearch}
-          onViewModeChange={() => {}}
-          initialFilters={filters}
-          initialSearch={search}
-          initialViewMode="list"
-          currentFilters={filters}
-          currentSearch={search}
-          currentViewMode="list"
-          onUpdateFilter={updateFilter}
-          onResetFilters={() => {
-            resetAllFilters();
-            setSearch('');
-          }}
-        />
+        {processes.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <KPICard
+              icon={GitBranch}
+              title="Total de Processos"
+              value={kpis.total}
+              trend={{ value: '0', positive: false }}
+            />
+            <KPICard
+              icon={Layers}
+              title="Com Rotinas"
+              value={kpis.withRoutines}
+              trend={{ value: '0', positive: true }}
+            />
+            <KPICard
+              icon={Monitor}
+              title="Com Sistemas"
+              value={kpis.withSystems}
+              trend={{ value: '0', positive: true }}
+            />
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <div className="flex justify-end">
+            <ViewModeBar
+              moduleId="organizacao-processos"
+              registry={registry}
+              activeViewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          </div>
+          <FilterBar
+            moduleId="organizacao-processos"
+            filters={registry}
+            onFiltersChange={(newFilters) => {
+              Object.entries(newFilters).forEach(([key, value]) => {
+                if (filters[key] !== value) {
+                  updateFilter(key, value);
+                }
+              });
+            }}
+            onSearchChange={setSearch}
+            onViewModeChange={setViewMode}
+            initialFilters={filters}
+            initialSearch={search}
+            initialViewMode={viewMode}
+            currentFilters={filters}
+            currentSearch={search}
+            currentViewMode={viewMode}
+            onUpdateFilter={updateFilter}
+            onResetFilters={() => {
+              resetAllFilters();
+              setSearch('');
+            }}
+          />
+        </div>
 
         <div className="flex gap-6">
           <div className="min-w-0 flex-1">
@@ -251,54 +347,12 @@ export function ProcessosContent({
                     : 'Ajuste os filtros ou busque por outro termo.'
                 }
                 actionLabel={processes.length === 0 ? 'Novo Processo' : undefined}
-                onAction={
-                  processes.length === 0
-                    ? () => {
-                        resetForm();
-                        setIsFormOpen(true);
-                      }
-                    : undefined
-                }
+                onAction={processes.length === 0 ? () => setIsCreateSheetOpen(true) : undefined}
               />
+            ) : viewMode === 'cards' ? (
+              renderCardView(filteredData)
             ) : (
-              <Card>
-                <CardContent className="p-0">
-                  <div className="divide-y">
-                    {filteredData.map((proc) => (
-                      <div
-                        key={proc.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setSelectedProcess(proc)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setSelectedProcess(proc);
-                          }
-                        }}
-                        className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-4 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
-                            <GitBranch className="text-primary size-5" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{proc.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {[
-                                proc.area_id && areaMap[proc.area_id],
-                                proc.nucleus_id && nucleusMap[proc.nucleus_id],
-                              ]
-                                .filter(Boolean)
-                                .join(' / ') || 'Sem área/núcleo'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              renderListView(filteredData)
             )}
           </div>
 
@@ -307,19 +361,11 @@ export function ProcessosContent({
             onClose={() => {
               setSelectedProcess(null);
               setSelectedRoutine(null);
+              setSelectedActivity(null);
             }}
             title={selectedProcess?.name ?? ''}
-            subtitle={
-              selectedProcess
-                ? [
-                    selectedProcess.area_id && areaMap[selectedProcess.area_id],
-                    selectedProcess.nucleus_id && nucleusMap[selectedProcess.nucleus_id],
-                  ]
-                    .filter(Boolean)
-                    .join(' / ')
-                : undefined
-            }
-            width="lg"
+            subtitle={selectedProcess ? getProcessSubtitle(selectedProcess) : undefined}
+            width="wide"
             contextDepth={selectedRoutine ? 1 : 0}
           >
             {selectedProcess && (
@@ -336,6 +382,12 @@ export function ProcessosContent({
                 nucleusOptions={nuclei}
                 onDelete={() => setProcessToDelete(selectedProcess)}
                 onSelectRoutine={setSelectedRoutine}
+                onRoutinesUpdated={(updatedRoutines) => {
+                  setRoutinesByProcessId((prev) => ({
+                    ...prev,
+                    [selectedProcess.id]: updatedRoutines,
+                  }));
+                }}
                 onProcessUpdated={(updatedProcess) => {
                   setProcesses((prev) =>
                     prev.map((process) =>
@@ -376,107 +428,54 @@ export function ProcessosContent({
                 : undefined
             }
             depth={2}
+            className="w-full max-w-[min(92vw,560px)]"
           >
             {selectedRoutine && (
               <RoutineCockpit360
                 routine={selectedRoutine}
-                processOptions={selectedProcess ? [{ id: selectedProcess.id, name: selectedProcess.name }] : undefined}
-                onRoutineUpdated={(updatedRoutine) => setSelectedRoutine(updatedRoutine)}
+                processOptions={
+                  selectedProcess ? [{ id: selectedProcess.id, name: selectedProcess.name }] : undefined
+                }
+                onSelectActivity={setSelectedActivity}
+                onRoutineUpdated={(updatedRoutine) => {
+                  setSelectedRoutine(updatedRoutine);
+                  setRoutinesByProcessId((prev) => ({
+                    ...prev,
+                    [updatedRoutine.process_id]: (prev[updatedRoutine.process_id] ?? []).map(
+                      (routine) => (routine.id === updatedRoutine.id ? updatedRoutine : routine),
+                    ),
+                  }));
+                }}
               />
             )}
           </ContextPanel>
         </div>
-        {/* end flex gap-6 */}
       </div>
-      {/* end flex-1 space-y-6 */}
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Novo Processo</DialogTitle>
-            <DialogDescription>
-              Preencha os dados para criar um novo processo.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="process-name">Nome *</Label>
-              <Input
-                id="process-name"
-                value={formData.name}
-                onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-                placeholder="ex.: Gestão de Processos Contenciosos"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="process-area">Área</Label>
-              <Select
-                value={formData.area_id}
-                onValueChange={(v) => setFormData((p) => ({ ...p, area_id: v, nucleus_id: '' }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a área" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
-                  {areas.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      {a.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="process-nucleus">Núcleo</Label>
-              <Select
-                value={formData.nucleus_id}
-                onValueChange={(v) => setFormData((p) => ({ ...p, nucleus_id: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o núcleo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
-                  {nucleiForArea.map((n) => (
-                    <SelectItem key={n.id} value={n.id}>
-                      {n.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="process-description">Descrição</Label>
-              <Textarea
-                id="process-description"
-                value={formData.description}
-                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Descrição do processo"
-                rows={3}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="process-objective">Objetivo</Label>
-              <Textarea
-                id="process-objective"
-                value={formData.objective}
-                onChange={(e) => setFormData((p) => ({ ...p, objective: e.target.value }))}
-                placeholder="Objetivo do processo"
-                rows={2}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsFormOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCreate} disabled={isLoading}>
-              Criar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Sheet open={selectedActivity !== null} onOpenChange={(open) => !open && setSelectedActivity(null)}>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
+          {selectedActivity && (
+            <>
+              <SheetHeader className="mb-6">
+                <SheetTitle>{selectedActivity.name}</SheetTitle>
+              </SheetHeader>
+              <ActivityCockpit360 activity={selectedActivity} routine={selectedRoutine ?? undefined} />
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      <OrgEntityFormSheet
+        entity="process"
+        mode="create"
+        isOpen={isCreateSheetOpen}
+        relationOptions={{
+          areas,
+          nuclei,
+        }}
+        onClose={() => setIsCreateSheetOpen(false)}
+        onSaved={(savedProcess) => handleProcessSaved(savedProcess as OrgProcess)}
+      />
 
       <Dialog open={!!processToDelete} onOpenChange={(open) => !open && setProcessToDelete(null)}>
         <DialogContent>

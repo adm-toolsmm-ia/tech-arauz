@@ -89,6 +89,15 @@ describe('OrgEntityFormSheet - Story 13.1 Gap 1 & 2', () => {
     expect(screen.getByText(/30 min/i)).toBeInTheDocument();
   });
 
+  it('forces light theme styling on the sheet surface', () => {
+    render(
+      <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,
+    );
+
+    expect(screen.getByRole('dialog')).toHaveClass('dialog-light-theme');
+    expect(screen.getByRole('dialog')).toHaveClass('bg-white');
+  });
+
   it('shows info tab by default', () => {
     render(
       <OrgEntityFormSheet entity="activity" mode="edit" isOpen={true} initialData={mockActivity} />,

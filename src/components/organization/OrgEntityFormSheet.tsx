@@ -426,7 +426,7 @@ export function OrgEntityFormSheet({
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
       <SheetContent
         side="right"
-        className="flex w-full max-w-[760px] flex-col overflow-hidden p-0"
+        className="dialog-light-theme flex w-full max-w-[760px] flex-col overflow-hidden bg-white p-0 text-foreground"
       >
         <SheetHeader className="border-b px-6 py-5 text-left">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -481,11 +481,11 @@ export function OrgEntityFormSheet({
 
         {/* Dirty State Alert */}
         {isDirty && (
-          <Card className="m-4 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950">
+          <Card className="m-4 border-yellow-200 bg-yellow-50">
             <CardContent className="pt-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                <p className="text-sm text-yellow-800">
                   Você tem alterações não salvas.
                 </p>
               </div>

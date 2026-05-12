@@ -55,6 +55,10 @@ Primeira fase de implementação executada junto com a consolidação da epic:
 - `empresa` e `recursos` passaram a usar surfaces compartilhadas para `sistemas`, `fornecedores`, `serviços`, `documentos` e `recursos de sistema`.
 - `SupplierCockpit360`, `ServiceCockpit360`, `SystemCockpit360` e `DocumentCockpit360` foram enriquecidos para expor contexto, resumo e responsáveis com o mesmo idioma visual do domínio organizacional.
 - Os testes da `OrgEntityFormSheet`, `OrganizationSearchBar` e `ProcessSlaList` foram endurecidos para suportar a carga da suíte completa sem timeouts falsos.
+- As sheets canônicas de create/edit (`OrgEntityFormSheet`, `ResourceEntityFormSheet`, `SystemResourceFormSheet`) passaram a forçar `dialog-light-theme`, eliminando fundos escuros na operação do módulo de organização.
+- `processos` e `rotinas` passaram por alinhamento de paridade com `núcleos` e `recursos`: adoção de `ViewModeBar + FilterBar`, KPI cards, surfaces compartilhadas de criação e detalhes laterais com largura e overflow corrigidos.
+- O fluxo de criação de `processo` deixou de depender do dialog legado com `SelectItem` vazio e foi convergido para `OrgEntityFormSheet`, eliminando a principal causa provável do erro operacional nessa tela.
+- O drill-down de atividades em `rotinas` voltou a ficar navegável nas páginas globais e por processo com sheet dedicado de atividade.
 
 Validação após a implementação:
 
@@ -159,6 +163,8 @@ Os princípios detalhados estão documentados em `docs/architecture/ORGANIZATION
 - rotina como agrupador recorrente
 - atividade como menor unidade operacional
 - responsible roles, documentação e blocos BPM expostos de forma consistente
+
+**Status atual:** convergida nesta rodada para filtros, modos de visualização, criação compartilhada e drill-down de atividades
 
 ### Fase 4: Padronização dos recursos transversais
 
@@ -265,6 +271,8 @@ Os princípios detalhados estão documentados em `docs/architecture/ORGANIZATION
 - `src/app/organizacao/processos/[processId]/rotinas/[routineId]/atividades/atividades-content.tsx`
 - `src/app/organizacao/rotinas/rotinas-content.tsx`
 - `src/app/organizacao/processos/[processId]/rotinas/rotinas-content.tsx`
+- `src/hooks/useOrganizacaoFilters.ts`
+- `src/lib/filters/filters-organizacao.ts`
 - `src/app/organizacao/empresa/empresa-content.tsx`
 - `src/app/organizacao/recursos/recursos-content.tsx`
 - `src/components/organization/__tests__/OrgEntityFormSheet.test.tsx`

@@ -14,6 +14,7 @@ export default defineConfig({
       'src/app/actions/__tests__/*.test.ts',
       'src/lib/**/__tests__/*.test.ts',
       'src/integrations/**/__tests__/*.test.ts',
+      'src/app/**/__tests__/*.test.ts',
     ],
     coverage: {
       provider: 'v8',

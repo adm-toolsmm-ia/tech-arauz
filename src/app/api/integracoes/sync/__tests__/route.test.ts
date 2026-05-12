@@ -12,9 +12,14 @@ vi.mock('@/lib/sync/espaider-sync', () => ({
   executeSyncAll: vi.fn(),
 }));
 
+vi.mock('@/lib/sync/sync-orchestrator', () => ({
+  runEspaiderSync: vi.fn(),
+}));
+
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { executeSyncAll } from '@/lib/sync/espaider-sync';
+import { runEspaiderSync } from '@/lib/sync/sync-orchestrator';
 import { POST } from '../route';
 
 function createSupabaseMock(role: 'admin' | 'user') {
@@ -49,15 +54,12 @@ describe('POST /api/integracoes/sync', () => {
 
     vi.mocked(createClient).mockResolvedValue(supabase as any);
     vi.mocked(createServiceClient).mockReturnValue(serviceClient as any);
-    vi.mocked(executeSyncAll).mockResolvedValue({
+    vi.mocked(runEspaiderSync).mockResolvedValue({
       success: true,
-      message: 'ok',
-      datasets: [],
-      totalCreated: 0,
-      totalUpdated: 0,
-      totalErrors: 0,
-      durationMs: 10,
-      logs: [],
+      version: 'v1',
+      requestId: 'req-test-001',
+      message: 'Sincronização v1 concluída.',
+      details: { totalCreated: 0, totalUpdated: 0, totalErrors: 0, durationMs: 10, datasets: [] },
     });
 
     const req = new Request('http://localhost/api/integracoes/sync', { method: 'POST' }) as any;
@@ -66,8 +68,9 @@ describe('POST /api/integracoes/sync', () => {
 
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
+    expect(body.version).toBe('v1');
     expect(createServiceClient).toHaveBeenCalledTimes(1);
-    expect(executeSyncAll).toHaveBeenCalledWith(serviceClient, 'tenant-1');
+    expect(runEspaiderSync).toHaveBeenCalledWith(serviceClient, 'tenant-1');
   });
 
   it('blocks sync for non-admin user', async () => {

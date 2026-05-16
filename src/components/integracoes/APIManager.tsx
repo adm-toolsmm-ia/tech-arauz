@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@radix-ui/react-label';
+import { APIVersionToggle } from './APIVersionToggle';
 
 // =============================================================================
 // Types
@@ -306,6 +307,7 @@ export const APIManager: React.FC<APIManagerProps> = ({ onViewLogs, onSyncComple
     text: string;
   } | null>(null);
   const [configApi, setConfigApi] = React.useState<EspaiderAPI | null>(null);
+  const [currentVersion, setCurrentVersion] = React.useState<'v1' | 'v2'>('v1');
 
   // =========================================================================
   // Fetch APIs on mount
@@ -325,6 +327,16 @@ export const APIManager: React.FC<APIManagerProps> = ({ onViewLogs, onSyncComple
 
       const result = await res.json();
       setAPIs(result.data || []);
+
+      // Extract active API version from settings
+      if (result.data && result.data.length > 0) {
+        const activeApi = result.data.find((api: EspaiderAPI & { settings?: { api_version?: string } }) =>
+          api.settings?.api_version
+        );
+        if (activeApi?.settings?.api_version) {
+          setCurrentVersion(activeApi.settings.api_version as 'v1' | 'v2');
+        }
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       setError(`Erro ao buscar APIs: ${message}`);
@@ -451,7 +463,18 @@ export const APIManager: React.FC<APIManagerProps> = ({ onViewLogs, onSyncComple
           )}
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* API Version Toggle */}
+          <APIVersionToggle
+            currentVersion={currentVersion}
+            onVersionChange={(newVersion) => {
+              setCurrentVersion(newVersion);
+              // Refresh APIs to show updated version
+              setTimeout(fetchAPIs, 500);
+            }}
+          />
+
+          <div className="space-y-4">
           {apis.length === 0 ? (
             <div className="flex h-20 items-center justify-center text-sm text-muted-foreground">
               Nenhuma API configurada
@@ -529,6 +552,7 @@ export const APIManager: React.FC<APIManagerProps> = ({ onViewLogs, onSyncComple
               })}
             </div>
           )}
+          </div>
         </CardContent>
       </Card>
 
